@@ -1,5 +1,6 @@
 "use client";
 
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { FaHeart, FaShuffle, FaChevronUp, FaChevronDown } from 'react-icons/fa6';
 
@@ -152,11 +153,13 @@ export default function DealsOfDay() {
 
                 {/* Main Product Image */}
                 <div className="relative bg-white rounded-lg p-8 mb-4 h-80 flex items-center justify-center">
-                  <img
+                  <Image
                     src={encodeURI(productImages[selectedImage])}
                     alt="Product"
                     loading="lazy"
                     decoding="async"
+                    width={80}
+                    height={80}
                     onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/assets/placeholder.svg'; }}
                     className="max-h-full max-w-full object-contain"
                   />
@@ -172,11 +175,13 @@ export default function DealsOfDay() {
                         selectedImage === index ? 'border-red-500' : 'border-gray-300'
                       }`}
                     >
-                      <img
+                      <Image
                         src={encodeURI(img)}
                         alt={`Thumbnail ${index + 1}`}
                         loading="lazy"
                         decoding="async"
+                        width={80}
+                        height={80}
                         onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/assets/placeholder.svg'; }}
                         className="w-full h-16 object-contain"
                       />
@@ -294,9 +299,12 @@ export default function DealsOfDay() {
             <div className="bg-white border border-gray-200 rounded-b-lg px-3 py-1 space-y-2 flex-1">
               {visibleBestsellers.map((product) => (
                 <div key={product.id} className="flex gap-4 pb-4 border-b border-gray-200 last:border-b-0">
-                  <img
+                  <Image
                     src={product.image}
                     alt={product.name}
+                    loading="lazy"
+                    width={80}
+                    height={80}
                     className="w-20 h-20 object-contain bg-gray-50 rounded"
                   />
                   <div className="flex-1">

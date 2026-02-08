@@ -9,27 +9,27 @@ import { FaArrowRight } from 'react-icons/fa';
 // Icon and image mapping for categories
 const categoryAssets = {
   'Vehicle Parts & Accessories': {
-    image: '/assets/truck/Double Coin/Drive/RR202 10.00R20p-1.webp',
+    image: '/assets/placeholder.svg',
     icon: <PiTireThin />
   },
   'Frozen Fish': {
-    image: '/assets/fish/shrimp/shrimp.webp',
+    image: '/assets/placeholder.svg',
     icon: <PiFishThin />
   },
   'Metals & Metal Products': {
-    image: '/assets/Metals/Copper/copper1.webp',
+    image: '/assets/placeholder.svg',
     icon: <GiRopeCoil />
   },
   'Dry Food': {
-    image: '/assets/dryFruit/nuts/cashew_roasted.webp',
+    image: '/assets/placeholder.svg',
     icon: <GiPeanut />
   },
   'Agriculture': {
-    image: '/assets/agriculture/onion/onion2.webp',
+    image: '/assets/placeholder.svg',
     icon: <PiLeafThin />
   },
   'Wood Products': {
-    image: '/assets/wood/premium.webp',
+    image: '/assets/placeholder.svg',
     icon: <GiWoodPile />
   }
 };
@@ -51,7 +51,7 @@ export default function ShopByCategory() {
     const slug = category.name.replace(/\s+/g, '-');
     return {
       name: category.name,
-      image: assets.image || '/assets/placeholder.webp',
+      image: assets.image || '/assets/placeholder.svg',
       icon: assets.icon || null,
       link: `/products/c/${slug}`
     };
@@ -79,8 +79,11 @@ export default function ShopByCategory() {
               <div className='relative w-40 h-40 rounded-full border-4 border-white shadow-lg bg-red-100/30 group-hover:scale-105 transition-transform overflow-visible'>
                 <div className='w-full h-full rounded-full overflow-hidden'>
                   <img
-                    src={cat.image}
+                    src={encodeURI(cat.image)}
                     alt={cat.name}
+                    loading="lazy"
+                    decoding="async"
+                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/assets/placeholder.svg'; }}
                     className='w-full h-full object-contain group-hover:blur-sm transition-all duration-300'
                   />
                 </div>

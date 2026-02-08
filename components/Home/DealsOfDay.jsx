@@ -14,11 +14,11 @@ export default function DealsOfDay() {
   });
 
   const productImages = [
-    "/assets/fish/shrimp/shrimp.webp",
-    "/assets/truck/Double Coin/Drive/RR202 10.00R20p-1.webp",
-    "/assets/Metals/Copper/copper1.webp",
-    "/assets/dryFruit/nuts/cashew_roasted.webp",
-    "/assets/agriculture/onion/onion2.webp"
+    "/assets/placeholder.svg",
+    "/assets/placeholder.svg",
+    "/assets/placeholder.svg",
+    "/assets/placeholder.svg",
+    "/assets/placeholder.svg"
   ];
 
   const bestsellerProducts = [
@@ -27,42 +27,42 @@ export default function DealsOfDay() {
       name: "Black Air Pods",
       price: "$239.52",
       rating: 4,
-      image: "/assets/truck/Double Coin/Drive/RR202 10.00R20p-1.webp"
+      image: "/assets/placeholder.svg"
     },
     {
       id: 2,
       name: "Amazon Cloud",
       price: "$178.52",
       rating: 4,
-      image: "/assets/fish/shrimp/shrimp.webp"
+      image: "/assets/placeholder.svg"
     },
     {
       id: 3,
       name: "Lorem ipsum sit.",
       price: "$276.52",
       rating: 4,
-      image: "/assets/Metals/Copper/copper1.webp"
+      image: "/assets/placeholder.svg"
     },
     {
       id: 4,
       name: "Nost nobis are!",
       price: "$220.52",
       rating: 5,
-      image: "/assets/dryFruit/nuts/cashew_roasted.webp"
+      image: "/assets/placeholder.svg"
     },
     {
       id: 5,
       name: "Premium Product",
       price: "$299.52",
       rating: 5,
-      image: "/assets/agriculture/onion/onion2.webp"
+      image: "/assets/placeholder.svg"
     },
     {
       id: 6,
       name: "Special Item",
       price: "$189.52",
       rating: 4,
-      image: "/assets/wood/premium.webp"
+      image: "/assets/placeholder.svg"
     }
   ];
 
@@ -153,8 +153,11 @@ export default function DealsOfDay() {
                 {/* Main Product Image */}
                 <div className="relative bg-white rounded-lg p-8 mb-4 h-80 flex items-center justify-center">
                   <img
-                    src={productImages[selectedImage]}
+                    src={encodeURI(productImages[selectedImage])}
                     alt="Product"
+                    loading="lazy"
+                    decoding="async"
+                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/assets/placeholder.svg'; }}
                     className="max-h-full max-w-full object-contain"
                   />
                 </div>
@@ -170,8 +173,11 @@ export default function DealsOfDay() {
                       }`}
                     >
                       <img
-                        src={img}
+                        src={encodeURI(img)}
                         alt={`Thumbnail ${index + 1}`}
+                        loading="lazy"
+                        decoding="async"
+                        onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/assets/placeholder.svg'; }}
                         className="w-full h-16 object-contain"
                       />
                     </button>

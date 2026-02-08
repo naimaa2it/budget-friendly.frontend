@@ -21,7 +21,7 @@ export default function PopularPicks() {
       tag: "Hot",
       discount: "6% Off",
       category: "Car Wheel",
-      image: "/assets/truck/Double Coin/Drive/RR202 10.00R20p-1.webp"
+      image: "/assets/placeholder.svg"
     },
     {
       id: 2,
@@ -35,7 +35,7 @@ export default function PopularPicks() {
       tag: null,
       discount: null,
       category: null,
-      image: "/assets/fish/shrimp/shrimp.webp"
+      image: "/assets/placeholder.svg"
     },
     {
       id: 3,
@@ -48,7 +48,7 @@ export default function PopularPicks() {
       tag: null,
       discount: null,
       category: null,
-      image: "/assets/Metals/Copper/copper1.webp"
+      image: "/assets/placeholder.svg"
     },
     {
       id: 4,
@@ -61,7 +61,7 @@ export default function PopularPicks() {
       tag: null,
       discount: null,
       category: null,
-      image: "/assets/dryFruit/nuts/cashew_roasted.webp"
+      image: "/assets/placeholder.svg"
     }
   ];
 
@@ -145,8 +145,11 @@ export default function PopularPicks() {
           </div>
           <div className="mt-6">
             <img 
-              src="/assets/truck/Double Coin/Drive/RR202 10.00R20p-1.webp" 
+              src="/assets/placeholder.svg" 
               alt="Featured Product" 
+              loading="lazy"
+              decoding="async"
+              onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/assets/placeholder.svg'; }}
               className="w-full h-auto object-contain rounded-lg"
             />
           </div>
@@ -185,8 +188,11 @@ export default function PopularPicks() {
                 {/* Product Image Container */}
                 <div className="relative bg-gray-50 p-6 h-64 flex items-center justify-center overflow-hidden">
                   <img
-                    src={product.image}
+                    src={encodeURI(product.image)}
                     alt={product.subtitle}
+                    loading="lazy"
+                    decoding="async"
+                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/assets/placeholder.svg'; }}
                     className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
                   />
                   

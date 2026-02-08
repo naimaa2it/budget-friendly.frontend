@@ -10,13 +10,6 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-work-sans);
-  --color-primary: var(--color-primary);
-  --color-base: var(--color-base);
-  --color-button: var(--color-button);
-  --color-button-hover: var(--color-button-hover);
-  --color-important: var(--color-important);
-  --text-primary: var(--text-primary);
-  --text-secondary: var(--text-secondary);
 }
 
 @media (prefers-color-scheme: dark) {

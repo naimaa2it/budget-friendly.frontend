@@ -90,30 +90,36 @@ export default function AuthModal({ isOpen, onClose }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40" onClick={onClose}></div>
       <div className="bg-white rounded-lg p-6 relative z-10 w-full max-w-md">
-        <button onClick={onClose} className="absolute top-3 right-3">✕</button>
-        <h2 className="text-2xl font-semibold mb-4">Continue to Budget Friendly</h2>
+        <button onClick={onClose} className="absolute top-3 right-3 text-gray-600 hover:text-gray-900">✕</button>
+        <h2 className="text-2xl font-semibold mb-4 text-gray-900">Continue to Budget Friendly</h2>
 
         {view === 'choose' && (
           <div className="space-y-3">
-            <button onClick={handleGoogle} className="w-full border px-4 py-3 flex items-center justify-center gap-3"> <img src="/google-icon.png" alt="g" className="w-5" /> Continue with Google</button>
-            <button onClick={() => setView('email-login')} className="w-full border px-4 py-3 flex items-center justify-center gap-3"> <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 4h16v16H4z" stroke="#111"/></svg> Continue with Email</button>
+            <button onClick={handleGoogle} className="w-full border border-gray-200 px-4 py-3 flex items-center justify-center gap-3 text-gray-800 hover:bg-gray-50">
+              <img src="/google-icon.png" alt="g" className="w-5" />
+              <span>Continue with Google</span>
+            </button>
+            <button onClick={() => setView('email-login')} className="w-full border border-gray-200 px-4 py-3 flex items-center justify-center gap-3 text-gray-800 hover:bg-gray-50">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-gray-800"><path d="M4 4h16v16H4z" stroke="currentColor"/></svg>
+              <span>Continue with Email</span>
+            </button>
           </div>
         )}
 
         {view === 'email-register' && (
           <form onSubmit={handleEmailRegister} className="space-y-3">
             <div>
-              <input required placeholder="Name" value={name} onChange={e => setName(e.target.value)} className="w-full border px-3 py-2" />
+              <input required placeholder="Name" value={name} onChange={e => setName(e.target.value)} className="w-full border border-gray-200 bg-white text-gray-900 placeholder-gray-400 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-100" />
             </div>
             <div>
-              <input required placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="w-full border px-3 py-2" />
+              <input required placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="w-full border border-gray-200 bg-white text-gray-900 placeholder-gray-400 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-100" />
             </div>
             <div>
-              <input required placeholder="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full border px-3 py-2" />
+              <input required placeholder="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full border border-gray-200 bg-white text-gray-900 placeholder-gray-400 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-100" />
             </div>
             <div className="flex gap-2">
-              <button type="submit" className="bg-gray-700 text-white px-4 py-2 rounded">Continue →</button>
-              <button type="button" onClick={() => setView('choose')} className="px-4 py-2">Back</button>
+              <button type="submit" className="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded">Continue →</button>
+              <button type="button" onClick={() => setView('choose')} className="px-4 py-2 text-gray-700 hover:bg-gray-50">Back</button>
             </div>
           </form>
         )}
@@ -121,17 +127,17 @@ export default function AuthModal({ isOpen, onClose }) {
         {view === 'email-login' && (
           <form onSubmit={handleEmailLogin} className="space-y-3">
             <div>
-              <input required placeholder="Enter email" value={email} onChange={e => setEmail(e.target.value)} className="w-full border px-3 py-2" />
+              <input required placeholder="Enter email" value={email} onChange={e => setEmail(e.target.value)} className="w-full border border-gray-200 bg-white text-gray-900 placeholder-gray-400 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-100" />
             </div>
             <div>
-              <input required placeholder="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full border px-3 py-2" />
+              <input required placeholder="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full border border-gray-200 bg-white text-gray-900 placeholder-gray-400 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-100" />
             </div>
             <div className="flex gap-2">
-              <button type="submit" className="bg-gray-700 text-white px-4 py-2 rounded">Continue →</button>
-              <button type="button" onClick={() => setView('email-register')} className="px-4 py-2">Register</button>
+              <button type="submit" className="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded">Continue →</button>
+              <button type="button" onClick={() => setView('email-register')} className="px-4 py-2 text-gray-700 hover:bg-gray-50">Register</button>
             </div>
             <div>
-              <button type="button" onClick={handleForgot} className="text-sm text-blue-600">Forgot password?</button>
+              <button type="button" onClick={handleForgot} className="text-sm text-indigo-600 hover:text-indigo-800">Forgot password?</button>
             </div>
           </form>
         )}

@@ -18,21 +18,31 @@ export default function AuthModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   const handleGoogle = async () => {
+    setMessage('');
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
+      if (!user || !user.email) throw new Error('No email returned from Google sign-in');
+
       // send to backend to create session
-      await fetch(`${API}/api/auth/firebase-login`, {
+      const resp = await fetch(`${API}/api/auth/firebase-login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ email: user.email, name: user.displayName, image: user.photoURL, provider: 'google' })
       });
+
+      if (!resp.ok) {
+        const errBody = await resp.json().catch(() => ({}));
+        throw new Error(errBody.error || `Backend responded with ${resp.status}`);
+      }
+
       await refreshUser();
       onClose();
     } catch (err) {
-      console.error(err);
-      setMessage('Google login failed');
+      console.error('Google sign-in error:', err);
+      // show a helpful error to the user for debugging
+      setMessage(err.message || 'Google login failed. Check console for details.');
     }
   };
 

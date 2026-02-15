@@ -66,17 +66,26 @@ export default function Dashboard() {
         </div>
       )}
 
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="p-4 border rounded hover:shadow-sm">
-          <h3 className="font-medium">Users</h3>
-          <p className="text-sm text-gray-600 mt-2">Placeholder: list/manage users here.</p>
+          <h3 className="font-medium">Products</h3>
+          <p className="text-sm text-gray-600 mt-2">Add, edit and manage your product catalog (variants, images, inventory).</p>
           <div className="mt-3">
-            <button className="px-3 py-2 bg-indigo-600 text-white rounded text-sm">Manage users</button>
+            <a href="/dashabord/products" className="px-3 py-2 bg-indigo-600 text-white rounded text-sm">Manage products</a>
           </div>
         </div>
+
+        <div className="p-4 border rounded hover:shadow-sm">
+          <h3 className="font-medium">Orders</h3>
+          <p className="text-sm text-gray-600 mt-2">View and manage incoming orders and shipments.</p>
+          <div className="mt-3">
+            <button className="px-3 py-2 border rounded text-sm">Manage orders</button>
+          </div>
+        </div>
+
         <div className="p-4 border rounded hover:shadow-sm">
           <h3 className="font-medium">Site settings</h3>
-          <p className="text-sm text-gray-600 mt-2">Placeholder: admin controls and analytics.</p>
+          <p className="text-sm text-gray-600 mt-2">Admin controls and analytics.</p>
           <div className="mt-3">
             <button className="px-3 py-2 border rounded text-sm">Open settings</button>
           </div>

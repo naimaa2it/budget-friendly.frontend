@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useUser } from '@/components/context/UserContext';
 
-function renderTree(nodes, onEdit, depth = 0) {
+function renderTree(nodes, onEdit, onDelete, depth = 0) {
   return nodes.map(n => (
     <div key={n._id} className="border p-3 rounded mb-2 ml-" style={{ marginLeft: depth * 12 }}>
       <div className="flex justify-between items-center">
@@ -13,10 +13,13 @@ function renderTree(nodes, onEdit, depth = 0) {
         </div>
         <div className="flex gap-2">
           <a className="px-2 py-1 border rounded text-sm" href={`/dashabord/categories/${n._id}`}>Edit</a>
+          {onDelete && (
+            <button onClick={() => onDelete(n._id)} className="px-2 py-1 border rounded text-sm text-red-600">Delete</button>
+          )}
         </div>
       </div>
       {n.children && n.children.length > 0 && (
-        <div className="mt-3">{renderTree(n.children, onEdit, depth + 1)}</div>
+        <div className="mt-3">{renderTree(n.children, onEdit, onDelete, depth + 1)}</div>
       )}
     </div>
   ));
@@ -29,7 +32,6 @@ export default function CategoriesList() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => { if (!user) refreshUser(); }, [user, refreshUser]);
-
   const fetchCategories = async () => {
     setLoading(true);
     try {
@@ -44,7 +46,21 @@ export default function CategoriesList() {
     }
   };
 
+  // load once on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { const load = () => { fetchCategories(); }; load(); }, []);
+
+  const handleDelete = async (id) => {
+    if (!confirm('Delete this category? This will fail if category has children or products.')) return;
+    try {
+      const resp = await fetch(`${API}/api/admin/categories/${id}`, { method: 'DELETE', credentials: 'include' });
+      const body = await resp.json();
+      if (!resp.ok) throw new Error(body.error || 'Delete failed');
+      fetchCategories();
+    } catch (err) {
+      alert(err.message || 'Delete failed');
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto bg-white p-6 rounded shadow">
@@ -60,7 +76,7 @@ export default function CategoriesList() {
           {items.length === 0 ? (
             <div className="text-center text-gray-500">No categories defined yet.</div>
           ) : (
-            <div>{renderTree(items)}</div>
+            <div>{renderTree(items, null, user?.role === 'admin' ? handleDelete : undefined)}</div>
           )}
         </div>
       )}

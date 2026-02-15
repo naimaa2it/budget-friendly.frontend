@@ -15,7 +15,7 @@ const nav = [
   { key: 'media', label: 'Media', href: '/dashabord/media', icon: 'M4 5h16v14H4z M8 9l2 2 3-3 5 5' },
   { key: 'discounts', label: 'Discounts', href: '/dashabord/discounts', icon: 'M12 2l4 4-8 8-4-4 8-8z' },
   { key: 'pages', label: 'Pages', href: '/dashabord/pages', icon: 'M4 4h16v16H4z' },
-  { key: 'authorized', label: 'Authorized', href: '/dashabord/authorized', icon: 'M12 8a4 4 0 100 8 4 4 0 000-8z' },
+  { key: 'authorized', label: 'Authorized Persons', href: '/dashabord/authorized', icon: 'M12 8a4 4 0 100 8 4 4 0 000-8z' },
   { key: 'settings', label: 'Settings', href: '/dashabord/settings', icon: 'M12 8a4 4 0 100 8 4 4 0 000-8z' }
 ];
 

@@ -4,6 +4,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import ProductCard from './ProductCard';
 import CategoryFilters from './CategoryFilters';
 import Link from 'next/link';
+import { useUser } from '@/components/context/UserContext';
+import { FaTrash } from 'react-icons/fa';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -84,6 +86,22 @@ export default function CategoryPageClient({ slug }) {
     setFiltered(result);
   };
 
+  const { user } = useUser();
+
+  const deleteProduct = async (id) => {
+    if (!confirm('Are you sure you want to archive this product?')) return;
+    try {
+      const r = await fetch(`${API}/api/admin/products/${id}`, { method: 'DELETE', credentials: 'include' });
+      const body = await r.json();
+      if (!r.ok) return alert(body.error || 'Delete failed');
+      setProducts(prev => prev.filter(x => x._id !== id));
+      setFiltered(prev => prev.filter(x => x._id !== id));
+    } catch (err) {
+      console.error(err);
+      alert('Delete failed');
+    }
+  }; 
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Breadcrumb & header */}
@@ -99,16 +117,40 @@ export default function CategoryPageClient({ slug }) {
           {subcategories.map((sub) => {
             const sslug = (sub.name || '').replace(/\s+/g, '-');
             return (
-              <Link key={sub._id} href={`/category/${sslug}`} className="flex flex-col items-center group cursor-pointer w-36">
-                <div className="w-28 h-28 rounded-full bg-gray-50 border border-gray-100 shadow-md flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform">
-                  <img src={'/assets/placeholder.svg'} alt={sub.name} className="w-20 h-20 object-contain" />
-                </div>
-                <div className="mt-3 text-sm text-center font-medium text-gray-700">{sub.name}</div>
-              </Link>
+              <div key={sub._id} className="relative flex flex-col items-center w-36">
+                {user?.role === 'admin' && (
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation(); e.preventDefault();
+                      if (!confirm('Delete this subcategory?')) return;
+                      try {
+                        const r = await fetch(`${API}/api/admin/categories/${sub._id}`, { method: 'DELETE', credentials: 'include' });
+                        const body = await r.json();
+                        if (!r.ok) return alert(body.error || 'Delete failed');
+                        setSubcategories(prev => prev.filter(s => s._id !== sub._id));
+                      } catch (err) {
+                        console.error(err);
+                        alert('Delete failed');
+                      }
+                    }}
+                    className="absolute -top-2 -right-2 z-20 bg-white rounded-full p-1 shadow border border-gray-200 hover:bg-red-600 hover:text-white transition"
+                    aria-label="Delete subcategory"
+                  >
+                    <FaTrash className="w-4 h-4" />
+                  </button>
+                )}
+
+                <Link href={`/category/${sslug}`} className="flex flex-col items-center group cursor-pointer">
+                  <div className="w-28 h-28 rounded-full bg-gray-50 border border-gray-100 shadow-md flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform">
+                    <img src={'/assets/placeholder.svg'} alt={sub.name} className="w-20 h-20 object-contain" />
+                  </div>
+                  <div className="mt-3 text-sm text-center font-medium text-gray-700">{sub.name}</div>
+                </Link>
+              </div>
             );
           })}
         </div>
-      )}
+      )} 
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr,280px] gap-6">
         {/* Main product area */}
@@ -125,8 +167,8 @@ export default function CategoryPageClient({ slug }) {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {(showAll ? filtered : filtered.slice(0, 5)).map(p => (
-                <ProductCard key={p._id} product={p} />
-              ))}
+                <ProductCard key={p._id} product={p} onDelete={user?.role === 'admin' ? deleteProduct : undefined} />
+              ))} 
             </div>
           )}
 

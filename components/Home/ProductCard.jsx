@@ -1,9 +1,9 @@
 "use client";
 
 import React from 'react';
-import { FaEye, FaShoppingCart, FaHeart } from 'react-icons/fa';
+import { FaEye, FaShoppingCart, FaHeart, FaTrash } from 'react-icons/fa';
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, onDelete }) {
   const price = product.price || (product.variants && product.variants[0]?.price) || 0;
   const compareAt = product.compareAtPrice || (product.variants && product.variants[0]?.compareAtPrice) || null;
   const image = (product.images && product.images[0]?.url) || '/assets/placeholder.svg';
@@ -21,6 +21,15 @@ export default function ProductCard({ product }) {
         />
 
         <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          {onDelete && (
+            <button
+              onClick={(e) => { e.stopPropagation(); e.preventDefault(); if (!confirm('Are you sure you want to delete this product?')) return; onDelete(product._id || product.id); }}
+              className="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 hover:text-white transition-colors"
+              aria-label="Delete product"
+            >
+              <FaTrash className="w-4 h-4" />
+            </button>
+          )}
           <button className="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 hover:text-white transition-colors">
             <FaEye className="w-4 h-4" />
           </button>

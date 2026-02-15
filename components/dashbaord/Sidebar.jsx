@@ -14,13 +14,14 @@ const nav = [
   { key: 'media', label: 'Media', href: '/dashabord/media', icon: 'M4 5h16v14H4z M8 9l2 2 3-3 5 5' },
   { key: 'discounts', label: 'Discounts', href: '/dashabord/discounts', icon: 'M12 2l4 4-8 8-4-4 8-8z' },
   { key: 'pages', label: 'Pages', href: '/dashabord/pages', icon: 'M4 4h16v16H4z' },
+  { key: 'authorized', label: 'Authorized', href: '/dashabord/authorized', icon: 'M12 8a4 4 0 100 8 4 4 0 000-8z' },
   { key: 'settings', label: 'Settings', href: '/dashabord/settings', icon: 'M12 8a4 4 0 100 8 4 4 0 000-8z' }
 ];
 
 export default function Sidebar() {
   const pathname = usePathname() || '/dashabord';
   const router = useRouter();
-  const { refreshUser } = useUser();
+  const { user, refreshUser } = useUser();
 
   const handleSignOut = async () => {
     try {
@@ -40,6 +41,9 @@ export default function Sidebar() {
 
       <nav className="p-3 space-y-1">
         {nav.map(item => {
+          // only show the 'Authorized' admin-management link to admins
+          if (item.key === 'authorized' && user?.role !== 'admin') return null;
+
           const active = pathname === item.href || pathname.startsWith(item.href + '/');
           return (
             <Link key={item.key} href={item.href} className={`flex items-center gap-3 px-3 py-2 rounded text-sm ${active ? 'bg-pink-50 text-pink-700 font-medium' : 'text-gray-700 hover:bg-gray-50'}`}>

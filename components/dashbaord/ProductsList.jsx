@@ -45,10 +45,12 @@ export default function ProductsList() {
     load();
   }, [query, selectedMain, selectedSub, selectedChild]);
 
-  const handleDelete = async (id) => {
-    if (!confirm('Archive this product?')) return;
+  const handleDelete = async (id, force = false) => {
+    const msg = force ? 'Permanently delete this product? This cannot be undone.' : 'Archive this product?';
+    if (!confirm(msg)) return;
     try {
-      const resp = await fetch(`${API}/api/admin/products/${id}`, { method: 'DELETE', credentials: 'include' });
+      const url = `${API}/api/admin/products/${id}${force ? '?force=true' : ''}`;
+      const resp = await fetch(url, { method: 'DELETE', credentials: 'include' });
       const body = await resp.json();
       if (!resp.ok) throw new Error(body.error || 'Delete failed');
       fetchItems();
@@ -119,7 +121,8 @@ export default function ProductsList() {
                   <td className="py-3">
                     <div className="flex gap-2">
                       <a className="px-2 py-1 border rounded text-sm" href={`/dashabord/products/${p._id}`}>Edit</a>
-                      <button className="px-2 py-1 border rounded text-sm text-red-600" onClick={() => handleDelete(p._id)}>Archive</button>
+                      <button className="px-2 py-1 border rounded text-sm text-gray-700" onClick={() => handleDelete(p._id)}>Archive</button>
+                      <button className="px-2 py-1 border rounded text-sm text-white bg-red-600 hover:bg-red-700" onClick={() => handleDelete(p._id, true)}>Delete</button>
                     </div>
                   </td>
                 </tr>

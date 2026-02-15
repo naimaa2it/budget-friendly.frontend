@@ -1,5 +1,6 @@
+
+import CustomersList from '@/components/dashbaord/Customer/CustomersList';
 import React from 'react';
-import CustomersList from '@/components/dashbaord/CustomersList';
 
 export default function CustomersPage(){
   return <CustomersList />;

@@ -1,5 +1,6 @@
+import SettingsForm from '@/components/dashbaord/Setting/SettingsForm';
 import React from 'react';
-import SettingsForm from '@/components/dashbaord/SettingsForm';
+
 
 export default function SettingsPage(){
   return (

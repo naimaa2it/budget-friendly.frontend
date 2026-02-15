@@ -1,7 +1,8 @@
 "use client";
 
+import ProductEditor from '@/components/dashbaord/Product/ProductEditor';
 import React from 'react';
-import ProductEditor from '@/components/dashbaord/ProductEditor';
+
 
 export default function page({ params }) {
   const id = params.id || 'new';

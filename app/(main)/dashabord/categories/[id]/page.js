@@ -1,7 +1,8 @@
 "use client";
 
+import CategoryEditor from '@/components/dashbaord/Category/CategoryEditor';
 import React from 'react';
-import CategoryEditor from '@/components/dashbaord/CategoryEditor';
+
 
 export default function page({ params }) {
   const id = params.id || 'new';

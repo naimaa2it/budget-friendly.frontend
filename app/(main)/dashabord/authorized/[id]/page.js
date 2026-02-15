@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import AdminEditor from '@/components/dashbaord/AdminEditor';
+import AdminEditor from '@/components/dashbaord/Admin/AdminEditor';
 
 export default function page({ params }) {
   const id = params.id || 'new';

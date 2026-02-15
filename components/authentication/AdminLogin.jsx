@@ -2,8 +2,6 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth } from '@/lib/firebase';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, signOut } from 'firebase/auth';
 import { useUser } from '@/components/context/UserContext';
 
 export default function AdminLogin() {
@@ -39,14 +37,20 @@ export default function AdminLogin() {
     if (password.length < 6) return showMessage('Password must be at least 6 characters');
 
     setLoading(true);
-    let firebaseUser = null;
     try {
-      // Create in Firebase first (client-side)
-      const userCred = await createUserWithEmailAndPassword(auth, email, password);
-      firebaseUser = userCred.user;
-      await sendEmailVerification(firebaseUser);
+      // Check if email already exists as admin
+      const checkResp = await fetch(`${API}/api/admin/check-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const checkBody = await checkResp.json().catch(() => ({}));
+      if (!checkResp.ok || checkBody.exists) {
+        throw new Error(checkBody.error || 'This email is already registered as an admin.');
+      }
 
-      // Register in backend (admin) so admin record + hashed password is stored and adminSecret is validated server-side
+      // Register admin (NO Firebase account created for admin)
+      // Admin password is hashed on the backend, admin login uses email/password + admin secret
       const resp = await fetch(`${API}/api/admin/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -55,8 +59,6 @@ export default function AdminLogin() {
 
       const body = await resp.json().catch(() => ({}));
       if (!resp.ok) {
-        // rollback Firebase user if backend registration failed
-        try { await firebaseUser.delete(); } catch (err) { /* ignore */ }
         throw new Error(body.error || `Server responded ${resp.status}`);
       }
 
@@ -88,10 +90,7 @@ export default function AdminLogin() {
 
     setLoading(true);
     try {
-      // Sign-in with Firebase client (UI + password rules handled by Firebase)
-      await signInWithEmailAndPassword(auth, email, password);
-
-      // Then authenticate with backend (backend verifies adminSecret and issues cookie)
+      // Admin login: authenticate directly with backend (no Firebase)
       const resp = await fetch(`${API}/api/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -100,8 +99,6 @@ export default function AdminLogin() {
       });
       const body = await resp.json().catch(() => ({}));
       if (!resp.ok) {
-        // backend rejected login: sign out from Firebase to keep state consistent
-        try { await signOut(auth); } catch (err) { /* ignore */ }
         throw new Error(body.error || `Server responded ${resp.status}`);
       }
 
@@ -251,6 +248,7 @@ export default function AdminLogin() {
           <li>Account locks after 5 failed login attempts (30-minute lockout)</li>
           <li>Login attempts and IP addresses are logged</li>
           <li>Server validates the admin secret code on each registration/login</li>
+          <li>Same email can register as both user and admin (completely independent)</li>
         </ul>
       </div>
     </div>

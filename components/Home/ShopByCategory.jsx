@@ -53,7 +53,7 @@ export default function ShopByCategory() {
       name: category.name,
       image: assets.image || '/assets/placeholder.svg',
       icon: assets.icon || null,
-      link: `/products/c/${slug}`
+      link: `/category/${slug}`
     };
   });
   return (

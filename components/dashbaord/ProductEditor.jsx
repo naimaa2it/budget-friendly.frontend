@@ -15,15 +15,71 @@ export default function ProductEditor({ productId }) {
 
   useEffect(() => { if (!user) refreshUser(); }, [user, refreshUser]);
 
+  const [categories, setCategories] = useState([]);
+  const [selectedMain, setSelectedMain] = useState(null);
+  const [selectedSub, setSelectedSub] = useState(null);
+  const [selectedChild, setSelectedChild] = useState(null);
+
+  useEffect(() => {
+    // load categories tree for selects
+    fetch(`${API}/api/products/categories`).then(r => r.json()).then(b => {
+      setCategories(b.categories || []);
+    }).catch(() => setCategories([]));
+  }, [API]);
+
   useEffect(() => {
     if (!productId || productId === 'new') return;
     setLoading(true);
     fetch(`${API}/api/admin/products/${productId}`, { credentials: 'include' })
       .then(r => r.json())
-      .then(b => { if (b.product) setProduct(b.product); })
+      .then(async b => {
+        if (b.product) {
+          const p = b.product;
+          setProduct(p);
+          // try to set selected category from categoryId or category name
+          if (p.categoryId) {
+            // find path in categories
+            const findPath = (nodes, id, path = []) => {
+              for (const n of nodes) {
+                if (String(n._id) === String(id)) return [...path, n];
+                if (n.children && n.children.length) {
+                  const res = findPath(n.children, id, [...path, n]);
+                  if (res) return res;
+                }
+              }
+              return null;
+            };
+            const path = findPath(categories, p.categoryId);
+            if (path) {
+              setSelectedMain(path[0] || null);
+              setSelectedSub(path[1] || null);
+              setSelectedChild(path[2] || null);
+            }
+          } else if (p.category) {
+            // try match by name
+            const matchByName = (nodes, name) => {
+              for (const n of nodes) {
+                if (n.name === name) return [n];
+                if (n.children && n.children.length) {
+                  const sub = matchByName(n.children, name);
+                  if (sub) return [n, ...sub];
+                }
+              }
+              return null;
+            };
+            const path = matchByName(categories, p.category);
+            if (path) {
+              setSelectedMain(path[0] || null);
+              setSelectedSub(path[1] || null);
+              setSelectedChild(path[2] || null);
+              if (!p.categoryId && path[path.length-1]) setProduct(prod => ({ ...prod, categoryId: path[path.length-1]._id }));
+            }
+          }
+        }
+      })
       .catch(err => console.error(err))
       .finally(() => setLoading(false));
-  }, [productId, API]);
+  }, [productId, API, categories]);
 
   const handleFile = async (file) => {
     try {
@@ -95,26 +151,41 @@ export default function ProductEditor({ productId }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium">Category</label>
-            <select value={product.category || ''} onChange={e => {
-                const newCat = e.target.value;
-                setProduct(p => ({
-                  ...p,
-                  category: newCat,
-                  // initialize specs for new category if not present
-                  specs: p.specs || (newCat === 'Electronics' ? {
-                    brand: '', model: '', battery: '', warranty: '', storage: '', ram: '', dimensions: '', weight: ''
-                  } : (newCat === 'Ladies' || newCat === 'Gents' ? {
-                    brand: '', material: '', care: '', fit: '', sizes: [], measurements: ''
-                  } : {}))
-                }));
-              }} className="w-full border px-3 py-2 rounded">
-              <option value="">Select category</option>
-              <option value="Electronics">Electronics & Gadgets</option>
-              <option value="Ladies">Ladies (Clothing & Accessories)</option>
-              <option value="Gents">Gents (Clothing & Accessories)</option>
-              <option value="Accessories">Accessories / Other</option>
-            </select>
+            <label className="block text-sm font-medium">Category (Main → Sub → Sub‑sub)</label>
+            <div className="flex gap-2 mt-2">
+              <select value={selectedMain?._id || ''} onChange={e => {
+                const id = e.target.value;
+                const main = categories.find(c => String(c._id) === id) || null;
+                setSelectedMain(main);
+                setSelectedSub(null);
+                setSelectedChild(null);
+                setProduct(p => ({ ...p, categoryId: main?._id || undefined, category: main?._id ? main.name : '' }));
+              }} className="border px-3 py-2 rounded w-1/3">
+                <option value="">Main category</option>
+                {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+              </select>
+
+              <select value={selectedSub?._id || ''} onChange={e => {
+                const id = e.target.value;
+                const sub = (selectedMain?.children || []).find(c => String(c._id) === id) || null;
+                setSelectedSub(sub);
+                setSelectedChild(null);
+                setProduct(p => ({ ...p, categoryId: sub?._id || selectedMain?._id || undefined, category: sub?._id ? sub.name : (selectedMain?selectedMain.name:'') }));
+              }} className="border px-3 py-2 rounded w-1/3">
+                <option value="">Sub category</option>
+                {(selectedMain?.children || []).map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+              </select>
+
+              <select value={selectedChild?._id || ''} onChange={e => {
+                const id = e.target.value;
+                const child = (selectedSub?.children || []).find(c => String(c._id) === id) || null;
+                setSelectedChild(child);
+                setProduct(p => ({ ...p, categoryId: child?._id || selectedSub?._id || selectedMain?._id || undefined, category: child?._id ? child.name : (selectedSub?selectedSub.name:(selectedMain?selectedMain.name:'')) }));
+              }} className="border px-3 py-2 rounded w-1/3">
+                <option value="">Sub‑sub category</option>
+                {(selectedSub?.children || []).map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+              </select>
+            </div>
           </div>
 
           {/* Category-specific info boxes */}

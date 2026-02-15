@@ -12,11 +12,17 @@ export default function ProductsList() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [selectedMain, setSelectedMain] = useState(null);
+  const [selectedSub, setSelectedSub] = useState(null);
+  const [selectedChild, setSelectedChild] = useState(null);
 
   const fetchItems = async () => {
     setLoading(true);
     try {
-      const resp = await fetch(`${API}/api/admin/products?limit=50&q=${encodeURIComponent(query || '')}`, { credentials: 'include' });
+      const catId = selectedChild?._id || selectedSub?._id || selectedMain?._id || '';
+      const q = `${API}/api/admin/products?limit=50&q=${encodeURIComponent(query || '')}${catId ? `&categoryId=${encodeURIComponent(catId)}` : ''}`;
+      const resp = await fetch(q, { credentials: 'include' });
       const body = await resp.json();
       if (resp.ok) setItems(body.items || []);
       else throw new Error(body.error || 'Failed to load');
@@ -30,9 +36,14 @@ export default function ProductsList() {
   useEffect(() => { if (!user) refreshUser(); }, [user, refreshUser]);
 
   useEffect(() => {
+    // load categories for filter
+    fetch(`${API}/api/products/categories`).then(r => r.json()).then(b => setCategories(b.categories || [])).catch(() => setCategories([]));
+  }, [API]);
+
+  useEffect(() => {
     const load = () => { fetchItems(); };
     load();
-  }, [query]);
+  }, [query, selectedMain, selectedSub, selectedChild]);
 
   const handleDelete = async (id) => {
     if (!confirm('Archive this product?')) return;
@@ -51,6 +62,21 @@ export default function ProductsList() {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">Products</h2>
         <div className="flex items-center gap-2">
+          <select value={selectedMain?._id || ''} onChange={e => { const id = e.target.value; const main = categories.find(c=>String(c._id)===id)||null; setSelectedMain(main); setSelectedSub(null); setSelectedChild(null); }} className="border px-3 py-2 rounded">
+            <option value="">All categories</option>
+            {categories.map(c=> <option key={c._id} value={c._id}>{c.name}</option>)}
+          </select>
+
+          <select value={selectedSub?._id || ''} onChange={e => { const id = e.target.value; const sub = (selectedMain?.children||[]).find(c=>String(c._id)===id)||null; setSelectedSub(sub); setSelectedChild(null); }} className="border px-3 py-2 rounded">
+            <option value="">Sub category</option>
+            {(selectedMain?.children||[]).map(c=> <option key={c._id} value={c._id}>{c.name}</option>)}
+          </select>
+
+          <select value={selectedChild?._id || ''} onChange={e => { const id = e.target.value; const child = (selectedSub?.children||[]).find(c=>String(c._id)===id)||null; setSelectedChild(child); }} className="border px-3 py-2 rounded">
+            <option value="">Sub‑sub category</option>
+            {(selectedSub?.children||[]).map(c=> <option key={c._id} value={c._id}>{c.name}</option>)}
+          </select>
+
           <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search products" className="border px-3 py-2 rounded" />
           <a href="/dashabord/products/new" className="px-3 py-2 bg-green-600 text-white rounded text-sm">Create product</a>
         </div>

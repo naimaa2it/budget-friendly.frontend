@@ -8,6 +8,7 @@ import { useUser } from '@/components/context/UserContext';
 const nav = [
   { key: 'overview', label: 'Overview', href: '/dashabord', icon: 'M3 12h18M3 6h18M3 18h18' },
   { key: 'products', label: 'Products', href: '/dashabord/products', icon: 'M3 7h18v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7z' },
+  { key: 'categories', label: 'Categories', href: '/dashabord/categories', icon: 'M3 6h18M3 12h18M3 18h18' },
   { key: 'orders', label: 'Orders', href: '/dashabord/orders', icon: 'M3 3h18v4H3V3z M3 11h18v10H3V11z' },
   { key: 'customers', label: 'Customers', href: '/dashabord/customers', icon: 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z M4 20c0-2.21 3.58-4 8-4s8 1.79 8 4' },
   { key: 'blog', label: 'Blog / Content', href: '/dashabord/blog', icon: 'M4 7h16M4 11h16M8 15h8' },

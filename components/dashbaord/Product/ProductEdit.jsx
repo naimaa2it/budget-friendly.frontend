@@ -283,7 +283,7 @@ export default function ProductEdit({ productId }) {
   return (
     <div className="max-w-4xl mx-auto mt-6 bg-white p-6 rounded shadow">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold">Edit product</h2>
+        <h2 className="text-2xl font-semibold text-blue-600">Edit product</h2>
       </div>
 
       {loading ? <div className="text-center py-12">Loading…</div> : (

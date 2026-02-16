@@ -170,6 +170,17 @@ export default function ProductCreate() {
             <textarea value={product.description || ''} onChange={e => setProduct(p=>({...p, description: e.target.value}))} className="w-full border px-3 py-2 rounded h-28" />
           </div>
 
+          <div className="mt-2">
+            <label className="block text-sm font-medium">Status</label>
+            <div className="text-xs text-gray-500 mt-1">Choose the product status (labels map to existing backend values).</div>
+            <select value={product.status} onChange={e => setProduct(p=>({...p, status: e.target.value}))} className="w-48 border px-3 py-2 rounded mt-2">
+              <option value="draft">Draft</option>
+              <option value="draft">Unpublish</option>
+              <option value="archived">Archive</option>
+              <option value="published">Publish</option>
+            </select>
+          </div>
+
           {/* Category selector (Main → Sub → Child) */}
           <div className="grid grid-cols-3 gap-3">
             <div>

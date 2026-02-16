@@ -40,16 +40,66 @@ export default function CategoryCreate({ categoryId = 'new' }) {
   }, [API]);
 
   useEffect(() => {
+    // load single-category data for edit. prefer admin endpoint (contains full fields),
+    // but fall back to the public category tree if admin call fails or doesn't contain the node.
     if (!categoryId || categoryId === 'new') return;
-    setLoading(true);
-    fetch(`${API}/api/admin/categories`, { credentials: 'include' })
-      .then(r => r.json())
-      .then(b => {
-        const found = (b.items || []).find(x => String(x._id) === categoryId);
-        if (found) setCategory({ name: found.name, parentId: found.parent || '', order: found.order || 0, isActive: found.isActive, images: found.images || [] });
-      })
-      .catch(err => console.error(err))
-      .finally(() => setLoading(false));
+
+    const load = async () => {
+      setLoading(true);
+      try {
+        // try admin list (requires admin role)
+        try {
+          const r = await fetch(`${API}/api/admin/categories`, { credentials: 'include' });
+          if (r.ok) {
+            const b = await r.json();
+            const found = (b.items || []).find(x => String(x._id) === categoryId);
+            if (found) {
+              setCategory({ name: found.name, parentId: found.parent || '', order: found.order || 0, isActive: found.isActive, images: found.images || [] });
+              setLoading(false);
+              return;
+            }
+          }
+        } catch (e) {
+          // admin fetch failed (e.g. not authorized) — we'll fall back below
+          console.debug('Admin categories fetch failed, will try public tree:', e?.message || e);
+        }
+
+        // fallback: public categories tree
+        try {
+          const r2 = await fetch(`${API}/api/products/categories`);
+          if (r2.ok) {
+            const j = await r2.json();
+            const find = (nodes, id) => {
+              for (const n of (nodes || [])) {
+                if (String(n._id) === String(id)) return n;
+                if (n.children && n.children.length) {
+                  const res = find(n.children, id);
+                  if (res) return res;
+                }
+              }
+              return null;
+            };
+            const node = find(j.categories || [], categoryId);
+            if (node) {
+              setCategory({ name: node.name || '', parentId: node.parent || '', order: node.order || 0, isActive: true, images: node.images || [] });
+              setLoading(false);
+              return;
+            }
+          }
+        } catch (e2) {
+          console.debug('Public categories fetch failed', e2?.message || e2);
+        }
+
+        // not found — keep defaults
+        console.warn('Category not found for id:', categoryId);
+      } catch (topErr) {
+        console.error('Error loading category for edit:', topErr);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
   }, [categoryId, API]);
 
   // --- subcategory helpers ---
@@ -171,7 +221,12 @@ export default function CategoryCreate({ categoryId = 'new' }) {
       const resp = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error || 'Save failed');
-      router.push('/dashabord/categories');
+      // If we created a new category, go directly to its edit page so the admin can add subcategories/images immediately.
+      if (method === 'POST' && data && data.category && data.category._id) {
+        router.push(`/dashabord/categories/${data.category._id}`);
+      } else {
+        router.push('/dashabord/categories');
+      }
     } catch (err) {
       alert(err.message || 'Save failed');
     } finally {

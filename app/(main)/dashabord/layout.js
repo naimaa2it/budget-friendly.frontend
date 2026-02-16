@@ -1,11 +1,17 @@
 "use client";
 
 import React, { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/dashbaord/Sidebar';
 import { useUser } from '@/components/context/UserContext';
 
 export default function DashboardLayout({ children }) {
   const { user, refreshUser } = useUser();
+  const router = useRouter();
+  const goBack = () => {
+    if (typeof window !== 'undefined' && window.history.length > 1) router.back();
+    else router.push('/dashabord');
+  };
 
   useEffect(() => { if (!user) refreshUser(); }, [user, refreshUser]);
 
@@ -23,7 +29,18 @@ export default function DashboardLayout({ children }) {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto grid grid-cols-[auto_1fr] gap-6">
         <Sidebar />
-        <main className="p-6">{children}</main>
+        <main className="p-6">
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <button type="button" onClick={goBack} className="inline-flex items-center gap-2 px-3 py-1 border rounded text-sm">
+                <span className="text-sm">←</span>
+                <span>Back</span>
+              </button>
+            </div>
+            <div>{/* breadcrumb / page-title slot (keeps layout stable) */}</div>
+          </div>
+          {children}
+        </main>
       </div>
     </div>
   );

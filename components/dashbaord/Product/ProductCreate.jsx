@@ -172,12 +172,10 @@ export default function ProductCreate() {
             <div>
               <label className="block text-sm font-medium">Price</label>
               <input type="number" value={product.price || 0} onChange={e => setProduct(p=>({...p, price: Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
-              <div className="text-xs text-gray-500 mt-1">What customers will pay (enter numbers only).</div>
             </div>
             <div>
               <label className="block text-sm font-medium">Offer price — Was price (optional)</label>
               <input type="number" value={product.compareAtPrice || 0} onChange={e => setProduct(p=>({...p, compareAtPrice: Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
-              <div className="text-xs text-gray-500 mt-1">Leave empty unless you want to show a crossed-out original price.</div>
             </div>
             <div>
               <label className="block text-sm font-medium">Stock quantity</label>
@@ -195,7 +193,6 @@ export default function ProductCreate() {
             <div>
               <label className="block text-sm font-medium">Currency</label>
               <input value={product.currency ?? ''} placeholder="USD" onChange={e => setProduct(p=>({...p, currency: e.target.value}))} className="w-full border px-3 py-2 rounded" />
-              <div className="text-xs text-gray-500 mt-1">Currency code (e.g. USD, INR). You can clear and type a different code.</div>
             </div>
             <div>
               <label className="block text-sm font-medium">Availability</label>
@@ -205,15 +202,13 @@ export default function ProductCreate() {
                 <option value="upcoming">Coming soon — not available yet</option>
                 <option value="out_of_stock">Out of stock — not available</option>
               </select>
-              <div className="text-xs text-gray-500 mt-1">Choose if customers can buy it now or need to wait.</div>
             </div>
           </div>
 
           {/* Colors, sizes & care — clearer labels */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium">Colors</label>
-              <div className="text-xs text-gray-500 mt-1">Add color options customers can choose from (name + swatch).</div>
+              <label className="block text-sm font-medium">Available Colors</label>
               <div className="space-y-2 mt-2">
                 {(product.colors || []).map((c, i) => (
                   <div key={i} className="flex gap-2 items-center">
@@ -229,7 +224,7 @@ export default function ProductCreate() {
 
             <div>
               <label className="block text-sm font-medium">Sizes</label>
-              <div className="text-xs text-gray-500 mt-1">Enter sizes separated by commas (e.g. S, M, L). These appear as options for customers.</div>
+              <div className="text-xs text-gray-500 mt-1">Enter sizes separated by commas (e.g. S, M, L).</div>
               <input value={(product.sizes||[]).join(', ')} onChange={e => { const arr = e.target.value.split(',').map(s=>s.trim()).filter(Boolean); setProduct(p=>({...p, sizes: arr, specs: {...(p.specs||{}), sizes: arr}})); }} className="w-full border px-3 py-2 rounded" />
 
               <label className="block text-sm font-medium mt-3">Care & instructions</label>
@@ -241,7 +236,7 @@ export default function ProductCreate() {
           {/* Images — uploaded to Cloudinary (admin upload endpoint) */}
           <div>
             <label className="block text-sm font-medium">Images</label>
-            <div className="text-xs text-gray-500 mt-1">Click to upload or drag files. Uploaded images are stored in Cloudinary and optimized automatically.</div>
+            <div className="text-xs text-gray-500 mt-1">Click to upload or drag files</div>
 
             <label className="mt-2 flex items-center gap-3 cursor-pointer border-2 border-dashed border-gray-200 rounded px-4 py-6 text-center">
               <input type="file" accept="image/*" multiple className="sr-only" onChange={e => Array.from(e.target.files || []).forEach(f => f && handleFile(f))} />

@@ -92,7 +92,6 @@ export default function ProductsList() {
             <thead className="text-gray-600">
               <tr>
                 <th className="py-2">Title</th>
-                <th className="py-2">Badges</th>
                 <th className="py-2">Price</th>
                 <th className="py-2">Inventory</th>
                 <th className="py-2">Status</th>
@@ -114,15 +113,6 @@ export default function ProductsList() {
                         <div className="font-medium">{p.title}</div>
                         <div className="text-xs text-gray-500">{p.category} · {p.tags?.slice(0,3).join(', ')}</div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="py-3">
-                    <div className="flex gap-2 text-xs">
-                      {p.featured && <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded">Featured</span>}
-                      {p.flashSale && <span className="px-2 py-1 bg-red-50 text-red-700 rounded">Flash</span>}
-                      {p.clearance && <span className="px-2 py-1 bg-gray-50 text-gray-700 rounded">Clearance</span>}
-                      {p.coupon && <span className="px-2 py-1 bg-yellow-50 text-yellow-700 rounded">Coupon</span>}
-                      {(!p.featured && !p.flashSale && !p.clearance && !p.coupon) && <span className="text-xs text-gray-400">—</span>}
                     </div>
                   </td>
                   <td className="py-3">{p.price ? `₹${p.price}` : p.variants?.[0]?.price ? `₹${p.variants[0].price}` : '-'}</td>

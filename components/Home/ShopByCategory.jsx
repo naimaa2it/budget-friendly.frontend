@@ -49,8 +49,8 @@ export default function ShopByCategory() {
         const res = await fetch(`${API}/api/products/categories`);
         const json = await res.json();
         if (!mounted) return;
-        // API returns tree: { categories: [...] } — take top-level nodes
-        setCategories((json.categories || []).map(c => ({ _id: c._id, name: c.name })));
+        // API returns tree: { categories: [...] } — take top-level nodes and prefer uploaded image when available
+        setCategories((json.categories || []).map(c => ({ _id: c._id, name: c.name, slug: c.slug, image: (c.images && c.images[0] && c.images[0].url) ? c.images[0].url : undefined })));
       } catch (err) {
         console.error('Failed to fetch categories', err);
       } finally {
@@ -62,10 +62,11 @@ export default function ShopByCategory() {
 
   const rendered = (categories || []).map((category) => {
     const assets = categoryAssets[category.name] || {};
-    const slug = (category.name || '').replace(/\s+/g, '-');
+    const slug = (category.slug || (category.name || '').replace(/\s+/g, '-'));
+    const image = category.image || assets.image || '/assets/placeholder.svg';
     return {
       name: category.name,
-      image: assets.image || '/assets/placeholder.svg',
+      image,
       icon: assets.icon || null,
       link: `/category/${slug}`,
       _id: category._id

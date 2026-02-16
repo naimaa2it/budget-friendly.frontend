@@ -106,9 +106,16 @@ export default function CategoryPageClient({ slug }) {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Breadcrumb & header */}
       <div className="text-sm text-gray-500 mb-4">Home &gt; Category &gt; <span className="text-gray-900">{category?.name || slug}</span></div>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">{category?.name || slug}</h1>
-        <p className="text-gray-600 mt-2">{category?.description || `Products for ${category?.name || slug}.`}</p>
+      <div className="mb-6 flex items-start gap-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">{category?.name || slug}</h1>
+          <p className="text-gray-600 mt-2">{category?.description || `Products for ${category?.name || slug}.`}</p>
+        </div>
+        {category?.images && category.images[0] && (
+          <div className="w-28 h-28 rounded-lg overflow-hidden border bg-gray-50">
+            <img src={category.images[0].url} alt={category.name} className="w-full h-full object-cover" />
+          </div>
+        )}
       </div>
 
       {/* Subcategory circles */}
@@ -142,7 +149,7 @@ export default function CategoryPageClient({ slug }) {
 
                 <Link href={`/category/${sslug}`} className="flex flex-col items-center group cursor-pointer">
                   <div className="w-28 h-28 rounded-full bg-gray-50 border border-gray-100 shadow-md flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform">
-                    <img src={'/assets/placeholder.svg'} alt={sub.name} className="w-20 h-20 object-contain" />
+                    <img src={(sub.images && sub.images[0] && sub.images[0].url) ? sub.images[0].url : '/assets/placeholder.svg'} alt={sub.name} className="w-20 h-20 object-contain" />
                   </div>
                   <div className="mt-3 text-sm text-center font-medium text-gray-700">{sub.name}</div>
                 </Link>

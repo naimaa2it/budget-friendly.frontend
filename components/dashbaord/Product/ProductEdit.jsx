@@ -180,6 +180,7 @@ export default function ProductEdit({ productId }) {
 
   const onAddVariant = () => setProduct(p => ({ ...p, variants: [...(p.variants||[]), { title: '', sku: '', price: 0, inventory: 0, attributes: {} }] }));
   const onRemoveVariant = (idx) => setProduct(p => ({ ...p, variants: p.variants.filter((_,i)=>i!==idx) }));
+  const onChangeVariant = (idx, patch) => setProduct(p => { const arr = [...(p.variants||[])]; arr[idx] = { ...(arr[idx]||{}), ...patch }; return { ...p, variants: arr }; });
 
   const recalcReviews = (reviews) => {
     const list = reviews || [];
@@ -240,6 +241,33 @@ export default function ProductEdit({ productId }) {
             <textarea value={product.description || ''} onChange={e => setProduct(p=>({...p, description: e.target.value}))} className="w-full border px-3 py-2 rounded h-28" />
           </div>
 
+          {/* Category selector (Main → Sub → Child) */}
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="block text-sm font-medium">Category</label>
+              <select value={selectedMain?._id || ''} onChange={e => { const id = e.target.value; const main = categories.find(c=>String(c._id)===id)||null; setSelectedMain(main); setSelectedSub(null); setSelectedChild(null); setProduct(p=>({ ...p, categoryId: id || undefined, category: main?.name || '' })); }} className="w-full border px-3 py-2 rounded">
+                <option value="">Choose category</option>
+                {categories.map(c=> <option key={c._id} value={c._id}>{c.name}</option>)}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium">Sub category</label>
+              <select value={selectedSub?._id || ''} onChange={e => { const id = e.target.value; const sub = (selectedMain?.children||[]).find(c=>String(c._id)===id)||null; setSelectedSub(sub); setSelectedChild(null); setProduct(p=>({ ...p, categoryId: id || p.categoryId })); }} className="w-full border px-3 py-2 rounded">
+                <option value="">Sub category</option>
+                {(selectedMain?.children||[]).map(c=> <option key={c._id} value={c._id}>{c.name}</option>)}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium">Sub‑sub category</label>
+              <select value={selectedChild?._id || ''} onChange={e => { const id = e.target.value; const child = (selectedSub?.children||[]).find(c=>String(c._id)===id)||null; setSelectedChild(child); setProduct(p=>({ ...p, categoryId: id || p.categoryId })); }} className="w-full border px-3 py-2 rounded">
+                <option value="">Sub‑sub category</option>
+                {(selectedSub?.children||[]).map(c=> <option key={c._id} value={c._id}>{c.name}</option>)}
+              </select>
+            </div>
+          </div>
+
           {/* Pricing / inventory — simpler labels + help text */}
           <div className="grid grid-cols-3 gap-3">
             <div>
@@ -256,6 +284,32 @@ export default function ProductEdit({ productId }) {
               <label className="block text-sm font-medium">Stock quantity</label>
               <input type="number" value={product.inventory || 0} onChange={e => setProduct(p=>({...p, inventory: Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
               <div className="text-xs text-gray-500 mt-1">How many units are available to sell.</div>
+            </div>
+          </div>
+
+          {/* Variants editor (title, sku, price, inventory) */}
+          <div className="mt-4 border rounded p-3 bg-white">
+            <div className="flex justify-between items-center mb-3">
+              <div className="text-sm font-medium">Variants</div>
+              <button type="button" onClick={onAddVariant} className="text-sm px-3 py-1 bg-slate-100 rounded">+ Add variant</button>
+            </div>
+
+            {(product.variants || []).length === 0 && (
+              <div className="text-sm text-slate-500">No variants yet — add variant if product has size/color/other variations.</div>
+            )}
+
+            <div className="space-y-3">
+              {(product.variants || []).map((v, idx) => (
+                <div key={idx} className="grid grid-cols-5 gap-2 items-center border p-2 rounded">
+                  <input placeholder="Label (e.g. Red - L)" value={v.title || ''} onChange={e => onChangeVariant(idx, { title: e.target.value })} className="col-span-2 border px-2 py-1 rounded" />
+                  <input placeholder="SKU" value={v.sku || ''} onChange={e => onChangeVariant(idx, { sku: e.target.value })} className="border px-2 py-1 rounded" />
+                  <input placeholder="Price" value={v.price || ''} onChange={e => onChangeVariant(idx, { price: e.target.value })} className="border px-2 py-1 rounded" />
+                  <div className="flex gap-2 items-center">
+                    <input placeholder="Qty" value={v.inventory || ''} onChange={e => onChangeVariant(idx, { inventory: e.target.value })} className="w-16 border px-2 py-1 rounded" />
+                    <button type="button" onClick={() => onRemoveVariant(idx)} className="text-sm text-red-600">Remove</button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 

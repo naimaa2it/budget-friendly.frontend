@@ -43,7 +43,9 @@ export default function ProductCreate() {
     featured: false,
     coupon: false,
     flashSale: false,
-    clearance: false
+    clearance: false,
+    // admin-controlled badges (select multiple)
+    badges: []
   });
 
   const [loading, setLoading] = useState(false);
@@ -233,6 +235,22 @@ export default function ProductCreate() {
             </div>
           </div>
 
+ <div>
+            <label className="block text-sm font-medium">Highlights (short facts)</label>
+            <div className="text-xs text-gray-500 mt-1">Short bullets shown near the product title (e.g. Lightweight, 2-year warranty).</div>
+            <div className="space-y-2 mt-2">
+              {(product.keyAttributes || []).map((a, i) => (
+                <div key={i} className="flex gap-2 items-center">
+                  <input value={a.label || ''} onChange={e => setProduct(p=>{ const arr = [...(p.keyAttributes||[])]; arr[i] = { ...(arr[i]||{}), label: e.target.value }; return { ...p, keyAttributes: arr }; })} placeholder="Label (e.g. Weight)" className="border px-2 py-1 rounded w-40" />
+                  <input value={a.value || ''} onChange={e => setProduct(p=>{ const arr = [...(p.keyAttributes||[])]; arr[i] = { ...(arr[i]||{}), value: e.target.value }; return { ...p, keyAttributes: arr }; })} placeholder="Value (e.g. 200g)" className="border px-2 py-1 rounded flex-1" />
+                  <button onClick={() => setProduct(p=>({...p, keyAttributes: p.keyAttributes.filter((_,idx)=>idx!==i)}))} className="px-2 py-1 border rounded text-sm text-red-600">Remove</button>
+                </div>
+              ))}
+              <button onClick={() => setProduct(p=>({...p, keyAttributes: [...(p.keyAttributes||[]), { label: '', value: '' }]}))} className="px-2 py-1 border rounded text-sm mt-2">Add highlight</button>
+            </div>
+          </div>
+          
+
           {/* Images — uploaded to Cloudinary (admin upload endpoint) */}
           <div>
             <label className="block text-sm font-medium">Images</label>
@@ -268,32 +286,34 @@ export default function ProductCreate() {
               <input type="number" value={product.rewardPoints || 0} onChange={e => setProduct(p=>({...p, rewardPoints: Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
               <div className="text-xs text-gray-500 mt-1">Points customers earn for buying this product.</div>
             </div>
+
             <div>
               <label className="block text-sm font-medium">Sold last 30 days</label>
               <input type="number" value={product.monthlySold || 0} onChange={e => setProduct(p=>({...p, monthlySold: Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
               <div className="text-xs text-gray-500 mt-1">Use this to show popularity badges (e.g. “1k+ sold”).</div>
             </div>
-            <div>
-              <label className="block text-sm font-medium">Sales badge (auto)</label>
-              <div className="w-full border px-3 py-2 rounded bg-gray-50">{product.monthlySold >= 1000000 ? Math.round((product.monthlySold/1000000)*10)/10 + 'M+' : product.monthlySold >= 1000 ? Math.round((product.monthlySold/1000)*10)/10 + 'k+' : String(product.monthlySold || 0)}</div>
-              <div className="text-xs text-gray-500 mt-1">This is formatted for display and cannot be edited.</div>
-            </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium">Highlights (short facts)</label>
-            <div className="text-xs text-gray-500 mt-1">Short bullets shown near the product title (e.g. Lightweight, 2-year warranty).</div>
-            <div className="space-y-2 mt-2">
-              {(product.keyAttributes || []).map((a, i) => (
-                <div key={i} className="flex gap-2 items-center">
-                  <input value={a.label || ''} onChange={e => setProduct(p=>{ const arr = [...(p.keyAttributes||[])]; arr[i] = { ...(arr[i]||{}), label: e.target.value }; return { ...p, keyAttributes: arr }; })} placeholder="Label (e.g. Weight)" className="border px-2 py-1 rounded w-40" />
-                  <input value={a.value || ''} onChange={e => setProduct(p=>{ const arr = [...(p.keyAttributes||[])]; arr[i] = { ...(arr[i]||{}), value: e.target.value }; return { ...p, keyAttributes: arr }; })} placeholder="Value (e.g. 200g)" className="border px-2 py-1 rounded flex-1" />
-                  <button onClick={() => setProduct(p=>({...p, keyAttributes: p.keyAttributes.filter((_,idx)=>idx!==i)}))} className="px-2 py-1 border rounded text-sm text-red-600">Remove</button>
-                </div>
-              ))}
-              <button onClick={() => setProduct(p=>({...p, keyAttributes: [...(p.keyAttributes||[]), { label: '', value: '' }]}))} className="px-2 py-1 border rounded text-sm mt-2">Add highlight</button>
+            <div>
+              <label className="block text-sm font-medium">Badges</label>
+              <div className="text-xs text-gray-500 mt-1">Pick one or more badges to display on the storefront (multiple selection allowed).</div>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {[
+                  { key: 'best_seller', label: 'Best seller' },
+                  { key: 'hot', label: 'Hot' },
+                  { key: 'new_arrival', label: 'New arrival' },
+                  { key: 'trending', label: 'Trending' },
+                  { key: 'limited', label: 'Limited edition' }
+                ].map(b => (
+                  <label key={b.key} className={`inline-flex items-center gap-2 border px-3 py-1 rounded text-sm cursor-pointer ${ (product.badges||[]).includes(b.key) ? 'bg-indigo-50 border-indigo-200' : 'bg-white'}`}>
+                    <input type="checkbox" checked={(product.badges||[]).includes(b.key)} onChange={() => setProduct(p => ({ ...p, badges: (p.badges||[]).includes(b.key) ? p.badges.filter(x=>x!==b.key) : [...(p.badges||[]), b.key] }))} />
+                    {b.label}
+                  </label>
+                ))}
+              </div>
             </div>
-          </div>
+          </div> 
+
+         
 
           <div>
             <label className="block text-sm font-medium">Customization</label>

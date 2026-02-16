@@ -43,7 +43,9 @@ export default function ProductEdit({ productId }) {
     featured: false,
     coupon: false,
     flashSale: false,
-    clearance: false
+    clearance: false,
+    // admin-controlled badges
+    badges: []
   });
 
   const [loading, setLoading] = useState(false);
@@ -94,6 +96,8 @@ export default function ProductEdit({ productId }) {
           p.coupon = !!p.coupon;
           p.flashSale = !!p.flashSale;
           p.clearance = !!p.clearance;
+          // badges (admin)
+          p.badges = p.badges || [];
 
           setProduct(p);
 
@@ -342,17 +346,32 @@ export default function ProductEdit({ productId }) {
               <input type="number" value={product.rewardPoints || 0} onChange={e => setProduct(p=>({...p, rewardPoints: Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
               <div className="text-xs text-gray-500 mt-1">Points customers earn for buying this product.</div>
             </div>
+
             <div>
               <label className="block text-sm font-medium">Sold last 30 days</label>
               <input type="number" value={product.monthlySold || 0} onChange={e => setProduct(p=>({...p, monthlySold: Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
               <div className="text-xs text-gray-500 mt-1">Use this to show popularity badges (e.g. “1k+ sold”).</div>
             </div>
+
             <div>
-              <label className="block text-sm font-medium">Sales badge (auto)</label>
-              <div className="w-full border px-3 py-2 rounded bg-gray-50">{product.monthlySold >= 1000000 ? Math.round((product.monthlySold/1000000)*10)/10 + 'M+' : product.monthlySold >= 1000 ? Math.round((product.monthlySold/1000)*10)/10 + 'k+' : String(product.monthlySold || 0)}</div>
-              <div className="text-xs text-gray-500 mt-1">This is formatted for display and cannot be edited.</div>
+              <label className="block text-sm font-medium">Badges</label>
+              <div className="text-xs text-gray-500 mt-1">Pick one or more badges to display on the storefront (multiple selection allowed).</div>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {[
+                  { key: 'best_seller', label: 'Best seller' },
+                  { key: 'hot', label: 'Hot' },
+                  { key: 'new_arrival', label: 'New arrival' },
+                  { key: 'trending', label: 'Trending' },
+                  { key: 'limited', label: 'Limited edition' }
+                ].map(b => (
+                  <label key={b.key} className={`inline-flex items-center gap-2 border px-3 py-1 rounded text-sm cursor-pointer ${ (product.badges||[]).includes(b.key) ? 'bg-indigo-50 border-indigo-200' : 'bg-white'}`}>
+                    <input type="checkbox" checked={(product.badges||[]).includes(b.key)} onChange={() => setProduct(p => ({ ...p, badges: (p.badges||[]).includes(b.key) ? p.badges.filter(x=>x!==b.key) : [...(p.badges||[]), b.key] }))} />
+                    {b.label}
+                  </label>
+                ))}
+              </div>
             </div>
-          </div>
+          </div> 
 
           <div>
             <label className="block text-sm font-medium">Highlights (short facts)</label>

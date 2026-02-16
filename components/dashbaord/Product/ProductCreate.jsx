@@ -234,8 +234,7 @@ export default function ProductCreate() {
               <textarea value={product.guidelines || ''} onChange={e => setProduct(p=>({...p, guidelines: e.target.value}))} className="w-full border px-3 py-2 rounded h-24" />
             </div>
           </div>
-
- <div>
+          <div>
             <label className="block text-sm font-medium">Highlights (short facts)</label>
             <div className="text-xs text-gray-500 mt-1">Short bullets shown near the product title (e.g. Lightweight, 2-year warranty).</div>
             <div className="space-y-2 mt-2">

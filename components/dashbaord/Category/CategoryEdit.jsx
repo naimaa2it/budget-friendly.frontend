@@ -23,15 +23,31 @@ export default function CategoryEdit({ categoryId }) {
     const load = async () => {
       setLoading(true);
       try {
+        console.log('Fetching category:', categoryId);
         // try admin single-category endpoint first
         const r = await fetch(`${API}/api/admin/categories/${categoryId}`, { credentials: 'include' });
+        console.log('Admin fetch response status:', r.status);
+        
         if (r.ok) {
           const body = await r.json();
+          console.log('Admin fetch response body:', body);
+          
           if (mounted && body && body.category) {
             const c = body.category;
-            setCategory({ name: c.name || '', parentId: c.parent || '', order: c.order || 0, isActive: typeof c.isActive === 'boolean' ? c.isActive : true, images: c.images || [] });
+            const newState = { 
+              name: c.name || '', 
+              parentId: c.parent || '', 
+              order: c.order || 0, 
+              isActive: typeof c.isActive === 'boolean' ? c.isActive : true, 
+              images: c.images || [] 
+            };
+            console.log('Setting category state:', newState);
+            setCategory(newState);
+          } else {
+            console.warn('No category in response body');
           }
         } else {
+          console.log('Admin fetch failed, trying public tree fallback');
           // fallback to public tree
           const r2 = await fetch(`${API}/api/products/categories`);
           if (r2.ok) {
@@ -47,7 +63,18 @@ export default function CategoryEdit({ categoryId }) {
               return null;
             };
             const node = find(j.categories || [], categoryId);
-            if (mounted && node) setCategory({ name: node.name || '', parentId: node.parent || '', order: node.order || 0, isActive: true, images: node.images || [] });
+            console.log('Found in public tree:', node);
+            if (mounted && node) {
+              const newState = { 
+                name: node.name || '', 
+                parentId: node.parent || '', 
+                order: node.order || 0, 
+                isActive: true, 
+                images: node.images || [] 
+              };
+              console.log('Setting category state from public tree:', newState);
+              setCategory(newState);
+            }
           }
         }
       } catch (err) {

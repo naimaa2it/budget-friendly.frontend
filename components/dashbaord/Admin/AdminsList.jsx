@@ -72,6 +72,7 @@ export default function AdminsList() {
                   <div className="flex gap-2">
                     <a className="px-2 py-1 border rounded text-sm" href={`/dashabord/authorized/${a._id}`}>Edit</a>
                     {a.isActive && <button className="px-2 py-1 border rounded text-sm text-red-600" onClick={() => handleDeactivate(a._id)}>Deactivate</button>}
+                    <a className="px-2 py-1 border rounded text-sm" href={`/dashabord/authorized/${a._id}`}>Delete</a>
                   </div>
                 </td>
               </tr>

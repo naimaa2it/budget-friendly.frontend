@@ -4,7 +4,7 @@ import ProductCreate from '@/components/dashbaord/Product/ProductCreate';
 import ProductEdit from '@/components/dashbaord/Product/ProductEdit';
 import { useEffect, useState } from 'react';
 
-export default function page({ params }) {
+export default function Page({ params }) {
   const [id, setId] = useState(null);
   
   useEffect(() => {

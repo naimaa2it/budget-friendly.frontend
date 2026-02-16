@@ -36,7 +36,13 @@ export default function ProductEditor({ productId }) {
     averageRating: 0,
     reviewCount: 0,
     status: 'draft',
-    specs: {}
+    specs: {},
+
+    // promotion flags — visible as checkboxes in editor
+    featured: false,
+    coupon: false,
+    flashSale: false,
+    clearance: false
   });
 
   const [loading, setLoading] = useState(false);
@@ -79,6 +85,11 @@ export default function ProductEditor({ productId }) {
           p.rewardPoints = p.rewardPoints || 0;
           p.monthlySold = p.monthlySold || 0;
           p.compareAtPrice = p.compareAtPrice || 0;
+          // promotion flags
+          p.featured = !!p.featured;
+          p.coupon = !!p.coupon;
+          p.flashSale = !!p.flashSale;
+          p.clearance = !!p.clearance;
 
           setProduct(p);
 
@@ -258,6 +269,24 @@ export default function ProductEditor({ productId }) {
             </div>
           </div>
 
+          {/* Images — uploaded to Cloudinary (admin upload endpoint) */}
+          <div>
+            <label className="block text-sm font-medium">Images</label>
+            <div className="text-xs text-gray-500 mt-1">Upload one or more images — files are stored in Cloudinary and optimized automatically.</div>
+            <div className="flex gap-3 items-center mt-2">
+              <input type="file" accept="image/*" multiple onChange={e => Array.from(e.target.files || []).forEach(f => f && handleFile(f))} />
+              <div className="flex gap-2">
+                {(product.images||[]).map((img, i) => (
+                  <div key={i} className="relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={img.url} alt="" className="w-24 h-24 object-cover rounded" />
+                    <button type="button" onClick={() => setProduct(p=>({...p, images: p.images.filter((_,idx)=>idx!==i)}))} className="absolute -top-2 -right-2 bg-white rounded-full p-1 border text-red-600">×</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
           {/* Key attributes, customization, rewards */}
           <div className="grid grid-cols-3 gap-4">
             <div>
@@ -373,13 +402,28 @@ export default function ProductEditor({ productId }) {
             </div>
           </div>
 
-          <div className="flex gap-3">
-            <select value={product.status} onChange={e => setProduct(p=>({...p, status: e.target.value}))} className="border px-3 py-2 rounded">
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-              <option value="archived">Archived</option>
-            </select>
-            <input placeholder="Keywords customers search for (comma separated)" value={(product.tags||[]).join(', ')} onChange={e => setProduct(p=>({...p, tags: e.target.value.split(',').map(s=>s.trim()).filter(Boolean)}))} className="border px-3 py-2 rounded flex-1" />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium">Promotions & badges</label>
+              <div className="text-xs text-gray-500 mt-1">Tick any badges that apply — these can be displayed on the storefront.</div>
+              <div className="flex gap-3 items-center mt-2">
+                <label className="inline-flex items-center gap-2"><input type="checkbox" checked={product.featured || false} onChange={e => setProduct(p=>({...p, featured: e.target.checked}))} /> Featured</label>
+                <label className="inline-flex items-center gap-2"><input type="checkbox" checked={product.coupon || false} onChange={e => setProduct(p=>({...p, coupon: e.target.checked}))} /> Coupon</label>
+                <label className="inline-flex items-center gap-2"><input type="checkbox" checked={product.flashSale || false} onChange={e => setProduct(p=>({...p, flashSale: e.target.checked}))} /> Flash sale</label>
+                <label className="inline-flex items-center gap-2"><input type="checkbox" checked={product.clearance || false} onChange={e => setProduct(p=>({...p, clearance: e.target.checked}))} /> Clearance deal</label>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex gap-3">
+                <select value={product.status} onChange={e => setProduct(p=>({...p, status: e.target.value}))} className="border px-3 py-2 rounded">
+                  <option value="draft">Draft</option>
+                  <option value="published">Published</option>
+                  <option value="archived">Archived</option>
+                </select>
+                <input placeholder="Keywords customers search for (comma separated)" value={(product.tags||[]).join(', ')} onChange={e => setProduct(p=>({...p, tags: e.target.value.split(',').map(s=>s.trim()).filter(Boolean)}))} className="border px-3 py-2 rounded flex-1" />
+              </div>
+            </div>
           </div>
 
           <div>

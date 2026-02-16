@@ -311,7 +311,62 @@ export default function ProductEdit({ productId }) {
             </div>
           </div>
 
-          {/* Images — uploaded to Cloudinary (admin upload endpoint) */}
+          {/* Highlights (moved after Available Colors) */}
+          <div>
+            <label className="block text-sm font-medium">Highlights (short facts)</label>
+            <div className="text-xs text-gray-500 mt-1">Short bullets shown near the product title (e.g. Lightweight, 2-year warranty).</div>
+            <div className="space-y-2 mt-2">
+              {(product.keyAttributes || []).map((a, i) => (
+                <div key={i} className="flex gap-2 items-center">
+                  <input value={a.label || ''} onChange={e => setProduct(p=>{ const arr = [...(p.keyAttributes||[])]; arr[i] = { ...(arr[i]||{}), label: e.target.value }; return { ...p, keyAttributes: arr }; })} placeholder="Label (e.g. Weight)" className="border px-2 py-1 rounded w-40" />
+                  <input value={a.value || ''} onChange={e => setProduct(p=>{ const arr = [...(p.keyAttributes||[])]; arr[i] = { ...(arr[i]||{}), value: e.target.value }; return { ...p, keyAttributes: arr }; })} placeholder="Value (e.g. 200g)" className="border px-2 py-1 rounded flex-1" />
+                  <button onClick={() => setProduct(p=>({...p, keyAttributes: p.keyAttributes.filter((_,idx)=>idx!==i)}))} className="px-2 py-1 border rounded text-sm text-red-600">Remove</button>
+                </div>
+              ))}
+              <button onClick={() => setProduct(p=>({...p, keyAttributes: [...(p.keyAttributes||[]), { label: '', value: '' }]}))} className="px-2 py-1 border rounded text-sm mt-2">Add highlight</button>
+            </div>
+          </div>
+
+          {/* Promotions & badges (moved) */}
+          <div className="mt-4">
+            <label className="block text-sm font-medium">Promotions & badges</label>
+            <div className="text-xs text-gray-500 mt-1">Promotion flags and storefront badges — choose any that apply.</div>
+
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="flex gap-3 flex-wrap items-center">
+                <label className="inline-flex items-center gap-2"><input type="checkbox" checked={product.featured || false} onChange={e => setProduct(p=>({...p, featured: e.target.checked}))} /> Featured</label>
+                <label className="inline-flex items-center gap-2"><input type="checkbox" checked={product.coupon || false} onChange={e => setProduct(p=>({...p, coupon: e.target.checked}))} /> Coupon</label>
+                <label className="inline-flex items-center gap-2"><input type="checkbox" checked={product.flashSale || false} onChange={e => setProduct(p=>({...p, flashSale: e.target.checked}))} /> Flash sale</label>
+                <label className="inline-flex items-center gap-2"><input type="checkbox" checked={product.clearance || false} onChange={e => setProduct(p=>({...p, clearance: e.target.checked}))} /> Clearance deal</label>
+              </div>
+
+              <div>
+                <div className="flex gap-2 flex-wrap">
+                  {[
+                    { key: 'best_seller', label: 'Best seller' },
+                    { key: 'hot', label: 'Hot' },
+                    { key: 'new_arrival', label: 'New arrival' },
+                    { key: 'trending', label: 'Trending' },
+                    { key: 'limited', label: 'Limited edition' }
+                  ].map(b => (
+                    <label key={b.key} className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium border transition-colors ${ (product.badges||[]).includes(b.key) ? 'bg-indigo-600 text-white border-indigo-600 shadow' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}>
+                      <input className="sr-only" type="checkbox" checked={(product.badges||[]).includes(b.key)} onChange={() => setProduct(p => ({ ...p, badges: (p.badges||[]).includes(b.key) ? p.badges.filter(x=>x!==b.key) : [...(p.badges||[]), b.key] }))} aria-checked={(product.badges||[]).includes(b.key)} />
+                      {b.label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="sm:col-span-2 flex gap-3 items-center">
+                <select value={product.status} onChange={e => setProduct(p=>({...p, status: e.target.value}))} className="border px-3 py-2 rounded">
+                  <option value="draft">Draft</option>
+                  <option value="published">Published</option>
+                  <option value="archived">Archived</option>
+                </select>
+                <input placeholder="Keywords customers search for (comma separated)" value={(product.tags||[]).join(', ')} onChange={e => setProduct(p=>({...p, tags: e.target.value.split(',').map(s=>s.trim()).filter(Boolean)}))} className="border px-3 py-2 rounded flex-1" />
+              </div>
+            </div>
+          </div>
           <div>
             <label className="block text-sm font-medium">Images</label>
             <div className="text-xs text-gray-500 mt-1">Click to upload or drag files. Uploaded images are stored in Cloudinary and optimized automatically.</div>
@@ -354,21 +409,27 @@ export default function ProductEdit({ productId }) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium">Badges</label>
-              <div className="text-xs text-gray-500 mt-1">Pick one or more badges to display on the storefront (multiple selection allowed).</div>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {[
-                  { key: 'best_seller', label: 'Best seller' },
-                  { key: 'hot', label: 'Hot' },
-                  { key: 'new_arrival', label: 'New arrival' },
-                  { key: 'trending', label: 'Trending' },
-                  { key: 'limited', label: 'Limited edition' }
-                ].map(b => (
-                  <label key={b.key} className={`inline-flex items-center gap-2 border px-3 py-1 rounded text-sm cursor-pointer ${ (product.badges||[]).includes(b.key) ? 'bg-indigo-50 border-indigo-200' : 'bg-white'}`}>
-                    <input type="checkbox" checked={(product.badges||[]).includes(b.key)} onChange={() => setProduct(p => ({ ...p, badges: (p.badges||[]).includes(b.key) ? p.badges.filter(x=>x!==b.key) : [...(p.badges||[]), b.key] }))} />
-                    {b.label}
-                  </label>
-                ))}
+              <label className="block text-sm font-medium">Sales badge (auto)</label>
+              <div className="w-full border px-3 py-2 rounded bg-gray-50">{product.monthlySold >= 1000000 ? Math.round((product.monthlySold/1000000)*10)/10 + 'M+' : product.monthlySold >= 1000 ? Math.round((product.monthlySold/1000)*10)/10 + 'k+' : String(product.monthlySold || 0)}</div>
+              <div className="text-xs text-gray-500 mt-2">Automatic display based on <code>Sold last 30 days</code>.</div>
+
+              <div className="mt-3">
+                <label className="block text-sm font-medium">Badges (storefront)</label>
+                <div className="text-xs text-gray-500 mt-1">Pick one or more badges to display on the storefront (multiple selection allowed).</div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {[
+                    { key: 'best_seller', label: 'Best seller' },
+                    { key: 'hot', label: 'Hot' },
+                    { key: 'new_arrival', label: 'New arrival' },
+                    { key: 'trending', label: 'Trending' },
+                    { key: 'limited', label: 'Limited edition' }
+                  ].map(b => (
+                    <label key={b.key} className={`inline-flex items-center gap-2 border px-3 py-1 rounded text-sm cursor-pointer ${ (product.badges||[]).includes(b.key) ? 'bg-indigo-50 border-indigo-200' : 'bg-white'}`}>
+                      <input type="checkbox" checked={(product.badges||[]).includes(b.key)} onChange={() => setProduct(p => ({ ...p, badges: (p.badges||[]).includes(b.key) ? p.badges.filter(x=>x!==b.key) : [...(p.badges||[]), b.key] }))} />
+                      {b.label}
+                    </label>
+                  ))}
+                </div>
               </div>
             </div>
           </div> 
@@ -410,7 +471,7 @@ export default function ProductEdit({ productId }) {
           </div>
 
           {/* Warranty & return policy */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <div>
               <label className="block text-sm font-medium">Warranty</label>
               <div className="text-xs text-gray-500 mt-1">What you guarantee customers (period and details).</div>
@@ -458,23 +519,22 @@ export default function ProductEdit({ productId }) {
                   <div className="text-xs text-gray-500">Admins can add or remove reviews here.</div>
                 </div>
 
-                <div className="grid grid-cols-12 gap-3 items-center">
-                  <input placeholder="Your name (optional)" value={newReview.authorName} onChange={e => setNewReview(n => ({ ...n, authorName: e.target.value }))} className="col-span-3 border px-3 py-2 rounded" />
+                <div className="space-y-3">
+                  <div className="flex gap-3">
+                    <input placeholder="Your name (optional)" value={newReview.authorName} onChange={e => setNewReview(n => ({ ...n, authorName: e.target.value }))} className="border px-3 py-2 rounded w-1/4" />
 
-                  <div className="col-span-2">
-                    <label className="text-xs text-gray-600">Rating</label>
-                    <div className="flex items-center gap-2 mt-1">
-                      <input type="number" min={1} max={5} step={0.1} value={newReview.rating} onChange={e => setNewReview(n => ({ ...n, rating: Number(e.target.value) }))} className="w-20 border px-2 py-2 rounded" />
-                      <div className="text-sm text-gray-500">/5</div>
+                    <div className="w-28">
+                      <label className="text-xs text-gray-600">Rating</label>
+                      <input type="number" min={1} max={5} step={0.1} value={newReview.rating} onChange={e => setNewReview(n => ({ ...n, rating: Number(e.target.value) }))} className="w-full border px-2 py-2 rounded mt-1" />
+                      <div className="text-xs text-gray-400 mt-1">Enter 1–5</div>
                     </div>
-                    <div className="text-xs text-gray-400 mt-1">Enter 1–5 (you can type 4, 4.5, etc.).</div>
+
+                    <input placeholder="Title" value={newReview.title} onChange={e => setNewReview(n => ({ ...n, title: e.target.value }))} className="flex-1 border px-3 py-2 rounded" />
                   </div>
 
-                  <input placeholder="Title" value={newReview.title} onChange={e => setNewReview(n => ({ ...n, title: e.target.value }))} className="col-span-7 border px-3 py-2 rounded" />
+                  <textarea placeholder="Write the review..." value={newReview.body} onChange={e => setNewReview(n => ({ ...n, body: e.target.value }))} className="w-full border px-3 py-2 rounded h-32" />
 
-                  <textarea placeholder="Write the review..." value={newReview.body} onChange={e => setNewReview(n => ({ ...n, body: e.target.value }))} className="col-span-12 border px-3 py-2 rounded h-28 mt-2" />
-
-                  <div className="col-span-12 flex items-center justify-end mt-2">
+                  <div className="flex justify-end">
                     <button onClick={addReview} className="px-4 py-2 bg-green-600 text-white rounded shadow-sm">Add review</button>
                   </div>
                 </div>

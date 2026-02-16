@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/components/context/UserContext';
 
@@ -13,6 +13,14 @@ export default function CategoryCreate({ categoryId = 'new' }) {
   const [parents, setParents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // subcategory management (edit page)
+  const [children, setChildren] = useState([]);
+  const [adding, setAdding] = useState(false);
+  const [newChild, setNewChild] = useState({ name: '', file: null });
+  const [addingFor, setAddingFor] = useState(null);
+  const [newChildFor, setNewChildFor] = useState({ name: '', file: null });
+
 
   useEffect(() => { if (!user) refreshUser(); }, [user, refreshUser]);
 
@@ -43,6 +51,83 @@ export default function CategoryCreate({ categoryId = 'new' }) {
       .catch(err => console.error(err))
       .finally(() => setLoading(false));
   }, [categoryId, API]);
+
+  // --- subcategory helpers ---
+  const refreshChildren = useCallback(async () => {
+    if (!categoryId || categoryId === 'new') return;
+    const findNode = (nodes, id) => {
+      for (const n of (nodes || [])) {
+        if (String(n._id) === String(id)) return n;
+        if (n.children && n.children.length) {
+          const res = findNode(n.children, id);
+          if (res) return res;
+        }
+      }
+      return null;
+    };
+
+    try {
+      const r = await fetch(`${API}/api/products/categories`);
+      const json = await r.json();
+      const node = findNode(json.categories || [], categoryId);
+      setChildren(node && node.children ? node.children : []);
+    } catch (err) {
+      console.error('Failed to refresh children', err);
+      setChildren([]);
+    }
+  }, [API, categoryId]);
+
+  useEffect(() => { if (categoryId && categoryId !== 'new') refreshChildren(); }, [categoryId, refreshChildren]);
+
+  const startAddFor = (id) => { setAddingFor(String(id)); setNewChildFor({ name: '', file: null }); };
+  const cancelAddFor = () => { setAddingFor(null); setNewChildFor({ name: '', file: null }); };
+
+  const uploadImageFile = async (file) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    const resp = await fetch(`${API}/api/admin/upload`, { method: 'POST', body: fd, credentials: 'include' });
+    const body = await resp.json();
+    if (!resp.ok) throw new Error(body.error || 'Upload failed');
+    return { public_id: body.asset.public_id, url: body.asset.url, width: body.asset.width, height: body.asset.height, format: body.asset.format };
+  };
+
+  const createSubcategory = async (parentId, which = 'root') => {
+    const payloadName = which === 'root' ? (newChild.name || '').trim() : (newChildFor.name || '').trim();
+    const file = which === 'root' ? newChild.file : newChildFor.file;
+    if (!payloadName) return alert('Subcategory name is required');
+
+    try {
+      let asset = null;
+      if (file) {
+        asset = await uploadImageFile(file);
+      }
+      const payload = { name: payloadName, parentId };
+      if (asset) payload.images = [asset];
+
+      const r = await fetch(`${API}/api/admin/categories`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) });
+      const body = await r.json();
+      if (!r.ok) throw new Error(body.error || 'Create failed');
+
+      // reset and refresh
+      if (which === 'root') { setNewChild({ name: '', file: null }); setAdding(false); }
+      else { setNewChildFor({ name: '', file: null }); setAddingFor(null); }
+      await refreshChildren();
+    } catch (err) {
+      alert(err.message || 'Create subcategory failed');
+    }
+  };
+
+  const handleDeleteChild = async (id) => {
+    if (!confirm('Delete this category? This will fail if the category has children or products.')) return;
+    try {
+      const r = await fetch(`${API}/api/admin/categories/${id}`, { method: 'DELETE', credentials: 'include' });
+      const body = await r.json();
+      if (!r.ok) throw new Error(body.error || 'Delete failed');
+      await refreshChildren();
+    } catch (err) {
+      alert(err.message || 'Delete failed');
+    }
+  };
 
   const handleFile = async (file) => {
     const preview = URL.createObjectURL(file);
@@ -147,6 +232,94 @@ export default function CategoryCreate({ categoryId = 'new' }) {
               <span className="text-sm">Active</span>
             </label>
           </div>
+
+          {/* Subcategories (only when editing an existing category) */}
+          {categoryId && categoryId !== 'new' && (
+            <section className="bg-white border rounded p-4 mt-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-md font-semibold">Subcategories</h3>
+                <div className="flex gap-2">
+                  <button type="button" onClick={() => setAdding(true)} className="px-3 py-1 bg-blue-600 text-white rounded text-sm">+ Add Subcategory</button>
+                  <button type="button" onClick={refreshChildren} className="px-3 py-1 border rounded text-sm">Refresh</button>
+                </div>
+              </div>
+
+              {/* add new subcategory inline */}
+              {adding && (
+                <div className="border p-3 rounded mb-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                    <input value={newChild.name} onChange={e => setNewChild(x => ({ ...x, name: e.target.value }))} placeholder="Subcategory name" className="w-full border px-3 py-2 rounded" />
+                    <input type="file" accept="image/*" onChange={e => setNewChild(x => ({ ...x, file: e.target.files?.[0] || null }))} className="w-full" />
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => createSubcategory(categoryId, 'root')} className="px-3 py-2 bg-green-600 text-white rounded">Create</button>
+                      <button onClick={() => setAdding(false)} className="px-3 py-2 border rounded">Cancel</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* existing children */}
+              <div className="space-y-3">
+                {(children || []).length === 0 ? (
+                  <div className="text-sm text-gray-500">No subcategories yet.</div>
+                ) : (
+                  children.map(child => (
+                    <div key={child._id} className="border p-3 rounded">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 bg-gray-50 rounded overflow-hidden flex items-center justify-center">
+                            <img src={(child.images && child.images[0] && child.images[0].url) ? child.images[0].url : '/assets/placeholder.svg'} alt={child.name} className="w-full h-full object-contain" />
+                          </div>
+                          <div>
+                            <div className="font-medium">{child.name}</div>
+                            <div className="text-xs text-gray-500">ID: {String(child._id).slice(0,8)}</div>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <a className="px-2 py-1 border rounded text-sm text-indigo-600" href={`/dashabord/categories/${child._id}`}>Edit</a>
+                          <button onClick={() => handleDeleteChild(child._id)} className="px-2 py-1 border rounded text-sm text-red-600">Delete</button>
+                          <button onClick={() => startAddFor(child._id)} className="px-2 py-1 border rounded text-sm">+ Add</button>
+                        </div>
+                      </div>
+
+                      {/* add sub-sub inline */}
+                      {addingFor === String(child._id) && (
+                        <div className="mt-3 border-l pl-4">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                            <input value={newChildFor.name} onChange={e => setNewChildFor(x => ({ ...x, name: e.target.value }))} placeholder="Sub‑subcategory name" className="w-full border px-3 py-2 rounded" />
+                            <input type="file" accept="image/*" onChange={e => setNewChildFor(x => ({ ...x, file: e.target.files?.[0] || null }))} className="w-full" />
+                            <div className="flex items-center gap-2">
+                              <button onClick={() => createSubcategory(child._id, 'for')} className="px-3 py-2 bg-green-600 text-white rounded">Create</button>
+                              <button onClick={() => cancelAddFor()} className="px-3 py-2 border rounded">Cancel</button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* show grandchildren (one level deep) */}
+                      {child.children && child.children.length > 0 && (
+                        <div className="mt-3 pl-6 space-y-2">
+                          {child.children.map(gc => (
+                            <div key={gc._id} className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-gray-50 rounded overflow-hidden"><img src={(gc.images && gc.images[0] && gc.images[0].url) ? gc.images[0].url : '/assets/placeholder.svg'} alt={gc.name} className="w-full h-full object-contain" /></div>
+                                <div className="text-sm">{gc.name}</div>
+                              </div>
+                              <div className="flex gap-2">
+                                <a className="text-xs text-indigo-600" href={`/dashabord/categories/${gc._id}`}>Edit</a>
+                                <button onClick={() => handleDeleteChild(gc._id)} className="text-xs text-red-600">Delete</button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
+          )}
 
           <div className="flex gap-2">
             <button onClick={handleSave} className="px-3 py-2 bg-indigo-600 text-white rounded" disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>

@@ -2,27 +2,45 @@
 
 import React, { useEffect, useState } from 'react';
 import { useUser } from '@/components/context/UserContext';
+import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
 
-function renderTree(nodes, onEdit, onDelete, depth = 0) {
-  return nodes.map(n => (
-    <div key={n._id} className="border p-3 rounded mb-2 ml-" style={{ marginLeft: depth * 12 }}>
-      <div className="flex justify-between items-center">
-        <div>
-          <div className="font-medium">{n.name}</div>
-          <div className="text-xs text-gray-500">Level {n.level}{n.children?.length ? ` · ${n.children.length} sub` : ''}</div>
+function CategoryNode({ node, depth = 0, onDelete }) {
+  const [expanded, setExpanded] = useState(false);
+  const hasChildren = node.children && node.children.length > 0;
+
+  return (
+    <div className="border-b py-4" style={{ paddingLeft: depth * 12 }}>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <button onClick={() => hasChildren && setExpanded(!expanded)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100">
+            {hasChildren ? (expanded ? <FaChevronDown className="text-gray-700" /> : <FaChevronRight className="text-gray-700" />) : <div className="w-2 h-2" />}
+          </button>
+
+          <div className="w-12 h-12 bg-gray-50 rounded flex items-center justify-center overflow-hidden">
+            <img src={(node.images && node.images[0] && node.images[0].url) ? node.images[0].url : '/assets/placeholder.svg'} alt={node.name} className="w-full h-full object-contain" />
+          </div>
+
+          <div>
+            <div className="font-medium">{node.name}</div>
+            <div className="text-xs text-gray-500">ID: {String(node._id).slice(0,8)}</div>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <a className="px-2 py-1 border rounded text-sm" href={`/dashabord/categories/${n._id}`}>Edit</a>
-          {onDelete && (
-            <button onClick={() => onDelete(n._id)} className="px-2 py-1 border rounded text-sm text-red-600">Delete</button>
-          )}
+
+        <div className="flex items-center gap-3">
+          <div className="text-xs bg-slate-900 text-white px-2 py-1 rounded-full">{node.level === 0 ? 'Main' : `L${node.level}`}</div>
+          <div className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full">{node.children?.length || 0}</div>
+          <a className="px-2 py-1 border rounded text-sm" href={`/dashabord/categories/${node._id}`}>Edit</a>
+          {onDelete && <button onClick={() => onDelete(node._id)} className="px-2 py-1 border rounded text-sm text-red-600">Delete</button>}
         </div>
       </div>
-      {n.children && n.children.length > 0 && (
-        <div className="mt-3">{renderTree(n.children, onEdit, onDelete, depth + 1)}</div>
+
+      {expanded && hasChildren && (
+        <div className="mt-3 space-y-2">
+          {node.children.map(child => <CategoryNode key={child._id} node={child} depth={depth + 1} onDelete={onDelete} />)}
+        </div>
       )}
     </div>
-  ));
+  );
 }
 
 export default function CategoriesList() {
@@ -76,7 +94,7 @@ export default function CategoriesList() {
           {items.length === 0 ? (
             <div className="text-center text-gray-500">No categories defined yet.</div>
           ) : (
-            <div>{renderTree(items, null, user?.role === 'admin' ? handleDelete : undefined)}</div>
+            <div className="space-y-3">{items.map(n => <CategoryNode key={n._id} node={n} onDelete={user?.role === 'admin' ? handleDelete : undefined} />)}</div>
           )}
         </div>
       )}

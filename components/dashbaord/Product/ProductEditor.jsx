@@ -9,7 +9,36 @@ export default function ProductEditor({ productId }) {
   const { user, refreshUser } = useUser();
   const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
-  const [product, setProduct] = useState({ title: '', description: '', category: '', tags: [], images: [], variants: [], price: 0, inventory: 0, status: 'draft' });
+  const [product, setProduct] = useState({
+    title: '',
+    description: '',
+    category: '',
+    tags: [],
+    images: [],
+    variants: [],
+    price: 0,
+    compareAtPrice: 0,
+    sku: '',
+    currency: 'USD',
+    inventory: 0,
+    availability: 'in_stock',
+    colors: [],
+    sizes: [],
+    guidelines: '',
+    monthlySold: 0,
+    rewardPoints: 0,
+    keyAttributes: [],
+    customization: { customizable: false, options: [] },
+    warranty: { period: '', details: '', provider: '' },
+    returnPolicy: { days: 0, refundable: true, details: '' },
+    faqs: [],
+    reviews: [],
+    averageRating: 0,
+    reviewCount: 0,
+    status: 'draft',
+    specs: {}
+  });
+
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -35,7 +64,24 @@ export default function ProductEditor({ productId }) {
       .then(async b => {
         if (b.product) {
           const p = b.product;
+          // normalize fields for editor (backward compatibility)
+          p.sizes = p.sizes || p.specs?.sizes || [];
+          p.specs = { ...(p.specs || {}), sizes: p.sizes };
+          p.currency = p.currency || 'USD';
+          p.availability = p.availability || (p.inventory > 0 ? 'in_stock' : 'out_of_stock');
+          p.colors = p.colors || [];
+          p.keyAttributes = p.keyAttributes || [];
+          p.customization = p.customization || { customizable: false, options: [] };
+          p.warranty = p.warranty || { period: '', details: '', provider: '' };
+          p.returnPolicy = p.returnPolicy || { days: 0, refundable: true, details: '' };
+          p.faqs = p.faqs || [];
+          p.reviews = p.reviews || [];
+          p.rewardPoints = p.rewardPoints || 0;
+          p.monthlySold = p.monthlySold || 0;
+          p.compareAtPrice = p.compareAtPrice || 0;
+
           setProduct(p);
+
           // try to set selected category from categoryId or category name
           if (p.categoryId) {
             // find path in categories
@@ -104,9 +150,11 @@ export default function ProductEditor({ productId }) {
     if (!product.title) return alert('Title is required');
     setSaving(true);
     try {
+      // ensure specs.sizes and top-level sizes are kept in sync for backward compatibility
+      const payload = { ...product, specs: { ...(product.specs || {}), sizes: product.sizes || product.specs?.sizes || [] } };
       const method = (productId && productId !== 'new') ? 'PUT' : 'POST';
       const url = (method === 'POST') ? `${API}/api/admin/products` : `${API}/api/admin/products/${productId}`;
-      const resp = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(product) });
+      const resp = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) });
       const body = await resp.json();
       if (!resp.ok) throw new Error(body.error || 'Save failed');
       router.push('/dashabord/products');
@@ -139,10 +187,15 @@ export default function ProductEditor({ productId }) {
             <textarea value={product.description || ''} onChange={e => setProduct(p=>({...p, description: e.target.value}))} className="w-full border px-3 py-2 rounded h-28" />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          {/* Pricing / inventory / SKU / availability */}
+          <div className="grid grid-cols-3 gap-3">
             <div>
               <label className="block text-sm font-medium">Price</label>
               <input type="number" value={product.price || 0} onChange={e => setProduct(p=>({...p, price: Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Offer price (compare at)</label>
+              <input type="number" value={product.compareAtPrice || 0} onChange={e => setProduct(p=>({...p, compareAtPrice: Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
             </div>
             <div>
               <label className="block text-sm font-medium">Inventory (total)</label>
@@ -150,117 +203,156 @@ export default function ProductEditor({ productId }) {
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium">Category (Main → Sub → Sub‑sub)</label>
-            <div className="flex gap-2 mt-2">
-              <select value={selectedMain?._id || ''} onChange={e => {
-                const id = e.target.value;
-                const main = categories.find(c => String(c._id) === id) || null;
-                setSelectedMain(main);
-                setSelectedSub(null);
-                setSelectedChild(null);
-                setProduct(p => ({ ...p, categoryId: main?._id || undefined, category: main?._id ? main.name : '' }));
-              }} className="border px-3 py-2 rounded w-1/3">
-                <option value="">Main category</option>
-                {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
-              </select>
-
-              <select value={selectedSub?._id || ''} onChange={e => {
-                const id = e.target.value;
-                const sub = (selectedMain?.children || []).find(c => String(c._id) === id) || null;
-                setSelectedSub(sub);
-                setSelectedChild(null);
-                setProduct(p => ({ ...p, categoryId: sub?._id || selectedMain?._id || undefined, category: sub?._id ? sub.name : (selectedMain?selectedMain.name:'') }));
-              }} className="border px-3 py-2 rounded w-1/3">
-                <option value="">Sub category</option>
-                {(selectedMain?.children || []).map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
-              </select>
-
-              <select value={selectedChild?._id || ''} onChange={e => {
-                const id = e.target.value;
-                const child = (selectedSub?.children || []).find(c => String(c._id) === id) || null;
-                setSelectedChild(child);
-                setProduct(p => ({ ...p, categoryId: child?._id || selectedSub?._id || selectedMain?._id || undefined, category: child?._id ? child.name : (selectedSub?selectedSub.name:(selectedMain?selectedMain.name:'')) }));
-              }} className="border px-3 py-2 rounded w-1/3">
-                <option value="">Sub‑sub category</option>
-                {(selectedSub?.children || []).map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="block text-sm font-medium">SKU</label>
+              <input value={product.sku || ''} onChange={e => setProduct(p=>({...p, sku: e.target.value}))} className="w-full border px-3 py-2 rounded" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Currency</label>
+              <input value={product.currency || 'USD'} onChange={e => setProduct(p=>({...p, currency: e.target.value}))} className="w-full border px-3 py-2 rounded" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Availability</label>
+              <select value={product.availability || 'in_stock'} onChange={e => setProduct(p=>({...p, availability: e.target.value}))} className="w-full border px-3 py-2 rounded">
+                <option value="in_stock">In stock</option>
+                <option value="pre_order">Pre order</option>
+                <option value="upcoming">Upcoming</option>
+                <option value="out_of_stock">Out of stock</option>
               </select>
             </div>
           </div>
 
-          {/* Category-specific info boxes */}
-          {product.category === 'Electronics' && (
-            <div className="p-3 border rounded bg-gray-50">
-              <h4 className="font-medium mb-2">Electronics — technical details</h4>
-              <div className="grid grid-cols-2 gap-3">
-                <input placeholder="Brand" value={product.specs?.brand || ''} onChange={e => setProduct(p=>({...p, specs: {...(p.specs||{}), brand: e.target.value}}))} className="border px-3 py-2 rounded" />
-                <input placeholder="Model" value={product.specs?.model || ''} onChange={e => setProduct(p=>({...p, specs: {...(p.specs||{}), model: e.target.value}}))} className="border px-3 py-2 rounded" />
-                <input placeholder="Battery / Power info" value={product.specs?.battery || ''} onChange={e => setProduct(p=>({...p, specs: {...(p.specs||{}), battery: e.target.value}}))} className="border px-3 py-2 rounded" />
-                <input placeholder="Warranty (e.g. 12 months)" value={product.specs?.warranty || ''} onChange={e => setProduct(p=>({...p, specs: {...(p.specs||{}), warranty: e.target.value}}))} className="border px-3 py-2 rounded" />
-                <input placeholder="Storage (e.g. 128GB)" value={product.specs?.storage || ''} onChange={e => setProduct(p=>({...p, specs: {...(p.specs||{}), storage: e.target.value}}))} className="border px-3 py-2 rounded" />
-                <input placeholder="RAM (e.g. 8GB)" value={product.specs?.ram || ''} onChange={e => setProduct(p=>({...p, specs: {...(p.specs||{}), ram: e.target.value}}))} className="border px-3 py-2 rounded" />
-                <input placeholder="Dimensions (L×W×H)" value={product.specs?.dimensions || ''} onChange={e => setProduct(p=>({...p, specs: {...(p.specs||{}), dimensions: e.target.value}}))} className="border px-3 py-2 rounded" />
-                <input placeholder="Weight" value={product.specs?.weight || ''} onChange={e => setProduct(p=>({...p, specs: {...(p.specs||{}), weight: e.target.value}}))} className="border px-3 py-2 rounded" />
-              </div>
-              <div className="mt-3">
-                <label className="block text-sm font-medium">Technical specs (notes)</label>
-                <textarea value={product.specs?.notes || ''} onChange={e => setProduct(p=>({...p, specs: {...(p.specs||{}), notes: e.target.value}}))} className="w-full border px-3 py-2 rounded h-20" />
-              </div>
-            </div>
-          )}
-
-          {(product.category === 'Ladies' || product.category === 'Gents') && (
-            <div className="p-3 border rounded bg-gray-50">
-              <h4 className="font-medium mb-2">Apparel — product details</h4>
-              <div className="grid grid-cols-2 gap-3">
-                <input placeholder="Brand" value={product.specs?.brand || ''} onChange={e => setProduct(p=>({...p, specs: {...(p.specs||{}), brand: e.target.value}}))} className="border px-3 py-2 rounded" />
-                <input placeholder="Material / Fabric" value={product.specs?.material || ''} onChange={e => setProduct(p=>({...p, specs: {...(p.specs||{}), material: e.target.value}}))} className="border px-3 py-2 rounded" />
-                <input placeholder="Fit (e.g. Slim, Regular)" value={product.specs?.fit || ''} onChange={e => setProduct(p=>({...p, specs: {...(p.specs||{}), fit: e.target.value}}))} className="border px-3 py-2 rounded" />
-                <input placeholder="Care instructions" value={product.specs?.care || ''} onChange={e => setProduct(p=>({...p, specs: {...(p.specs||{}), care: e.target.value}}))} className="border px-3 py-2 rounded" />
-                <input placeholder="Color" value={product.specs?.color || ''} onChange={e => setProduct(p=>({...p, specs: {...(p.specs||{}), color: e.target.value}}))} className="border px-3 py-2 rounded" />
-                <input placeholder="Measurements (chest/waist/hips)" value={product.specs?.measurements || ''} onChange={e => setProduct(p=>({...p, specs: {...(p.specs||{}), measurements: e.target.value}}))} className="border px-3 py-2 rounded" />
-              </div>
-              <div className="mt-3">
-                <label className="block text-sm font-medium">Available sizes (comma separated)</label>
-                <input value={(product.specs?.sizes || []).join(', ')} onChange={e => setProduct(p=>({...p, specs: {...(p.specs||{}), sizes: e.target.value.split(',').map(s=>s.trim()).filter(Boolean)}}))} className="w-full border px-3 py-2 rounded" />
-              </div>
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium">Images</label>
-            <div className="flex gap-3 items-center mt-2">
-              <input type="file" accept="image/*" onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
-              <div className="flex gap-2">
-                {(product.images||[]).map((img, i) => (
-                  <div key={i} className="relative">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={img.url} alt="" className="w-24 h-24 object-cover rounded" />
-                    <button type="button" onClick={() => setProduct(p=>({...p, images: p.images.filter((_,idx)=>idx!==i)}))} className="absolute -top-2 -right-2 bg-white rounded-full p-1 border text-red-600">×</button>
+          {/* Colors & sizes & guidelines */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium">Colors</label>
+              <div className="space-y-2 mt-2">
+                {(product.colors || []).map((c, i) => (
+                  <div key={i} className="flex gap-2 items-center">
+                    <input value={c.name || ''} onChange={e => setProduct(p=>{ const arr = [...(p.colors||[])]; arr[i] = { ...(arr[i]||{}), name: e.target.value }; return { ...p, colors: arr }; })} placeholder="Color name" className="border px-2 py-1 rounded w-32" />
+                    <input type="color" value={c.hex || '#000000'} onChange={e => setProduct(p=>{ const arr = [...(p.colors||[])]; arr[i] = { ...(arr[i]||{}), hex: e.target.value }; return { ...p, colors: arr }; })} className="w-12 h-8 p-0 rounded border" />
+                    <input value={c.label || ''} onChange={e => setProduct(p=>{ const arr = [...(p.colors||[])]; arr[i] = { ...(arr[i]||{}), label: e.target.value }; return { ...p, colors: arr }; })} placeholder="Optional label" className="border px-2 py-1 rounded flex-1" />
+                    <button onClick={() => setProduct(p=>({...p, colors: p.colors.filter((_,idx)=>idx!==i)}))} className="px-2 py-1 border rounded text-sm text-red-600">Remove</button>
                   </div>
                 ))}
+                <button onClick={() => setProduct(p=>({...p, colors: [...(p.colors||[]), {name:'', hex:'#000000'}]}))} className="px-2 py-1 border rounded text-sm mt-2">Add color</button>
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium">Sizes (comma separated)</label>
+              <input value={(product.sizes||[]).join(', ')} onChange={e => { const arr = e.target.value.split(',').map(s=>s.trim()).filter(Boolean); setProduct(p=>({...p, sizes: arr, specs: {...(p.specs||{}), sizes: arr}})); }} className="w-full border px-3 py-2 rounded" />
+
+              <label className="block text-sm font-medium mt-3">Guidelines / care</label>
+              <textarea value={product.guidelines || ''} onChange={e => setProduct(p=>({...p, guidelines: e.target.value}))} className="w-full border px-3 py-2 rounded h-24" />
+            </div>
+          </div>
+
+          {/* Key attributes, customization, rewards */}
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium">Reward points</label>
+              <input type="number" value={product.rewardPoints || 0} onChange={e => setProduct(p=>({...p, rewardPoints: Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Bought in past month</label>
+              <input type="number" value={product.monthlySold || 0} onChange={e => setProduct(p=>({...p, monthlySold: Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Monthly label (read-only)</label>
+              <div className="w-full border px-3 py-2 rounded bg-gray-50">{product.monthlySold >= 1000000 ? Math.round((product.monthlySold/1000000)*10)/10 + 'M+' : product.monthlySold >= 1000 ? Math.round((product.monthlySold/1000)*10)/10 + 'k+' : String(product.monthlySold || 0)}</div>
             </div>
           </div>
 
           <div>
-            <div className="flex items-center justify-between">
-              <label className="block text-sm font-medium">Variants</label>
-              <button onClick={onAddVariant} className="px-2 py-1 border rounded text-sm">Add variant</button>
+            <label className="block text-sm font-medium">Key attributes</label>
+            <div className="space-y-2 mt-2">
+              {(product.keyAttributes || []).map((a, i) => (
+                <div key={i} className="flex gap-2 items-center">
+                  <input value={a.label || ''} onChange={e => setProduct(p=>{ const arr = [...(p.keyAttributes||[])]; arr[i] = { ...(arr[i]||{}), label: e.target.value }; return { ...p, keyAttributes: arr }; })} placeholder="Label" className="border px-2 py-1 rounded w-40" />
+                  <input value={a.value || ''} onChange={e => setProduct(p=>{ const arr = [...(p.keyAttributes||[])]; arr[i] = { ...(arr[i]||{}), value: e.target.value }; return { ...p, keyAttributes: arr }; })} placeholder="Value" className="border px-2 py-1 rounded flex-1" />
+                  <button onClick={() => setProduct(p=>({...p, keyAttributes: p.keyAttributes.filter((_,idx)=>idx!==i)}))} className="px-2 py-1 border rounded text-sm text-red-600">Remove</button>
+                </div>
+              ))}
+              <button onClick={() => setProduct(p=>({...p, keyAttributes: [...(p.keyAttributes||[]), { label: '', value: '' }]}))} className="px-2 py-1 border rounded text-sm mt-2">Add attribute</button>
             </div>
-            <div className="mt-2 space-y-2">
-              {(product.variants||[]).map((v, idx) => (
-                <div key={idx} className="border p-3 rounded grid grid-cols-4 gap-2 items-center">
-                  <input placeholder="Title" value={v.title} onChange={e => setProduct(p=>{ const nv = [...p.variants]; nv[idx].title = e.target.value; return {...p, variants: nv}; })} className="border px-2 py-1 rounded" />
-                  <input placeholder="SKU" value={v.sku} onChange={e => setProduct(p=>{ const nv = [...p.variants]; nv[idx].sku = e.target.value; return {...p, variants: nv}; })} className="border px-2 py-1 rounded" />
-                  <input type="number" placeholder="Price" value={v.price} onChange={e => setProduct(p=>{ const nv = [...p.variants]; nv[idx].price = Number(e.target.value); return {...p, variants: nv}; })} className="border px-2 py-1 rounded" />
-                  <div className="flex gap-2 items-center">
-                    <input type="number" placeholder="Inventory" value={v.inventory} onChange={e => setProduct(p=>{ const nv = [...p.variants]; nv[idx].inventory = Number(e.target.value); return {...p, variants: nv}; })} className="border px-2 py-1 rounded w-24" />
-                    <button onClick={() => onRemoveVariant(idx)} className="px-2 py-1 border rounded text-sm text-red-600">Remove</button>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium">Customization</label>
+            <div className="flex items-center gap-3 mt-2">
+              <label className="inline-flex items-center gap-2"><input type="checkbox" checked={product.customization?.customizable || false} onChange={e => setProduct(p=>({...p, customization: {...(p.customization||{}), customizable: e.target.checked}}))} /> Allow customizations</label>
+            </div>
+            {(product.customization?.customizable) && (
+              <div className="mt-3 space-y-2">
+                {(product.customization.options || []).map((opt, i) => (
+                  <div key={i} className="flex gap-2 items-center">
+                    <input value={opt.name || ''} onChange={e => setProduct(p=>{ const arr = [...(p.customization.options||[])]; arr[i] = { ...(arr[i]||{}), name: e.target.value }; return { ...p, customization: {...p.customization, options: arr } }; })} placeholder="Option name (e.g. Engraving)" className="border px-2 py-1 rounded w-48" />
+                    <input value={opt.type || 'text'} onChange={e => setProduct(p=>{ const arr = [...(p.customization.options||[])]; arr[i] = { ...(arr[i]||{}), type: e.target.value }; return { ...p, customization: {...p.customization, options: arr } }; })} placeholder="Type" className="border px-2 py-1 rounded w-28" />
+                    <input value={(opt.values||[]).join(', ')} onChange={e => setProduct(p=>{ const arr = [...(p.customization.options||[])]; arr[i] = { ...(arr[i]||{}), values: e.target.value.split(',').map(s=>s.trim()).filter(Boolean) }; return { ...p, customization: {...p.customization, options: arr } }; })} placeholder="Values (comma)" className="border px-2 py-1 rounded flex-1" />
+                    <button onClick={() => setProduct(p=>({...p, customization: {...p.customization, options: p.customization.options.filter((_,idx)=>idx!==i)} }))} className="px-2 py-1 border rounded text-sm text-red-600">Remove</button>
+                  </div>
+                ))}
+                <button onClick={() => setProduct(p=>({...p, customization: {...p.customization, options: [...(p.customization.options||[]), { name: '', type: 'text', values: [] } ] } }))} className="px-2 py-1 border rounded text-sm">Add option</button>
+              </div>
+            )}
+          </div>
+
+          {/* Warranty & return policy */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium">Warranty</label>
+              <input placeholder="Period (e.g. 12 months)" value={product.warranty?.period || ''} onChange={e => setProduct(p=>({...p, warranty: {...(p.warranty||{}), period: e.target.value}}))} className="w-full border px-3 py-2 rounded mt-2" />
+              <input placeholder="Provider" value={product.warranty?.provider || ''} onChange={e => setProduct(p=>({...p, warranty: {...(p.warranty||{}), provider: e.target.value}}))} className="w-full border px-3 py-2 rounded mt-2" />
+              <textarea placeholder="Warranty details" value={product.warranty?.details || ''} onChange={e => setProduct(p=>({...p, warranty: {...(p.warranty||{}), details: e.target.value}}))} className="w-full border px-3 py-2 rounded mt-2 h-20" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium">Return policy</label>
+              <input type="number" placeholder="Days (e.g. 30)" value={product.returnPolicy?.days || 0} onChange={e => setProduct(p=>({...p, returnPolicy: {...(p.returnPolicy||{}), days: Number(e.target.value)}}))} className="w-full border px-3 py-2 rounded mt-2" />
+              <label className="inline-flex items-center gap-2 mt-2"><input type="checkbox" checked={product.returnPolicy?.refundable ?? true} onChange={e => setProduct(p=>({...p, returnPolicy: {...(p.returnPolicy||{}), refundable: e.target.checked}}))} /> Refundable</label>
+              <textarea placeholder="Return details" value={product.returnPolicy?.details || ''} onChange={e => setProduct(p=>({...p, returnPolicy: {...(p.returnPolicy||{}), details: e.target.value}}))} className="w-full border px-3 py-2 rounded mt-2 h-20" />
+            </div>
+          </div>
+
+          {/* FAQs */}
+          <div>
+            <label className="block text-sm font-medium">FAQs</label>
+            <div className="space-y-2 mt-2">
+              {(product.faqs || []).map((f, i) => (
+                <div key={i} className="grid grid-cols-2 gap-2 items-start">
+                  <input value={f.question || ''} onChange={e => setProduct(p=>{ const arr = [...(p.faqs||[])]; arr[i] = { ...(arr[i]||{}), question: e.target.value }; return { ...p, faqs: arr }; })} placeholder="Question" className="border px-2 py-1 rounded" />
+                  <div className="flex gap-2">
+                    <input value={f.answer || ''} onChange={e => setProduct(p=>{ const arr = [...(p.faqs||[])]; arr[i] = { ...(arr[i]||{}), answer: e.target.value }; return { ...p, faqs: arr }; })} placeholder="Answer" className="border px-2 py-1 rounded flex-1" />
+                    <button onClick={() => setProduct(p=>({...p, faqs: p.faqs.filter((_,idx)=>idx!==i)}))} className="px-2 py-1 border rounded text-sm text-red-600">Remove</button>
                   </div>
                 </div>
               ))}
-              {(!product.variants || product.variants.length === 0) && <div className="text-sm text-gray-500">No variants. Use main price/inventory above for single-variant products.</div>}
+              <button onClick={() => setProduct(p=>({...p, faqs: [...(p.faqs||[]), { question: '', answer: '' }]}))} className="px-2 py-1 border rounded text-sm mt-2">Add FAQ</button>
+            </div>
+          </div>
+
+          {/* Reviews (read / remove) */}
+          <div>
+            <label className="block text-sm font-medium">Reviews (admin view)</label>
+            <div className="mt-2 text-sm text-gray-600">Average: {product.averageRating || 0} • {product.reviewCount || 0} reviews</div>
+            <div className="mt-3 space-y-3">
+              {(product.reviews || []).map((r, i) => (
+                <div key={i} className="border p-3 rounded">
+                  <div className="flex justify-between items-start gap-3">
+                    <div>
+                      <div className="font-medium">{r.title || '—'} <span className="text-yellow-600">{'★'.repeat(Math.round(r.rating || 0))}</span></div>
+                      <div className="text-xs text-gray-500">{r.user ? `${r.user}` : 'Anonymous'} — {new Date(r.createdAt).toLocaleDateString()}</div>
+                      <div className="mt-2">{r.body}</div>
+                    </div>
+                    <div>
+                      <button onClick={() => setProduct(p=>({...p, reviews: p.reviews.filter((_,idx)=>idx!==i)}))} className="px-2 py-1 border rounded text-sm text-red-600">Delete review</button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {(!product.reviews || product.reviews.length === 0) && <div className="text-sm text-gray-500">No reviews yet</div>}
             </div>
           </div>
 

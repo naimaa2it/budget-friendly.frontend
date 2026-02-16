@@ -363,7 +363,7 @@ export default function ProductCreate() {
               <div className="mt-3 space-y-2">
                 {(product.customization.options || []).map((opt, i) => (
                   <div key={i} className="flex gap-2 items-center">
-                    <input value={opt.name || ''} onChange={e => setProduct(p=>{ const arr = [...(p.customization.options||[])]; arr[i] = { ...(arr[i]||{}), name: e.target.value }; return { ...p, customization: {...p.customization, options: arr } }; })} placeholder="Option name (e.g. Engraving)" className="border px-2 py-1 rounded w-48" />
+                    <input value={opt.name || ''} onChange={e => setProduct(p=>{ const arr = [...(p.customization.options||[])]; arr[i] = { ...(arr[i]||{}), name: e.target.value }; return { ...p, customization: {...p.customization, options: arr } }; })} placeholder="Option name (e.g. Engraving)" className="border px-2 py-1 rounded w-68" />
                     <input value={opt.type || 'text'} onChange={e => setProduct(p=>{ const arr = [...(p.customization.options||[])]; arr[i] = { ...(arr[i]||{}), type: e.target.value }; return { ...p, customization: {...p.customization, options: arr } }; })} placeholder="Type" className="border px-2 py-1 rounded w-28" />
                     <input value={(opt.values||[]).join(', ')} onChange={e => setProduct(p=>{ const arr = [...(p.customization.options||[])]; arr[i] = { ...(arr[i]||{}), values: e.target.value.split(',').map(s=>s.trim()).filter(Boolean) }; return { ...p, customization: {...p.customization, options: arr } }; })} placeholder="Values (comma)" className="border px-2 py-1 rounded flex-1" />
                     <button onClick={() => setProduct(p=>({...p, customization: {...p.customization, options: p.customization.options.filter((_,idx)=>idx!==i)} }))} className="px-2 py-1 border rounded text-sm text-red-600">Remove</button>
@@ -466,14 +466,12 @@ export default function ProductCreate() {
 
           <div>
             <label className="block text-sm font-medium">Search listing (SEO / meta)</label>
-            <div className="text-xs text-gray-500 mt-1">Title and description shown on search engines and social shares — keep title ≤ 60 chars and description ≤ 155 chars for best results.</div>
 
             <div className="mt-3 space-y-3">
               <div>
                 <label className="text-xs font-medium">Meta title</label>
                 <input placeholder="e.g. Lightweight Jacket — Brand" value={product.seo?.title || ''} onChange={e => setProduct(p=>({...p, seo: {...p.seo, title: e.target.value}}))} className="w-full border px-3 py-2 rounded" />
                 <div className="flex justify-between items-center mt-1">
-                  <div className="text-xs text-gray-500">Appears as the clickable headline in search results.</div>
                   <div className={`${(product.seo?.title || '').length > 60 ? 'text-red-600' : 'text-gray-500'} text-xs`}>{(product.seo?.title || '').length}/60</div>
                 </div>
               </div>
@@ -482,16 +480,11 @@ export default function ProductCreate() {
                 <label className="text-xs font-medium">Meta description</label>
                 <textarea placeholder="Short summary for search engines and social shares" value={product.seo?.description || ''} onChange={e => setProduct(p=>({...p, seo: {...p.seo, description: e.target.value}}))} className="w-full border px-3 py-2 rounded h-20" />
                 <div className="flex justify-between items-center mt-1">
-                  <div className="text-xs text-gray-500">Shown under the title in search results.</div>
                   <div className={`${(product.seo?.description || '').length > 155 ? 'text-red-600' : 'text-gray-500'} text-xs`}>{(product.seo?.description || '').length}/155</div>
                 </div>
               </div>
 
-              <div className="mt-2 p-3 border rounded bg-gray-50">
-                <div className="text-sm text-blue-600 font-medium">{product.seo?.title || product.title || 'Preview title'}</div>
-                <div className="text-xs text-slate-500">{process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'}/products/{product.slug || 'product-slug'}</div>
-                <div className="text-sm text-gray-700 mt-2">{product.seo?.description ? product.seo.description : (product.description || '').slice(0,160)}</div>
-              </div>
+              
             </div>
 
             {/* Save / Cancel at bottom */}

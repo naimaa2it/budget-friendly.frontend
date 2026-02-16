@@ -38,6 +38,7 @@ export default function ProductCreate() {
     reviewCount: 0,
     status: 'draft',
     specs: {},
+    seo: { title: '', description: '' },
 
     // promotion flags — visible as checkboxes in editor
     featured: false,

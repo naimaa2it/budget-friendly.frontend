@@ -38,6 +38,7 @@ export default function ProductEdit({ productId }) {
     reviewCount: 0,
     status: 'draft',
     specs: {},
+    seo: { title: '', description: '' },
 
     // promotion flags — visible as checkboxes in editor
     featured: false,
@@ -69,13 +70,34 @@ export default function ProductEdit({ productId }) {
   }, [API]);
 
   useEffect(() => {
-    if (!productId) return;
+    if (!productId) {
+      console.log('ProductEdit: No productId provided');
+      return;
+    }
+    
+    console.log('ProductEdit: Loading product with ID:', productId);
+    console.log('ProductEdit: Fetching from URL:', `${API}/api/admin/products/${productId}`);
+    
     setLoading(true);
     fetch(`${API}/api/admin/products/${productId}`, { credentials: 'include' })
-      .then(r => r.json())
+      .then(r => {
+        console.log('ProductEdit: Response status:', r.status);
+        if (!r.ok) {
+          throw new Error(`HTTP ${r.status}: ${r.statusText}`);
+        }
+        return r.json();
+      })
       .then(async b => {
+        console.log('ProductEdit: Received data:', b);
+        
+        if (b.error) {
+          throw new Error(b.error);
+        }
+        
         if (b.product) {
           const p = b.product;
+          console.log('ProductEdit: Product data:', p);
+          
           // normalize fields for editor (backward compatibility)
           p.sizes = p.sizes || p.specs?.sizes || [];
           p.specs = { ...(p.specs || {}), sizes: p.sizes };
@@ -88,6 +110,7 @@ export default function ProductEdit({ productId }) {
           p.returnPolicy = p.returnPolicy || { days: undefined, refundable: true, details: '' };
           p.faqs = p.faqs || [];
           p.reviews = p.reviews || [];
+          p.seo = p.seo || { title: '', description: '' };
           // keep numeric fields as-provided (allow blank / undefined instead of forcing 0)
           // p.rewardPoints, p.monthlySold, p.compareAtPrice will remain as returned by the API if present.
           // promotion flags
@@ -98,52 +121,87 @@ export default function ProductEdit({ productId }) {
           // badges (admin)
           p.badges = p.badges || [];
 
+          console.log('ProductEdit: Setting product state with normalized data');
           setProduct(p);
-
-          // try to set selected category from categoryId or category name
-          if (p.categoryId) {
-            // find path in categories
-            const findPath = (nodes, id, path = []) => {
-              for (const n of nodes) {
-                if (String(n._id) === String(id)) return [...path, n];
-                if (n.children && n.children.length) {
-                  const res = findPath(n.children, id, [...path, n]);
-                  if (res) return res;
-                }
-              }
-              return null;
-            };
-            const path = findPath(categories, p.categoryId);
-            if (path) {
-              setSelectedMain(path[0] || null);
-              setSelectedSub(path[1] || null);
-              setSelectedChild(path[2] || null);
-            }
-          } else if (p.category) {
-            // try match by name
-            const matchByName = (nodes, name) => {
-              for (const n of nodes) {
-                if (n.name === name) return [n];
-                if (n.children && n.children.length) {
-                  const sub = matchByName(n.children, name);
-                  if (sub) return [n, ...sub];
-                }
-              }
-              return null;
-            };
-            const path = matchByName(categories, p.category);
-            if (path) {
-              setSelectedMain(path[0] || null);
-              setSelectedSub(path[1] || null);
-              setSelectedChild(path[2] || null);
-              if (!p.categoryId && path[path.length-1]) setProduct(prod => ({ ...prod, categoryId: path[path.length-1]._id }));
-            }
-          }
+        } else {
+          console.error('ProductEdit: No product in response');
         }
       })
-      .catch(err => console.error(err))
-      .finally(() => setLoading(false));
-  }, [productId, API, categories]);
+      .catch(err => {
+        console.error('ProductEdit: Error loading product:', err);
+        alert(`Failed to load product: ${err.message}`);
+      })
+      .finally(() => {
+        console.log('ProductEdit: Loading complete');
+        setLoading(false);
+      });
+  }, [productId, API]);
+
+  // Separate effect to set selected categories after both product and categories are loaded
+  useEffect(() => {
+    if (!product.categoryId && !product.category) {
+      console.log('ProductEdit: No category info in product');
+      return;
+    }
+    if (categories.length === 0) {
+      console.log('ProductEdit: Categories not loaded yet');
+      return;
+    }
+
+    console.log('ProductEdit: Setting up category selection. Product category:', product.category, 'Product categoryId:', product.categoryId);
+
+    // Helper function to find category path by ID
+    const findPath = (nodes, id, path = []) => {
+      for (const n of nodes) {
+        if (String(n._id) === String(id)) return [...path, n];
+        if (n.children && n.children.length) {
+          const res = findPath(n.children, id, [...path, n]);
+          if (res) return res;
+        }
+      }
+      return null;
+    };
+
+    // Helper function to find category path by name
+    const matchByName = (nodes, name) => {
+      for (const n of nodes) {
+        if (n.name === name) return [n];
+        if (n.children && n.children.length) {
+          const sub = matchByName(n.children, name);
+          if (sub) return [n, ...sub];
+        }
+      }
+      return null;
+    };
+
+    // Try to set selected category from categoryId first
+    if (product.categoryId) {
+      const path = findPath(categories, product.categoryId);
+      if (path) {
+        console.log('ProductEdit: Found category path by ID:', path.map(p => p.name));
+        setSelectedMain(path[0] || null);
+        setSelectedSub(path[1] || null);
+        setSelectedChild(path[2] || null);
+      } else {
+        console.log('ProductEdit: Category ID not found in tree:', product.categoryId);
+      }
+    } else if (product.category) {
+      // Try match by name if categoryId not available
+      const path = matchByName(categories, product.category);
+      if (path) {
+        console.log('ProductEdit: Found category path by name:', path.map(p => p.name));
+        setSelectedMain(path[0] || null);
+        setSelectedSub(path[1] || null);
+        setSelectedChild(path[2] || null);
+        // Update product with the found categoryId
+        if (path[path.length-1]) {
+          setProduct(prev => ({ ...prev, categoryId: path[path.length-1]._id }));
+        }
+      } else {
+        console.log('ProductEdit: Category name not found in tree:', product.category);
+      }
+    }
+  }, [product.categoryId, product.category, categories]);
 
   const handleFile = async (file) => {
     // show immediate local preview while uploading
@@ -177,7 +235,7 @@ export default function ProductEdit({ productId }) {
     }
   };
 
-  const onAddVariant = () => setProduct(p => ({ ...p, variants: [...(p.variants||[]), { title: '', sku: '', price: '', inventory: '', attributes: {} }] }));
+  const onAddVariant = () => setProduct(p => ({ ...p, variants: [...(p.variants||[]), { title: '', sku: '', price: undefined, inventory: undefined, attributes: {} }] }));
   const onRemoveVariant = (idx) => setProduct(p => ({ ...p, variants: p.variants.filter((_,i)=>i!==idx) }));
   const onChangeVariant = (idx, patch) => setProduct(p => { const arr = [...(p.variants||[])]; arr[idx] = { ...(arr[idx]||{}), ...patch }; return { ...p, variants: arr }; });
 
@@ -311,7 +369,7 @@ export default function ProductEdit({ productId }) {
             <div className="space-y-3">
               {(product.variants || []).map((v, idx) => (
                 <div key={idx} className="grid grid-cols-5 gap-2 items-center border p-2 rounded">
-                  <input placeholder="Price" value={v.price ?? ''} onChange={e => onChangeVariant(idx, { price: e.target.value === '' ? undefined : Number(e.target.value) })} className="border px-2 py-1 rounded" />
+                  <input placeholder="Label (e.g. Red - L)" value={v.title || ''} onChange={e => onChangeVariant(idx, { title: e.target.value })} className="col-span-2 border px-2 py-1 rounded" />
                   <input placeholder="SKU" value={v.sku || ''} onChange={e => onChangeVariant(idx, { sku: e.target.value })} className="border px-2 py-1 rounded" />
                   <input placeholder="Price" value={v.price ?? ''} onChange={e => onChangeVariant(idx, { price: e.target.value === '' ? undefined : Number(e.target.value) })} className="border px-2 py-1 rounded" />
                   <div className="flex gap-2 items-center">

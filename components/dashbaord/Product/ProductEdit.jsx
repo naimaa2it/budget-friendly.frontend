@@ -250,7 +250,7 @@ export default function ProductEdit({ productId }) {
               <option value="published">Publish</option>
             </select>
           </div>
-
+ 
           {/* Category selector (Main → Sub → Child) */}
           <div className="grid grid-cols-3 gap-3">
             <div>

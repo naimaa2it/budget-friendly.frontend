@@ -142,15 +142,33 @@ export default function ProductEditor({ productId }) {
   }, [productId, API, categories]);
 
   const handleFile = async (file) => {
+    // show immediate local preview while uploading
+    const preview = URL.createObjectURL(file);
+    setProduct(p => ({ ...p, images: [...(p.images||[]), { url: preview, __local: true, uploading: true }] }));
+
     try {
       const fd = new FormData();
       fd.append('file', file);
       const resp = await fetch(`${API}/api/admin/upload`, { method: 'POST', body: fd, credentials: 'include' });
       const body = await resp.json();
       if (!resp.ok) throw new Error(body.error || 'Upload failed');
-      const img = { public_id: body.asset.public_id, url: body.asset.url, width: body.asset.width, height: body.asset.height, format: body.asset.format };
-      setProduct(p => ({ ...p, images: [...(p.images||[]), img] }));
+
+      const asset = { public_id: body.asset.public_id, url: body.asset.url, width: body.asset.width, height: body.asset.height, format: body.asset.format };
+
+      // replace the local preview entry with the uploaded asset
+      setProduct(p => {
+        const imgs = (p.images || []).map(img => {
+          if (img.__local && img.url === preview) return asset; // replace preview with real asset
+          return img;
+        });
+        return { ...p, images: imgs };
+      });
+
+      // revoke local preview URL
+      try { URL.revokeObjectURL(preview); } catch (e) { /* ignore */ }
     } catch (err) {
+      // remove failed preview
+      setProduct(p => ({ ...p, images: (p.images || []).filter(i => !(i.__local && i.url === preview)) }));
       alert(err.message || 'Upload failed');
     }
   };
@@ -210,12 +228,8 @@ export default function ProductEditor({ productId }) {
 
   return (
     <div className="max-w-4xl mx-auto mt-6 bg-white p-6 rounded shadow">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold">{productId === 'new' ? 'Create product' : 'Edit product'}</h2>
-        <div className="flex gap-2">
-          <button onClick={() => router.push('/dashabord/products')} className="px-3 py-2 border rounded text-sm">Cancel</button>
-          <button onClick={handleSave} className="px-3 py-2 bg-indigo-600 text-white rounded text-sm" disabled={saving}>{saving ? 'Saving…' : 'Save product'}</button>
-        </div>
       </div>
 
       {loading ? <div className="text-center py-12">Loading…</div> : (
@@ -257,8 +271,8 @@ export default function ProductEditor({ productId }) {
             </div>
             <div>
               <label className="block text-sm font-medium">Currency</label>
-              <input value={product.currency || 'USD'} onChange={e => setProduct(p=>({...p, currency: e.target.value}))} className="w-full border px-3 py-2 rounded" />
-              <div className="text-xs text-gray-500 mt-1">Currency code (e.g. USD, INR). Leave as USD if not sure.</div>
+              <input value={product.currency ?? ''} placeholder="USD" onChange={e => setProduct(p=>({...p, currency: e.target.value}))} className="w-full border px-3 py-2 rounded" />
+              <div className="text-xs text-gray-500 mt-1">Currency code (e.g. USD, INR). You can clear and type a different code.</div>
             </div>
             <div>
               <label className="block text-sm font-medium">Availability</label>
@@ -304,18 +318,28 @@ export default function ProductEditor({ productId }) {
           {/* Images — uploaded to Cloudinary (admin upload endpoint) */}
           <div>
             <label className="block text-sm font-medium">Images</label>
-            <div className="text-xs text-gray-500 mt-1">Upload one or more images — files are stored in Cloudinary and optimized automatically.</div>
-            <div className="flex gap-3 items-center mt-2">
-              <input type="file" accept="image/*" multiple onChange={e => Array.from(e.target.files || []).forEach(f => f && handleFile(f))} />
-              <div className="flex gap-2">
-                {(product.images||[]).map((img, i) => (
-                  <div key={i} className="relative">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={img.url} alt="" className="w-24 h-24 object-cover rounded" />
-                    <button type="button" onClick={() => setProduct(p=>({...p, images: p.images.filter((_,idx)=>idx!==i)}))} className="absolute -top-2 -right-2 bg-white rounded-full p-1 border text-red-600">×</button>
-                  </div>
-                ))}
-              </div>
+            <div className="text-xs text-gray-500 mt-1">Click to upload or drag files. Uploaded images are stored in Cloudinary and optimized automatically.</div>
+
+            <label className="mt-2 flex items-center gap-3 cursor-pointer border-2 border-dashed border-gray-200 rounded px-4 py-6 text-center">
+              <input type="file" accept="image/*" multiple className="sr-only" onChange={e => Array.from(e.target.files || []).forEach(f => f && handleFile(f))} />
+              <div className="text-sm text-gray-600">Click to select images or drop here</div>
+            </label>
+
+            <div className="flex gap-2 mt-3 flex-wrap">
+              {(product.images||[]).map((img, i) => (
+                <div key={i} className="relative w-24 h-24 rounded overflow-hidden border">
+                  {/* preview (local or uploaded) */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={img.url} alt="" className="w-full h-full object-cover" />
+
+                  {/* uploading overlay for local previews */}
+                  {img.uploading || img.__local ? (
+                    <div className="absolute inset-0 bg-white/70 flex items-center justify-center text-xs text-gray-700">Uploading…</div>
+                  ) : null}
+
+                  <button type="button" onClick={() => setProduct(p=>({...p, images: p.images.filter((_,idx)=>idx!==i)}))} className="absolute -top-2 -right-2 bg-white rounded-full p-1 border text-red-600">×</button>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -431,7 +455,6 @@ export default function ProductEditor({ productId }) {
                     <div className="flex items-center gap-2 mt-1">
                       <input type="number" min={1} max={5} step={0.1} value={newReview.rating} onChange={e => setNewReview(n => ({ ...n, rating: Number(e.target.value) }))} className="w-20 border px-2 py-2 rounded" />
                       <div className="text-sm text-gray-500">/5</div>
-                      <div className="text-yellow-500 text-sm">{'★'.repeat(Math.max(0, Math.round(newReview.rating || 0)))}</div>
                     </div>
                     <div className="text-xs text-gray-400 mt-1">Enter 1–5 (you can type 4, 4.5, etc.).</div>
                   </div>
@@ -495,7 +518,11 @@ export default function ProductEditor({ productId }) {
             <input value={product.seo?.title || ''} onChange={e => setProduct(p=>({...p, seo: {...p.seo, title: e.target.value}}))} className="w-full border px-3 py-2 rounded" />
             <label className="block text-sm font-medium mt-2">SEO Description</label>
             <input value={product.seo?.description || ''} onChange={e => setProduct(p=>({...p, seo: {...p.seo, description: e.target.value}}))} className="w-full border px-3 py-2 rounded" />
-          </div>
+            {/* Save / Cancel at bottom */}
+            <div className="flex justify-end gap-3 mt-6">
+              <button onClick={() => router.push('/dashabord/products')} className="px-4 py-2 border rounded text-sm">Cancel</button>
+              <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-indigo-600 text-white rounded text-sm">{saving ? 'Saving…' : 'Save product'}</button>
+            </div>          </div>
         </div>
       )}
     </div>

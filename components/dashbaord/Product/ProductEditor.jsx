@@ -48,6 +48,9 @@ export default function ProductEditor({ productId }) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // local state for admin to add a review manually
+  const [newReview, setNewReview] = useState({ authorName: '', rating: 5, title: '', body: '' });
+
   useEffect(() => { if (!user) refreshUser(); }, [user, refreshUser]);
 
   const [categories, setCategories] = useState([]);
@@ -156,6 +159,35 @@ export default function ProductEditor({ productId }) {
     setProduct(p => ({ ...p, variants: [...(p.variants||[]), { title: '', sku: '', price: 0, inventory: 0, attributes: {} }] }));
   };
   const onRemoveVariant = (idx) => setProduct(p => ({ ...p, variants: p.variants.filter((_,i)=>i!==idx) }));
+
+  // ---- reviews helpers for admin editor ----
+  const recalcReviews = (reviews) => {
+    const list = reviews || [];
+    const count = list.length;
+    const sum = list.reduce((s, r) => s + (Number(r.rating) || 0), 0);
+    const avg = count ? Math.round((sum / count) * 10) / 10 : 0;
+    return { count, avg };
+  };
+
+  const addReview = () => {
+    const rating = Number(newReview.rating) || 0;
+    if (rating < 1 || rating > 5) return alert('Rating must be between 1 and 5');
+    const review = { authorName: newReview.authorName || undefined, rating, title: newReview.title || '', body: newReview.body || '', helpful: 0, createdAt: new Date().toISOString() };
+    setProduct(p => {
+      const reviews = [...(p.reviews||[]), review];
+      const { count, avg } = recalcReviews(reviews);
+      return { ...p, reviews, reviewCount: count, averageRating: avg };
+    });
+    setNewReview({ authorName: '', rating: 5, title: '', body: '' });
+  };
+
+  const removeReviewAt = (idx) => {
+    setProduct(p => {
+      const reviews = (p.reviews || []).filter((_, i) => i !== idx);
+      const { count, avg } = recalcReviews(reviews);
+      return { ...p, reviews, reviewCount: count, averageRating: avg };
+    });
+  };
 
   const handleSave = async () => {
     if (!product.title) return alert('Title is required');
@@ -384,20 +416,42 @@ export default function ProductEditor({ productId }) {
             <label className="block text-sm font-medium">Customer reviews (admin view)</label>
             <div className="mt-2 text-sm text-gray-600">Average: {product.averageRating || 0} • {product.reviewCount || 0} reviews. You can remove inappropriate reviews here; customers add reviews from the product page.</div>
             <div className="mt-3 space-y-3">
+              {/* Add-review box for admin */}
+              <div className="p-3 border rounded bg-gray-50">
+                <div className="text-sm font-medium mb-2">Add review</div>
+                <div className="grid grid-cols-4 gap-2">
+                  <input placeholder="Your name (optional)" value={newReview.authorName} onChange={e => setNewReview(n => ({ ...n, authorName: e.target.value }))} className="border px-2 py-1 rounded col-span-1" />
+                  <select value={newReview.rating} onChange={e => setNewReview(n => ({ ...n, rating: Number(e.target.value) }))} className="border px-2 py-1 rounded w-24">
+                    <option value={5}>5</option>
+                    <option value={4}>4</option>
+                    <option value={3}>3</option>
+                    <option value={2}>2</option>
+                    <option value={1}>1</option>
+                  </select>
+                  <input placeholder="Title" value={newReview.title} onChange={e => setNewReview(n => ({ ...n, title: e.target.value }))} className="border px-2 py-1 rounded col-span-2" />
+                  <textarea placeholder="Write the review..." value={newReview.body} onChange={e => setNewReview(n => ({ ...n, body: e.target.value }))} className="border px-2 py-1 rounded col-span-4 h-20" />
+                  <div className="col-span-4 flex justify-end">
+                    <button onClick={addReview} className="px-3 py-1 bg-green-600 text-white rounded text-sm">Add review</button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Existing reviews */}
               {(product.reviews || []).map((r, i) => (
                 <div key={i} className="border p-3 rounded">
                   <div className="flex justify-between items-start gap-3">
                     <div>
                       <div className="font-medium">{r.title || '—'} <span className="text-yellow-600">{'★'.repeat(Math.round(r.rating || 0))}</span></div>
-                      <div className="text-xs text-gray-500">{r.user ? `${r.user}` : 'Anonymous'} — {new Date(r.createdAt).toLocaleDateString()}</div>
+                      <div className="text-xs text-gray-500">{r.authorName || (r.user ? `${r.user}` : 'Anonymous')} — {new Date(r.createdAt).toLocaleDateString()}</div>
                       <div className="mt-2">{r.body}</div>
                     </div>
                     <div>
-                      <button onClick={() => setProduct(p=>({...p, reviews: p.reviews.filter((_,idx)=>idx!==i)}))} className="px-2 py-1 border rounded text-sm text-red-600">Delete review</button>
+                      <button onClick={() => removeReviewAt(i)} className="px-2 py-1 border rounded text-sm text-red-600">Delete review</button>
                     </div>
                   </div>
                 </div>
               ))}
+
               {(!product.reviews || product.reviews.length === 0) && <div className="text-sm text-gray-500">No reviews yet</div>}
             </div>
           </div>

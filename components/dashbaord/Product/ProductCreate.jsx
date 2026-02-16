@@ -294,7 +294,6 @@ export default function ProductCreate() {
 
             <div>
               <label className="block text-sm font-medium">Badges</label>
-              <div className="text-xs text-gray-500 mt-1">Pick one or more badges to display on the storefront (multiple selection allowed).</div>
               <div className="flex flex-wrap gap-2 mt-2">
                 {[
                   { key: 'best_seller', label: 'Best seller' },

@@ -419,7 +419,6 @@ export default function ProductCreate() {
               <div className="p-4 border rounded bg-gray-50">
                 <div className="flex items-center justify-between mb-3">
                   <div className="text-sm font-medium">Add review</div>
-                  <div className="text-xs text-gray-500">Admins can add or remove reviews here.</div>
                 </div>
 
                 <div className="space-y-3">

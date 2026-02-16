@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/components/context/UserContext';
 
@@ -16,22 +17,38 @@ export default function ProductsList() {
   const [selectedMain, setSelectedMain] = useState(null);
   const [selectedSub, setSelectedSub] = useState(null);
   const [selectedChild, setSelectedChild] = useState(null);
+  const [sort, setSort] = useState('newest');
 
-  const fetchItems = async () => {
+  const applySort = (list, sortKey) => {
+    const copy = [...(list || [])];
+    switch (sortKey) {
+      case 'price_asc':
+        return copy.sort((a, b) => (Number(a.price || a.variants?.[0]?.price || 0) - Number(b.price || b.variants?.[0]?.price || 0)));
+      case 'price_desc':
+        return copy.sort((a, b) => (Number(b.price || b.variants?.[0]?.price || 0) - Number(a.price || a.variants?.[0]?.price || 0)));
+      case 'sold_desc':
+        return copy.sort((a, b) => (Number(b.monthlySold || 0) - Number(a.monthlySold || 0)));
+      case 'newest':
+      default:
+        return copy.sort((a, b) => (new Date(b.createdAt || 0) - new Date(a.createdAt || 0)));
+    }
+  };
+
+  const fetchItems = useCallback(async () => {
     setLoading(true);
     try {
       const catId = selectedChild?._id || selectedSub?._id || selectedMain?._id || '';
       const q = `${API}/api/admin/products?limit=50&q=${encodeURIComponent(query || '')}${catId ? `&categoryId=${encodeURIComponent(catId)}` : ''}`;
       const resp = await fetch(q, { credentials: 'include' });
       const body = await resp.json();
-      if (resp.ok) setItems(body.items || []);
+      if (resp.ok) setItems(applySort(body.items || [], sort));
       else throw new Error(body.error || 'Failed to load');
     } catch (err) {
       console.error('Load products error', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [API, query, selectedMain, selectedSub, selectedChild, sort]);
 
   useEffect(() => { if (!user) refreshUser(); }, [user, refreshUser]);
 
@@ -40,10 +57,7 @@ export default function ProductsList() {
     fetch(`${API}/api/products/categories`).then(r => r.json()).then(b => setCategories(b.categories || [])).catch(() => setCategories([]));
   }, [API]);
 
-  useEffect(() => {
-    const load = () => { fetchItems(); };
-    load();
-  }, [query, selectedMain, selectedSub, selectedChild]);
+  useEffect(() => { fetchItems(); }, [fetchItems]);
 
   const handleDelete = async (id, force = false) => {
     const msg = force ? 'Permanently delete this product? This cannot be undone.' : 'Archive this product?';
@@ -61,27 +75,36 @@ export default function ProductsList() {
 
   return (
     <div className="max-w-6xl mx-auto mt-6 bg-white p-6 rounded shadow">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-3">
         <h2 className="text-lg font-semibold">Products</h2>
-        <div className="flex items-center gap-2">
-          <select value={selectedMain?._id || ''} onChange={e => { const id = e.target.value; const main = categories.find(c=>String(c._id)===id)||null; setSelectedMain(main); setSelectedSub(null); setSelectedChild(null); }} className="border px-3 py-2 rounded">
-            <option value="">All categories</option>
-            {categories.map(c=> <option key={c._id} value={c._id}>{c.name}</option>)}
-          </select>
+        <Link href="/dashabord/products/new" className="px-3 py-2 bg-green-600 text-white rounded text-sm">Create product</Link>
+      </div>
 
-          <select value={selectedSub?._id || ''} onChange={e => { const id = e.target.value; const sub = (selectedMain?.children||[]).find(c=>String(c._id)===id)||null; setSelectedSub(sub); setSelectedChild(null); }} className="border px-3 py-2 rounded">
-            <option value="">Sub category</option>
-            {(selectedMain?.children||[]).map(c=> <option key={c._id} value={c._id}>{c.name}</option>)}
-          </select>
+      {/* filters / search / sorting — placed on the next line */}
+      <div className="flex flex-wrap items-center gap-3 mb-4">
+        <select value={selectedMain?._id || ''} onChange={e => { const id = e.target.value; const main = categories.find(c=>String(c._id)===id)||null; setSelectedMain(main); setSelectedSub(null); setSelectedChild(null); }} className="border px-3 py-2 rounded">
+          <option value="">All categories</option>
+          {categories.map(c=> <option key={c._id} value={c._id}>{c.name}</option>)}
+        </select>
 
-          <select value={selectedChild?._id || ''} onChange={e => { const id = e.target.value; const child = (selectedSub?.children||[]).find(c=>String(c._id)===id)||null; setSelectedChild(child); }} className="border px-3 py-2 rounded">
-            <option value="">Sub‑sub category</option>
-            {(selectedSub?.children||[]).map(c=> <option key={c._id} value={c._id}>{c.name}</option>)}
-          </select>
+        <select value={selectedSub?._id || ''} onChange={e => { const id = e.target.value; const sub = (selectedMain?.children||[]).find(c=>String(c._id)===id)||null; setSelectedSub(sub); setSelectedChild(null); }} className="border px-3 py-2 rounded">
+          <option value="">Sub category</option>
+          {(selectedMain?.children||[]).map(c=> <option key={c._id} value={c._id}>{c.name}</option>)}
+        </select>
 
-          <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search products" className="border px-3 py-2 rounded" />
-          <a href="/dashabord/products/new" className="px-3 py-2 bg-green-600 text-white rounded text-sm">Create product</a>
-        </div>
+        <select value={selectedChild?._id || ''} onChange={e => { const id = e.target.value; const child = (selectedSub?.children||[]).find(c=>String(c._id)===id)||null; setSelectedChild(child); }} className="border px-3 py-2 rounded">
+          <option value="">Sub‑sub category</option>
+          {(selectedSub?.children||[]).map(c=> <option key={c._id} value={c._id}>{c.name}</option>)}
+        </select>
+
+        <input aria-label="Search products" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search products" className="border px-3 py-2 rounded flex-1 min-w-45" />
+
+        <select value={sort} onChange={e => setSort(e.target.value)} className="border px-3 py-2 rounded w-48">
+          <option value="newest">Sort: Newest</option>
+          <option value="price_asc">Price: Low → High</option>
+          <option value="price_desc">Price: High → Low</option>
+          <option value="sold_desc">Best selling</option>
+        </select>
       </div>
 
       {loading ? (
@@ -120,7 +143,7 @@ export default function ProductsList() {
                   <td className="py-3"><span className={`px-2 py-1 text-xs rounded ${p.status==='published' ? 'bg-green-50 text-green-700' : p.status==='draft' ? 'bg-yellow-50 text-yellow-700' : 'bg-gray-50 text-gray-700'}`}>{p.status}</span></td>
                   <td className="py-3">
                     <div className="flex gap-2">
-                      <a className="px-2 py-1 border rounded text-sm" href={`/dashabord/products/${p._id}`}>Edit</a>
+                      <Link className="px-2 py-1 border rounded text-sm" href={`/dashabord/products/${p._id}`}>Edit</Link>
                       <button className="px-2 py-1 border rounded text-sm text-gray-700" onClick={() => handleDelete(p._id)}>Archive</button>
                       <button className="px-2 py-1 border rounded text-sm text-white bg-red-600 hover:bg-red-700" onClick={() => handleDelete(p._id, true)}>Delete</button>
                     </div>

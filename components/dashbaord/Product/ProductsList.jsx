@@ -17,22 +17,7 @@ export default function ProductsList() {
   const [selectedMain, setSelectedMain] = useState(null);
   const [selectedSub, setSelectedSub] = useState(null);
   const [selectedChild, setSelectedChild] = useState(null);
-  const [sort, setSort] = useState('newest');
 
-  const applySort = (list, sortKey) => {
-    const copy = [...(list || [])];
-    switch (sortKey) {
-      case 'price_asc':
-        return copy.sort((a, b) => (Number(a.price || a.variants?.[0]?.price || 0) - Number(b.price || b.variants?.[0]?.price || 0)));
-      case 'price_desc':
-        return copy.sort((a, b) => (Number(b.price || b.variants?.[0]?.price || 0) - Number(a.price || a.variants?.[0]?.price || 0)));
-      case 'sold_desc':
-        return copy.sort((a, b) => (Number(b.monthlySold || 0) - Number(a.monthlySold || 0)));
-      case 'newest':
-      default:
-        return copy.sort((a, b) => (new Date(b.createdAt || 0) - new Date(a.createdAt || 0)));
-    }
-  };
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -41,14 +26,14 @@ export default function ProductsList() {
       const q = `${API}/api/admin/products?limit=50&q=${encodeURIComponent(query || '')}${catId ? `&categoryId=${encodeURIComponent(catId)}` : ''}`;
       const resp = await fetch(q, { credentials: 'include' });
       const body = await resp.json();
-      if (resp.ok) setItems(applySort(body.items || [], sort));
+      if (resp.ok) setItems(body.items || []);
       else throw new Error(body.error || 'Failed to load');
     } catch (err) {
       console.error('Load products error', err);
     } finally {
       setLoading(false);
     }
-  }, [API, query, selectedMain, selectedSub, selectedChild, sort]);
+  }, [API, query, selectedMain, selectedSub, selectedChild]);
 
   useEffect(() => { if (!user) refreshUser(); }, [user, refreshUser]);
 
@@ -99,12 +84,6 @@ export default function ProductsList() {
 
         <input aria-label="Search products" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search products" className="border px-3 py-2 rounded flex-1 min-w-45" />
 
-        <select value={sort} onChange={e => setSort(e.target.value)} className="border px-3 py-2 rounded w-48">
-          <option value="newest">Sort: Newest</option>
-          <option value="price_asc">Price: Low → High</option>
-          <option value="price_desc">Price: High → Low</option>
-          <option value="sold_desc">Best selling</option>
-        </select>
       </div>
 
       {loading ? (
@@ -144,7 +123,6 @@ export default function ProductsList() {
                   <td className="py-3">
                     <div className="flex gap-2">
                       <Link className="px-2 py-1 border rounded text-sm" href={`/dashabord/products/${p._id}`}>Edit</Link>
-                      <button className="px-2 py-1 border rounded text-sm text-gray-700" onClick={() => handleDelete(p._id)}>Archive</button>
                       <button className="px-2 py-1 border rounded text-sm text-white bg-red-600 hover:bg-red-700" onClick={() => handleDelete(p._id, true)}>Delete</button>
                     </div>
                   </td>

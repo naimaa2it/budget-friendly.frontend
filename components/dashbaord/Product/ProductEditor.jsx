@@ -417,21 +417,31 @@ export default function ProductEditor({ productId }) {
             <div className="mt-2 text-sm text-gray-600">Average: {product.averageRating || 0} • {product.reviewCount || 0} reviews. You can remove inappropriate reviews here; customers add reviews from the product page.</div>
             <div className="mt-3 space-y-3">
               {/* Add-review box for admin */}
-              <div className="p-3 border rounded bg-gray-50">
-                <div className="text-sm font-medium mb-2">Add review</div>
-                <div className="grid grid-cols-4 gap-2">
-                  <input placeholder="Your name (optional)" value={newReview.authorName} onChange={e => setNewReview(n => ({ ...n, authorName: e.target.value }))} className="border px-2 py-1 rounded col-span-1" />
-                  <select value={newReview.rating} onChange={e => setNewReview(n => ({ ...n, rating: Number(e.target.value) }))} className="border px-2 py-1 rounded w-24">
-                    <option value={5}>5</option>
-                    <option value={4}>4</option>
-                    <option value={3}>3</option>
-                    <option value={2}>2</option>
-                    <option value={1}>1</option>
-                  </select>
-                  <input placeholder="Title" value={newReview.title} onChange={e => setNewReview(n => ({ ...n, title: e.target.value }))} className="border px-2 py-1 rounded col-span-2" />
-                  <textarea placeholder="Write the review..." value={newReview.body} onChange={e => setNewReview(n => ({ ...n, body: e.target.value }))} className="border px-2 py-1 rounded col-span-4 h-20" />
-                  <div className="col-span-4 flex justify-end">
-                    <button onClick={addReview} className="px-3 py-1 bg-green-600 text-white rounded text-sm">Add review</button>
+              <div className="p-4 border rounded bg-gray-50">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-sm font-medium">Add review</div>
+                  <div className="text-xs text-gray-500">Admins can add or remove reviews here.</div>
+                </div>
+
+                <div className="grid grid-cols-12 gap-3 items-center">
+                  <input placeholder="Your name (optional)" value={newReview.authorName} onChange={e => setNewReview(n => ({ ...n, authorName: e.target.value }))} className="col-span-3 border px-3 py-2 rounded" />
+
+                  <div className="col-span-2">
+                    <label className="text-xs text-gray-600">Rating</label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <input type="number" min={1} max={5} step={0.1} value={newReview.rating} onChange={e => setNewReview(n => ({ ...n, rating: Number(e.target.value) }))} className="w-20 border px-2 py-2 rounded" />
+                      <div className="text-sm text-gray-500">/5</div>
+                      <div className="text-yellow-500 text-sm">{'★'.repeat(Math.max(0, Math.round(newReview.rating || 0)))}</div>
+                    </div>
+                    <div className="text-xs text-gray-400 mt-1">Enter 1–5 (you can type 4, 4.5, etc.).</div>
+                  </div>
+
+                  <input placeholder="Title" value={newReview.title} onChange={e => setNewReview(n => ({ ...n, title: e.target.value }))} className="col-span-7 border px-3 py-2 rounded" />
+
+                  <textarea placeholder="Write the review..." value={newReview.body} onChange={e => setNewReview(n => ({ ...n, body: e.target.value }))} className="col-span-12 border px-3 py-2 rounded h-28 mt-2" />
+
+                  <div className="col-span-12 flex items-center justify-end mt-2">
+                    <button onClick={addReview} className="px-4 py-2 bg-green-600 text-white rounded shadow-sm">Add review</button>
                   </div>
                 </div>
               </div>

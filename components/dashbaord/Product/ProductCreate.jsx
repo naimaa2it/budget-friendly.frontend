@@ -275,6 +275,26 @@ export default function ProductCreate() {
                   </div>
                 ))}
                 <button onClick={() => setProduct(p=>({...p, colors: [...(p.colors||[]), {name:'', hex:'#000000'}]}))} className="px-2 py-1 border rounded text-sm mt-2">Add color</button>
+
+                {/* Badges (storefront) — shown here for convenience next to colors */}
+                <div className="mt-4">
+                  <label className="block text-sm font-medium">Badges (storefront)</label>
+                  <div className="text-xs text-gray-500 mt-1">Pick badges to display on the product card.</div>
+                  <div className="flex gap-2 flex-wrap mt-2">
+                    {[
+                      { key: 'best_seller', label: 'Best seller' },
+                      { key: 'hot', label: 'Hot' },
+                      { key: 'new_arrival', label: 'New arrival' },
+                      { key: 'trending', label: 'Trending' },
+                      { key: 'limited', label: 'Limited edition' }
+                    ].map(b => (
+                      <label key={b.key} className={`inline-flex items-center gap-2 border px-3 py-1 rounded text-sm cursor-pointer ${ (product.badges||[]).includes(b.key) ? 'bg-indigo-50 border-indigo-200' : 'bg-white'}`}>
+                        <input type="checkbox" checked={(product.badges||[]).includes(b.key)} onChange={() => setProduct(p => ({ ...p, badges: (p.badges||[]).includes(b.key) ? p.badges.filter(x=>x!==b.key) : [...(p.badges||[]), b.key] }))} />
+                        {b.label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -338,24 +358,7 @@ export default function ProductCreate() {
               <div className="w-full border px-3 py-2 rounded bg-gray-50">{product.monthlySold >= 1000000 ? Math.round((product.monthlySold/1000000)*10)/10 + 'M+' : product.monthlySold >= 1000 ? Math.round((product.monthlySold/1000)*10)/10 + 'k+' : String(product.monthlySold || 0)}</div>
               <div className="text-xs text-gray-500 mt-2">Automatic display based on <code>Sold last 30 days</code>.</div>
 
-              <div className="mt-3">
-                <label className="block text-sm font-medium">Badges (storefront)</label>
-                <div className="text-xs text-gray-500 mt-1">Pick one or more badges to display on the storefront (multiple selection allowed).</div>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {[
-                    { key: 'best_seller', label: 'Best seller' },
-                    { key: 'hot', label: 'Hot' },
-                    { key: 'new_arrival', label: 'New arrival' },
-                    { key: 'trending', label: 'Trending' },
-                    { key: 'limited', label: 'Limited edition' }
-                  ].map(b => (
-                    <label key={b.key} className={`inline-flex items-center gap-2 border px-3 py-1 rounded text-sm cursor-pointer ${ (product.badges||[]).includes(b.key) ? 'bg-indigo-50 border-indigo-200' : 'bg-white'}`}>
-                      <input type="checkbox" checked={(product.badges||[]).includes(b.key)} onChange={() => setProduct(p => ({ ...p, badges: (p.badges||[]).includes(b.key) ? p.badges.filter(x=>x!==b.key) : [...(p.badges||[]), b.key] }))} />
-                      {b.label}
-                    </label>
-                  ))}
-                </div>
-              </div>
+              
             </div>
           </div> 
 

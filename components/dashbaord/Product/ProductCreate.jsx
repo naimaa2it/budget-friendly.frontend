@@ -17,21 +17,21 @@ export default function ProductCreate() {
     tags: [],
     images: [],
     variants: [],
-    price: 0,
-    compareAtPrice: 0,
+    price: undefined,
+    compareAtPrice: undefined,
     sku: '',
     currency: 'USD',
-    inventory: 0,
+    inventory: undefined,
     availability: 'in_stock',
     colors: [],
     sizes: [],
     guidelines: '',
-    monthlySold: 0,
-    rewardPoints: 0,
+    monthlySold: undefined,
+    rewardPoints: undefined,
     keyAttributes: [],
     customization: { customizable: false, options: [] },
     warranty: { period: '', details: '', provider: '' },
-    returnPolicy: { days: 0, refundable: true, details: '' },
+    returnPolicy: { days: undefined, refundable: true, details: '' },
     faqs: [],
     reviews: [],
     averageRating: 0,
@@ -101,7 +101,7 @@ export default function ProductCreate() {
   };
 
   const onAddVariant = () => {
-    setProduct(p => ({ ...p, variants: [...(p.variants||[]), { title: '', sku: '', price: 0, inventory: 0, attributes: {} }] }));
+    setProduct(p => ({ ...p, variants: [...(p.variants||[]), { title: '', sku: '', price: undefined, inventory: undefined, attributes: {} }] }));
   };
   const onRemoveVariant = (idx) => setProduct(p => ({ ...p, variants: p.variants.filter((_,i)=>i!==idx) }));
   const onChangeVariant = (idx, patch) => setProduct(p => { const arr = [...(p.variants||[])]; arr[idx] = { ...(arr[idx]||{}), ...patch }; return { ...p, variants: arr }; });
@@ -201,15 +201,15 @@ export default function ProductCreate() {
           <div className="grid grid-cols-3 gap-3">
             <div>
               <label className="block text-sm font-medium">Price</label>
-              <input type="number" value={product.price || 0} onChange={e => setProduct(p=>({...p, price: Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
+              <input type="number" value={product.price ?? ''} onChange={e => setProduct(p=>({...p, price: e.target.value === '' ? undefined : Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
             </div>
             <div>
               <label className="block text-sm font-medium">Offer price — Was price (optional)</label>
-              <input type="number" value={product.compareAtPrice || 0} onChange={e => setProduct(p=>({...p, compareAtPrice: Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
+              <input type="number" value={product.compareAtPrice ?? ''} onChange={e => setProduct(p=>({...p, compareAtPrice: e.target.value === '' ? undefined : Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
             </div>
             <div>
               <label className="block text-sm font-medium">Stock quantity</label>
-              <input type="number" value={product.inventory || 0} onChange={e => setProduct(p=>({...p, inventory: Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
+              <input type="number" value={product.inventory ?? ''} onChange={e => setProduct(p=>({...p, inventory: e.target.value === '' ? undefined : Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
             </div>
           </div>
 
@@ -229,9 +229,9 @@ export default function ProductCreate() {
                 <div key={idx} className="grid grid-cols-5 gap-2 items-center border p-2 rounded">
                   <input placeholder="Label (e.g. Red - L)" value={v.title || ''} onChange={e => onChangeVariant(idx, { title: e.target.value })} className="col-span-2 border px-2 py-1 rounded" />
                   <input placeholder="SKU" value={v.sku || ''} onChange={e => onChangeVariant(idx, { sku: e.target.value })} className="border px-2 py-1 rounded" />
-                  <input placeholder="Price" value={v.price || ''} onChange={e => onChangeVariant(idx, { price: e.target.value })} className="border px-2 py-1 rounded" />
+                  <input placeholder="Price" value={v.price ?? ''} onChange={e => onChangeVariant(idx, { price: e.target.value === '' ? undefined : Number(e.target.value) })} className="border px-2 py-1 rounded" />
                   <div className="flex gap-2 items-center">
-                    <input placeholder="Qty" value={v.inventory || ''} onChange={e => onChangeVariant(idx, { inventory: e.target.value })} className="w-16 border px-2 py-1 rounded" />
+                    <input placeholder="Qty" value={v.inventory ?? ''} onChange={e => onChangeVariant(idx, { inventory: e.target.value === '' ? undefined : Number(e.target.value) })} className="w-16 border px-2 py-1 rounded" />
                     <button type="button" onClick={() => onRemoveVariant(idx)} className="text-sm text-red-600">Remove</button>
                   </div>
                 </div>
@@ -341,13 +341,13 @@ export default function ProductCreate() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium">Reward points (optional)</label>
-              <input type="number" value={product.rewardPoints || 0} onChange={e => setProduct(p=>({...p, rewardPoints: Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
+              <input type="number" value={product.rewardPoints ?? ''} onChange={e => setProduct(p=>({...p, rewardPoints: e.target.value === '' ? undefined : Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
               <div className="text-xs text-gray-500 mt-1">Points customers earn for buying this product.</div>
             </div>
 
             <div>
               <label className="block text-sm font-medium">Sold last 30 days</label>
-              <input type="number" value={product.monthlySold || 0} onChange={e => setProduct(p=>({...p, monthlySold: Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
+              <input type="number" value={product.monthlySold ?? ''} onChange={e => setProduct(p=>({...p, monthlySold: e.target.value === '' ? undefined : Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
               <div className="text-xs text-gray-500 mt-1">Use this to show popularity badges (e.g. “1k+ sold”).</div>
             </div>
           </div> 
@@ -387,7 +387,7 @@ export default function ProductCreate() {
             <div>
               <label className="block text-sm font-medium">Return policy</label>
               <div className="text-xs text-gray-500 mt-1">How customers can return the product and whether refunds are allowed.</div>
-              <input type="number" placeholder="Days (e.g. 30)" value={product.returnPolicy?.days || 0} onChange={e => setProduct(p=>({...p, returnPolicy: {...(p.returnPolicy||{}), days: Number(e.target.value)}}))} className="w-full border px-3 py-2 rounded mt-2" />
+              <input type="number" placeholder="Days (e.g. 30)" value={product.returnPolicy?.days ?? ''} onChange={e => setProduct(p=>({...p, returnPolicy: {...(p.returnPolicy||{}), days: e.target.value === '' ? undefined : Number(e.target.value)}}))} className="w-full border px-3 py-2 rounded mt-2" />
               <label className="inline-flex items-center gap-2 mt-2"><input type="checkbox" checked={product.returnPolicy?.refundable ?? true} onChange={e => setProduct(p=>({...p, returnPolicy: {...(p.returnPolicy||{}), refundable: e.target.checked}}))} /> Refundable</label>
               <textarea placeholder="Return details" value={product.returnPolicy?.details || ''} onChange={e => setProduct(p=>({...p, returnPolicy: {...(p.returnPolicy||{}), details: e.target.value}}))} className="w-full border px-3 py-2 rounded mt-2 h-20" />
             </div>

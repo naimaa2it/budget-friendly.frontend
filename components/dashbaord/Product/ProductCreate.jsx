@@ -155,7 +155,7 @@ export default function ProductCreate() {
   return (
     <div className="max-w-4xl mx-auto mt-6 bg-white p-6 rounded shadow">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold">Create product</h2>
+        <h2 className="text-3xl font-semibold text-blue-600 ">Create product</h2>
       </div>
 
       {loading ? <div className="text-center py-12">Loading…</div> : (
@@ -210,7 +210,6 @@ export default function ProductCreate() {
             <div>
               <label className="block text-sm font-medium">Stock quantity</label>
               <input type="number" value={product.inventory || 0} onChange={e => setProduct(p=>({...p, inventory: Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
-              <div className="text-xs text-gray-500 mt-1">How many units are available to sell.</div>
             </div>
           </div>
 
@@ -269,8 +268,7 @@ export default function ProductCreate() {
                 {(product.colors || []).map((c, i) => (
                   <div key={i} className="flex gap-2 items-center">
                     <input value={c.name || ''} onChange={e => setProduct(p=>{ const arr = [...(p.colors||[])]; arr[i] = { ...(arr[i]||{}), name: e.target.value }; return { ...p, colors: arr }; })} placeholder="Color name (e.g. Navy)" className="border px-2 py-1 rounded w-32" />
-                    <input type="color" value={c.hex || '#000000'} onChange={e => setProduct(p=>{ const arr = [...(p.colors||[])]; arr[i] = { ...(arr[i]||{}), hex: e.target.value }; return { ...p, colors: arr }; })} className="w-12 h-8 p-0 rounded border" />
-                    <input value={c.label || ''} onChange={e => setProduct(p=>{ const arr = [...(p.colors||[])]; arr[i] = { ...(arr[i]||{}), label: e.target.value }; return { ...p, colors: arr }; })} placeholder="Optional label (e.g. Midnight Blue)" className="border px-2 py-1 rounded flex-1" />
+                    <input value={c.label || ''} onChange={e => setProduct(p=>{ const arr = [...(p.colors||[])]; arr[i] = { ...(arr[i]||{}), label: e.target.value }; return { ...p, colors: arr }; })} placeholder="level- Midnight Blue" className="border px-2 py-1 rounded flex-1" />
                     <button onClick={() => setProduct(p=>({...p, colors: p.colors.filter((_,idx)=>idx!==i)}))} className="px-2 py-1 border rounded text-sm text-red-600">Remove</button>
                   </div>
                 ))}
@@ -340,7 +338,7 @@ export default function ProductCreate() {
           </div>
 
           {/* Key attributes, customization, rewards */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium">Reward points (optional)</label>
               <input type="number" value={product.rewardPoints || 0} onChange={e => setProduct(p=>({...p, rewardPoints: Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
@@ -351,14 +349,6 @@ export default function ProductCreate() {
               <label className="block text-sm font-medium">Sold last 30 days</label>
               <input type="number" value={product.monthlySold || 0} onChange={e => setProduct(p=>({...p, monthlySold: Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
               <div className="text-xs text-gray-500 mt-1">Use this to show popularity badges (e.g. “1k+ sold”).</div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium">Sales badge (auto)</label>
-              <div className="w-full border px-3 py-2 rounded bg-gray-50">{product.monthlySold >= 1000000 ? Math.round((product.monthlySold/1000000)*10)/10 + 'M+' : product.monthlySold >= 1000 ? Math.round((product.monthlySold/1000)*10)/10 + 'k+' : String(product.monthlySold || 0)}</div>
-              <div className="text-xs text-gray-500 mt-2">Automatic display based on <code>Sold last 30 days</code>.</div>
-
-              
             </div>
           </div> 
 

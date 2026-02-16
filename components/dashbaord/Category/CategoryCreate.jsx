@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/components/context/UserContext';
 
-export default function CategoryEditor({ categoryId }) {
+export default function CategoryCreate({ categoryId = 'new' }) {
   const router = useRouter();
   const { user, refreshUser } = useUser();
   const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';

@@ -52,6 +52,10 @@ export default function ProductEdit({ productId }) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // standardized utility classes for consistent design
+  const inputClass = "w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500";
+  const labelClass = "block text-sm font-semibold text-gray-700";
+
   // local state for admin to add a review manually
   const [newReview, setNewReview] = useState({ authorName: '', rating: 5, title: '', body: '' });
 
@@ -287,86 +291,127 @@ export default function ProductEdit({ productId }) {
       </div>
 
       {loading ? <div className="text-center py-12">Loading…</div> : (
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium">Title</label>
-            <input value={product.title} onChange={e => setProduct(p=>({...p, title: e.target.value}))} className="w-full border px-3 py-2 rounded" />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium">Description</label>
-            <textarea value={product.description || ''} onChange={e => setProduct(p=>({...p, description: e.target.value}))} className="w-full border px-3 py-2 rounded h-28" />
-          </div>
-
-          <div className="mt-2">
-            <label className="block text-sm font-medium">Status</label>
-            <div className="text-xs text-gray-500 mt-1">Choose the product status (labels map to existing backend values).</div>
-            <select value={product.status} onChange={e => setProduct(p=>({...p, status: e.target.value}))} className="w-48 border px-3 py-2 rounded mt-2">
-              <option value="draft">Draft</option>
-              <option value="draft">Unpublish</option>
-              <option value="archived">Archive</option>
-              <option value="published">Publish</option>
-            </select>
-          </div>
- 
-          {/* Category selector (Main → Sub → Child) */}
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className="block text-sm font-medium">Category</label>
-              <select value={selectedMain?._id || ''} onChange={e => { const id = e.target.value; const main = categories.find(c=>String(c._id)===id)||null; setSelectedMain(main); setSelectedSub(null); setSelectedChild(null); setProduct(p=>({ ...p, categoryId: id || undefined, category: main?.name || '' })); }} className="w-full border px-3 py-2 rounded">
-                <option value="">Choose category</option>
-                {categories.map(c=> <option key={c._id} value={c._id}>{c.name}</option>)}
-              </select>
+        <div className="space-y-6">
+          {/* Basic information */}
+          <section className="bg-white rounded-lg shadow-sm p-6">
+            <div className="flex items-start justify-between gap-6 mb-4">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-800">Basic information</h3>
+                <p className="text-sm text-gray-500 mt-1">Title, short description and the product status. These appear on the product page and catalog.</p>
+              </div>
+              <div className="text-sm text-gray-500">Required fields are marked visually</div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium">Sub category</label>
-              <select value={selectedSub?._id || ''} onChange={e => { const id = e.target.value; const sub = (selectedMain?.children||[]).find(c=>String(c._id)===id)||null; setSelectedSub(sub); setSelectedChild(null); setProduct(p=>({ ...p, categoryId: id || p.categoryId })); }} className="w-full border px-3 py-2 rounded">
-                <option value="">Sub category</option>
-                {(selectedMain?.children||[]).map(c=> <option key={c._id} value={c._id}>{c.name}</option>)}
-              </select>
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <label className={labelClass}>Title</label>
+                <input value={product.title} onChange={e => setProduct(p=>({...p, title: e.target.value}))} className={inputClass} />
+              </div>
+
+              <div>
+                <label className={labelClass}>Description</label>
+                <textarea value={product.description || ''} onChange={e => setProduct(p=>({...p, description: e.target.value}))} className={`${inputClass} h-28`} />
+              </div>
+
+              <div className="flex items-center justify-between gap-6">
+                <div>
+                  <label className={labelClass}>Status</label>
+                  <div className="text-xs text-gray-500 mt-1">Choose the product status (labels map to backend values).</div>
+                  <select value={product.status} onChange={e => setProduct(p=>({...p, status: e.target.value}))} className="mt-2 border px-3 py-2 rounded-md">
+                    <option value="draft">Draft</option>
+                    <option value="draft">Unpublish</option>
+                    <option value="archived">Archive</option>
+                    <option value="published">Publish</option>
+                  </select>
+                </div>
+
+                <div className="flex-1">
+                  <label className={labelClass}>Category</label>
+                  <div className="grid grid-cols-3 gap-3 mt-2">
+                    <select value={selectedMain?._id || ''} onChange={e => { const id = e.target.value; const main = categories.find(c=>String(c._id)===id)||null; setSelectedMain(main); setSelectedSub(null); setSelectedChild(null); setProduct(p=>({ ...p, categoryId: id || undefined, category: main?.name || '' })); }} className="w-full border px-3 py-2 rounded-md">
+                      <option value="">Choose</option>
+                      {categories.map(c=> <option key={c._id} value={c._id}>{c.name}</option>)}
+                    </select>
+
+                    <select value={selectedSub?._id || ''} onChange={e => { const id = e.target.value; const sub = (selectedMain?.children||[]).find(c=>String(c._id)===id)||null; setSelectedSub(sub); setSelectedChild(null); setProduct(p=>({ ...p, categoryId: id || p.categoryId })); }} className="w-full border px-3 py-2 rounded-md">
+                      <option value="">Sub</option>
+                      {(selectedMain?.children||[]).map(c=> <option key={c._id} value={c._id}>{c.name}</option>)}
+                    </select>
+
+                    <select value={selectedChild?._id || ''} onChange={e => { const id = e.target.value; const child = (selectedSub?.children||[]).find(c=>String(c._id)===id)||null; setSelectedChild(child); setProduct(p=>({ ...p, categoryId: id || p.categoryId })); }} className="w-full border px-3 py-2 rounded-md">
+                      <option value="">Child</option>
+                      {(selectedSub?.children||[]).map(c=> <option key={c._id} value={c._id}>{c.name}</option>)}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Pricing & inventory */}
+          <section className="bg-white rounded-lg shadow-sm p-6">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800">Pricing & inventory</h3>
+                <p className="text-sm text-gray-500 mt-1">Set price, offer/compare price and available stock. Currency and availability help customers understand purchasing options.</p>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium">Sub‑sub category</label>
-              <select value={selectedChild?._id || ''} onChange={e => { const id = e.target.value; const child = (selectedSub?.children||[]).find(c=>String(c._id)===id)||null; setSelectedChild(child); setProduct(p=>({ ...p, categoryId: id || p.categoryId })); }} className="w-full border px-3 py-2 rounded">
-                <option value="">Sub‑sub category</option>
-                {(selectedSub?.children||[]).map(c=> <option key={c._id} value={c._id}>{c.name}</option>)}
-              </select>
-            </div>
-          </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className={labelClass}>Price</label>
+                <input type="number" value={product.price ?? ''} onChange={e => setProduct(p=>({...p, price: e.target.value === '' ? undefined : Number(e.target.value)}))} className={inputClass} />
+              </div>
 
-          {/* Pricing / inventory — simpler labels + help text */}
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className="block text-sm font-medium">Price</label>
-              <input type="number" value={product.price ?? ''} onChange={e => setProduct(p=>({...p, price: e.target.value === '' ? undefined : Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
-              <div className="text-xs text-gray-500 mt-1">What customers will pay (enter numbers only).</div>
+              <div>
+                <label className={labelClass}>Offer price — Was price (optional)</label>
+                <input type="number" value={product.compareAtPrice ?? ''} onChange={e => setProduct(p=>({...p, compareAtPrice: e.target.value === '' ? undefined : Number(e.target.value)}))} className={inputClass} />
+              </div>
+
+              <div>
+                <label className={labelClass}>Stock quantity</label>
+                <input type="number" value={product.inventory ?? ''} onChange={e => setProduct(p=>({...p, inventory: e.target.value === '' ? undefined : Number(e.target.value)}))} className={inputClass} />
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium">Offer price — Was price (optional)</label>
-              <input type="number" value={product.compareAtPrice ?? ''} onChange={e => setProduct(p=>({...p, compareAtPrice: e.target.value === '' ? undefined : Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
-              <div className="text-xs text-gray-500 mt-1">Leave empty unless you want to show a crossed-out original price.</div>
+
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className={labelClass}>Currency</label>
+                <input value={product.currency ?? ''} placeholder="USD" onChange={e => setProduct(p=>({...p, currency: e.target.value}))} className={inputClass} />
+              </div>
+              <div>
+                <label className={labelClass}>Availability</label>
+                <select value={product.availability || 'in_stock'} onChange={e => setProduct(p=>({...p, availability: e.target.value}))} className="w-full border px-3 py-2 rounded-md">
+                  <option value="in_stock">In stock — available now</option>
+                  <option value="pre_order">Pre-order — accept orders before shipping</option>
+                  <option value="upcoming">Coming soon — not available yet</option>
+                  <option value="out_of_stock">Out of stock — not available</option>
+                </select>
+              </div>
+              <div>
+                <label className={labelClass}>SKU (optional)</label>
+                <input value={product.sku || ''} onChange={e => setProduct(p=>({...p, sku: e.target.value}))} className={inputClass} />
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium">Stock quantity</label>
-              <input type="number" value={product.inventory ?? ''} onChange={e => setProduct(p=>({...p, inventory: e.target.value === '' ? undefined : Number(e.target.value)}))} className="w-full border px-3 py-2 rounded" />
-              <div className="text-xs text-gray-500 mt-1">How many units are available to sell.</div>
-            </div>
-          </div>
+          </section>
 
           {/* Variants editor (title, sku, price, inventory) */}
-          <div className="mt-4 border rounded p-3 bg-white">
-            <div className="flex justify-between items-center mb-3">
-              <div className="text-sm font-medium">Variants</div>
-              <button type="button" onClick={onAddVariant} className="text-sm px-3 py-1 bg-slate-100 rounded">+ Add variant</button>
+          <section className="bg-white rounded-lg shadow-sm p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800">Variants</h3>
+                <p className="text-sm text-gray-500 mt-1">Add product variants (size/color). Each variant can have its own SKU, price and inventory.</p>
+              </div>
+              <div>
+                <button type="button" onClick={onAddVariant} className="text-sm px-3 py-1 bg-slate-100 rounded">+ Add variant</button>
+              </div>
             </div>
 
             {(product.variants || []).length === 0 && (
               <div className="text-sm text-slate-500">No variants yet — add variant if product has size/color/other variations.</div>
             )}
 
-            <div className="space-y-3">
+            <div className="space-y-3 mt-3">
               {(product.variants || []).map((v, idx) => (
                 <div key={idx} className="grid grid-cols-5 gap-2 items-center border p-2 rounded">
                   <input placeholder="Label (e.g. Red - L)" value={v.title || ''} onChange={e => onChangeVariant(idx, { title: e.target.value })} className="col-span-2 border px-2 py-1 rounded" />
@@ -379,7 +424,7 @@ export default function ProductEdit({ productId }) {
                 </div>
               ))}
             </div>
-          </div>
+          </section>
 
           <div className="grid grid-cols-3 gap-3">
             <div>
@@ -739,9 +784,9 @@ export default function ProductEdit({ productId }) {
             </div>
 
             {/* Save / Cancel at bottom */}
-            <div className="flex justify-end gap-3 mt-6">
-              <button onClick={() => router.push('/dashabord/products')} className="px-4 py-2 border rounded text-sm">Cancel</button>
-              <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-indigo-600 text-white rounded text-sm">{saving ? 'Saving…' : 'Save product'}</button>
+            <div className="flex flex-col md:flex-row justify-end gap-3 mt-6 border-t pt-4">
+              <button onClick={() => router.push('/dashabord/products')} className="px-4 py-2 border rounded text-sm w-full md:w-auto">Cancel</button>
+              <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-indigo-600 text-white rounded text-sm shadow-md hover:bg-indigo-700 w-full md:w-auto">{saving ? 'Saving…' : 'Save product'}</button>
             </div>
           </div>
         </div>

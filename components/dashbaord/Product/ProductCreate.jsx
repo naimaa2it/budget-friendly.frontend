@@ -456,8 +456,6 @@ export default function ProductCreate() {
                   </div>
                 </div>
               ))}
-
-              {(!product.reviews || product.reviews.length === 0) && <div className="text-sm text-gray-500">No reviews yet</div>}
             </div>
           </div>
 

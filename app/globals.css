@@ -28,3 +28,11 @@ body {
 }
 
 /* NOTE: layout and component-specific styles should use Tailwind utility classes inline. */
+
+/* ensure hyperlinks in rich content are highlighted blue and underlined */
+.prose a {
+  color: #0142ce;
+  text-decoration: underline;
+}
+
+/* open links inserted via editor in a new tab by default */

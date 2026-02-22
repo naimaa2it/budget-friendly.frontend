@@ -445,7 +445,7 @@ export default function ProductCreate() {
 
                 {/* SKU */}
                 <div>
-                  <label className={labelClass}>SKU (Stock Keeping Unit)</label>
+                  <label className={labelClass}>SKU (tracking code)</label>
                   <input
                     type="text"
                     value={product.sku || ''}

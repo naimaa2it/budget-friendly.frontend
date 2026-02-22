@@ -10,7 +10,22 @@ export default function CategoryEdit({ categoryId }) {
   const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
   const [category, setCategory] = useState({ name: '', parentId: '', order: 0, isActive: true, images: [] });
-  const [parents, setParents] = useState([]);
+  // helper to traverse tree by id
+  const findNode = (nodes, id) => {
+    if (!id) return null;
+    for (const n of nodes || []) {
+      if (String(n._id) === String(id)) return n;
+      if (n.children) {
+        const res = findNode(n.children, id);
+        if (res) return res;
+      }
+    }
+    return null;
+  };
+  const [tree, setTree] = useState([]);
+  const [selectedMain, setSelectedMain] = useState('');
+  const [selectedSub, setSelectedSub] = useState('');
+  const [selectedSubSub, setSelectedSubSub] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -19,42 +34,35 @@ export default function CategoryEdit({ categoryId }) {
   useEffect(() => {
     if (!categoryId || categoryId === 'new') return;
     let mounted = true;
-
     const load = async () => {
       setLoading(true);
+      let parentIdVal = '';
       try {
-        console.log('Fetching category:', categoryId);
-        // try admin single-category endpoint first
         const r = await fetch(`${API}/api/admin/categories/${categoryId}`, { credentials: 'include' });
-        console.log('Admin fetch response status:', r.status);
-        
         if (r.ok) {
           const body = await r.json();
-          console.log('Admin fetch response body:', body);
-          
           if (mounted && body && body.category) {
             const c = body.category;
-            const newState = { 
-              name: c.name || '', 
-              parentId: c.parent || '', 
-              order: c.order || 0, 
-              isActive: typeof c.isActive === 'boolean' ? c.isActive : true, 
-              images: c.images || [] 
-            };
-            console.log('Setting category state:', newState);
-            setCategory(newState);
-          } else {
-            console.warn('No category in response body');
+            parentIdVal = c.parent || '';
+            setCategory({
+              name: c.name || '',
+              parentId: parentIdVal,
+              order: c.order || 0,
+              isActive: typeof c.isActive === 'boolean' ? c.isActive : true,
+              images: c.images || []
+            });
           }
         } else {
-          console.log('Admin fetch failed, trying public tree fallback');
           // fallback to public tree
           const r2 = await fetch(`${API}/api/products/categories`);
           if (r2.ok) {
             const j = await r2.json();
             const find = (nodes, id) => {
               for (const n of (nodes || [])) {
-                if (String(n._id) === String(id)) return n;
+                if (String(n._id) === String(id)) {
+                  parentIdVal = n.parent || '';
+                  return n;
+                }
                 if (n.children && n.children.length) {
                   const res = find(n.children, id);
                   if (res) return res;
@@ -62,19 +70,29 @@ export default function CategoryEdit({ categoryId }) {
               }
               return null;
             };
-            const node = find(j.categories || [], categoryId);
-            console.log('Found in public tree:', node);
-            if (mounted && node) {
-              const newState = { 
-                name: node.name || '', 
-                parentId: node.parent || '', 
-                order: node.order || 0, 
-                isActive: true, 
-                images: node.images || [] 
-              };
-              console.log('Setting category state from public tree:', newState);
-              setCategory(newState);
+            find(j.categories || [], categoryId);
+            if (mounted && parentIdVal) {
+              setCategory(c => ({ ...c, parentId: parentIdVal }));
             }
+          }
+        }
+        // compute ancestor chain for selects
+        const computeAncestors = (nodes, id, path = []) => {
+          for (const n of nodes || []) {
+            if (String(n._id) === String(id)) return [...path, n];
+            if (n.children) {
+              const res = computeAncestors(n.children, id, [...path, n]);
+              if (res) return res;
+            }
+          }
+          return null;
+        };
+        if (tree.length && parentIdVal) {
+          const anc = computeAncestors(tree, parentIdVal);
+          if (anc && anc.length) {
+            setSelectedMain(anc[0]._id);
+            if (anc.length >= 2) setSelectedSub(anc[1]._id);
+            if (anc.length >= 3) setSelectedSubSub(anc[2]._id);
           }
         }
       } catch (err) {
@@ -83,24 +101,16 @@ export default function CategoryEdit({ categoryId }) {
         if (mounted) setLoading(false);
       }
     };
-
     load();
     return () => { mounted = false; };
-  }, [categoryId, API]);
+  }, [categoryId, API, tree]);
 
+  // load category tree for dropdowns
   useEffect(() => {
-    // load parent options (public)
-    fetch(`${API}/api/products/categories`).then(r => r.json()).then(b => {
-      const flat = [];
-      const walk = (nodes, lvl = 0) => {
-        for (const n of nodes || []) {
-          flat.push({ _id: n._id, name: '-'.repeat(lvl) + ' ' + n.name });
-          if (n.children) walk(n.children, lvl + 1);
-        }
-      };
-      walk(b.categories || []);
-      setParents(flat);
-    }).catch(() => setParents([]));
+    fetch(`${API}/api/products/categories`)
+      .then(r => r.json())
+      .then(b => setTree(b.categories || []))
+      .catch(() => setTree([]));
   }, [API]);
 
   const handleFile = async (file) => {
@@ -128,7 +138,11 @@ export default function CategoryEdit({ categoryId }) {
     if (!category.name) return alert('Name is required');
     setSaving(true);
     try {
-      const payload = { name: category.name, parentId: category.parentId || undefined, order: category.order, isActive: category.isActive };
+      let parentId = '';
+      if (selectedSubSub) parentId = selectedSubSub;
+      else if (selectedSub) parentId = selectedSub;
+      else if (selectedMain) parentId = selectedMain;
+      const payload = { name: category.name, parentId: parentId || undefined, order: category.order, isActive: category.isActive };
       if (Array.isArray(category.images)) payload.images = category.images;
       const resp = await fetch(`${API}/api/admin/categories/${categoryId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) });
       const body = await resp.json();
@@ -175,11 +189,25 @@ export default function CategoryEdit({ categoryId }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium">Parent category (optional)</label>
-            <select value={category.parentId || ''} onChange={e => setCategory(c => ({ ...c, parentId: e.target.value }))} className="w-full border px-3 py-2 rounded">
-              <option value="">(no parent)</option>
-              {parents.map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
-            </select>
+            <label className="block text-sm font-medium">Parent category (choose hierarchy)</label>
+            <div className="flex flex-col gap-2">
+              <select value={selectedMain} onChange={e => { setSelectedMain(e.target.value); setSelectedSub(''); setSelectedSubSub(''); }} className="w-full border px-3 py-2 rounded">
+                <option value="">(no parent / top level)</option>
+                {tree.filter(n => n.level === 0).map(n => <option key={n._id} value={n._id}>{n.name}</option>)}
+              </select>
+              {selectedMain && (
+                <select value={selectedSub} onChange={e => { setSelectedSub(e.target.value); setSelectedSubSub(''); }} className="w-full border px-3 py-2 rounded">
+                  <option value="">(direct child of selected main)</option>
+                  {(findNode(tree, selectedMain)?.children || []).map(n => <option key={n._id} value={n._id}>{n.name}</option>)}
+                </select>
+              )}
+              {selectedSub && (
+                <select value={selectedSubSub} onChange={e => setSelectedSubSub(e.target.value)} className="w-full border px-3 py-2 rounded">
+                  <option value="">(direct child of selected sub)</option>
+                  {(findNode(tree, selectedSub)?.children || []).map(n => <option key={n._id} value={n._id}>{n.name}</option>)}
+                </select>
+              )}
+            </div>
           </div>
 
           <div>

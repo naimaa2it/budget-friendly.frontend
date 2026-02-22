@@ -40,3 +40,16 @@ Next steps / suggestions
 - (Recommended) Verify Firebase ID tokens on the backend for stronger trust between Firebase and your server.
 - Add server-side routes to manage admin-only actions (user management, settings) and protect them by role.
 
+---
+
+### Category management updates
+
+The dashboard now provides a simplified, three-level category interface:
+1. **Main category** (top-level) – created with no parent.
+2. **Subcategory** – choose a parent main category.
+3. **Sub‑subcategory** – choose a parent subcategory.
+
+When you open the create/edit page, the form presents a chain of dropdowns so you can easily position a new item in the hierarchy. The underlying Mongo collection remains simple (`name`, `parent`, optional `level`/`slug`), and the backend computes `level` automatically. Inline child‑management UI has been removed in favor of the cleaner parent-selection flow.
+
+This keeps the data model straightforward while letting you build out three-tiered category trees. If you need deeper nesting, create the deeper category by selecting its immediate parent when you add it.
+

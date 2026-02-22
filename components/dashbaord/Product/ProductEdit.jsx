@@ -38,7 +38,7 @@ export default function ProductEdit({ productId }) {
     reviewCount: 0,
     status: 'draft',
     specs: {},
-    seo: { title: '', description: '' },
+    seo: { title: '', description: '', keywords: [] },
     featured: false,
     coupon: false,
     flashSale: false,
@@ -142,7 +142,7 @@ export default function ProductEdit({ productId }) {
           p.returnPolicy = p.returnPolicy || { days: undefined, refundable: true, details: '' };
           p.faqs = p.faqs || [];
           p.reviews = p.reviews || [];
-          p.seo = p.seo || { title: '', description: '' };
+          p.seo = p.seo || { title: '', description: '', keywords: [] };
           p.featured = !!p.featured;
           p.coupon = !!p.coupon;
           p.flashSale = !!p.flashSale;
@@ -1372,6 +1372,29 @@ export default function ProductEdit({ productId }) {
                     </div>
                   </div>
 
+                  {/* Keywords */}
+                  <div>
+                    <label className={labelClass}>SEO Keywords</label>
+                    <input
+                      type="text"
+                      value={(product.seo?.keywords||[]).join(', ')}
+                      onChange={e => setProduct(p => ({
+                        ...p,
+                        seo: { ...p.seo, keywords: e.target.value.split(',').map(s=>s.trim()).filter(Boolean) }
+                      }))}
+                      className={inputClass}
+                      placeholder="comma separated keywords"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Enter words that describe this product, separated by commas.</p>
+                  </div>                      <p className="text-xs text-gray-500">Recommended: 120-155 characters</p>
+                      <span className={`text-sm font-medium ${
+                        (product.seo?.description || '').length > 155 ? 'text-red-600' : 'text-gray-600'
+                      }`}>
+                        {(product.seo?.description || '').length}/155
+                      </span>
+                    </div>
+                  </div>
+
                   {/* Preview */}
                   <div className="bg-white rounded-lg p-4 border border-gray-300">
                     <h4 className="text-sm font-semibold text-gray-700 mb-3">Search Engine Preview</h4>
@@ -1384,8 +1407,6 @@ export default function ProductEdit({ productId }) {
                       </div>
                       <div className="text-gray-600 text-sm">
                         {product.seo?.description || product.description?.substring(0, 155) || 'Your product description will appear here...'}
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>

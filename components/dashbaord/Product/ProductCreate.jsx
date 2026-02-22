@@ -38,7 +38,7 @@ export default function ProductCreate() {
     reviewCount: 0,
     status: 'draft',
     specs: {},
-    seo: { title: '', description: '' },
+    seo: { title: '', description: '',keywords: [] },
     featured: false,
     coupon: false,
     flashSale: false,
@@ -1121,6 +1121,22 @@ export default function ProductCreate() {
                         {(product.seo?.description || '').length}/155
                       </span>
                     </div>
+                  </div>
+
+                  {/* Keywords */}
+                  <div>
+                    <label className={labelClass}>SEO Keywords</label>
+                    <input
+                      type="text"
+                      value={(product.seo?.keywords||[]).join(', ')}
+                      onChange={e => setProduct(p => ({
+                        ...p,
+                        seo: { ...p.seo, keywords: e.target.value.split(',').map(s=>s.trim()).filter(Boolean) }
+                      }))}
+                      className={inputClass}
+                      placeholder="comma separated keywords"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Enter keywords separated by commas (e.g. jacket, waterproof, sale)</p>
                   </div>
 
                   {/* Preview */}

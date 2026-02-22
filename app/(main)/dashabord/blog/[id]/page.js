@@ -1,5 +1,7 @@
 "use client";
 
+// `/dashabord/blog/new` is served by a dedicated static page (app/.../blog/new/page.js)
+// so this dynamic renderer only ever sees real post IDs.
 import React, { useEffect, useState } from 'react';
 import BlogCreate from '@/components/dashbaord/Blog/BlogCreate';
 import BlogEdit from '@/components/dashbaord/Blog/BlogEdit';

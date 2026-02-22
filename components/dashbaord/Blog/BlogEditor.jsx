@@ -10,6 +10,8 @@ export default function BlogEditor({ post: initial = null, onCancel = () => {}, 
   const [title, setTitle] = useState(initial?.title || '');
   const [excerpt, setExcerpt] = useState(initial?.excerpt || '');
   const [content, setContent] = useState(initial?.content || '<p></p>');
+  // track whether editor was manually updated by props
+  const [initialized, setInitialized] = useState(false);
   const [tags, setTags] = useState((initial?.tags || []).join(','));
   const [featuredImage, setFeaturedImage] = useState(initial?.featuredImage || '');
   const [status, setStatus] = useState(initial?.status || 'draft');
@@ -23,13 +25,15 @@ export default function BlogEditor({ post: initial = null, onCancel = () => {}, 
     setTags((initial?.tags || []).join(','));
     setFeaturedImage(initial?.featuredImage || '');
     setStatus(initial?.status || 'draft');
+    setInitialized(true);
   }, [initial]);
 
   const exec = (cmd, val = null) => {
     if (!editorRef.current) return;
     document.execCommand(cmd, false, val);
     setContent(editorRef.current.innerHTML);
-  };
+  }; // update state but avoid forcing contenteditable to re-render
+
 
   const insertImageFile = async (file) => {
     if (!file) return;
@@ -40,6 +44,17 @@ export default function BlogEditor({ post: initial = null, onCancel = () => {}, 
     if (!r.ok) throw new Error(b.error || 'Upload failed');
     const url = b.asset.url;
     exec('insertImage', url);
+    // after inserting, resize the last image and make it removable
+    setTimeout(() => {
+      const imgs = editorRef.current?.querySelectorAll('img');
+      if (imgs && imgs.length) {
+        const img = imgs[imgs.length - 1];
+        img.style.maxHeight = '200px';
+        img.style.height = 'auto';
+        img.style.cursor = 'pointer';
+        img.addEventListener('click', () => img.remove());
+      }
+    }, 100);
   };
 
   const handleImageChange = (e) => {
@@ -112,7 +127,12 @@ export default function BlogEditor({ post: initial = null, onCancel = () => {}, 
           <button type="button" onClick={() => exec('redo')} className="px-2 py-1 border rounded">↷</button>
         </div>
 
-        <div ref={editorRef} contentEditable className="min-h-[240px] border p-4 rounded prose max-w-none" onInput={e => setContent(e.currentTarget.innerHTML)} dangerouslySetInnerHTML={{ __html: content }} />
+        <div
+          ref={editorRef}
+          contentEditable
+          className="min-h-[240px] border p-4 rounded prose max-w-none"
+          onInput={e => setContent(e.currentTarget.innerHTML)}
+        />
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-4">

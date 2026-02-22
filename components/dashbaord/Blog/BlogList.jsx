@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function BlogList() {
   const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -24,9 +26,9 @@ export default function BlogList() {
 
   useEffect(() => { load(); }, [page]);
 
-  const router = require('next/navigation').useRouter();
-  const handleNew = () => router.push('/dashbaord/blog/new');
-  const handleEdit = (post) => router.push(`/dashbaord/blog/${post._id}`);
+  const router = useRouter();
+  const handleNew = () => router.push('/dashabord/blog/new');
+  const handleEdit = (post) => router.push(`/dashabord/blog/${post._id}`);
   const handleSaved = () => { load(); };
   const handleDelete = async (id) => {
     if (!confirm('Move post to archived?')) return;
@@ -49,7 +51,7 @@ export default function BlogList() {
       <div className="mb-4 flex justify-between items-center">
         <h2 className="text-lg font-semibold">Blog posts</h2>
         <div className="flex gap-2">
-          <button onClick={handleNew} className="px-3 py-2 bg-indigo-600 text-white rounded">New post</button>
+          <Link href="/dashabord/blog/new" className="px-3 py-2 bg-indigo-600 text-white rounded">New post</Link>
           <button onClick={load} className="px-3 py-2 border rounded">Refresh</button>
         </div>
       </div>

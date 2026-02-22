@@ -36,6 +36,22 @@ export default function BlogCreate() {
     editorRef.current.focus();
     restoreSelection();
     document.execCommand(cmd, false, val);
+
+    // when inserting a link, ensure it opens in new tab and gets a blue style
+    if (cmd === 'createLink' && val) {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount) {
+        // the new <a> is usually the parent of the anchorNode or focusNode
+        let node = sel.anchorNode;
+        while (node && node.nodeType === 3) node = node.parentElement;
+        if (node && node.tagName === 'A') {
+          node.setAttribute('target', '_blank');
+          node.style.color = '#2563eb';
+          node.style.textDecoration = 'underline';
+        }
+      }
+    }
+
     setContent(editorRef.current.innerHTML);
   };
 
@@ -124,6 +140,7 @@ export default function BlogCreate() {
       </div>
 
       <div className="mt-4">
+        <div className="text-xs text-gray-500 mb-1">Select some text and click the link icon to turn it into a hyperlink (blue).</div>
         <div className="flex gap-2 mb-2 sticky top-0 bg-white z-10">
           <button type="button" onClick={() => exec('bold')} className="px-2 py-1 border rounded">B</button>
           <button type="button" onClick={() => exec('italic')} className="px-2 py-1 border rounded">I</button>

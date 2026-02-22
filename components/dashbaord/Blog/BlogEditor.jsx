@@ -10,6 +10,9 @@ export default function BlogEditor({ post: initial = null, onCancel = () => {}, 
   const [title, setTitle] = useState(initial?.title || '');
   const [excerpt, setExcerpt] = useState(initial?.excerpt || '');
   const [content, setContent] = useState(initial?.content || '<p></p>');
+  // track whether we've initialized editor HTML
+  const initializedRef = useRef(false);
+
   // track whether editor was manually updated by props
   const [initialized, setInitialized] = useState(false);
   const [tags, setTags] = useState((initial?.tags || []).join(','));
@@ -28,11 +31,27 @@ export default function BlogEditor({ post: initial = null, onCancel = () => {}, 
     setInitialized(true);
   }, [initial]);
 
+  const lastRange = useRef(null);
+  const saveSelection = () => {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      lastRange.current = sel.getRangeAt(0).cloneRange();
+    }
+  };
+  const restoreSelection = () => {
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    if (lastRange.current) sel.addRange(lastRange.current);
+  };
+
   const exec = (cmd, val = null) => {
     if (!editorRef.current) return;
+    editorRef.current.focus();
+    restoreSelection();
     document.execCommand(cmd, false, val);
     setContent(editorRef.current.innerHTML);
-  }; // update state but avoid forcing contenteditable to re-render
+  };
+ // update state but avoid forcing contenteditable to re-render
 
 
   const insertImageFile = async (file) => {
@@ -108,7 +127,7 @@ export default function BlogEditor({ post: initial = null, onCancel = () => {}, 
       </div>
 
       <div className="mt-4">
-        <div className="flex gap-2 mb-2">
+        <div className="flex gap-2 mb-2 sticky top-0 bg-white z-10">
           <button type="button" onClick={() => exec('bold')} className="px-2 py-1 border rounded">B</button>
           <button type="button" onClick={() => exec('italic')} className="px-2 py-1 border rounded">I</button>
           <button type="button" onClick={() => exec('underline')} className="px-2 py-1 border rounded">U</button>
@@ -116,25 +135,30 @@ export default function BlogEditor({ post: initial = null, onCancel = () => {}, 
           <button type="button" onClick={() => exec('formatBlock','<p>')} className="px-2 py-1 border rounded">P</button>
           <button type="button" onClick={() => exec('insertUnorderedList')} className="px-2 py-1 border rounded">• List</button>
           <button type="button" onClick={() => exec('insertOrderedList')} className="px-2 py-1 border rounded">1. List</button>
-          <button type="button" onClick={() => {
+          <button onMouseDown={saveSelection} type="button" onClick={() => {
             const url = prompt('Enter link URL');
             if (url) exec('createLink', url);
           }} className="px-2 py-1 border rounded">Link</button>
-          <label className="px-2 py-1 border rounded cursor-pointer">
+          <label onMouseDown={saveSelection} className="px-2 py-1 border rounded cursor-pointer">
             Img<input onChange={handleImageChange} type="file" accept="image/*" className="hidden" />
           </label>
           <button type="button" onClick={() => exec('undo')} className="px-2 py-1 border rounded">↶</button>
           <button type="button" onClick={() => exec('redo')} className="px-2 py-1 border rounded">↷</button>
         </div>
 
-        <div
-          ref={editorRef}
-          contentEditable
-          className="min-h-[240px] border p-4 rounded prose max-w-none"
-          onInput={e => setContent(e.currentTarget.innerHTML)}
-        />
+        <div className="max-h-[60vh] overflow-y-auto">
+          <div
+            ref={editorRef}
+            contentEditable
+            className="min-h-[240px] border p-4 rounded prose max-w-none"
+            onInput={e => setContent(e.currentTarget.innerHTML)}
+          />
+        </div>
       </div>
 
+      <style jsx>{`
+        .editor-area img { max-height: 300px; width:auto; display:block; margin:auto; }
+      `}</style>
       <div className="mt-4 grid grid-cols-2 gap-4">
         <input placeholder="Comma separated tags" value={tags} onChange={e => setTags(e.target.value)} className="w-full border px-3 py-2 rounded" />
         <input placeholder="Featured image URL" value={featuredImage} onChange={e => setFeaturedImage(e.target.value)} className="w-full border px-3 py-2 rounded" />

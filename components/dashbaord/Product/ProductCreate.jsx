@@ -46,7 +46,7 @@ export default function ProductCreate() {
     badges: []
   });
 
-  const [activeTab, setActiveTab] = useState('basic');
+
   const [saving, setSaving] = useState(false);
   const [newReview, setNewReview] = useState({ authorName: '', rating: '', title: '', body: '' });
 
@@ -57,8 +57,10 @@ export default function ProductCreate() {
     'ryans', 'asus', 'cosrx', 'samsung', 'apple', 'sony', 'lg', 'dell', 'hp', 'lenovo',
     'xiaomi', 'realme', 'vivo', 'oppo', 'huawei', 'oneplus', 'google', 'microsoft',
     'canon', 'nikon', 'logitech', 'razer', 'corsair', 'asus rog', 'msi', 'gigabyte',
-    'amd', 'intel', 'nvidia', 'seagate', 'western digital', 'sandisk', 'toshiba'
+    'amd', 'intel', 'nvidia', 'seagate', 'western digital', 'sandisk', 'toshiba',
   ]);
+
+  
 
   const inputClass = "w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all";
   const labelClass = "block text-sm font-semibold text-gray-700 mb-2";
@@ -209,33 +211,12 @@ export default function ProductCreate() {
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="bg-white rounded-xl shadow-md mb-6 overflow-hidden">
-          <div className="flex overflow-x-auto">
-            {tabs.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 min-w-[120px] px-6 py-4 text-sm font-medium transition-all border-b-2 ${
-                  activeTab === tab.id
-                    ? 'border-indigo-600 text-indigo-600 bg-indigo-50'
-                    : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                }`}
-              >
-                <div className="flex flex-col items-center gap-1">
-                  <span className="text-2xl">{tab.icon}</span>
-                  <span>{tab.label}</span>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
+
 
         {/* Tab Content */}
-        <div className="bg-white rounded-xl shadow-md p-8">
+        <div className="bg-white rounded-xl shadow-md p-8 space-y-12">
           {/* Basic Info Tab */}
-          {activeTab === 'basic' && (
-            <div className="space-y-6">
+          <div className="space-y-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Basic Information</h2>
               
               <div className="grid grid-cols-1 gap-6">
@@ -396,11 +377,9 @@ export default function ProductCreate() {
                 </div>
               </div>
             </div>
-          )}
 
           {/* Pricing Tab */}
-          {activeTab === 'pricing' && (
-            <div className="space-y-6">
+          <div className="space-y-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Pricing & Inventory</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -509,11 +488,9 @@ export default function ProductCreate() {
                 </div>
               </div>
             </div>
-          )}
 
           {/* Images Tab */}
-          {activeTab === 'images' && (
-            <div className="space-y-6">
+          <div className="space-y-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Product Images</h2>
               
               <div>
@@ -574,11 +551,9 @@ export default function ProductCreate() {
                 )}
               </div>
             </div>
-          )}
 
           {/* Variants Tab */}
-          {activeTab === 'variants' && (
-            <div className="space-y-6">
+          <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">Product Variants</h2>
@@ -658,11 +633,9 @@ export default function ProductCreate() {
                 </div>
               )}
             </div>
-          )}
 
           {/* Attributes Tab */}
-          {activeTab === 'attributes' && (
-            <div className="space-y-6">
+          <div className="space-y-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Product Attributes</h2>
               
               {/* Colors */}
@@ -815,11 +788,9 @@ export default function ProductCreate() {
                 )}
               </div>
             </div>
-          )}
 
           {/* Policies Tab */}
-          {activeTab === 'policies' && (
-            <div className="space-y-6">
+          <div className="space-y-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Policies & Guarantees</h2>
               
               {/* Warranty */}
@@ -964,11 +935,9 @@ export default function ProductCreate() {
                 )}
               </div>
             </div>
-          )}
 
           {/* Reviews Tab */}
-          {activeTab === 'reviews' && (
-            <div className="space-y-6">
+          <div className="space-y-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Customer Reviews</h2>
               
               {/* Add Review Form */}
@@ -1071,11 +1040,9 @@ export default function ProductCreate() {
                 )}
               </div>
             </div>
-          )}
 
           {/* SEO Tab */}
-          {activeTab === 'seo' && (
-            <div className="space-y-6">
+          <div className="space-y-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">SEO & Search Optimization</h2>
               
               <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
@@ -1157,7 +1124,6 @@ export default function ProductCreate() {
                 </div>
               </div>
             </div>
-          )}
         </div>
 
         {/* Action Buttons */}

@@ -38,7 +38,7 @@ export default function ProductCreate() {
     reviewCount: 0,
     status: 'draft',
     specs: {},
-    seo: { title: '', description: '',keywords: [] },
+    seo: { title: '', description: '', keywords: '' },
     featured: false,
     coupon: false,
     flashSale: false,
@@ -1128,10 +1128,10 @@ export default function ProductCreate() {
                     <label className={labelClass}>SEO Keywords</label>
                     <input
                       type="text"
-                      value={(product.seo?.keywords||[]).join(', ')}
+                      value={product.seo?.keywords || ''}
                       onChange={e => setProduct(p => ({
                         ...p,
-                        seo: { ...p.seo, keywords: e.target.value.split(',').map(s=>s.trim()).filter(Boolean) }
+                        seo: { ...p.seo, keywords: e.target.value }
                       }))}
                       className={inputClass}
                       placeholder="comma separated keywords"

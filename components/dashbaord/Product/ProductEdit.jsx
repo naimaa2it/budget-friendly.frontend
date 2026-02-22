@@ -271,6 +271,9 @@ export default function ProductEdit({ productId }) {
 
   const handleSave = async () => {
     if (!product.title) return alert('Title is required');
+    if (Array.isArray(product.variants) && product.variants.some(v => v.price == null)) {
+      return alert('Please enter a price for every variant or remove empty variants.');
+    }
     setSaving(true);
     try {
       // ensure specs.sizes and top-level sizes are kept in sync for backward compatibility

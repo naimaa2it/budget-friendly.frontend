@@ -37,7 +37,7 @@ export default function Sidebar() {
   return (
     <aside className="w-64 bg-white border-r h-screen sticky top-0">
       <div className="p-4 border-b">
-        <Link href="/" className="text-lg font-semibold text-pink-600">YourHaat Admin</Link>
+        <Link href="/" className="text-lg font-semibold text-pink-600">YourHaat Dashboard</Link>
       </div>
 
       <nav className="p-3 space-y-1">

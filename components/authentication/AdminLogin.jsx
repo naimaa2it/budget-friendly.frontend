@@ -9,12 +9,10 @@ export default function AdminLogin() {
   const { refreshUser } = useUser();
   const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
-  const [mode, setMode] = useState('login'); // 'login' | 'register'
-  const [name, setName] = useState('');
+  // only login supported now, so no "mode" toggling or registration state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [role, setRole] = useState('admin');
   const [secret, setSecret] = useState('');
   const [message, setMessage] = useState('');
   const [type, setType] = useState('error');
@@ -30,58 +28,6 @@ export default function AdminLogin() {
     setType('error');
   };
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    clear();
-    if (!name || !email || !password || !secret) return showMessage('All fields are required');
-    if (password.length < 6) return showMessage('Password must be at least 6 characters');
-
-    setLoading(true);
-    try {
-      // Check if email already exists as admin
-      const checkResp = await fetch(`${API}/api/admin/check-email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
-      const checkBody = await checkResp.json().catch(() => ({}));
-      if (!checkResp.ok || checkBody.exists) {
-        throw new Error(checkBody.error || 'This email is already registered as an admin.');
-      }
-
-      // Register admin (NO Firebase account created for admin)
-      // Admin password is hashed on the backend, admin login uses email/password + admin secret
-      const resp = await fetch(`${API}/api/admin/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, adminSecret: secret, role })
-      });
-
-      const body = await resp.json().catch(() => ({}));
-      if (!resp.ok) {
-        throw new Error(body.error || `Server responded ${resp.status}`);
-      }
-
-      // Automatically log admin in on success (backend login sets cookie)
-      const loginResp = await fetch(`${API}/api/admin/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email, password, adminSecret: secret })
-      });
-      const loginBody = await loginResp.json().catch(() => ({}));
-      if (!loginResp.ok) throw new Error(loginBody.error || `Login failed: ${loginResp.status}`);
-
-      await refreshUser();
-      showMessage('Registration successful — redirected to dashboard', 'success');
-      setTimeout(() => router.push('/dashabord'), 1000);
-    } catch (err) {
-      console.error('Admin register error:', err);
-      showMessage(err.message || 'Registration failed');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -117,25 +63,8 @@ export default function AdminLogin() {
     <div className="max-w-xl mx-auto mt-12 p-6 bg-white rounded shadow">
       <h1 className="text-2xl font-semibold mb-4 text-pink-600">Admin / Moderator — Sign in</h1>
 
-      <div className="mb-4">
-        <button className={`px-3 py-1 mr-2 rounded ${mode === 'login' ? 'bg-red-600 text-white' : 'bg-gray-300'}`} onClick={() => { clear(); setMode('login'); }}>Login</button>
-        <button className={`px-3 py-1 rounded ${mode === 'register' ? 'bg-red-600 text-white' : 'bg-gray-300'}`} onClick={() => { clear(); setMode('register'); }}>Register</button>
-      </div>
 
-      <form onSubmit={mode === 'login' ? handleLogin : handleRegister} className="space-y-3">
-        {mode === 'register' && (
-          <div>
-            <label className="block text-sm">Full name</label>
-            <input
-              placeholder="Full name"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              className="w-full border border-gray-200 bg-gray-50 text-gray-900 placeholder-gray-400 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-100"
-              disabled={loading}
-            />
-          </div>
-        )}
-
+      <form onSubmit={handleLogin} className="space-y-3">
         <div>
           <label className="block text-sm">Email</label>
           <input
@@ -150,10 +79,10 @@ export default function AdminLogin() {
         </div>
 
         <div className="relative">
-          <label className="block text-sm font-medium">Password {mode === 'register' && '(min. 6 characters)'}</label>
+          <label className="block text-sm font-medium">Password</label>
           <input
             type={showPassword ? 'text' : 'password'}
-            placeholder={mode === 'register' ? 'Choose a secure password' : 'Password'}
+            placeholder="Password"
             value={password}
             onChange={e => setPassword(e.target.value)}
             className="w-full pr-10 border border-gray-200 bg-white text-gray-900 placeholder-gray-400 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-100"
@@ -175,20 +104,6 @@ export default function AdminLogin() {
           </button>
         </div>
 
-        {mode === 'register' && (
-          <div>
-            <label className="block text-sm">Role</label>
-            <select
-              value={role}
-              onChange={e => setRole(e.target.value)}
-              className="w-full border border-gray-200 bg-white text-gray-900 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-100"
-              disabled={loading}
-            >
-              <option value="admin">Admin</option>
-              <option value="moderator">Moderator</option>
-            </select>
-          </div>
-        )}
 
         <div>
           <label className="block text-sm">Secret code</label>
@@ -215,9 +130,9 @@ export default function AdminLogin() {
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
             )}
-            {loading ? (mode === 'login' ? 'Logging in...' : 'Creating account...') : (mode === 'login' ? 'Login' : 'Create account')}
+            {loading ? 'Logging in...' : 'Login'}
           </button>
-          <button type="button" onClick={() => { setEmail(''); setPassword(''); setName(''); setSecret(''); }} className="px-3 py-2 border rounded">Clear</button>
+          <button type="button" onClick={() => { setEmail(''); setPassword(''); setSecret(''); }} className="px-3 py-2 border rounded">Clear</button>
         </div>
       </form>
 
@@ -247,8 +162,7 @@ export default function AdminLogin() {
           <li>Passwords are hashed with bcrypt (12 rounds)</li>
           <li>Account locks after 5 failed login attempts (30-minute lockout)</li>
           <li>Login attempts and IP addresses are logged</li>
-          <li>Server validates the admin secret code on each registration/login</li>
-          <li>Same email can register as both user and admin (completely independent)</li>
+          <li>Server validates the admin secret code on each login</li>
         </ul>
       </div>
     </div>

@@ -48,7 +48,7 @@ export default function ProductCreate() {
 
   const [activeTab, setActiveTab] = useState('basic');
   const [saving, setSaving] = useState(false);
-  const [newReview, setNewReview] = useState({ authorName: '', rating: 5, title: '', body: '' });
+  const [newReview, setNewReview] = useState({ authorName: '', rating: '', title: '', body: '' });
 
   // Department autocomplete
   const [departmentSuggestions, setDepartmentSuggestions] = useState([]);
@@ -141,15 +141,15 @@ export default function ProductCreate() {
   };
 
   const addReview = () => {
-    const rating = Number(newReview.rating) || 0;
-    if (rating < 1 || rating > 5) return alert('Rating must be between 1 and 5');
+    const rating = parseFloat(newReview.rating);
+    if (isNaN(rating) || rating < 1 || rating > 5) return alert('Rating must be a number between 1 and 5');
     const review = { authorName: newReview.authorName || undefined, rating, title: newReview.title || '', body: newReview.body || '', helpful: 0, createdAt: new Date().toISOString() };
     setProduct(p => {
       const reviews = [...(p.reviews||[]), review];
       const { count, avg } = recalcReviews(reviews);
       return { ...p, reviews, reviewCount: count, averageRating: avg };
     });
-    setNewReview({ authorName: '', rating: 5, title: '', body: '' });
+    setNewReview({ authorName: '', rating: '', title: '', body: '' });
   };
 
   const removeReviewAt = (idx) => {
@@ -995,7 +995,7 @@ export default function ProductCreate() {
                         max={5}
                         step={0.1}
                         value={newReview.rating}
-                        onChange={e => setNewReview(n => ({ ...n, rating: Number(e.target.value) }))}
+                        onChange={e => setNewReview(n => ({ ...n, rating: e.target.value }))}
                         className={inputClass}
                       />
                     </div>

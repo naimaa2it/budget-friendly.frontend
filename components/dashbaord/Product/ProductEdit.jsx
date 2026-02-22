@@ -38,7 +38,7 @@ export default function ProductEdit({ productId }) {
     reviewCount: 0,
     status: 'draft',
     specs: {},
-    seo: { title: '', description: '', keywords: [] },
+    seo: { title: '', description: '', keywords: '' },
     featured: false,
     coupon: false,
     flashSale: false,
@@ -142,7 +142,11 @@ export default function ProductEdit({ productId }) {
           p.returnPolicy = p.returnPolicy || { days: undefined, refundable: true, details: '' };
           p.faqs = p.faqs || [];
           p.reviews = p.reviews || [];
-          p.seo = p.seo || { title: '', description: '', keywords: [] };
+          p.seo = p.seo || { title: '', description: '', keywords: '' };
+          // if backend sent keywords array, convert to string for editing
+          if (Array.isArray(p.seo.keywords)) {
+            p.seo.keywords = p.seo.keywords.join(', ');
+          }
           p.featured = !!p.featured;
           p.coupon = !!p.coupon;
           p.flashSale = !!p.flashSale;
@@ -300,7 +304,12 @@ export default function ProductEdit({ productId }) {
     }
     setSaving(true);
     try {
-      const payload = { ...product, specs: { ...(product.specs || {}), sizes: product.sizes || product.specs?.sizes || [] } };
+      // convert keyword string to array
+      const seoCopy = { ...(product.seo || {}) };
+      if (typeof seoCopy.keywords === 'string') {
+        seoCopy.keywords = seoCopy.keywords.split(',').map(s=>s.trim()).filter(Boolean);
+      }
+      const payload = { ...product, seo: seoCopy, specs: { ...(product.specs || {}), sizes: product.sizes || product.specs?.sizes || [] } };
       const resp = await fetch(`${API}/api/admin/products/${productId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) });
       const body = await resp.json();
       if (!resp.ok) throw new Error(body.error || 'Save failed');
@@ -1377,10 +1386,10 @@ export default function ProductEdit({ productId }) {
                     <label className={labelClass}>SEO Keywords</label>
                     <input
                       type="text"
-                      value={(product.seo?.keywords||[]).join(', ')}
+                      value={product.seo?.keywords || ''}
                       onChange={e => setProduct(p => ({
                         ...p,
-                        seo: { ...p.seo, keywords: e.target.value.split(',').map(s=>s.trim()).filter(Boolean) }
+                        seo: { ...p.seo, keywords: e.target.value }
                       }))}
                       className={inputClass}
                       placeholder="comma separated keywords"

@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
+import { useUser } from '@/components/context/UserContext';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 export default function BlogList() {
   const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+  const { user } = useUser();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -15,7 +17,9 @@ export default function BlogList() {
     try {
       const r = await fetch(`${API}/api/admin/blog?page=${page}&limit=20`, { credentials: 'include' });
       const b = await r.json();
-      setItems(b.items || []);
+      // remove any archived entries from the client list; backend may still keep them
+      const filtered = (b.items || []).filter(i => i.status !== 'archived');
+      setItems(filtered);
     } catch (err) {
       console.error(err);
       alert('Failed to load posts');
@@ -30,21 +34,28 @@ export default function BlogList() {
   const handleNew = () => router.push('/dashabord/blog/new');
   const handleEdit = (post) => router.push(`/dashabord/blog/${post._id}`);
   const handleSaved = () => { load(); };
-  const handleDelete = async (id) => {
-    if (!confirm('Move post to archived?')) return;
-    const r = await fetch(`${API}/api/admin/blog/${id}`, { method: 'DELETE', credentials: 'include' });
+  const handleDelete = async (id, force = true) => {
+    // default to permanent removal – backend supports ?force=true like other endpoints
+    const msg = force
+      ? 'Permanently delete this post? This cannot be undone.'
+      : 'Archive this post?';
+    if (!confirm(msg)) return;
+
+    const url = `${API}/api/admin/blog/${id}${force ? '?force=true' : ''}`;
+    const options = { method: 'DELETE', credentials: 'include' };
+    if (force) {
+      options.headers = { 'Content-Type': 'application/json' };
+      options.body = JSON.stringify({ force: true });
+    }
+
+    const r = await fetch(url, options);
     const b = await r.json();
+    console.log('delete response', r.status, b);
     if (!r.ok) return alert(b.error || 'Failed');
     load();
   };
 
-  const togglePublish = async (post) => {
-    const nextStatus = post.status === 'published' ? 'draft' : 'published';
-    const r = await fetch(`${API}/api/admin/blog/${post._id}`, { method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: nextStatus }) });
-    const b = await r.json();
-    if (!r.ok) return alert(b.error || 'Failed');
-    load();
-  };
+  // publishing toggle not needed, remove related UI
 
   return (
     <div>
@@ -84,8 +95,9 @@ export default function BlogList() {
                 <td className="px-4 py-3 align-top">
                   <div className="flex gap-2">
                     <button onClick={() => handleEdit(p)} className="px-2 py-1 border rounded text-sm">Edit</button>
-                    <button onClick={() => togglePublish(p)} className="px-2 py-1 border rounded text-sm">{p.status==='published' ? 'Unpublish' : 'Publish'}</button>
-                    <button onClick={() => handleDelete(p._id)} className="px-2 py-1 border rounded text-sm text-red-600">Archive</button>
+                    {user?.role==='admin' && (
+                      <button onClick={() => handleDelete(p._id)} className="px-2 py-1 border rounded text-sm text-red-600">Delete</button>
+                    )}
                   </div>
                 </td>
               </tr>

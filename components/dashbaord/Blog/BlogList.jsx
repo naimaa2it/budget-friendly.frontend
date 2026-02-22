@@ -1,13 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import BlogEditor from './BlogEditor';
 
 export default function BlogList() {
   const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [editing, setEditing] = useState(null);
   const [page, setPage] = useState(1);
 
   const load = async () => {
@@ -26,9 +24,10 @@ export default function BlogList() {
 
   useEffect(() => { load(); }, [page]);
 
-  const handleNew = () => setEditing({});
-  const handleEdit = (post) => setEditing(post);
-  const handleSaved = (post) => { setEditing(null); load(); };
+  const router = require('next/navigation').useRouter();
+  const handleNew = () => router.push('/dashbaord/blog/new');
+  const handleEdit = (post) => router.push(`/dashbaord/blog/${post._id}`);
+  const handleSaved = () => { load(); };
   const handleDelete = async (id) => {
     if (!confirm('Move post to archived?')) return;
     const r = await fetch(`${API}/api/admin/blog/${id}`, { method: 'DELETE', credentials: 'include' });
@@ -55,11 +54,7 @@ export default function BlogList() {
         </div>
       </div>
 
-      {editing ? (
-        <div className="mb-6">
-          <BlogEditor post={editing} onCancel={() => setEditing(null)} onSaved={handleSaved} />
-        </div>
-      ) : null}
+      {/* inline editor removed in favor of dedicated page */}
 
       <div className="bg-white rounded shadow overflow-hidden">
         <table className="w-full text-left">

@@ -44,7 +44,7 @@ export default function AdminsList() {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">Authorized accounts</h2>
         <div>
-          <a href="/dashabord/authorized/new" className="px-3 py-2 bg-green-600 text-white rounded text-sm">Create admin</a>
+          <a href="/dashabord/authorized/new" className="px-3 py-2 bg-green-600 text-white rounded text-sm">Create admin/moderator</a>
         </div>
       </div>
 

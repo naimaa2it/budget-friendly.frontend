@@ -115,6 +115,10 @@ export default function BlogEdit({ postId }) {
       .catch(console.error);
   }, [postId, API]);
 
+  const handleCancel = () => {
+    router.push('/dashabord/blog');
+  };
+
   const handleSave = async (publish = false) => {
     if (!title.trim()) return alert('Title is required');
     setSaving(true);

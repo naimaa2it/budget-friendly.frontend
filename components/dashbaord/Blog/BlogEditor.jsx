@@ -29,6 +29,9 @@ export default function BlogEditor({ post: initial = null, onCancel = () => {}, 
     setFeaturedImage(initial?.featuredImage || '');
     setStatus(initial?.status || 'draft');
     setInitialized(true);
+    // enable drag resizing of images/objects in contentEditable
+    document.execCommand('enableObjectResizing', false, true);
+    document.execCommand('enableInlineTableEditing', false, true);
   }, [initial]);
 
   const lastRange = useRef(null);
@@ -71,7 +74,18 @@ export default function BlogEditor({ post: initial = null, onCancel = () => {}, 
         img.style.maxHeight = '200px';
         img.style.height = 'auto';
         img.style.cursor = 'pointer';
-        img.addEventListener('click', () => img.remove());
+        img.addEventListener('click', () => {
+          const action = prompt('Enter new max-height in px, or type "remove" to delete the image:');
+          if (!action) return;
+          if (action.toLowerCase().trim() === 'remove') {
+            img.remove();
+          } else {
+            const h = parseInt(action, 10);
+            if (!isNaN(h) && h > 0) {
+              img.style.maxHeight = h + 'px';
+            }
+          }
+        });
       }
     }, 100);
   };
@@ -157,7 +171,7 @@ export default function BlogEditor({ post: initial = null, onCancel = () => {}, 
       </div>
 
       <style jsx>{`
-        .editor-area img { max-height: 300px; width:auto; display:block; margin:auto; }
+        .editor-area img { max-height: 300px; max-width:100%; width:auto; display:block; margin:auto; }
       `}</style>
       <div className="mt-4 grid grid-cols-2 gap-4">
         <input placeholder="Comma separated tags" value={tags} onChange={e => setTags(e.target.value)} className="w-full border px-3 py-2 rounded" />

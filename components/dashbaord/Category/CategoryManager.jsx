@@ -223,7 +223,8 @@ function CreateMainModal({ API, onClose, onSuccess }) {
 
   const handleFile = async (file) => {
     const preview = URL.createObjectURL(file);
-    setImages(imgs => [...imgs, { url: preview, __local: true }]);
+    const tempId = Date.now() + Math.random();
+    setImages(imgs => [...imgs, { url: preview, __local: true, __tempId: tempId }]);
 
     try {
       const fd = new FormData();
@@ -244,10 +245,10 @@ function CreateMainModal({ API, onClose, onSuccess }) {
         format: body.asset.format
       };
       
-      setImages(imgs => imgs.map(img => img.url === preview ? asset : img));
+      setImages(imgs => imgs.map(img => (img.__tempId === tempId ? asset : img)));
       try { URL.revokeObjectURL(preview); } catch (e) {}
     } catch (err) {
-      setImages(imgs => imgs.filter(i => i.url !== preview));
+      setImages(imgs => imgs.filter(i => i.__tempId !== tempId));
       alert(err.message || 'Upload failed');
     }
   };
@@ -257,8 +258,9 @@ function CreateMainModal({ API, onClose, onSuccess }) {
     setSaving(true);
     try {
       const payload = { name: name.trim(), isActive: true };
-      if (images.filter(i => !i.__local).length > 0) {
-        payload.images = images.filter(i => !i.__local);
+      const uploadedImages = images.filter(i => !i.__local && !i.__tempId && i.public_id);
+      if (uploadedImages.length > 0) {
+        payload.images = uploadedImages;
       }
       
       const resp = await fetch(`${API}/api/admin/categories`, {
@@ -269,7 +271,7 @@ function CreateMainModal({ API, onClose, onSuccess }) {
       });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error || 'Failed to create');
-      onSuccess();
+      onSuccess(data.category);
     } catch (err) {
       alert(err.message);
     } finally {
@@ -299,11 +301,18 @@ function CreateMainModal({ API, onClose, onSuccess }) {
               <label className="block text-sm font-medium mb-2">Images</label>
               <div className="flex gap-3 flex-wrap">
                 {images.map((img, idx) => (
-                  <div key={idx} className="relative w-20 h-20 bg-gray-50 border rounded overflow-hidden">
+                  <div key={img.public_id || img.__tempId || `img-${idx}`} className="relative w-20 h-20 bg-gray-50 border rounded overflow-hidden">
                     <img src={img.url} alt="" className="w-full h-full object-cover" />
+                    {img.__local && (
+                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
+                      </div>
+                    )}
                     <button
+                      type="button"
                       onClick={() => setImages(imgs => imgs.filter((_, i) => i !== idx))}
-                      className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full w-5 h-5 text-xs"
+                      disabled={img.__local}
+                      className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center hover:bg-red-700 disabled:opacity-50"
                     >
                       ×
                     </button>
@@ -344,6 +353,7 @@ function CreateMainModal({ API, onClose, onSuccess }) {
 function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
   const [name, setName] = useState(category.name);
   const [images, setImages] = useState(category.images || []);
+  const [originalImages, setOriginalImages] = useState(category.images || []);
   const [children, setChildren] = useState(category.children || []);
   const [saving, setSaving] = useState(false);
   
@@ -354,12 +364,13 @@ function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
 
   const handleFile = async (file, isParent = true, childIndex = null) => {
     const preview = URL.createObjectURL(file);
+    const tempId = Date.now() + Math.random();
     
     if (isParent) {
-      setImages(imgs => [...imgs, { url: preview, __local: true }]);
+      setImages(imgs => [...imgs, { url: preview, __local: true, __tempId: tempId }]);
     } else {
       setNewChildren(kids => kids.map((k, i) => 
-        i === childIndex ? { ...k, images: [...k.images, { url: preview, __local: true }] } : k
+        i === childIndex ? { ...k, images: [...k.images, { url: preview, __local: true, __tempId: tempId }] } : k
       ));
     }
 
@@ -383,20 +394,20 @@ function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
       };
       
       if (isParent) {
-        setImages(imgs => imgs.map(img => img.url === preview ? asset : img));
+        setImages(imgs => imgs.map(img => (img.__tempId === tempId ? asset : img)));
       } else {
         setNewChildren(kids => kids.map((k, i) => 
-          i === childIndex ? { ...k, images: k.images.map(img => img.url === preview ? asset : img) } : k
+          i === childIndex ? { ...k, images: k.images.map(img => (img.__tempId === tempId ? asset : img)) } : k
         ));
       }
       
       try { URL.revokeObjectURL(preview); } catch (e) {}
     } catch (err) {
       if (isParent) {
-        setImages(imgs => imgs.filter(i => i.url !== preview));
+        setImages(imgs => imgs.filter(i => i.__tempId !== tempId));
       } else {
         setNewChildren(kids => kids.map((k, i) => 
-          i === childIndex ? { ...k, images: k.images.filter(img => img.url !== preview) } : k
+          i === childIndex ? { ...k, images: k.images.filter(img => img.__tempId !== tempId) } : k
         ));
       }
       alert(err.message);
@@ -407,10 +418,19 @@ function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
     if (!name.trim()) return alert('Category name is required');
     setSaving(true);
     try {
+      // Detect removed images to delete from Cloudinary
+      const originalImageIds = originalImages.map(img => img.public_id).filter(Boolean);
+      const currentImageIds = images.map(img => img.public_id).filter(Boolean);
+      const removedImageIds = originalImageIds.filter(id => !currentImageIds.includes(id));
+      
       // Update parent category
       const payload = { name: name.trim(), isActive: true };
-      if (images.filter(i => !i.__local).length > 0) {
-        payload.images = images.filter(i => !i.__local);
+      const uploadedImages = images.filter(i => !i.__local && !i.__tempId && i.public_id);
+      payload.images = uploadedImages;
+      
+      // Include removed images for Cloudinary cleanup
+      if (removedImageIds.length > 0) {
+        payload.removedImages = removedImageIds;
       }
       
       const resp = await fetch(`${API}/api/admin/categories/${category._id}`, {
@@ -430,8 +450,9 @@ function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
             parentId: category._id,
             isActive: true
           };
-          if (child.images.filter(i => !i.__local).length > 0) {
-            childPayload.images = child.images.filter(i => !i.__local);
+          const childImages = child.images.filter(i => !i.__local && !i.__tempId && i.public_id);
+          if (childImages.length > 0) {
+            childPayload.images = childImages;
           }
           
           const childResp = await fetch(`${API}/api/admin/categories`, {
@@ -481,11 +502,18 @@ function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
                   <label className="block text-sm font-medium mb-2">Images</label>
                   <div className="flex gap-3 flex-wrap">
                     {images.map((img, idx) => (
-                      <div key={idx} className="relative w-20 h-20 bg-gray-50 border rounded overflow-hidden">
+                      <div key={img.public_id || img.__tempId || `img-${idx}`} className="relative w-20 h-20 bg-gray-50 border rounded overflow-hidden">
                         <img src={img.url} alt="" className="w-full h-full object-cover" />
+                        {img.__local && (
+                          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                            <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
+                          </div>
+                        )}
                         <button
+                          type="button"
                           onClick={() => setImages(imgs => imgs.filter((_, i) => i !== idx))}
-                          className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full w-5 h-5 text-xs"
+                          disabled={img.__local}
+                          className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center hover:bg-red-700 disabled:opacity-50"
                         >
                           ×
                         </button>
@@ -537,13 +565,20 @@ function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
                         
                         <div className="flex gap-2">
                           {child.images.map((img, imgIdx) => (
-                            <div key={imgIdx} className="relative w-16 h-16 bg-gray-50 border rounded overflow-hidden">
+                            <div key={img.public_id || img.__tempId || `child-${idx}-img-${imgIdx}`} className="relative w-16 h-16 bg-gray-50 border rounded overflow-hidden">
                               <img src={img.url} alt="" className="w-full h-full object-cover" />
+                              {img.__local && (
+                                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                                </div>
+                              )}
                               <button
+                                type="button"
                                 onClick={() => setNewChildren(kids => kids.map((k, i) => 
                                   i === idx ? { ...k, images: k.images.filter((_, ii) => ii !== imgIdx) } : k
                                 ))}
-                                className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full w-4 h-4 text-xs"
+                                disabled={img.__local}
+                                className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center hover:bg-red-700 disabled:opacity-50"
                               >
                                 ×
                               </button>

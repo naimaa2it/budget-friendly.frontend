@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import ProductCard from './ProductCard';
+import ProductInfoTabs from './ProductInfoTabs';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 export default function ProductDetails({ product, relatedProducts = [] }) {
@@ -29,6 +30,15 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
   }
 
   const { title, description, price, compareAtPrice, department, specs = {} } = product;
+
+  // convert specs object into specifications array for tabs component
+  const specArray = Object.entries(specs).map(([k,v]) => ({ key:k, value: String(v) }));
+
+  const tabProduct = {
+    ...product,
+    description,
+    specifications: specArray,
+  };
 
   return (
     <div key={product?._id || product?.id} className="max-w-6xl mx-auto py-8 px-4">
@@ -147,22 +157,8 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
         </div>
       )}
 
-      {/* specs table */}
-      {specs && Object.keys(specs).length > 0 && (
-        <div className="mt-12">
-          <h2 className="text-2xl font-semibold mb-4">Specifications</h2>
-          <table className="w-full text-left border-collapse">
-            <tbody>
-              {Object.entries(specs).map(([k, v]) => (
-                <tr key={k} className="border-b">
-                  <th className="py-2 px-4 font-medium text-gray-700">{k}</th>
-                  <td className="py-2 px-4 text-gray-600">{String(v)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      {/* product info tabs for description/specs */}
+      <ProductInfoTabs product={tabProduct} />
 
       {/* optional brand description section (could be populated from department lookup) */}
     </div>

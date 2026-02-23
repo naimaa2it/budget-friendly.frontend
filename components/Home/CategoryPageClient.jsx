@@ -176,6 +176,18 @@ export default function CategoryPageClient({ slug }) {
             </div>
           )}
 
+          {/* All products listing */}
+          {!loading && filtered.length > 0 && (
+            <>
+              <h2 className="text-xl font-semibold mt-8 mb-4">All Products ({filtered.length})</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                {(showAll ? filtered : filtered.slice(0, 5)).map(p => (
+                  <ProductCard key={p._id} product={p} onDelete={user?.role === 'admin' ? deleteProduct : undefined} />
+                ))}
+              </div>
+            </>
+          )}
+
           {filtered.length > 5 && (
             <div className="mt-6 flex justify-center">
               <button className="px-4 py-2 bg-white border rounded-md" onClick={() => setShowAll(s => !s)}>{showAll ? 'Show less' : `Show all (${filtered.length})`}</button>

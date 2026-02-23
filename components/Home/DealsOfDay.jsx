@@ -148,7 +148,7 @@ export default function DealsOfDay() {
                     alt="Product"
                     loading="lazy"
                     decoding="async"
-                    width={1200}
+                    width={1400}
                     height={1200}
                     onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/assets/placeholder.svg'; }}
                     className="absolute inset-0 w-full h-full object-contain"

@@ -108,7 +108,8 @@ export default function CategoryPageClient({ slug }) {
   }, [products]);
 
   const applyFilters = ({ minPrice, maxPrice, subIds, reset }) => {
-    if (reset) { setFiltered(products); return; }
+    console.log('applying filters', { minPrice, maxPrice, subIds, reset, total: products.length });
+    if (reset) { setFiltered(products); setShowAll(false); return; }
     const result = products.filter(p => {
       const pr = p.price || 0;
       if (pr < (minPrice ?? 0) || pr > (maxPrice ?? Infinity)) return false;
@@ -117,7 +118,9 @@ export default function CategoryPageClient({ slug }) {
       }
       return true;
     });
+    console.log('filtered count', result.length);
     setFiltered(result);
+    setShowAll(false);
   };
 
   const { user } = useUser();

@@ -13,9 +13,10 @@ export default function CategoryFilters({ stats = {}, subcategories = [], onAppl
   }, [stats.minPrice, stats.maxPrice]);
 
   const toggleSub = (id) => {
+    const sid = String(id);
     setSelectedSubs(prev => {
       const s = new Set(prev);
-      if (s.has(id)) s.delete(id); else s.add(id);
+      if (s.has(sid)) s.delete(sid); else s.add(sid);
       return s;
     });
   };

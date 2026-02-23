@@ -84,7 +84,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
               onClick={() => {
                 if (scrollRef.current) scrollRef.current.scrollBy({ left: -scrollRef.current.offsetWidth, behavior: 'smooth' });
               }}
-              className="p-2 rounded-full bg-white shadow-md hover:bg-gray-100 transition mr-2"
+              className="p-2 rounded-full bg-white shadow-md hover:bg-gray-100 transition -mr-2"
             >
               <FaChevronLeft className="w-6 h-6" />
             </button>
@@ -104,7 +104,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
               onClick={() => {
                 if (scrollRef.current) scrollRef.current.scrollBy({ left: scrollRef.current.offsetWidth, behavior: 'smooth' });
               }}
-              className="p-2 rounded-full bg-white shadow-md hover:bg-gray-100 transition ml-2"
+              className="p-2 rounded-full bg-white shadow-md hover:bg-gray-100 transition -ml-2"
             >
               <FaChevronRight className="w-6 h-6" />
             </button>

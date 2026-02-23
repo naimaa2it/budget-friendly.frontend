@@ -133,6 +133,55 @@ export default function ProductInfoTabs({ product }) {
               ) : (
                 <p className="text-gray-700">No reviews yet.</p>
               )}
+
+              {/* review submission form */}
+              <div className="mt-8">
+                <h3 className="text-lg font-semibold mb-4">Write a review</h3>
+                <form className="space-y-4 max-w-2xl">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Your Name</label>
+                      <input
+                        type="text"
+                        className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                        placeholder="Your Name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Email</label>
+                      <input
+                        type="email"
+                        className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                        placeholder="Email"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Rating</label>
+                    <div className="flex items-center gap-1 mt-1">
+                      {[1,2,3,4,5].map((_, idx)=> (
+                        <svg key={idx} className="w-6 h-6 text-gray-300 hover:text-green-500 cursor-pointer" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.37 2.455a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.538 1.118l-3.37-2.455a1 1 0 00-1.175 0l-3.37 2.455c-.783.57-1.838-.197-1.538-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.013 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z" />
+                        </svg>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Comment</label>
+                    <textarea
+                      className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                      rows={4}
+                      placeholder="Share details of your own experience about this product"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="bg-pink-600 text-white py-2 px-4 rounded-md hover:bg-pink-700 transition"
+                  >
+                    Submit review
+                  </button>
+                </form>
+              </div>
             </div>
           )}
 

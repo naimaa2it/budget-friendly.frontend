@@ -571,6 +571,7 @@ export default function ProductEdit({ productId }) {
                       { key: 'best_seller', label: 'Best Seller', color: 'bg-yellow-100 text-yellow-800' },
                       { key: 'hot', label: 'Hot', color: 'bg-red-100 text-red-800' },
                       { key: 'new_arrival', label: 'New Arrival', color: 'bg-green-100 text-green-800' },
+                      { key: 'popular_pics', label: 'Popular Pics', color: 'bg-pink-100 text-pink-800' },
                       { key: 'trending', label: 'Trending', color: 'bg-blue-100 text-blue-800' },
                       { key: 'limited', label: 'Limited Edition', color: 'bg-purple-100 text-purple-800' }
                     ].map(b => (

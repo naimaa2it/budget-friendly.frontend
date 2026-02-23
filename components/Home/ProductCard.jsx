@@ -4,7 +4,7 @@ import Image from 'next/image';
 import React from 'react';
 import { FaEye, FaShoppingCart, FaHeart } from 'react-icons/fa';
 
-export default function ProductCard({ product, imageWidth = 300, imageHeight = 200 }) {
+export default function ProductCard({ product, imageWidth = 300, imageHeight = 200, imageQuality = 100 }) {
   const price = product.price || (product.variants && product.variants[0]?.price) || 0;
   const compareAt = product.compareAtPrice || (product.variants && product.variants[0]?.compareAtPrice) || null;
   const image = (product.images && product.images[0]?.url) || '/assets/placeholder.svg';
@@ -17,6 +17,7 @@ export default function ProductCard({ product, imageWidth = 300, imageHeight = 2
           alt={product.title || product.slug}
           width={imageWidth}
           height={imageHeight}
+          quality={imageQuality}
           loading="lazy"
           decoding="async"
           onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/assets/placeholder.svg'; }}

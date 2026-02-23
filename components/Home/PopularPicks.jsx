@@ -164,7 +164,7 @@ export default function PopularPicks() {
                 className="bg-white rounded-lg border border-gray-200 overflow-hidden group hover:shadow-xl transition-all duration-300"
               >
                 {/* Product Image Container */}
-                <div className="relative bg-gray-50 p-6 h-64 flex items-center justify-center overflow-hidden">
+                <div className="relative bg-gray-50 p-6 h-54 flex items-center justify-center overflow-hidden">
                   <Image
                     src={encodeURI(product.image)}
                     alt={product.subtitle}
@@ -214,7 +214,7 @@ export default function PopularPicks() {
                 </div>
 
                 {/* Product Info */}
-                <div className="p-4">
+                <div className="p-4 relative">
                   <p className="text-sm text-gray-600 mb-1">{product.title}</p>
                   <h3 className="text-base font-semibold text-gray-900 mb-1 line-clamp-2">
                     {product.subtitle}
@@ -248,8 +248,8 @@ export default function PopularPicks() {
                     </div>
                   )}
 
-                  {/* Add to Cart Button - Visible on Hover */}
-                  <button className="w-full bg-red-600 text-white py-2 rounded-md font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-red-700">
+                  {/* Add to Cart Button - Absolute, appears on hover */}
+                  <button className="absolute bottom-4 left-4 right-4 bg-red-600 text-white py-2 rounded-md font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-red-700">
                     Add to Cart
                   </button>
                 </div>

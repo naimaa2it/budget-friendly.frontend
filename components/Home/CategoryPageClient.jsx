@@ -174,7 +174,7 @@ export default function CategoryPageClient({ slug }) {
             return (
               <div key={sub._id} className="relative flex flex-col items-center w-36">
                 <Link href={`/category/${sslug}`} className="flex flex-col items-center group cursor-pointer">
-                  <div className="w-28 h-28 rounded-full bg-gray-10 border-6 border-gray-100 shadow-md flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform">
+                  <div className="w-28 h-28 rounded-full bg-gray-10 border-6 border-[#f9f3f1] shadow-md flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform">
                     <Image src={(sub.images && sub.images[0] && sub.images[0].url) ? sub.images[0].url : '/assets/placeholder.svg'} alt={sub.name} width={80} height={80} className="w-30 h-30 object-contain" />
                   </div>
                   <div className="mt-3 text-sm text-center font-medium text-gray-700">{sub.name}</div>

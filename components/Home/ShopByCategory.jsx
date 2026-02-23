@@ -6,6 +6,7 @@ import { PiFishThin , PiTireThin,PiLeafThin} from 'react-icons/pi';
 import { GiRopeCoil,GiPeanut,GiWoodPile } from 'react-icons/gi';
 import { FaArrowRight, FaTrash } from 'react-icons/fa';
 import { useUser } from '@/components/context/UserContext';
+import Image from 'next/image';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -96,34 +97,16 @@ export default function ShopByCategory() {
         ) : (
           rendered.map((cat) => (
             <div key={cat._id} className='relative flex flex-col items-center group w-40'>
-              {user?.role === 'admin' && (
-                <button
-                  onClick={async (e) => {
-                    e.stopPropagation(); e.preventDefault();
-                    if (!confirm('Delete this category?')) return;
-                    try {
-                      const r = await fetch(`${API}/api/admin/categories/${cat._id}`, { method: 'DELETE', credentials: 'include' });
-                      const body = await r.json();
-                      if (!r.ok) return alert(body.error || 'Delete failed');
-                      setCategories(prev => prev.filter(c => c._id !== cat._id));
-                    } catch (err) {
-                      console.error(err);
-                      alert('Delete failed');
-                    }
-                  }}
-                  className='absolute -top-2 -right-2 z-20 bg-white rounded-full p-1 shadow border border-gray-200 hover:bg-red-600 hover:text-white transition'
-                  aria-label='Delete category'
-                >
-                  <FaTrash className='w-4 h-4' />
-                </button>
-              )}
+
 
               <Link href={cat.link} className='cursor-pointer flex flex-col items-center'>
                 <div className='relative w-40 h-40 rounded-full border-4 border-white shadow-lg bg-red-100/30 group-hover:scale-105 transition-transform overflow-visible'>
                   <div className='w-full h-full rounded-full overflow-hidden'>
-                    <img
+                    <Image
                       src={encodeURI(cat.image)}
                       alt={cat.name}
+                      width={160}
+                      height={160}
                       loading="lazy"
                       decoding="async"
                       onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/assets/placeholder.svg'; }}

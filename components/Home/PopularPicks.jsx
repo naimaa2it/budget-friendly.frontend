@@ -103,7 +103,7 @@ export default function PopularPicks() {
       <div className="flex items-center gap-3 mb-6">
         <div className="w-3 h-3 bg-red-600 rounded-full"></div>
         <h1 className="text-3xl font-bold text-gray-900">
-          <span className="font-bold">TODAY'S</span> <span className="font-normal">POPULAR PICKS</span>
+          <span className="font-bold">TODAY&apos;S</span> <span className="font-normal">POPULAR PICKS</span>
         </h1>
       </div>
 

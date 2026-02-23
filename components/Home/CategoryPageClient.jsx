@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import ProductCard from './ProductCard';
+import BestSellingCard from './BestSellingCard';
 import CategoryFilters from './CategoryFilters';
 import Link from 'next/link';
 import { useUser } from '@/components/context/UserContext';
@@ -170,7 +171,7 @@ export default function CategoryPageClient({ slug }) {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {bestSelling.slice(0, 5).map(p => (
-              <ProductCard key={p._id} product={p} onDelete={user?.role === 'admin' ? deleteProduct : undefined} />
+              <BestSellingCard key={p._id} product={p} onDelete={user?.role === 'admin' ? deleteProduct : undefined} />
             ))}
           </div>
         )}

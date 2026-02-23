@@ -1,5 +1,6 @@
 "use client";
 
+import Image from 'next/image';
 import { useState, useEffect, useRef } from 'react';
 import { FaEye, FaShoppingCart, FaHeart } from 'react-icons/fa';
 
@@ -119,9 +120,11 @@ export default function PopularPicks() {
             </button>
           </div>
           <div className="mt-6">
-            <img 
+            <Image 
               src="/assets/placeholder.svg" 
-              alt="Featured Product" 
+              alt="Featured Product"
+              width={256} 
+              height={256}
               loading="lazy"
               decoding="async"
               onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/assets/placeholder.svg'; }}
@@ -162,9 +165,11 @@ export default function PopularPicks() {
               >
                 {/* Product Image Container */}
                 <div className="relative bg-gray-50 p-6 h-64 flex items-center justify-center overflow-hidden">
-                  <img
+                  <Image
                     src={encodeURI(product.image)}
                     alt={product.subtitle}
+                    width={300}
+                    height={300}
                     loading="lazy"
                     decoding="async"
                     onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/assets/placeholder.svg'; }}
@@ -230,7 +235,7 @@ export default function PopularPicks() {
                   {/* Rating and Reviews */}
                   <div className="flex items-center gap-2 mb-3">
                     {renderStars(product.rating)}
-                    <span className="text-sm text-gray-600">{product.reviews}</span>
+                    
                   </div>
 
                   {/* Stock Status */}
@@ -252,21 +257,7 @@ export default function PopularPicks() {
             ))}
           </div>
 
-          {/* Slide Indicators */}
-          <div className="flex justify-center gap-3 mt-8">
-            {Array.from({ length: totalSlides }).map((_, index) => (
-              <button
-                key={index}
-                onClick={() => goToSlide(index)}
-                className={`w-3 h-3 rounded-full transition-all ${
-                  index === currentSlide 
-                    ? "bg-red-600 w-8" 
-                    : "bg-gray-300 hover:bg-gray-400"
-                }`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
-          </div>
+          
         </div>
       </div>
     </div>

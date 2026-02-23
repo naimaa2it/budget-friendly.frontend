@@ -3,12 +3,13 @@ import { useState } from "react";
 
 export default function ProductInfoTabs({ product }) {
   const [activeTab, setActiveTab] = useState("description");
+  // tabs: description, specification, guides, reviews, questions
 
   return (
     <section className="w-full bg-white mt-10 mb-6 rounded-2xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
         {/* Header */}
-        <div className="flex items-center justify-start border-b border-gray-200 mb-3">
+        <div className="flex items-center justify-start border-b border-gray-200 mb-3 flex-wrap">
           <button
             onClick={() => setActiveTab("description")}
             className={`px-6 py-3 text-lg font-semibold transition-all duration-200 ${
@@ -30,10 +31,43 @@ export default function ProductInfoTabs({ product }) {
           >
             Specification
           </button>
+
+          <button
+            onClick={() => setActiveTab("guides")}
+            className={`px-6 py-3 text-lg font-semibold transition-all duration-200 ${
+              activeTab === "guides"
+                ? "border-b-2 border-green-600 text-green-600"
+                : "text-gray-600 hover:text-green-600"
+            }`}
+          >
+            Guides
+          </button>
+
+          <button
+            onClick={() => setActiveTab("reviews")}
+            className={`px-6 py-3 text-lg font-semibold transition-all duration-200 ${
+              activeTab === "reviews"
+                ? "border-b-2 border-green-600 text-green-600"
+                : "text-gray-600 hover:text-green-600"
+            }`}
+          >
+            Reviews
+          </button>
+
+          <button
+            onClick={() => setActiveTab("questions")}
+            className={`px-6 py-3 text-lg font-semibold transition-all duration-200 ${
+              activeTab === "questions"
+                ? "border-b-2 border-green-600 text-green-600"
+                : "text-gray-600 hover:text-green-600"
+            }`}
+          >
+            Questions About This Products
+          </button>
         </div>
 
         {/* Content */}
-        <div className="  bg-white p-2 mb-4">
+        <div className="bg-white p-2 mb-4">
           {activeTab === "description" && (
             <div className="animate-fadeIn">
               <p className="text-gray-700 leading-relaxed whitespace-pre-line">
@@ -70,6 +104,64 @@ export default function ProductInfoTabs({ product }) {
               ) : (
                 <p className="text-gray-700">No specifications found.</p>
               )}
+            </div>
+          )}
+
+          {activeTab === "guides" && (
+            <div className="animate-fadeIn">
+              {product?.guides ? (
+                <div className="prose max-w-none">
+                  <div dangerouslySetInnerHTML={{ __html: product.guides }} />
+                </div>
+              ) : (
+                <p className="text-gray-700">No guides available.</p>
+              )}
+            </div>
+          )}
+
+          {activeTab === "reviews" && (
+            <div className="animate-fadeIn">
+              {product?.reviews && product.reviews.length > 0 ? (
+                <ul className="space-y-4">
+                  {product.reviews.map((r, i) => (
+                    <li key={i} className="border p-3 rounded">
+                      <p className="font-medium">{r.user || 'User'}</p>
+                      <p className="text-gray-700">{r.comment}</p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-700">No reviews yet.</p>
+              )}
+            </div>
+          )}
+
+          {activeTab === "questions" && (
+            <div className="animate-fadeIn">
+              <form className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Name</label>
+                  <input
+                    type="text"
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                    placeholder="Full Name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Question</label>
+                  <textarea
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                    rows={4}
+                    placeholder="Enter Your Message"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700"
+                >
+                  Send Message
+                </button>
+              </form>
             </div>
           )}
         </div>

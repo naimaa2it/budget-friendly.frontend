@@ -36,7 +36,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
       <div className="flex flex-col lg:flex-row gap-8">
         {/* left: image with vertical thumbnails on right */}
         <div className="flex-1 flex">
-          <div className="relative bg-white rounded shadow p-4 h-96 flex items-center justify-center flex-1">
+          <div className="relative bg-white rounded shadow p-4 h-126 flex items-center justify-center flex-1">
             <button
               onClick={prevImage}
               className="absolute left-2 z-10 p-2 bg-white rounded-full shadow hover:bg-gray-100"
@@ -46,8 +46,8 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
             <Image
               src={encodeURI(currentImage)}
               alt={title}
-              width={800}
-              height={800}
+              width={1200}
+              height={1200}
               className="max-h-full max-w-full object-contain"
             />
             <button

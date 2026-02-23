@@ -15,6 +15,7 @@ export default function CategoryPageClient({ slug }) {
   const [subcategories, setSubcategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [filtered, setFiltered] = useState([]);
+  const [bestSelling, setBestSelling] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
 
@@ -71,6 +72,9 @@ export default function CategoryPageClient({ slug }) {
         }));
         setProducts(items);
         setFiltered(items);
+        // determine best-selling subset
+        const best = items.filter(p => Array.isArray(p.badges) && p.badges.includes('best_seller'));
+        setBestSelling(best);
       } catch (err) {
         console.error(err);
         setProducts([]);
@@ -162,13 +166,13 @@ export default function CategoryPageClient({ slug }) {
 
           {loading ? (
             <div className="py-24 text-center text-gray-500">Loading products...</div>
-          ) : filtered.length === 0 ? (
-            <div className="py-24 text-center text-gray-500">No products found in this category.</div>
+          ) : bestSelling.length === 0 ? (
+            <div className="py-24 text-center text-gray-500">No best-selling products available.</div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {(showAll ? filtered : filtered.slice(0, 5)).map(p => (
+              {bestSelling.slice(0, 5).map(p => (
                 <ProductCard key={p._id} product={p} onDelete={user?.role === 'admin' ? deleteProduct : undefined} />
-              ))} 
+              ))}
             </div>
           )}
 

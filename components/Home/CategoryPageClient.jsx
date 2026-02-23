@@ -176,17 +176,20 @@ export default function CategoryPageClient({ slug }) {
         )}
       </div>
 
-      {/* product/filter grid below best-selling and all-products heading */}
-      <div className="grid grid-cols-12 gap-6">
+      {/* all-products heading spans full width */}
+      {!loading && filtered.length > 0 && (
+        <h2 className="text-xl font-semibold mt-8 mb-6">All Products ({filtered.length})</h2>
+      )}
+      {/* product/filter grid below best-selling */}
+      <div className="grid grid-cols-12 gap-4">
         {/* Filters occupy 4/12 columns */}
-        <div className="col-span-12 lg:col-span-4">
+        <div className="col-span-12 lg:col-span-3">
           <CategoryFilters stats={stats} subcategories={subcategories} onApply={applyFilters} />
         </div>
         {/* Products occupy 8/12 columns */}
-        <div className="col-span-12 lg:col-span-8">
+        <div className="col-span-12 lg:col-span-9">
           {!loading && filtered.length > 0 && (
             <>
-              <h2 className="text-xl font-semibold mt-8 mb-4">All Products ({filtered.length})</h2>
               <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {(showAll ? filtered : filtered.slice(0, 5)).map(p => (
                   <ProductCard key={p._id} product={p} onDelete={user?.role === 'admin' ? deleteProduct : undefined} />

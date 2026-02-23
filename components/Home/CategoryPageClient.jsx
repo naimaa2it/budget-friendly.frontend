@@ -12,6 +12,7 @@ const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export default function CategoryPageClient({ slug }) {
   const [category, setCategory] = useState(null);
+  const [parentCategory, setParentCategory] = useState(null);
   const [subcategories, setSubcategories] = useState([]);
   const [isSubcategoryPage, setIsSubcategoryPage] = useState(false);
   const [products, setProducts] = useState([]);
@@ -30,9 +31,11 @@ export default function CategoryPageClient({ slug }) {
         const catsJson = await catsResp.json();
         const flat = [];
         const parentMap = {};
+        const lookupById = {};
         const walk = (nodes, parent = null) => {
           for (const n of (nodes || [])) {
             flat.push(n);
+            lookupById[String(n._id)] = n;
             if (parent) parentMap[String(n._id)] = parent._id;
             if (n.children && n.children.length) walk(n.children, n);
           }
@@ -57,7 +60,13 @@ export default function CategoryPageClient({ slug }) {
         setCategory(match);
         setSubcategories(match.children || []);
         // determine if this category has a parent (thus a subcategory page)
-        setIsSubcategoryPage(Boolean(parentMap[String(match._id)]));
+        const parentId = parentMap[String(match._id)];
+        setIsSubcategoryPage(Boolean(parentId));
+        if (parentId) {
+          setParentCategory(lookupById[String(parentId)] || null);
+        } else {
+          setParentCategory(null);
+        }
 
         // gather all descendant category ids (include self) so that products
         // in sub‑categories are also loaded
@@ -134,8 +143,17 @@ export default function CategoryPageClient({ slug }) {
         <Link href="/" className="hover:underline">Home</Link>
         {category && category.name ? (
           <>
-            {' '} &gt; <span className="font-medium">Category</span> &gt; <span className="text-gray-900">{category.name}</span>
-            {/* when viewing a subcategory, optionally show parent? not traced here */}
+            {' '} &gt; 
+            {parentCategory ? (
+              <>
+                <Link href={`/category/${parentCategory.slug || (parentCategory.name||'').toLowerCase().replace(/\s+/g,'-')}`} className="hover:underline">
+                  {parentCategory.name}
+                </Link>
+                {' '} &gt; <span className="text-gray-900">{category.name}</span>
+              </>
+            ) : (
+              <span className="text-gray-900">{category.name}</span>
+            )}
           </>
         ) : null}
       </div>

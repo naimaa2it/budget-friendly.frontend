@@ -46,6 +46,10 @@ export default function ProductEdit({ productId }) {
     badges: []
   });
 
+  // strings for comma-separated inputs (tags, sizes)
+  const [tagStr, setTagStr] = useState('');
+  const [sizeStr, setSizeStr] = useState('');
+
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -65,6 +69,14 @@ export default function ProductEdit({ productId }) {
   const labelClass = "block text-sm font-semibold text-gray-700 mb-2";
 
   useEffect(() => { if (!user) refreshUser(); }, [user, refreshUser]);
+
+  // sync string inputs when product data changes
+  useEffect(() => {
+    setTagStr((product.tags || []).join(', '));
+  }, [product.tags]);
+  useEffect(() => {
+    setSizeStr((product.sizes || []).join(', '));
+  }, [product.sizes]);
 
   const [categories, setCategories] = useState([]);
   const [selectedMain, setSelectedMain] = useState(null);
@@ -309,7 +321,16 @@ export default function ProductEdit({ productId }) {
       if (typeof seoCopy.keywords === 'string') {
         seoCopy.keywords = seoCopy.keywords.split(',').map(s=>s.trim()).filter(Boolean);
       }
-      const payload = { ...product, seo: seoCopy, specs: { ...(product.specs || {}), sizes: product.sizes || product.specs?.sizes || [] } };
+      // ensure tags/sizes sync with input strings
+      const finalTags = tagStr.split(',').map(s=>s.trim()).filter(Boolean);
+      const finalSizes = sizeStr.split(',').map(s=>s.trim()).filter(Boolean);
+      const payload = { 
+        ...product,
+        tags: finalTags,
+        sizes: finalSizes,
+        seo: seoCopy,
+        specs: { ...(product.specs || {}), sizes: finalSizes || product.sizes || product.specs?.sizes || [] }
+      };
       const resp = await fetch(`${API}/api/admin/products/${productId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) });
       const body = await resp.json();
       if (!resp.ok) throw new Error(body.error || 'Save failed');
@@ -489,8 +510,12 @@ export default function ProductEdit({ productId }) {
                   <input
                     type="text"
                     placeholder="e.g., wireless, bluetooth, sale"
-                    value={(product.tags||[]).join(', ')}
-                    onChange={e => setProduct(p => ({ ...p, tags: e.target.value.split(',').map(s=>s.trim()).filter(Boolean) }))}
+                    value={tagStr}
+                    onChange={e => setTagStr(e.target.value)}
+                    onBlur={() => setProduct(p => ({
+                      ...p,
+                      tags: tagStr.split(',').map(s=>s.trim()).filter(Boolean)
+                    }))}
                     className={inputClass}
                   />
                 </div>
@@ -940,9 +965,10 @@ export default function ProductEdit({ productId }) {
                 <p className="text-sm text-gray-600 mb-4">Enter sizes separated by commas (e.g., S, M, L, XL)</p>
                 <input
                   type="text"
-                  value={(product.sizes || []).join(', ')}
-                  onChange={e => {
-                    const arr = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                  value={sizeStr}
+                  onChange={e => setSizeStr(e.target.value)}
+                  onBlur={() => {
+                    const arr = sizeStr.split(',').map(s => s.trim()).filter(Boolean);
                     setProduct(p => ({ ...p, sizes: arr, specs: { ...(p.specs || {}), sizes: arr } }));
                   }}
                   className={inputClass}
@@ -994,13 +1020,13 @@ export default function ProductEdit({ productId }) {
                         />
                         <input
                           type="text"
-                          value={opt.type || 'text'}
+                          value={opt.type || ''}
                           onChange={e => setProduct(p => {
                             const arr = [...(p.customization.options || [])];
                             arr[i] = { ...(arr[i] || {}), type: e.target.value };
                             return { ...p, customization: { ...p.customization, options: arr } };
                           })}
-                          placeholder="Type"
+                          placeholder="Type (e.g. text, select)"
                           className="w-32 px-4 py-2 border border-gray-300 rounded-lg"
                         />
                         <button

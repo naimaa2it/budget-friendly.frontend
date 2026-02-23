@@ -370,7 +370,8 @@ export default function ProductCreate() {
                       { key: 'new_arrival', label: 'New Arrival', color: 'bg-green-100 text-green-800' },
                       { key: 'popular_pics', label: 'Popular Pics', color: 'bg-pink-100 text-pink-800' },
                       { key: 'trending', label: 'Trending', color: 'bg-blue-100 text-blue-800' },
-                      { key: 'limited', label: 'Limited Edition', color: 'bg-purple-100 text-purple-800' }
+                      { key: 'limited', label: 'Limited Edition', color: 'bg-purple-100 text-purple-800' },
+                      { key: 'deals_of_the_day', label: 'Deals of the Day', color: 'bg-orange-100 text-orange-800' }
                     ].map(b => (
                       <label
                         key={b.key}

@@ -142,7 +142,7 @@ export default function DealsOfDay() {
                 </div>
 
                 {/* Main Product Image */}
-                <div className="relative bg-white rounded-lg mb-4 h-90 flex items-center justify-center">
+                <div className="relative bg-white rounded-lg mb-4 h-96 flex items-center justify-center">
                   <Image
                     src={encodeURI(productImages[selectedImage])}
                     alt="Product"

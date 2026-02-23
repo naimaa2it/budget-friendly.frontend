@@ -156,26 +156,34 @@ export default function CategoryPageClient({ slug }) {
         </div>
       )} 
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr,280px] gap-6">
-        {/* Main product area */}
-        <main>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-semibold">Best Selling</h2>
-            <button className="px-4 py-2 border rounded-full text-sm hover:bg-gray-50">see all →</button>
+      {/* Best Selling section sits full width above filter/product flex */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-semibold">Best Selling</h2>
+          <button className="px-4 py-2 border rounded-full text-sm hover:bg-gray-50">see all →</button>
+        </div>
+
+        {loading ? (
+          <div className="py-24 text-center text-gray-500">Loading products...</div>
+        ) : bestSelling.length === 0 ? (
+          <div className="py-24 text-center text-gray-500">No best-selling products available.</div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {bestSelling.slice(0, 5).map(p => (
+              <ProductCard key={p._id} product={p} onDelete={user?.role === 'admin' ? deleteProduct : undefined} />
+            ))}
           </div>
+        )}
+      </div>
 
-          {loading ? (
-            <div className="py-24 text-center text-gray-500">Loading products...</div>
-          ) : bestSelling.length === 0 ? (
-            <div className="py-24 text-center text-gray-500">No best-selling products available.</div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {bestSelling.slice(0, 5).map(p => (
-                <ProductCard key={p._id} product={p} onDelete={user?.role === 'admin' ? deleteProduct : undefined} />
-              ))}
-            </div>
-          )}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Sidebar filters */}
+        <aside className="w-full lg:w-72">
+          <CategoryFilters stats={stats} subcategories={subcategories} onApply={applyFilters} />
+        </aside>
 
+        {/* Main product area */}
+        <main className="flex-1">
           {/* All products listing */}
           {!loading && filtered.length > 0 && (
             <>
@@ -194,9 +202,6 @@ export default function CategoryPageClient({ slug }) {
             </div>
           )}
         </main>
-
-        {/* Sidebar filters */}
-        <CategoryFilters stats={stats} subcategories={subcategories} onApply={applyFilters} />
       </div>
     </div>
   );

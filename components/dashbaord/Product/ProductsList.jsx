@@ -19,11 +19,29 @@ export default function ProductsList() {
   const [selectedChild, setSelectedChild] = useState(null);
 
 
+  // helper to collect all descendant ids in tree node
+  const collectIds = node => {
+    if (!node) return [];
+    let ids = [String(node._id)];
+    if (node.children && node.children.length) {
+      node.children.forEach(c => {
+        ids = ids.concat(collectIds(c));
+      });
+    }
+    return ids;
+  };
+
   const fetchItems = useCallback(async () => {
     setLoading(true);
     try {
-      const catId = selectedChild?._id || selectedSub?._id || selectedMain?._id || '';
-      const q = `${API}/api/admin/products?limit=50&q=${encodeURIComponent(query || '')}${catId ? `&categoryId=${encodeURIComponent(catId)}` : ''}`;
+      // determine which category ids to include
+      let catIds = [];
+      if (selectedChild) catIds = [String(selectedChild._id)];
+      else if (selectedSub) catIds = collectIds(selectedSub);
+      else if (selectedMain) catIds = collectIds(selectedMain);
+
+      const catParam = catIds.length ? catIds.join(',') : '';
+      const q = `${API}/api/admin/products?limit=50&q=${encodeURIComponent(query || '')}${catParam ? `&categoryId=${encodeURIComponent(catParam)}` : ''}`;
       const resp = await fetch(q, { credentials: 'include' });
       const body = await resp.json();
       if (resp.ok) setItems(body.items || []);

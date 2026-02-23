@@ -170,7 +170,13 @@ export default function CategoryPageClient({ slug }) {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {bestSelling.slice(0, 5).map(p => (
-              <ProductCard key={p._id} product={p} onDelete={user?.role === 'admin' ? deleteProduct : undefined} />
+              <ProductCard
+                key={p._id}
+                product={p}
+                onDelete={user?.role === 'admin' ? deleteProduct : undefined}
+                imageWidth={360}
+                imageHeight={160}
+              />
             ))}
           </div>
         )}

@@ -139,7 +139,7 @@ export default function CategoryPageClient({ slug }) {
 
       {/* Subcategory circles */}
       {subcategories.length > 0 && (
-        <div className="flex gap-6 flex-wrap items-center mb-8">
+        <div className="flex gap-6 flex-wrap justify-center items-center mb-8">
           {subcategories.map((sub) => {
             const sslug = (sub.name || '').replace(/\s+/g, '-');
             return (

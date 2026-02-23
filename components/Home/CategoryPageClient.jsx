@@ -6,6 +6,7 @@ import CategoryFilters from './CategoryFilters';
 import Link from 'next/link';
 import { useUser } from '@/components/context/UserContext';
 import { FaTrash } from 'react-icons/fa';
+import Image from 'next/image';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -34,7 +35,11 @@ export default function CategoryPageClient({ slug }) {
         };
         walk(catsJson.categories || []);
 
-        const match = flat.find(c => (c.name || '').replace(/\s+/g, '-') === slug);
+        // try to match using stored slug value first, fall back to name-based guess
+        let match = flat.find(c => String(c.slug) === slug);
+        if (!match) {
+          match = flat.find(c => (c.name || '').toLowerCase().replace(/\s+/g, '-') === slug);
+        }
         if (!match) {
           setCategory({ name: slug, description: '' });
           setSubcategories([]);
@@ -47,8 +52,18 @@ export default function CategoryPageClient({ slug }) {
         setCategory(match);
         setSubcategories(match.children || []);
 
-        // fetch products for this category id (server doesn't have price filter, so fetch and filter client-side)
-        const prodResp = await fetch(`${API}/api/products?categoryId=${encodeURIComponent(match._id)}&limit=200`);
+        // gather all descendant category ids (include self) so that products
+        // in sub‑categories are also loaded
+        const collectIds = node => {
+          let ids = [String(node._id)];
+          if (node.children && node.children.length) {
+            node.children.forEach(c => ids = ids.concat(collectIds(c)));
+          }
+          return ids;
+        };
+        const ids = collectIds(match);
+        const param = ids.join(',');
+        const prodResp = await fetch(`${API}/api/products?categoryId=${encodeURIComponent(param)}&limit=200`);
         const prodJson = await prodResp.json();
         const items = (prodJson.items || []).map(p => ({
           ...p,
@@ -125,31 +140,9 @@ export default function CategoryPageClient({ slug }) {
             const sslug = (sub.name || '').replace(/\s+/g, '-');
             return (
               <div key={sub._id} className="relative flex flex-col items-center w-36">
-                {user?.role === 'admin' && (
-                  <button
-                    onClick={async (e) => {
-                      e.stopPropagation(); e.preventDefault();
-                      if (!confirm('Delete this subcategory?')) return;
-                      try {
-                        const r = await fetch(`${API}/api/admin/categories/${sub._id}`, { method: 'DELETE', credentials: 'include' });
-                        const body = await r.json();
-                        if (!r.ok) return alert(body.error || 'Delete failed');
-                        setSubcategories(prev => prev.filter(s => s._id !== sub._id));
-                      } catch (err) {
-                        console.error(err);
-                        alert('Delete failed');
-                      }
-                    }}
-                    className="absolute -top-2 -right-2 z-20 bg-white rounded-full p-1 shadow border border-gray-200 hover:bg-red-600 hover:text-white transition"
-                    aria-label="Delete subcategory"
-                  >
-                    <FaTrash className="w-4 h-4" />
-                  </button>
-                )}
-
                 <Link href={`/category/${sslug}`} className="flex flex-col items-center group cursor-pointer">
                   <div className="w-28 h-28 rounded-full bg-gray-50 border border-gray-100 shadow-md flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform">
-                    <img src={(sub.images && sub.images[0] && sub.images[0].url) ? sub.images[0].url : '/assets/placeholder.svg'} alt={sub.name} className="w-20 h-20 object-contain" />
+                    <Image src={(sub.images && sub.images[0] && sub.images[0].url) ? sub.images[0].url : '/assets/placeholder.svg'} alt={sub.name} width={80} height={80} className="w-30 h-30 object-contain" />
                   </div>
                   <div className="mt-3 text-sm text-center font-medium text-gray-700">{sub.name}</div>
                 </Link>

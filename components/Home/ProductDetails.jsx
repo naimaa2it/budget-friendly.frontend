@@ -57,25 +57,6 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
               <FaChevronRight className="w-6 h-6 text-gray-600" />
             </button>
           </div>
-          {images.length > 1 && (
-            <div className="ml-4 flex flex-col gap-2 overflow-y-auto h-96">
-              {images.map((img, idx) => (
-                <button
-                  key={idx}
-                  className={`border rounded ${currentIndex === idx ? 'border-red-600' : 'border-gray-200'}`}
-                  onClick={() => setCurrentIndex(idx)}
-                >
-                  <Image
-                    src={encodeURI(img)}
-                    alt={`${title} thumbnail ${idx + 1}`}
-                    width={80}
-                    height={80}
-                    className="object-contain"
-                  />
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
         {/* details column */}
@@ -105,7 +86,27 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
               App Price: ৳{product.appPrice || price}
             </button>
           </div>
-          {/* info badges section (you can populate accordingly) */}
+
+          {/* thumbnail row after buttons */}
+          {images.length > 1 && (
+            <div className="mt-4 flex gap-2">
+              {images.map((img, idx) => (
+                <button
+                  key={idx}
+                  className={`border rounded ${currentIndex === idx ? 'border-red-600' : 'border-gray-200'}`}
+                  onClick={() => setCurrentIndex(idx)}
+                >
+                  <Image
+                    src={encodeURI(img)}
+                    alt={`${title} thumbnail ${idx + 1}`}
+                    width={80}
+                    height={80}
+                    className="object-contain"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

@@ -129,6 +129,7 @@ export default function CategoryPageClient({ slug }) {
         {category && category.name ? (
           <>
             {' '} &gt; <span className="font-medium">Category</span> &gt; <span className="text-gray-900">{category.name}</span>
+            {/* when viewing a subcategory, optionally show parent? not traced here */}
           </>
         ) : null}
       </div>
@@ -141,7 +142,8 @@ export default function CategoryPageClient({ slug }) {
       {subcategories.length > 0 && (
         <div className="flex gap-6 flex-wrap justify-center items-center mb-8">
           {subcategories.map((sub) => {
-            const sslug = (sub.name || '').replace(/\s+/g, '-');
+            // prefer explicit slug from backend; fallback to name-based slug
+            const sslug = sub.slug || (sub.name || '').toLowerCase().replace(/\s+/g, '-');
             return (
               <div key={sub._id} className="relative flex flex-col items-center w-36">
                 <Link href={`/category/${sslug}`} className="flex flex-col items-center group cursor-pointer">

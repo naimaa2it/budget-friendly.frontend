@@ -47,9 +47,9 @@ export default function ProductCard({ product, onDelete }) {
 
       <div className="p-3 flex flex-col flex-grow">
         <p className="text-sm text-gray-600 mb-1 line-clamp-1">{product.title || product.category}</p>
-        <h3 className="text-sm font-semibold text-gray-900 mb-2 line-clamp-2">{product.description || product.title}</h3>
+        <h3 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-2">{product.description || product.title}</h3>
 
-        <div className="mb-3">
+        <div className="mb-2">
           <div className="flex items-center gap-2">
             <span className="text-lg font-bold text-red-600">৳{price}</span>
             {compareAt && <span className="text-sm text-gray-500 line-through">৳{compareAt}</span>}

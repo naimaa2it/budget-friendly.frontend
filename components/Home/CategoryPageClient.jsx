@@ -160,8 +160,8 @@ export default function CategoryPageClient({ slug }) {
           </>
         ) : null}
       </div>
-      <div className="mb-6 text-center">
-        <h1 className="text-3xl font-bold text-gray-900">{category?.name || slug}</h1>
+      <div className="mb-3 text-center">
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{category?.name || slug}</h1>
         <p className="text-gray-600 mt-2">{category?.description || `Products for ${category?.name || slug}.`}</p>
       </div>
 
@@ -213,7 +213,7 @@ export default function CategoryPageClient({ slug }) {
 
       {/* all-products heading spans full width */}
       {!loading && filtered.length > 0 && (
-        <h2 className="text-xl font-semibold mt-8 mb-6">All Products</h2>
+        <h2 className="text-3xl font-semibold mt-12 mb-3">All Products</h2>
       )}
       {/* product/filter grid below best-selling */}
       <div className="grid grid-cols-12 gap-4">

@@ -22,7 +22,7 @@ export default function CategoryFilters({ stats = {}, subcategories = [], onAppl
   };
 
   return (
-    <aside className="w-full lg:w-72 bg-white border border-gray-100 rounded-md p-4 shadow-sm">
+    <aside className="w-full lg:w-72 bg-white border border-[#fff8f8] rounded-md p-4 shadow-sm">
       <h4 className="text-lg font-semibold mb-3">Filters</h4>
 
       <div className="mb-4">

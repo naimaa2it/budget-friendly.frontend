@@ -110,6 +110,10 @@ export default function DealsOfDay() {
 
   const visibleBestsellers = bestsellerProducts.slice(sidebarScroll, sidebarScroll + 4);
 
+  if (!mainProduct) {
+    return <div className="py-24 text-center text-gray-500">Loading deal...</div>;
+  }
+
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}

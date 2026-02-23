@@ -142,7 +142,7 @@ export default function DealsOfDay() {
                 </div>
 
                 {/* Main Product Image */}
-                <div className="relative bg-white rounded-lg mb-4 h-80 flex items-center justify-center">
+                <div className="relative bg-white rounded-lg mb-4 h-90 flex items-center justify-center">
                   <Image
                     src={encodeURI(productImages[selectedImage])}
                     alt="Product"
@@ -161,7 +161,7 @@ export default function DealsOfDay() {
                     <button
                       key={index}
                       onClick={() => setSelectedImage(index)}
-                      className={`border-2 rounded-lg p-2 hover:border-red-500 transition ${
+                      className={`border-2 rounded-lg p-1 hover:border-red-500 transition ${
                         selectedImage === index ? 'border-red-500' : 'border-gray-300'
                       }`}
                     >

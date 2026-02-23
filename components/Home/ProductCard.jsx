@@ -1,5 +1,6 @@
 "use client";
 
+import Image from 'next/image';
 import React from 'react';
 import { FaEye, FaShoppingCart, FaHeart, FaTrash } from 'react-icons/fa';
 
@@ -9,11 +10,13 @@ export default function ProductCard({ product, onDelete }) {
   const image = (product.images && product.images[0]?.url) || '/assets/placeholder.svg';
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden group hover:shadow-xl transition-all duration-300">
+    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden group hover:shadow-xl transition-all duration-300 flex flex-col">
       <div className="relative bg-gray-50 p-4 h-48 flex items-center justify-center overflow-hidden">
-        <img
+        <Image
           src={encodeURI(image)}
           alt={product.title || product.slug}
+          width={300}
+          height={300}
           loading="lazy"
           decoding="async"
           onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/assets/placeholder.svg'; }}
@@ -42,7 +45,7 @@ export default function ProductCard({ product, onDelete }) {
         </div>
       </div>
 
-      <div className="p-3">
+      <div className="p-3 flex flex-col flex-grow">
         <p className="text-sm text-gray-600 mb-1 line-clamp-1">{product.title || product.category}</p>
         <h3 className="text-sm font-semibold text-gray-900 mb-2 line-clamp-2">{product.description || product.title}</h3>
 
@@ -53,7 +56,7 @@ export default function ProductCard({ product, onDelete }) {
           </div>
         </div>
 
-        <button className="w-full bg-red-600 text-white py-2 rounded-md font-medium hover:bg-red-700 transition">
+        <button className="w-full bg-red-600 text-white py-2 rounded-md font-medium hover:bg-red-700 transition mt-auto ">
           Add to Cart
         </button>
       </div>

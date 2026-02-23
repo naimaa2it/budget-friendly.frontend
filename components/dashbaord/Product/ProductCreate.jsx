@@ -50,6 +50,10 @@ export default function ProductCreate() {
   const [saving, setSaving] = useState(false);
   const [newReview, setNewReview] = useState({ authorName: '', rating: '', title: '', body: '' });
 
+  // helper strings for comma‑separated inputs (tags/sizes) so user can type freely
+  const [tagStr, setTagStr] = useState('');
+  const [sizeStr, setSizeStr] = useState('');
+
   // Department autocomplete
   const [departmentSuggestions, setDepartmentSuggestions] = useState([]);
   const [showDepartmentSuggestions, setShowDepartmentSuggestions] = useState(false);
@@ -66,6 +70,14 @@ export default function ProductCreate() {
   const labelClass = "block text-sm font-semibold text-gray-700 mb-2";
 
   useEffect(() => { if (!user) refreshUser(); }, [user, refreshUser]);
+
+  // synchronize string states when product loads/changes
+  useEffect(() => {
+    setTagStr((product.tags || []).join(', '));
+  }, [product.tags]);
+  useEffect(() => {
+    setSizeStr((product.sizes || []).join(', '));
+  }, [product.sizes]);
 
   const [categories, setCategories] = useState([]);
   const [selectedMain, setSelectedMain] = useState(null);
@@ -169,7 +181,15 @@ export default function ProductCreate() {
     }
     setSaving(true);
     try {
-      const payload = { ...product, specs: { ...(product.specs || {}), sizes: product.sizes || product.specs?.sizes || [] } };
+      // ensure tags/sizes reflect current string inputs
+      const finalTags = tagStr.split(',').map(s=>s.trim()).filter(Boolean);
+      const finalSizes = sizeStr.split(',').map(s=>s.trim()).filter(Boolean);
+    const payload = { 
+      ...product, 
+      tags: finalTags,
+      sizes: finalSizes,
+      specs: { ...(product.specs || {}), sizes: finalSizes || product.sizes || product.specs?.sizes || [] } 
+    };
       const resp = await fetch(`${API}/api/admin/products`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) });
       const body = await resp.json();
       if (!resp.ok) throw new Error(body.error || 'Save failed');
@@ -693,9 +713,10 @@ export default function ProductCreate() {
                 <p className="text-sm text-gray-600 mb-4">Enter sizes separated by commas (e.g., S, M, L, XL)</p>
                 <input
                   type="text"
-                  value={(product.sizes || []).join(', ')}
-                  onChange={e => {
-                    const arr = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                  value={sizeStr}
+                  onChange={e => setSizeStr(e.target.value)}
+                  onBlur={() => {
+                    const arr = sizeStr.split(',').map(s => s.trim()).filter(Boolean);
                     setProduct(p => ({ ...p, sizes: arr, specs: { ...(p.specs || {}), sizes: arr } }));
                   }}
                   className={inputClass}
@@ -747,13 +768,13 @@ export default function ProductCreate() {
                         />
                         <input
                           type="text"
-                          value={opt.type || 'text'}
+                          value={opt.type || ''}
                           onChange={e => setProduct(p => {
                             const arr = [...(p.customization.options || [])];
                             arr[i] = { ...(arr[i] || {}), type: e.target.value };
                             return { ...p, customization: { ...p.customization, options: arr } };
                           })}
-                          placeholder="Type"
+                          placeholder="Type (e.g. text, select)"
                           className="w-32 px-4 py-2 border border-gray-300 rounded-lg"
                         />
                         <button

@@ -32,11 +32,11 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
 
   return (
     <div key={product?._id || product?.id} className="max-w-6xl mx-auto py-8 px-4">
-      {/* upper section: large image with nav arrows + product info column */}
+      {/* upper section: large image with right-side thumbnails + product info column */}
       <div className="flex flex-col lg:flex-row gap-8">
-        {/* image column */}
-        <div className="flex-1 relative">
-          <div className="relative bg-white rounded shadow p-4 h-96 flex items-center justify-center">
+        {/* left: image with vertical thumbnails on right */}
+        <div className="flex-1 flex">
+          <div className="relative bg-white rounded shadow p-4 h-96 flex items-center justify-center flex-1">
             <button
               onClick={prevImage}
               className="absolute left-2 z-10 p-2 bg-white rounded-full shadow hover:bg-gray-100"
@@ -58,7 +58,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
             </button>
           </div>
           {images.length > 1 && (
-            <div className="mt-4 flex gap-2 overflow-x-auto">
+            <div className="ml-4 flex flex-col gap-2 overflow-y-auto h-96">
               {images.map((img, idx) => (
                 <button
                   key={idx}

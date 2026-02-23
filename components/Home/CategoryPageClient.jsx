@@ -178,7 +178,7 @@ export default function CategoryPageClient({ slug }) {
 
       {/* all-products heading spans full width */}
       {!loading && filtered.length > 0 && (
-        <h2 className="text-xl font-semibold mt-8 mb-6">All Products ({filtered.length})</h2>
+        <h2 className="text-xl font-semibold mt-8 mb-6">All Products</h2>
       )}
       {/* product/filter grid below best-selling */}
       <div className="grid grid-cols-12 gap-4">

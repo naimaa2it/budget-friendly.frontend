@@ -11,7 +11,7 @@ export default function ProductCard({ product, imageWidth = 300, imageHeight = 2
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden group hover:shadow-xl transition-all duration-300 flex flex-col">
-      <div className="relative bg-gray-50 p-4 flex items-center justify-center overflow-hidden" style={{ height: imageHeight }}>
+      <div className="relative bg-gray-50 px-2 flex items-center justify-center overflow-hidden" style={{ height: imageHeight }}>
         <Image
           src={encodeURI(image)}
           alt={product.title || product.slug}

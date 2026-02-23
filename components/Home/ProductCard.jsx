@@ -4,19 +4,19 @@ import Image from 'next/image';
 import React from 'react';
 import { FaEye, FaShoppingCart, FaHeart, FaTrash } from 'react-icons/fa';
 
-export default function ProductCard({ product, onDelete }) {
+export default function ProductCard({ product, onDelete, imageWidth = 300, imageHeight = 200 }) {
   const price = product.price || (product.variants && product.variants[0]?.price) || 0;
   const compareAt = product.compareAtPrice || (product.variants && product.variants[0]?.compareAtPrice) || null;
   const image = (product.images && product.images[0]?.url) || '/assets/placeholder.svg';
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden group hover:shadow-xl transition-all duration-300 flex flex-col">
-      <div className="relative bg-gray-50 p-4 h-48 flex items-center justify-center overflow-hidden">
+      <div className="relative bg-gray-50 p-4 flex items-center justify-center overflow-hidden" style={{ height: imageHeight }}>
         <Image
           src={encodeURI(image)}
           alt={product.title || product.slug}
-          width={300}
-          height={300}
+          width={imageWidth}
+          height={imageHeight}
           loading="lazy"
           decoding="async"
           onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/assets/placeholder.svg'; }}

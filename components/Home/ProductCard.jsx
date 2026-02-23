@@ -2,9 +2,11 @@
 
 import Image from 'next/image';
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { FaEye, FaShoppingCart, FaHeart } from 'react-icons/fa';
 
 export default function ProductCard({ product, imageWidth = 300, imageHeight = 200, imageQuality = 100 }) {
+  const router = useRouter();
   const price = product.price || (product.variants && product.variants[0]?.price) || 0;
   const compareAt = product.compareAtPrice || (product.variants && product.variants[0]?.compareAtPrice) || null;
   // handle hover/click image swap
@@ -17,8 +19,18 @@ export default function ProductCard({ product, imageWidth = 300, imageHeight = 2
   };
   const image = encodeURI(currentImage());
 
+  const id = product._id || product.id;
+  const href = `/product/${id}`;
+
+  const handleCardClick = () => {
+    router.push(href);
+  };
+
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden group hover:shadow-xl transition-all duration-300 flex flex-col">
+    <div 
+      onClick={handleCardClick} 
+      className="bg-white rounded-lg border border-gray-200 overflow-hidden group hover:shadow-xl transition-all duration-300 flex flex-col cursor-pointer"
+    >
       <div
         className="relative bg-gray-50 px-2 flex items-center justify-center overflow-hidden"
         style={{ height: imageHeight }}
@@ -39,7 +51,13 @@ export default function ProductCard({ product, imageWidth = 300, imageHeight = 2
         />
 
         <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <button className="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 hover:text-white transition-colors">
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(href);
+            }}
+            className="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 hover:text-white transition-colors"
+          >
             <FaEye className="w-4 h-4" />
           </button>
           <button className="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 hover:text-white transition-colors">

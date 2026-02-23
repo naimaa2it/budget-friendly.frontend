@@ -8,64 +8,45 @@ export default function DealsOfDay() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [sidebarScroll, setSidebarScroll] = useState(0);
   const [timeLeft, setTimeLeft] = useState({
-    days: 858,
-    hours: 15,
-    minutes: 52,
-    seconds: 8
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
   });
 
-  const productImages = [
-    "/assets/placeholder.svg",
-    "/assets/placeholder.svg",
-    "/assets/placeholder.svg",
-    "/assets/placeholder.svg",
-    "/assets/placeholder.svg"
-  ];
+  const [productImages, setProductImages] = useState(['/assets/placeholder.svg']);
+  const [mainProduct, setMainProduct] = useState(null);
+  const [bestsellerProducts, setBestsellerProducts] = useState([]);
 
-  const bestsellerProducts = [
-    {
-      id: 1,
-      name: "Black Air Pods",
-      price: "$239.52",
-      rating: 4,
-      image: "/assets/placeholder.svg"
-    },
-    {
-      id: 2,
-      name: "Amazon Cloud",
-      price: "$178.52",
-      rating: 4,
-      image: "/assets/placeholder.svg"
-    },
-    {
-      id: 3,
-      name: "Lorem ipsum sit.",
-      price: "$276.52",
-      rating: 4,
-      image: "/assets/placeholder.svg"
-    },
-    {
-      id: 4,
-      name: "Nost nobis are!",
-      price: "$220.52",
-      rating: 5,
-      image: "/assets/placeholder.svg"
-    },
-    {
-      id: 5,
-      name: "Premium Product",
-      price: "$299.52",
-      rating: 5,
-      image: "/assets/placeholder.svg"
-    },
-    {
-      id: 6,
-      name: "Special Item",
-      price: "$189.52",
-      rating: 4,
-      image: "/assets/placeholder.svg"
-    }
-  ];
+  // fetch deals-of-day product (pick first) and bestseller list
+  useEffect(() => {
+    const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    const fetchData = async () => {
+      try {
+        const dealResp = await fetch(`${API}/api/products?badge=deals_of_the_day&limit=1`);
+        const dealJson = await dealResp.json();
+        const deal = (dealJson.items || [])[0];
+        if (deal) {
+          setMainProduct(deal);
+          setProductImages((deal.images || []).map(i => i.url));
+          // optionally set countdown from deal.expiry or similar; leaving existing timer
+        }
+        const bestResp = await fetch(`${API}/api/products?badge=bestseller&limit=20`);
+        const bestJson = await bestResp.json();
+        const bests = (bestJson.items || []).map(p => ({
+          id: p._id || p.id,
+          name: p.title,
+          price: p.price ? `৳${p.price}` : '',
+          rating: p.averageRating || 0,
+          image: (p.images && p.images[0] && p.images[0].url) || '/assets/placeholder.svg'
+        }));
+        setBestsellerProducts(bests);
+      } catch (err) {
+        console.error('error loading deals/bestsellers', err);
+      }
+    };
+    fetchData();
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -106,6 +87,11 @@ export default function DealsOfDay() {
       setSidebarScroll(prev => prev - 1);
     }
   };
+
+  // reset selected thumbnail when images change
+  useEffect(() => {
+    setSelectedImage(0);
+  }, [productImages]);
 
   const renderStars = (rating) => {
     return (
@@ -194,30 +180,32 @@ export default function DealsOfDay() {
               <div>
                 {/* Rating and Reviews */}
                 <div className="flex items-center gap-2 mb-3">
-                  {renderStars(3)}
-                  <span className="text-gray-600 text-sm">(126) Review</span>
+                  {renderStars(mainProduct?.averageRating || 0)}
+                  <span className="text-gray-600 text-sm">({mainProduct?.reviewCount || 0}) Review</span>
                 </div>
 
                 {/* Product Title */}
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  Brendy Bluest Headphone
+                  {mainProduct?.title || 'Deal Product'}
                 </h2>
 
                 {/* Price */}
                 <div className="flex items-center gap-3 mb-4">
-                  <span className="text-3xl font-bold text-red-600">$239.52</span>
-                  <span className="text-xl text-gray-500 line-through">$362.00</span>
+                  <span className="text-3xl font-bold text-red-600">{mainProduct?.price ? `৳${mainProduct.price}` : '-'}</span>
+                  {mainProduct?.compareAtPrice && (
+                    <span className="text-xl text-gray-500 line-through">৳{mainProduct.compareAtPrice}</span>
+                  )}
                 </div>
 
                 {/* Availability and Units Sold */}
                 <div className="flex items-center gap-8 mb-6">
                   <div>
                     <span className="text-gray-600">Available: </span>
-                    <span className="font-bold text-gray-900">334</span>
+                    <span className="font-bold text-gray-900">{mainProduct?.inventory || 0}</span>
                   </div>
                   <div>
                     <span className="text-gray-600">Units Sold: </span>
-                    <span className="font-bold text-gray-900">1</span>
+                    <span className="font-bold text-gray-900">{mainProduct?.monthlySold || 0}</span>
                   </div>
                 </div>
 

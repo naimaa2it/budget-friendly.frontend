@@ -8,11 +8,21 @@ import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 export default function ProductDetails({ product, relatedProducts = [] }) {
   // Expect `product` object with fields coming from API
   const images = (product?.images || []).map(i => i.url);
-  const [currentImage, setCurrentImage] = useState(() => images[0] || '/assets/placeholder.svg');
+  const [currentIndex, setCurrentIndex] = useState(0);
   const scrollRef = useRef(null);
 
-  // we rely on the root div key to reset state when product changes, avoiding
-  // effect-based setState warnings.
+
+  const currentImage = images[currentIndex] || '/assets/placeholder.svg';
+
+  const prevImage = () => {
+    if (images.length === 0) return;
+    setCurrentIndex(i => (i - 1 + images.length) % images.length);
+  };
+
+  const nextImage = () => {
+    if (images.length === 0) return;
+    setCurrentIndex(i => (i + 1) % images.length);
+  };
 
   if (!product) {
     return <div className="py-24 text-center text-gray-500">Loading product...</div>;
@@ -22,11 +32,17 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
 
   return (
     <div key={product?._id || product?.id} className="max-w-6xl mx-auto py-8 px-4">
-      {/* upper section: thumbnails + main image + basic info */}
+      {/* upper section: large image with nav arrows + product info column */}
       <div className="flex flex-col lg:flex-row gap-8">
         {/* image column */}
-        <div className="flex-1">
+        <div className="flex-1 relative">
           <div className="relative bg-white rounded shadow p-4 h-96 flex items-center justify-center">
+            <button
+              onClick={prevImage}
+              className="absolute left-2 z-10 p-2 bg-white rounded-full shadow hover:bg-gray-100"
+            >
+              <FaChevronLeft className="w-6 h-6 text-gray-600" />
+            </button>
             <Image
               src={encodeURI(currentImage)}
               alt={title}
@@ -34,18 +50,24 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
               height={800}
               className="max-h-full max-w-full object-contain"
             />
+            <button
+              onClick={nextImage}
+              className="absolute right-2 z-10 p-2 bg-white rounded-full shadow hover:bg-gray-100"
+            >
+              <FaChevronRight className="w-6 h-6 text-gray-600" />
+            </button>
           </div>
           {images.length > 1 && (
             <div className="mt-4 flex gap-2 overflow-x-auto">
               {images.map((img, idx) => (
                 <button
                   key={idx}
-                  className={`border rounded ${currentImage === img ? 'border-red-600' : 'border-gray-200'}`}
-                  onClick={() => setCurrentImage(img)}
+                  className={`border rounded ${currentIndex === idx ? 'border-red-600' : 'border-gray-200'}`}
+                  onClick={() => setCurrentIndex(idx)}
                 >
                   <Image
                     src={encodeURI(img)}
-                    alt={`${title} thumbnail ${idx+1}`}
+                    alt={`${title} thumbnail ${idx + 1}`}
                     width={80}
                     height={80}
                     className="object-contain"
@@ -58,20 +80,32 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
 
         {/* details column */}
         <div className="flex-1 flex flex-col gap-4">
+          {/* category/brand header could go here */}
           <h1 className="text-3xl font-bold">{title}</h1>
-          <div className="flex items-center gap-4">
+          {/* rating placeholder */}
+          <div className="flex items-center gap-2">
+            {/* star icons could be added here */}
+            <span className="text-sm text-gray-500">(0 reviews)</span>
+          </div>
+          <div className="flex items-center gap-2">
             <span className="text-2xl font-bold text-red-600">৳{price}</span>
             {compareAtPrice && <span className="text-xl text-gray-500 line-through">৳{compareAtPrice}</span>}
+            {compareAtPrice && (
+              <span className="bg-green-100 text-green-800 px-2 rounded text-sm">
+                {Math.round(((compareAtPrice - price) / compareAtPrice) * 100)}% OFF
+              </span>
+            )}
           </div>
-          <p className="text-gray-700">{description}</p>
-          <button className="w-full md:w-auto bg-red-600 text-white py-2 px-6 rounded hover:bg-red-700 transition">
-            Add to Cart
-          </button>
-          {/* additional info area */}
-          <div className="mt-6">
-            <h2 className="text-lg font-semibold mb-2">About the Brand</h2>
-            <p className="text-gray-600">{department || 'N/A'}</p>
+
+          <div className="flex flex-wrap gap-4">
+            <button className="bg-pink-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-pink-700 transition">
+              Add to bag
+            </button>
+            <button className="border border-red-600 text-red-600 py-3 px-6 rounded-lg font-medium hover:bg-red-50 transition">
+              App Price: ৳{product.appPrice || price}
+            </button>
           </div>
+          {/* info badges section (you can populate accordingly) */}
         </div>
       </div>
 

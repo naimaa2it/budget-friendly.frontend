@@ -1,17 +1,18 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import ProductCard from './ProductCard';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 export default function ProductDetails({ product, relatedProducts = [] }) {
   // Expect `product` object with fields coming from API
   const images = (product?.images || []).map(i => i.url);
-  const [currentImage, setCurrentImage] = useState(images[0] || '/assets/placeholder.svg');
+  const [currentImage, setCurrentImage] = useState(() => images[0] || '/assets/placeholder.svg');
+  const scrollRef = useRef(null);
 
-  useEffect(() => {
-    setCurrentImage(images[0] || '/assets/placeholder.svg');
-  }, [images]);
+  // we rely on the root div key to reset state when product changes, avoiding
+  // effect-based setState warnings.
 
   if (!product) {
     return <div className="py-24 text-center text-gray-500">Loading product...</div>;
@@ -20,7 +21,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
   const { title, description, price, compareAtPrice, department, specs = {} } = product;
 
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4">
+    <div key={product?._id || product?.id} className="max-w-6xl mx-auto py-8 px-4">
       {/* upper section: thumbnails + main image + basic info */}
       <div className="flex flex-col lg:flex-row gap-8">
         {/* image column */}
@@ -76,12 +77,37 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
 
       {/* related products section */}
       {relatedProducts.length > 0 && (
-        <div className="mt-12">
+        <div className="mt-12 relative">
           <h2 className="text-2xl font-semibold mb-4">Related Products</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-            {relatedProducts.map(p => (
-              <ProductCard key={p._id || p.id} product={p} imageHeight={150} imageWidth={200} />
-            ))}
+          <div className="flex items-center">
+            <button
+              onClick={() => {
+                if (scrollRef.current) scrollRef.current.scrollBy({ left: -scrollRef.current.offsetWidth, behavior: 'smooth' });
+              }}
+              className="p-2 rounded-full bg-white shadow-md hover:bg-gray-100 transition mr-2"
+            >
+              <FaChevronLeft className="w-6 h-6" />
+            </button>
+
+            <div
+              ref={scrollRef}
+              className="flex gap-4 overflow-x-auto scrollbar-hide py-2" // custom utility to hide scrollbar
+            >
+              {relatedProducts.map(p => (
+                <div key={p._id || p.id} className="shrink-0 w-40">
+                  <ProductCard product={p} imageHeight={150} imageWidth={200} />
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => {
+                if (scrollRef.current) scrollRef.current.scrollBy({ left: scrollRef.current.offsetWidth, behavior: 'smooth' });
+              }}
+              className="p-2 rounded-full bg-white shadow-md hover:bg-gray-100 transition ml-2"
+            >
+              <FaChevronRight className="w-6 h-6" />
+            </button>
           </div>
         </div>
       )}

@@ -120,13 +120,17 @@ export default function CategoryPageClient({ slug }) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Breadcrumb & header */}
-      <div className="text-sm text-gray-500 mb-4">Home &gt; Category &gt; <span className="text-gray-900">{category?.name || slug}</span></div>
-      <div className="mb-6 flex items-start gap-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">{category?.name || slug}</h1>
-          <p className="text-gray-600 mt-2">{category?.description || `Products for ${category?.name || slug}.`}</p>
-        </div>
-        
+      <div className="text-sm text-gray-500 mb-4">
+        <Link href="/" className="hover:underline">Home</Link>
+        {category && category.name ? (
+          <>
+            {' '} &gt; <span className="font-medium">Category</span> &gt; <span className="text-gray-900">{category.name}</span>
+          </>
+        ) : null}
+      </div>
+      <div className="mb-6 text-center">
+        <h1 className="text-3xl font-bold text-gray-900">{category?.name || slug}</h1>
+        <p className="text-gray-600 mt-2">{category?.description || `Products for ${category?.name || slug}.`}</p>
       </div>
 
       {/* Subcategory circles */}

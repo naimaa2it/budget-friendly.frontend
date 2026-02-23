@@ -13,6 +13,7 @@ const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 export default function CategoryPageClient({ slug }) {
   const [category, setCategory] = useState(null);
   const [subcategories, setSubcategories] = useState([]);
+  const [isSubcategoryPage, setIsSubcategoryPage] = useState(false);
   const [products, setProducts] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [bestSelling, setBestSelling] = useState([]);
@@ -28,10 +29,12 @@ export default function CategoryPageClient({ slug }) {
         const catsResp = await fetch(`${API}/api/products/categories`);
         const catsJson = await catsResp.json();
         const flat = [];
-        const walk = (nodes) => {
+        const parentMap = {};
+        const walk = (nodes, parent = null) => {
           for (const n of (nodes || [])) {
             flat.push(n);
-            if (n.children && n.children.length) walk(n.children);
+            if (parent) parentMap[String(n._id)] = parent._id;
+            if (n.children && n.children.length) walk(n.children, n);
           }
         };
         walk(catsJson.categories || []);
@@ -46,12 +49,15 @@ export default function CategoryPageClient({ slug }) {
           setSubcategories([]);
           setProducts([]);
           setFiltered([]);
+          setIsSubcategoryPage(false);
           setLoading(false);
           return;
         }
 
         setCategory(match);
         setSubcategories(match.children || []);
+        // determine if this category has a parent (thus a subcategory page)
+        setIsSubcategoryPage(Boolean(parentMap[String(match._id)]));
 
         // gather all descendant category ids (include self) so that products
         // in sub‑categories are also loaded
@@ -139,7 +145,7 @@ export default function CategoryPageClient({ slug }) {
       </div>
 
       {/* Subcategory circles */}
-      {subcategories.length > 0 && (
+      {!isSubcategoryPage && subcategories.length > 0 && (
         <div className="flex gap-6 flex-wrap justify-center items-center mb-8">
           {subcategories.map((sub) => {
             // prefer explicit slug from backend; fallback to name-based slug

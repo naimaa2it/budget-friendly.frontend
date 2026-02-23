@@ -8,62 +8,37 @@ export default function PopularPicks() {
   const slideInterval = useRef(null);
   const slideContainerRef = useRef(null);
 
-  const products = [
-    {
-      id: 1,
-      title: "Interior",
-      subtitle: "Steering a car with a manual Wheel",
-      originalPrice: "$92.99",
-      currentPrice: "$83.99",
-      rating: 5,
-      reviews: "(5)",
-      status: "In Stock",
-      tag: "Hot",
-      discount: "6% Off",
-      category: "Car Wheel",
-      image: "/assets/placeholder.svg"
-    },
-    {
-      id: 2,
-      title: "Front",
-      subtitle: "Toyota Starlet EP-82 HEAD Lights",
-      originalPrice: "$100.99",
-      currentPrice: "$90.99",
-      rating: 5,
-      reviews: "(5)",
-      status: "In Stock",
-      tag: null,
-      discount: null,
-      category: null,
-      image: "/assets/placeholder.svg"
-    },
-    {
-      id: 3,
-      title: "Fuel",
-      subtitle: "Advance 10w30 full synthetic fuel",
-      price: "$85.99",
-      rating: 4,
-      reviews: "(4)",
-      status: "Stock Out",
-      tag: null,
-      discount: null,
-      category: null,
-      image: "/assets/placeholder.svg"
-    },
-    {
-      id: 4,
-      title: "Wheel",
-      subtitle: '14" Urban X Phantom Wheel Cover Set',
-      price: "$80.99",
-      rating: 5,
-      reviews: "(5)",
-      status: "In Stock",
-      tag: null,
-      discount: null,
-      category: null,
-      image: "/assets/placeholder.svg"
-    }
-  ];
+  const [products, setProducts] = useState([]);
+
+  // fetch popular picks from backend
+  useEffect(() => {
+    const fetchPopular = async () => {
+      try {
+        const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+        const resp = await fetch(`${API}/api/products?badge=popular_pics&limit=50`);
+        const json = await resp.json();
+        const items = (json.items || []).map(p => ({
+          ...p,
+          id: p._id || p.id,
+          title: p.title,
+          subtitle: p.description || p.subtitle || '',
+          originalPrice: p.compareAtPrice ? `৳${p.compareAtPrice}` : null,
+          currentPrice: p.price ? `৳${p.price}` : null,
+          price: p.price ? `৳${p.price}` : null,
+          status: p.availability === 'out_of_stock' ? 'Stock Out' : 'In Stock',
+          tag: p.badges && p.badges.includes('hot') ? 'Hot' : null,
+          discount: p.compareAtPrice && p.price ? `${Math.round((p.compareAtPrice-p.price)/p.compareAtPrice*100)}% Off` : null,
+          image: (p.images && p.images[0] && p.images[0].url) || '/assets/placeholder.svg',
+          rating: p.averageRating || 0,
+          reviews: `(${p.reviewCount || 0})`,
+        }));
+        setProducts(items);
+      } catch (err) {
+        console.error('failed to fetch popular picks', err);
+      }
+    };
+    fetchPopular();
+  }, []);
 
   const slidesToShow = 3;
   const totalSlides = Math.ceil(products.length / slidesToShow);

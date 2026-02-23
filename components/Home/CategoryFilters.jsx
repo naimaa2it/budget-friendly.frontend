@@ -26,14 +26,14 @@ export default function CategoryFilters({ stats = {}, subcategories = [], onAppl
       <h4 className="text-lg font-semibold mb-3">Filters</h4>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Price</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Price: </label>
         <div className="flex gap-2 items-center">
           <input
             type="number"
             className="w-1/2 border px-2 py-1 rounded"
             value={minPrice}
             onChange={e => setMinPrice(e.target.value)}
-          />
+          />-
           <input
             type="number"
             className="w-1/2 border px-2 py-1 rounded"

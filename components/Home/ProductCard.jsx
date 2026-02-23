@@ -7,13 +7,27 @@ import { FaEye, FaShoppingCart, FaHeart } from 'react-icons/fa';
 export default function ProductCard({ product, imageWidth = 300, imageHeight = 200, imageQuality = 100 }) {
   const price = product.price || (product.variants && product.variants[0]?.price) || 0;
   const compareAt = product.compareAtPrice || (product.variants && product.variants[0]?.compareAtPrice) || null;
-  const image = (product.images && product.images[0]?.url) || '/assets/placeholder.svg';
+  // handle hover/click image swap
+  const images = (product.images && product.images.length) ? product.images.map(i => i.url) : ['/assets/placeholder.svg'];
+  const [useSecond, setUseSecond] = React.useState(false);
+  const [hovered, setHovered] = React.useState(false);
+  const currentImage = () => {
+    if ((hovered || useSecond) && images[1]) return images[1];
+    return images[0];
+  };
+  const image = encodeURI(currentImage());
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden group hover:shadow-xl transition-all duration-300 flex flex-col">
-      <div className="relative bg-gray-50 px-2 flex items-center justify-center overflow-hidden" style={{ height: imageHeight }}>
+      <div
+        className="relative bg-gray-50 px-2 flex items-center justify-center overflow-hidden"
+        style={{ height: imageHeight }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        onClick={() => setUseSecond(prev => !prev)}
+      >
         <Image
-          src={encodeURI(image)}
+          src={image}
           alt={product.title || product.slug}
           width={imageWidth}
           height={imageHeight}
@@ -21,7 +35,7 @@ export default function ProductCard({ product, imageWidth = 300, imageHeight = 2
           loading="lazy"
           decoding="async"
           onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/assets/placeholder.svg'; }}
-          className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
+          className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300 cursor-pointer"
         />
 
         <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">

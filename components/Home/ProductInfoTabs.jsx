@@ -137,27 +137,31 @@ export default function ProductInfoTabs({ product }) {
           )}
 
           {activeTab === "questions" && (
-            <div className="animate-fadeIn">
-              <form className="space-y-4">
+            <div className="animate-fadeIn max-w-6xl bg-gray-50">
+              <form className="space-y-6 max-w-xl mx-auto bg-gray-50 p-6 rounded-lg shadow-md">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Ask a Question</h3>
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                   <input
                     type="text"
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                    className="mt-1 block w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     placeholder="Full Name"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Question</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Question</label>
                   <textarea
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-                    rows={4}
+                    className="mt-1 block w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    rows={5}
                     placeholder="Enter Your Message"
                   />
                 </div>
+
                 <button
                   type="submit"
-                  className="bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700"
+                  className="w-full bg-green-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-green-700 transition"
                 >
                   Send Message
                 </button>

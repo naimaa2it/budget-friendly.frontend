@@ -126,11 +126,7 @@ export default function CategoryPageClient({ slug }) {
           <h1 className="text-3xl font-bold text-gray-900">{category?.name || slug}</h1>
           <p className="text-gray-600 mt-2">{category?.description || `Products for ${category?.name || slug}.`}</p>
         </div>
-        {category?.images && category.images[0] && (
-          <div className="w-28 h-28 rounded-lg overflow-hidden border bg-gray-50">
-            <img src={category.images[0].url} alt={category.name} className="w-full h-full object-cover" />
-          </div>
-        )}
+        
       </div>
 
       {/* Subcategory circles */}

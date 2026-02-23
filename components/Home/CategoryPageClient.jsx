@@ -188,7 +188,7 @@ export default function CategoryPageClient({ slug }) {
           {!loading && filtered.length > 0 && (
             <>
               <h2 className="text-xl font-semibold mt-8 mb-4">All Products ({filtered.length})</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {(showAll ? filtered : filtered.slice(0, 5)).map(p => (
                   <ProductCard key={p._id} product={p} onDelete={user?.role === 'admin' ? deleteProduct : undefined} />
                 ))}

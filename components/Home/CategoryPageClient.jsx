@@ -176,15 +176,14 @@ export default function CategoryPageClient({ slug }) {
         )}
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Sidebar filters */}
-        <aside className="w-full lg:w-72">
+      {/* product/filter grid below best-selling and all-products heading */}
+      <div className="grid grid-cols-12 gap-6">
+        {/* Filters occupy 4/12 columns */}
+        <div className="col-span-12 lg:col-span-4">
           <CategoryFilters stats={stats} subcategories={subcategories} onApply={applyFilters} />
-        </aside>
-
-        {/* Main product area */}
-        <main className="flex-1">
-          {/* All products listing */}
+        </div>
+        {/* Products occupy 8/12 columns */}
+        <div className="col-span-12 lg:col-span-8">
           {!loading && filtered.length > 0 && (
             <>
               <h2 className="text-xl font-semibold mt-8 mb-4">All Products ({filtered.length})</h2>
@@ -201,7 +200,7 @@ export default function CategoryPageClient({ slug }) {
               <button className="px-4 py-2 bg-white border rounded-md" onClick={() => setShowAll(s => !s)}>{showAll ? 'Show less' : `Show all (${filtered.length})`}</button>
             </div>
           )}
-        </main>
+        </div>
       </div>
     </div>
   );

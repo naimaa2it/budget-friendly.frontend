@@ -127,7 +127,7 @@ export default function DealsOfDay() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Main Product Section - Left Side */}
         <div className="lg:col-span-9">
-          <div className="border-2 border-red-500 rounded-lg p-6 bg-gradient-to-br from-pink-50 to-white h-full">
+          <div className="border-2 border-red-500 rounded-lg p-4 bg-gradient-to-br from-pink-50 to-white h-full">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Product Image Section */}
               <div>
@@ -142,16 +142,16 @@ export default function DealsOfDay() {
                 </div>
 
                 {/* Main Product Image */}
-                <div className="relative bg-white rounded-lg p-8 mb-4 h-80 flex items-center justify-center">
+                <div className="relative bg-white rounded-lg mb-4 h-80 flex items-center justify-center">
                   <Image
                     src={encodeURI(productImages[selectedImage])}
                     alt="Product"
                     loading="lazy"
                     decoding="async"
-                    width={80}
-                    height={80}
+                    width={1200}
+                    height={1200}
                     onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/assets/placeholder.svg'; }}
-                    className="max-h-full max-w-full object-contain"
+                    className="absolute inset-0 w-full h-full object-contain"
                   />
                 </div>
 
@@ -173,7 +173,7 @@ export default function DealsOfDay() {
                         width={80}
                         height={80}
                         onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/assets/placeholder.svg'; }}
-                        className="w-full h-16 object-contain"
+                        className="w-full h-14 object-contain"
                       />
                     </button>
                   ))}

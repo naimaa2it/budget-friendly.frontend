@@ -85,7 +85,7 @@ export default function ProductCard({ product, imageWidth = 300, imageHeight = 2
         </div>
       </div>
 
-      <div className="p-3 flex flex-col flex-grow">
+      <div className="p-3 flex flex-col grow">
         <p className="text-sm text-gray-600 mb-1 line-clamp-1">{product.title || product.category}</p>
         <h3 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-2">{product.description || product.title}</h3>
 

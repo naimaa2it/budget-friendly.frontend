@@ -116,26 +116,18 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                 ))}
               </div>
 
-              {/* trust/feature bar below thumbnails */}
-              <div className="mt-6 flex justify-between items-center text-center text-sm text-gray-700 gap-2 bg-gray-100 p-2">
+              {/* trust/feature bar below thumbnails using icon8 SVGs */}
+              <div className="mt-6 flex justify-between items-center text-center text-sm text-gray-700 gap-2">
                 <div className="flex flex-col items-center gap-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0-2.21-1.79-4-4-4S4 8.79 4 11c0 2.21 1.79 4 4 4s4-1.79 4-4z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7v6a2 2 0 01-2 2h-6" />
-                  </svg>
+                  <img src="https://img.icons8.com/?size=100&id=TO90p62OH8nn&format=png&color=000000" alt="Genuine" className="w-10 h-10" />
                   <span>100% Genuine Products</span>
                 </div>
                 <div className="flex flex-col items-center gap-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11v2m0 4h.01M16 11a4 4 0 00-8 0v4h8v-4z" />
-                  </svg>
+                  <img src="https://img.icons8.com/?size=100&id=BHOd3uqHFKXN&format=png&color=000000" alt="Secure Payments" className="w-10 h-10" />
                   <span>100% Secure Payments</span>
                 </div>
                 <div className="flex flex-col items-center gap-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 8a6 6 0 10-12 0v4a6 6 0 0012 0V8z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14h8" />
-                  </svg>
+                  <img src="https://img.icons8.com/?size=100&id=45147&format=png&color=000000" alt="Help Center" className="w-10 h-10" />
                   <span>Help Center (+8809666737475)</span>
                 </div>
               </div>

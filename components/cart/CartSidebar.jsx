@@ -29,9 +29,9 @@ export default function CartSidebar() {
     <div
       className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg transform transition-transform duration-300 z-60 ${
         isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
-      }`}
+      } flex flex-col`}
     >
-      <div className="flex items-center justify-between p-4 bg-black text-white">
+      <div className="flex items-center justify-between p-4 bg-black text-white flex-shrink-0">
         <div className="flex items-center gap-2">
           <FaShoppingBag className="w-5 h-5" />
           <h2 className="text-lg font-semibold">My Cart Item(s): {cartItems.length}</h2>
@@ -67,7 +67,7 @@ export default function CartSidebar() {
                 </div>
                 <button
                   onClick={() => removeFromCart(getId(product))}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:text-red-600"
                   title="Remove item"
                 >
                   <FaTrash />
@@ -98,7 +98,7 @@ export default function CartSidebar() {
         })}
       </div>
       {cartItems.length > 0 && (
-        <div className="p-4 border-t">
+        <div className="p-4 border-t flex-shrink-0">
           <div className="flex justify-between mb-2">
             <span className="font-medium">Total</span>
             <span className="font-semibold">৳{total}</span>
@@ -108,9 +108,20 @@ export default function CartSidebar() {
               You are saving ৳{saved} on this order
             </div>
           )}
-          <button className="w-full bg-red-600 text-white py-2 rounded">
-            Checkout
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                // navigate to cart page
+                window.location.href = '/cart';
+              }}
+              className="flex-1 border border-gray-300 text-gray-700 py-2 rounded hover:bg-gray-50"
+            >
+              View Cart
+            </button>
+            <button className="flex-1 bg-red-600 text-white py-2 rounded">
+              Checkout
+            </button>
+          </div>
         </div>
       )}
     </div>

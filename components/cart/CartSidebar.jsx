@@ -130,7 +130,7 @@ export default function CartSidebar() {
               View Cart
             </button>
             <button className="flex-1 bg-red-600 text-white py-2 rounded">
-              Checkout
+             Proceed Checkout
             </button>
           </div>
         </div>

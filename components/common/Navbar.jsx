@@ -110,6 +110,21 @@ function ProfileMenu() {
                     </svg>
                     <span>My reviews</span>
                   </Link>
+                  <Link href={{ pathname: '/user', query: { section: 'rewards' } }} className="flex items-center gap-3 px-4 py-2 hover:bg-[#fff0f7] transition-colors">
+                    <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <span>My Rewards</span>
+                  </Link>
+                  <Link href={{ pathname: '/user', query: { section: 'coupons' } }} className="flex items-center gap-3 px-4 py-2 hover:bg-[#fff0f7] transition-colors">
+                    <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 8.5a2.5 2.5 0 0 1 0 5M3 8.5a2.5 2.5 0 0 0 0 5"/>
+                      <path d="M3 3h18v18H3z"/>
+                      <line x1="9" y1="9" x2="15" y2="15"/>
+                      <line x1="15" y1="9" x2="9" y2="15"/>
+                    </svg>
+                    <span>My Coupons</span>
+                  </Link>
                   <Link href="/cart" className="flex items-center gap-3 px-4 py-2 hover:bg-[#fff0f7] transition-colors">
                     <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <circle cx="9" cy="20" r="1"/>

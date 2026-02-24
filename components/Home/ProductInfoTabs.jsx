@@ -9,10 +9,10 @@ export default function ProductInfoTabs({ product }) {
     <section className="w-full bg-white mt-10 mb-6 rounded-2xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
         {/* Header */}
-        <div className="flex items-center justify-start border-b border-gray-200 mb-3 flex-wrap">
+        <div className="grid grid-cols-4 md:grid-cols-5 gap-x-4 border-b border-gray-200 mb-3">
           <button
             onClick={() => setActiveTab("description")}
-            className={`px-6 py-3 text-sm md:text-lg font-semibold transition-all duration-200 ${
+            className={`px-1 md:px-6 py-3 text-sm md:text-lg font-semibold transition-all duration-200 ${
               activeTab === "description"
                 ? "border-b-2 border-green-600 text-green-600"
                 : "text-gray-600 hover:text-green-600"
@@ -23,7 +23,7 @@ export default function ProductInfoTabs({ product }) {
 
           <button
             onClick={() => setActiveTab("specification")}
-            className={`px-6 py-3 text-sm md:text-lg font-semibold transition-all duration-200 ${
+            className={`px-1 md:px-6 py-3 text-sm md:text-lg font-semibold transition-all duration-200 ${
               activeTab === "specification"
                 ? "border-b-2 border-green-600 text-green-600"
                 : "text-gray-600 hover:text-green-600"
@@ -34,7 +34,7 @@ export default function ProductInfoTabs({ product }) {
 
           <button
             onClick={() => setActiveTab("guides")}
-            className={`px-6 py-3 text-sm md:text-lg font-semibold transition-all duration-200 ${
+            className={`px-1 md:px-6 py-3 text-sm md:text-lg font-semibold transition-all duration-200 ${
               activeTab === "guides"
                 ? "border-b-2 border-green-600 text-green-600"
                 : "text-gray-600 hover:text-green-600"
@@ -43,9 +43,10 @@ export default function ProductInfoTabs({ product }) {
             Guides
           </button>
 
+
           <button
             onClick={() => setActiveTab("reviews")}
-            className={`px-6 py-3 text-sm md:text-lg font-semibold transition-all duration-200 ${
+            className={`px-1 md:px-6 py-3 text-sm md:text-lg font-semibold transition-all duration-200 ${
               activeTab === "reviews"
                 ? "border-b-2 border-green-600 text-green-600"
                 : "text-gray-600 hover:text-green-600"
@@ -56,13 +57,13 @@ export default function ProductInfoTabs({ product }) {
 
           <button
             onClick={() => setActiveTab("questions")}
-            className={`px-6 py-3 text-sm md:text-lg font-semibold transition-all duration-200 ${
+            className={`px-1 md:px-6 py-3 text-sm md:text-lg font-semibold transition-all duration-200 ${
               activeTab === "questions"
                 ? "border-b-2 border-green-600 text-green-600"
                 : "text-gray-600 hover:text-green-600"
             }`}
           >
-            Questions About This Products
+            Questions
           </button>
         </div>
 

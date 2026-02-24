@@ -13,7 +13,6 @@ export default function Wishlist() {
   const { user } = useUser();
   const router = useRouter();
   const [showAuth, setShowAuth] = useState(false);
-
   useEffect(() => {
     if (!user) {
       setShowAuth(true);

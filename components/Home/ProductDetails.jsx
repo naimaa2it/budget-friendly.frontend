@@ -108,8 +108,8 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                     <Image
                       src={encodeURI(img)}
                       alt={`${title} thumbnail ${idx + 1}`}
-                      width={80}
-                      height={80}
+                      width={70}
+                      height={50}
                       className="object-contain"
                     />
                   </button>

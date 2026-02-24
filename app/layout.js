@@ -7,6 +7,7 @@ import { CartProvider } from '@/components/context/CartContext';
 import CartToast from '@/components/cart/CartToast';
 import CartSidebar from '@/components/cart/CartSidebar';
 import CartFloating from '@/components/cart/CartFloating';
+import ToastProvider from '@/components/common/ToastProvider';
 
 
 
@@ -34,6 +35,7 @@ export default function RootLayout({ children }) {
             <CartToast />
             <CartSidebar />
             <CartFloating />
+            <ToastProvider />
           </CartProvider>
         </UserProvider>
       </body>

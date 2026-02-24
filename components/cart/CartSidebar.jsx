@@ -1,11 +1,14 @@
 "use client";
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useCart } from '@/components/context/CartContext';
 import QuantitySelector from './QuantitySelector';
 import { FaTimes, FaShoppingBag, FaTrash } from 'react-icons/fa';
 
 export default function CartSidebar() {
+  const router = useRouter();
   const {
     cartItems,
     isSidebarOpen,
@@ -63,10 +66,12 @@ export default function CartSidebar() {
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-2">
                   {thumb && (
-                    <img
+                    <Image
                       src={encodeURI(thumb)}
                       alt={product.title || product.name}
-                      className="w-12 h-12 object-contain"
+                      width={48}
+                      height={48}
+                      className="object-contain"
                     />
                   )}
                   <div>
@@ -122,15 +127,21 @@ export default function CartSidebar() {
           <div className="flex gap-2">
             <button
               onClick={() => {
-                // navigate to cart page
-                window.location.href = '/cart';
+                toggleSidebar();
+                router.push('/cart');
               }}
               className="flex-1 border border-gray-300 text-gray-700 py-2 rounded hover:bg-gray-50"
             >
               View Cart
             </button>
-            <button className="flex-1 bg-red-600 text-white py-2 rounded">
-             Proceed Checkout
+            <button
+              onClick={() => {
+                toggleSidebar();
+                router.push('/checkout');
+              }}
+              className="flex-1 bg-red-600 text-white py-2 rounded hover:bg-red-700"
+            >
+              Proceed Checkout
             </button>
           </div>
         </div>

@@ -92,7 +92,9 @@ export default function CartSidebar() {
                     />
                     {itemSaved > 0 && (
                       <div className="text-green-600 text-xs whitespace-nowrap">
-                        You saved ৳{itemSaved}
+                        Saved <span className='text-red-600'>
+                           ৳{itemSaved}
+                          </span>
                       </div>
                     )}
                   </div>

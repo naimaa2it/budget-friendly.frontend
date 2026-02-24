@@ -7,9 +7,9 @@ export default function ProductInfoTabs({ product }) {
 
   return (
     <section className="w-full bg-white mt-10 mb-6 rounded-2xl">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
+      <div className="max-w-7xl mx-auto px-2 lg:px-8 ">
         {/* Header */}
-        <div className="grid grid-cols-4 md:grid-cols-5 gap-x-4 border-b border-gray-200 mb-3">
+        <div className="flex gap-4 overflow-x-auto whitespace-nowrap border-b border-gray-200 mb-3 md:grid md:grid-cols-5 md:gap-x-4 md:overflow-visible">
           <button
             onClick={() => setActiveTab("description")}
             className={`px-1 md:px-6 py-3 text-sm md:text-lg font-semibold transition-all duration-200 ${

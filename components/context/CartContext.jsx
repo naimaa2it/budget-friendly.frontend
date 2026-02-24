@@ -1,19 +1,69 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const CartContext = createContext(null);
+
+// Storage keys
+const CART_STORAGE_KEY = 'yourHaat_cart';
+const WISHLIST_STORAGE_KEY = 'yourHaat_wishlist';
+
+// Helper to safely access localStorage
+const getStorageItem = (key, defaultValue = null) => {
+  if (typeof window === 'undefined') return defaultValue;
+  try {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : defaultValue;
+  } catch (error) {
+    console.error(`Error reading from localStorage (${key}):`, error);
+    return defaultValue;
+  }
+};
+
+const setStorageItem = (key, value) => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.error(`Error writing to localStorage (${key}):`, error);
+  }
+};
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [wishlistItems, setWishlistItems] = useState([]);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [toastData, setToastData] = useState(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // helper to normalize product id
-  const getId = (p) => p._id || p.id;
+  // Helper to normalize product id
+  const getId = useCallback((p) => p._id || p.id, []);
 
-  const addToCart = (product, qty = 1) => {
+  // Load from localStorage on mount
+  useEffect(() => {
+    const savedCart = getStorageItem(CART_STORAGE_KEY, []);
+    const savedWishlist = getStorageItem(WISHLIST_STORAGE_KEY, []);
+    
+    setCartItems(savedCart);
+    setWishlistItems(savedWishlist);
+    setIsInitialized(true);
+  }, []);
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    if (isInitialized) {
+      setStorageItem(CART_STORAGE_KEY, cartItems);
+    }
+  }, [cartItems, isInitialized]);
+
+  // Save wishlist to localStorage whenever it changes
+  useEffect(() => {
+    if (isInitialized) {
+      setStorageItem(WISHLIST_STORAGE_KEY, wishlistItems);
+    }
+  }, [wishlistItems, isInitialized]);
+
+  const addToCart = useCallback((product, qty = 1) => {
     setCartItems((prev) => {
       const id = getId(product);
       const existing = prev.find((i) => getId(i.product) === id);
@@ -27,9 +77,9 @@ export const CartProvider = ({ children }) => {
       return [...prev, { product, quantity: qty }];
     });
     setToastData({ product, qty });
-  };
+  }, [getId]);
 
-  const updateQty = (productId, qty) => {
+  const updateQty = useCallback((productId, qty) => {
     setCartItems((prev) =>
       prev
         .map((i) => {
@@ -40,52 +90,76 @@ export const CartProvider = ({ children }) => {
         })
         .filter((i) => i.quantity > 0)
     );
-  };
+  }, [getId]);
 
-  const removeFromCart = (productId) => {
+  const removeFromCart = useCallback((productId) => {
     setCartItems((prev) => prev.filter((i) => getId(i.product) !== productId));
-  };
+  }, [getId]);
 
-  const addToWishlist = (product) => {
+  const addToWishlist = useCallback((product) => {
     const id = getId(product);
     setWishlistItems((prev) => {
-      if (prev.find((i) => getId(i) === id)) return prev;
+      if (prev.includes(id)) return prev;
       return [...prev, id];
     });
-  };
+  }, [getId]);
 
-  const removeFromWishlist = (productId) => {
+  const removeFromWishlist = useCallback((productId) => {
     setWishlistItems((prev) => prev.filter((id) => id !== productId));
+  }, []);
+
+  const clearCart = useCallback(() => {
+    setCartItems([]);
+  }, []);
+
+  const clearWishlist = useCallback(() => {
+    setWishlistItems([]);
+  }, []);
+
+  const getCartCount = useCallback(() => 
+    cartItems.reduce((sum, i) => sum + i.quantity, 0), 
+    [cartItems]
+  );
+  
+  const getWishlistCount = useCallback(() => 
+    wishlistItems.length, 
+    [wishlistItems]
+  );
+
+  const toggleSidebar = useCallback(() => setSidebarOpen((v) => !v), []);
+
+  const contextValue = {
+    cartItems,
+    wishlistItems,
+    isSidebarOpen,
+    toastData,
+    setToastData,
+    addToCart,
+    updateQty,
+    removeFromCart,
+    addToWishlist,
+    removeFromWishlist,
+    clearCart,
+    clearWishlist,
+    getCartCount,
+    getWishlistCount,
+    toggleSidebar,
+    isInitialized,
   };
-
-  const getCartCount = () => cartItems.reduce((sum, i) => sum + i.quantity, 0);
-  const getWishlistCount = () => wishlistItems.length;
-
-  const toggleSidebar = () => setSidebarOpen((v) => !v);
 
   return (
-    <CartContext.Provider
-      value={{
-        cartItems,
-        wishlistItems,
-        isSidebarOpen,
-        toastData,
-        setToastData,
-        addToCart,
-        updateQty,
-        removeFromCart,
-        addToWishlist,
-        removeFromWishlist,
-        getCartCount,
-        getWishlistCount,
-        toggleSidebar,
-      }}
-    >
+    <CartContext.Provider value={contextValue}>
       {children}
     </CartContext.Provider>
   );
 };
 
-export const useCart = () => useContext(CartContext);
+export const useCart = () => {
+  const context = useContext(CartContext);
+  if (!context) {
+    throw new Error('useCart must be used within a CartProvider');
+  }
+  return context;
+};
 
 export default CartContext;

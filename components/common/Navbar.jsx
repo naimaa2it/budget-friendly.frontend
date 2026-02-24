@@ -57,23 +57,81 @@ function ProfileMenu() {
         </button>
 
         {open && user && (
-          <div className="absolute right-0 mt-2 w-56 bg-white border border-black/6 rounded-md shadow-lg z-50 py-2">
+          <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden">
             <div className="text-sm text-[#202020]">
-              <div className="px-3 py-2 border-b border-black/6">
-                <div className="font-medium">{user.name || user.email}</div>
-                <div className="text-xs text-[#666]">{user.email}</div>
+              <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                <div className="font-semibold">{user.name || user.email}</div>
+                <div className="text-xs text-gray-600">{user.email}</div>
               </div>
 
-              <ul className="py-2">
-                <li><Link href={{ pathname: '/user', query: { section: 'profile' } }} className="block px-3 py-2 hover:bg-[#fff0f7]">My profile</Link></li>
-                <li><Link href={{ pathname: '/user', query: { section: 'orders' } }} className="block px-3 py-2 hover:bg-[#fff0f7]">Orders</Link></li>
-                <li><Link href="/cart" className="block px-3 py-2 hover:bg-[#fff0f7]">Cart</Link></li>
-                <li><Link href={{ pathname: '/user', query: { section: 'wishlist' } }} className="block px-3 py-2 hover:bg-[#fff0f7]">Wishlist</Link></li>
-                <li><Link href={{ pathname: '/user', query: { section: 'reviews' } }} className="block px-3 py-2 hover:bg-[#fff0f7]">Reviews</Link></li>
-                <li><Link href={{ pathname: '/user', query: { section: 'points' } }} className="block px-3 py-2 hover:bg-[#fff0f7]">YourHaat points</Link></li>
-                <li><Link href={{ pathname: '/user', query: { section: 'interest' } }} className="block px-3 py-2 hover:bg-[#fff0f7]">Interest</Link></li>
-                <li><button onClick={handleLogout} className="w-full text-left px-3 py-2 hover:bg-[#fff0f7]">Sign out</button></li>
-              </ul>
+              <div className="py-2">
+                {/* PROFILE Section */}
+                <div className="mb-2">
+                  <div className="px-4 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">Profile</div>
+                  <Link href={{ pathname: '/user', query: { section: 'profile' } }} className="flex items-center gap-3 px-4 py-2 hover:bg-[#fff0f7] transition-colors">
+                    <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <span>General info</span>
+                  </Link>
+                  <Link href={{ pathname: '/user', query: { section: 'wishlist' } }} className="flex items-center gap-3 px-4 py-2 hover:bg-[#fff0f7] transition-colors">
+                    <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 0 0-7.1 7.1L12 21l8.8-9.3a5 5 0 0 0 0-7.1z"/>
+                    </svg>
+                    <span>Favourites</span>
+                  </Link>
+                </div>
+
+                {/* ORDERS Section */}
+                <div className="mb-2">
+                  <div className="px-4 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">Orders</div>
+                  <Link href={{ pathname: '/user', query: { section: 'orders' } }} className="flex items-center gap-3 px-4 py-2 hover:bg-[#fff0f7] transition-colors">
+                    <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M9 2H4a2 2 0 0 0-2 2v5m0 9v3a2 2 0 0 0 2 2h5M15 2h5a2 2 0 0 1 2 2v5m0 9v3a2 2 0 0 1-2 2h-5"/>
+                    </svg>
+                    <span>Orders</span>
+                  </Link>
+                  <Link href={{ pathname: '/user', query: { section: 'address' } }} className="flex items-center gap-3 px-4 py-2 hover:bg-[#fff0f7] transition-colors">
+                    <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                      <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    <span>My Address</span>
+                  </Link>
+                </div>
+
+                {/* OTHER Section */}
+                <div className="mb-2">
+                  <div className="px-4 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">Other</div>
+                  <Link href={{ pathname: '/user', query: { section: 'reviews' } }} className="flex items-center gap-3 px-4 py-2 hover:bg-[#fff0f7] transition-colors">
+                    <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+                    </svg>
+                    <span>My reviews</span>
+                  </Link>
+                  <Link href="/cart" className="flex items-center gap-3 px-4 py-2 hover:bg-[#fff0f7] transition-colors">
+                    <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="9" cy="20" r="1"/>
+                      <circle cx="20" cy="20" r="1"/>
+                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                    </svg>
+                    <span>Cart</span>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Logout Button */}
+              <div className="border-t border-gray-200 p-2">
+                <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded transition-colors">
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                  </svg>
+                  <span>Sign out</span>
+                </button>
+              </div>
             </div>
           </div>
         )}

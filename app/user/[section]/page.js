@@ -111,6 +111,17 @@ export default function UserSectionPage() {
                   </svg>
                   <span>Favourites</span>
                 </button>
+                <button
+                  onClick={() => router.push('/cart')}
+                  className={`w-full text-left px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors`}
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="9" cy="20" r="1"/>
+                    <circle cx="20" cy="20" r="1"/>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                  </svg>
+                  <span>My Cart</span>
+                </button>
               </div>
 
               {/* ORDERS Section */}

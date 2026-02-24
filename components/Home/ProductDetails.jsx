@@ -97,23 +97,49 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
 
           {/* thumbnail row after buttons */}
           {images.length > 1 && (
-            <div className="mt-4 flex gap-2">
-              {images.map((img, idx) => (
-                <button
-                  key={idx}
-                  className={`border rounded ${currentIndex === idx ? 'border-red-600' : 'border-gray-200'}`}
-                  onClick={() => setCurrentIndex(idx)}
-                >
-                  <Image
-                    src={encodeURI(img)}
-                    alt={`${title} thumbnail ${idx + 1}`}
-                    width={80}
-                    height={80}
-                    className="object-contain"
-                  />
-                </button>
-              ))}
-            </div>
+            <>
+              <div className="mt-4 flex gap-2">
+                {images.map((img, idx) => (
+                  <button
+                    key={idx}
+                    className={`border rounded ${currentIndex === idx ? 'border-red-600' : 'border-gray-200'}`}
+                    onClick={() => setCurrentIndex(idx)}
+                  >
+                    <Image
+                      src={encodeURI(img)}
+                      alt={`${title} thumbnail ${idx + 1}`}
+                      width={80}
+                      height={80}
+                      className="object-contain"
+                    />
+                  </button>
+                ))}
+              </div>
+
+              {/* trust/feature bar below thumbnails */}
+              <div className="mt-6 flex justify-between items-center text-center text-sm text-gray-700 gap-2 bg-gray-100 p-2">
+                <div className="flex flex-col items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0-2.21-1.79-4-4-4S4 8.79 4 11c0 2.21 1.79 4 4 4s4-1.79 4-4z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7v6a2 2 0 01-2 2h-6" />
+                  </svg>
+                  <span>100% Genuine Products</span>
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11v2m0 4h.01M16 11a4 4 0 00-8 0v4h8v-4z" />
+                  </svg>
+                  <span>100% Secure Payments</span>
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 8a6 6 0 10-12 0v4a6 6 0 0012 0V8z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14h8" />
+                  </svg>
+                  <span>Help Center (+8809666737475)</span>
+                </div>
+              </div>
+            </>
           )}
         </div>
       </div>

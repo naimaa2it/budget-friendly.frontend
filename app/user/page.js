@@ -155,6 +155,31 @@ export default function UserPage() {
                   </svg>
                   <span>My reviews</span>
                 </button>
+                <button
+                  onClick={() => handleSectionClick('rewards')}
+                  className={`w-full text-left px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors ${
+                    section === 'rewards' ? 'bg-gray-100 border-l-4 border-red-600' : ''
+                  }`}
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                  <span>My Rewards</span>
+                </button>
+                <button
+                  onClick={() => handleSectionClick('coupons')}
+                  className={`w-full text-left px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors ${
+                    section === 'coupons' ? 'bg-gray-100 border-l-4 border-red-600' : ''
+                  }`}
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 8.5a2.5 2.5 0 0 1 0 5M3 8.5a2.5 2.5 0 0 0 0 5"/>
+                    <path d="M3 3h18v18H3z"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                  </svg>
+                  <span>My Coupons</span>
+                </button>
               </div>
             </div>
 
@@ -285,6 +310,20 @@ export default function UserPage() {
               <div className="bg-white rounded-lg shadow p-6">
                 <h2 className="text-2xl font-semibold mb-4">My Reviews</h2>
                 <p className="text-gray-600">No reviews yet.</p>
+              </div>
+            )}
+
+            {section === 'rewards' && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-2xl font-semibold mb-4">My Rewards</h2>
+                <p className="text-gray-600">You have no rewards at this time.</p>
+              </div>
+            )}
+
+            {section === 'coupons' && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-2xl font-semibold mb-4">My Coupons</h2>
+                <p className="text-gray-600">No coupons available.</p>
               </div>
             )}
           </div>

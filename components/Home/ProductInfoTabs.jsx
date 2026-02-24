@@ -12,7 +12,7 @@ export default function ProductInfoTabs({ product }) {
         <div className="flex items-center justify-start border-b border-gray-200 mb-3 flex-wrap">
           <button
             onClick={() => setActiveTab("description")}
-            className={`px-6 py-3 text-lg font-semibold transition-all duration-200 ${
+            className={`px-6 py-3 text-sm md:text-lg font-semibold transition-all duration-200 ${
               activeTab === "description"
                 ? "border-b-2 border-green-600 text-green-600"
                 : "text-gray-600 hover:text-green-600"
@@ -23,7 +23,7 @@ export default function ProductInfoTabs({ product }) {
 
           <button
             onClick={() => setActiveTab("specification")}
-            className={`px-6 py-3 text-lg font-semibold transition-all duration-200 ${
+            className={`px-6 py-3 text-sm md:text-lg font-semibold transition-all duration-200 ${
               activeTab === "specification"
                 ? "border-b-2 border-green-600 text-green-600"
                 : "text-gray-600 hover:text-green-600"
@@ -34,7 +34,7 @@ export default function ProductInfoTabs({ product }) {
 
           <button
             onClick={() => setActiveTab("guides")}
-            className={`px-6 py-3 text-lg font-semibold transition-all duration-200 ${
+            className={`px-6 py-3 text-sm md:text-lg font-semibold transition-all duration-200 ${
               activeTab === "guides"
                 ? "border-b-2 border-green-600 text-green-600"
                 : "text-gray-600 hover:text-green-600"
@@ -45,7 +45,7 @@ export default function ProductInfoTabs({ product }) {
 
           <button
             onClick={() => setActiveTab("reviews")}
-            className={`px-6 py-3 text-lg font-semibold transition-all duration-200 ${
+            className={`px-6 py-3 text-sm md:text-lg font-semibold transition-all duration-200 ${
               activeTab === "reviews"
                 ? "border-b-2 border-green-600 text-green-600"
                 : "text-gray-600 hover:text-green-600"
@@ -56,7 +56,7 @@ export default function ProductInfoTabs({ product }) {
 
           <button
             onClick={() => setActiveTab("questions")}
-            className={`px-6 py-3 text-lg font-semibold transition-all duration-200 ${
+            className={`px-6 py-3 text-sm md:text-lg font-semibold transition-all duration-200 ${
               activeTab === "questions"
                 ? "border-b-2 border-green-600 text-green-600"
                 : "text-gray-600 hover:text-green-600"

@@ -1,18 +1,17 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import ProductCard from './ProductCard';
 import ProductInfoTabs from './ProductInfoTabs';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import AddToCartSection from '@/components/cart/AddToCartSection';
+import RelatedProducts from './RelatedProducts';
 
 export default function ProductDetails({ product, relatedProducts = [] }) {
   // Expect `product` object with fields coming from API
   const images = (product?.images || []).map(i => i.url);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const scrollRef = useRef(null);
-
 
   const currentImage = images[currentIndex] || '/assets/placeholder.svg';
 
@@ -120,41 +119,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
       </div>
 
       {/* related products section */}
-      {relatedProducts.length > 0 && (
-        <div className="mt-12 relative">
-          <h2 className="text-2xl font-semibold mb-4">Related Products</h2>
-          <div className="flex items-center">
-            <button
-              onClick={() => {
-                if (scrollRef.current) scrollRef.current.scrollBy({ left: -scrollRef.current.offsetWidth, behavior: 'smooth' });
-              }}
-              className="p-2 rounded-full bg-white shadow-md hover:bg-gray-100 transition -mr-2"
-            >
-              <FaChevronLeft className="w-6 h-6" />
-            </button>
-
-            <div
-              ref={scrollRef}
-              className="flex gap-4 overflow-x-auto scrollbar-hide py-2" // custom utility to hide scrollbar
-            >
-              {relatedProducts.map(p => (
-                <div key={p._id || p.id} className="shrink-0 w-40">
-                  <ProductCard product={p} imageHeight={150} imageWidth={200} />
-                </div>
-              ))}
-            </div>
-
-            <button
-              onClick={() => {
-                if (scrollRef.current) scrollRef.current.scrollBy({ left: scrollRef.current.offsetWidth, behavior: 'smooth' });
-              }}
-              className="p-2 rounded-full bg-white shadow-md hover:bg-gray-100 transition -ml-2"
-            >
-              <FaChevronRight className="w-6 h-6" />
-            </button>
-          </div>
-        </div>
-      )}
+      <RelatedProducts products={relatedProducts} />
 
       {/* product info tabs for description/specs */}
       <ProductInfoTabs product={tabProduct} />

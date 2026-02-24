@@ -69,6 +69,43 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
           </div>
         </div>
 
+        {/* mobile thumbnails below image */}
+        {images.length > 1 && (
+          <>
+            <div className="-mt-4 flex gap-2 lg:hidden">
+              {images.map((img, idx) => (
+                <button
+                  key={idx}
+                  className={`border rounded ${currentIndex === idx ? 'border-red-600' : 'border-gray-200'}`}
+                  onClick={() => setCurrentIndex(idx)}
+                >
+                  <Image
+                    src={encodeURI(img)}
+                    alt={`${title} thumbnail ${idx + 1}`}
+                    width={60}
+                    height={50}
+                    className="object-contain"
+                  />
+                </button>
+              ))}
+            </div>
+            <div className="mt-6 flex justify-between items-center text-center text-sm text-gray-700 gap-2 lg:hidden">
+              <div className="flex flex-col items-center gap-1">
+                <img src="https://img.icons8.com/?size=100&id=TO90p62OH8nn&format=png&color=000000" alt="Genuine" className="w-10 h-10" />
+                <span>100% Genuine Products</span>
+              </div>
+              <div className="flex flex-col items-center gap-1">
+                <img src="https://img.icons8.com/?size=100&id=BHOd3uqHFKXN&format=png&color=000000" alt="Secure Payments" className="w-10 h-10" />
+                <span>100% Secure Payments</span>
+              </div>
+              <div className="flex flex-col items-center gap-1">
+                <img src="https://img.icons8.com/?size=100&id=45147&format=png&color=000000" alt="Help Center" className="w-10 h-10" />
+                <span>Help Center (+8809666737475)</span>
+              </div>
+            </div>
+          </>
+        )}
+
         {/* details column */}
         <div className="flex-1 flex flex-col gap-4">
           {/* category/brand header could go here */}
@@ -98,7 +135,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
           {/* thumbnail row after buttons */}
           {images.length > 1 && (
             <>
-              <div className="mt-4 flex gap-2">
+              <div className="mt-4 flex gap-2 hidden md:block">
                 {images.map((img, idx) => (
                   <button
                     key={idx}

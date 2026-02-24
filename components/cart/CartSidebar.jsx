@@ -3,7 +3,7 @@
 import React from 'react';
 import { useCart } from '@/components/context/CartContext';
 import QuantitySelector from './QuantitySelector';
-import { FaTimes } from 'react-icons/fa';
+import { FaTimes, FaShoppingBag, FaTrash } from 'react-icons/fa';
 
 export default function CartSidebar() {
   const {
@@ -31,8 +31,11 @@ export default function CartSidebar() {
         isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
       }`}
     >
-      <div className="flex items-center justify-between p-4 border-b">
-        <h2 className="text-lg font-semibold">My Cart ({cartItems.length})</h2>
+      <div className="flex items-center justify-between p-4 bg-black text-white">
+        <div className="flex items-center gap-2">
+          <FaShoppingBag className="w-5 h-5" />
+          <h2 className="text-lg font-semibold">My Cart Item(s): {cartItems.length}</h2>
+        </div>
         <button onClick={toggleSidebar} className="p-1">
           <FaTimes />
         </button>
@@ -47,6 +50,7 @@ export default function CartSidebar() {
           const thumb = product.images && product.images[0] && product.images[0].url;
           return (
             <div key={id} className="mb-4 border-b pb-4">
+              {/* header row: thumbnail + title/unit price + delete */}
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-2">
                   {thumb && (
@@ -64,22 +68,29 @@ export default function CartSidebar() {
                 <button
                   onClick={() => removeFromCart(getId(product))}
                   className="text-gray-400 hover:text-gray-600"
+                  title="Remove item"
                 >
-                  &times;
+                  <FaTrash />
                 </button>
               </div>
+              {/* controls row: quantity + savings on left, prices on right */}
               <div className="mt-2 flex items-center justify-between">
-                <QuantitySelector
-                  quantity={quantity}
-                  onChange={(q) => updateQty(getId(product), q)}
-                />
-                <div className="text-sm">
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-4">
+                    <QuantitySelector
+                      quantity={quantity}
+                      onChange={(q) => updateQty(getId(product), q)}
+                    />
+                    {itemSaved > 0 && (
+                      <div className="text-green-600 text-xs whitespace-nowrap">
+                        You saved ৳{itemSaved}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="text-right text-sm">
                   <div>৳{price * quantity}</div>
-                  {itemSaved > 0 && (
-                    <div className="text-green-600 text-xs">
-                      You saved ৳{itemSaved}
-                    </div>
-                  )}
+                  {/* perhaps show original total if different? */}
                 </div>
               </div>
             </div>

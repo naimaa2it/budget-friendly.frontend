@@ -46,12 +46,12 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
       <div className="flex flex-col lg:flex-row gap-8">
         {/* left: image with vertical thumbnails on right */}
         <div className="flex-1 flex">
-          <div className="relative bg-white rounded shadow p-4 h-126 flex items-center justify-center flex-1">
+          <div className="relative bg-white rounded shadow h-126 flex items-center justify-center flex-1">
             <button
               onClick={prevImage}
-              className="absolute left-2 z-10 p-2 bg-white rounded-full shadow hover:bg-gray-100"
+              className="absolute left-2 z-10 p-2 bg-white border border-red-500 rounded-full shadow hover:bg-gray-100"
             >
-              <FaChevronLeft className="w-6 h-6 text-gray-600" />
+              <FaChevronLeft className="w-4 h-4 text-red-600" />
             </button>
             <Image
               src={encodeURI(currentImage)}
@@ -62,9 +62,9 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
             />
             <button
               onClick={nextImage}
-              className="absolute right-2 z-10 p-2 bg-white rounded-full shadow hover:bg-gray-100"
+              className="absolute right-2 z-10 p-2  bg-white border border-red-500 rounded-full shadow hover:bg-gray-100"
             >
-              <FaChevronRight className="w-6 h-6 text-gray-600" />
+              <FaChevronRight className="w-4 h-4 text-red-600" />
             </button>
           </div>
         </div>

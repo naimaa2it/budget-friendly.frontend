@@ -65,13 +65,13 @@ function ProfileMenu() {
               </div>
 
               <ul className="py-2">
-                <li><Link href="/profile" className="block px-3 py-2 hover:bg-[#fff0f7]">My profile</Link></li>
-                <li><Link href="/orders" className="block px-3 py-2 hover:bg-[#fff0f7]">Orders</Link></li>
+                <li><Link href={{ pathname: '/user', query: { section: 'profile' } }} className="block px-3 py-2 hover:bg-[#fff0f7]">My profile</Link></li>
+                <li><Link href={{ pathname: '/user', query: { section: 'orders' } }} className="block px-3 py-2 hover:bg-[#fff0f7]">Orders</Link></li>
                 <li><Link href="/cart" className="block px-3 py-2 hover:bg-[#fff0f7]">Cart</Link></li>
-                <li><Link href="/wishlist" className="block px-3 py-2 hover:bg-[#fff0f7]">Wishlist</Link></li>
-                <li><Link href="/reviews" className="block px-3 py-2 hover:bg-[#fff0f7]">Reviews</Link></li>
-                <li><Link href="/points" className="block px-3 py-2 hover:bg-[#fff0f7]">YourHaat points</Link></li>
-                <li><Link href="/interest" className="block px-3 py-2 hover:bg-[#fff0f7]">Interest</Link></li>
+                <li><Link href={{ pathname: '/user', query: { section: 'wishlist' } }} className="block px-3 py-2 hover:bg-[#fff0f7]">Wishlist</Link></li>
+                <li><Link href={{ pathname: '/user', query: { section: 'reviews' } }} className="block px-3 py-2 hover:bg-[#fff0f7]">Reviews</Link></li>
+                <li><Link href={{ pathname: '/user', query: { section: 'points' } }} className="block px-3 py-2 hover:bg-[#fff0f7]">YourHaat points</Link></li>
+                <li><Link href={{ pathname: '/user', query: { section: 'interest' } }} className="block px-3 py-2 hover:bg-[#fff0f7]">Interest</Link></li>
                 <li><button onClick={handleLogout} className="w-full text-left px-3 py-2 hover:bg-[#fff0f7]">Sign out</button></li>
               </ul>
             </div>
@@ -86,7 +86,17 @@ function ProfileMenu() {
 
 export default function Navbar() {
   const { getCartCount, getWishlistCount, toggleSidebar } = useCart();
+  const { user } = useUser();
   const router = useRouter();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [redirectWishlistOnLogin, setRedirectWishlistOnLogin] = useState(false);
+
+  React.useEffect(() => {
+    if (user && redirectWishlistOnLogin) {
+      router.push('/user?section=wishlist');
+      setRedirectWishlistOnLogin(false);
+    }
+  }, [user, redirectWishlistOnLogin, router]);
 
   return (
     <header className="border-b border-black/6  bg-[#fffaf6] sticky top-0 z-50">
@@ -128,7 +138,14 @@ export default function Navbar() {
           </form>
 
           <button
-            onClick={() => router.push('/wishlist')}
+            onClick={() => {
+              if (!user) {
+                setRedirectWishlistOnLogin(true);
+                setShowAuthModal(true);
+              } else {
+                router.push('/user?section=wishlist');
+              }
+            }}
             className="relative p-2 text-[#202020] hover:text-[#ac0ad1] group"
             aria-label="Wishlist"
             title="Wishlist"
@@ -161,6 +178,7 @@ export default function Navbar() {
           </div>
         </div>
       </div>
+      {showAuthModal && <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />}
     </header>
   );
 }

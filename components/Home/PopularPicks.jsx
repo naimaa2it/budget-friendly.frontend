@@ -42,7 +42,8 @@ export default function PopularPicks() {
   }, []);
 
   const slidesToShow = 3;
-  const totalSlides = Math.ceil(products.length / slidesToShow);
+  // number of "pages" we can scroll through. we still wrap using modulo
+  const totalSlides = products.length > 0 ? Math.ceil(products.length / slidesToShow) : 1;
 
   const startAutoSlide = () => {
     stopAutoSlide();
@@ -89,10 +90,14 @@ export default function PopularPicks() {
     );
   };
 
-  const visibleProducts = products.slice(
-    currentSlide * slidesToShow,
-    (currentSlide + 1) * slidesToShow
-  );
+  // build a sliding window that wraps around the products array
+  const visibleProducts = [];
+  if (products.length > 0) {
+    for (let i = 0; i < slidesToShow; i++) {
+      const idx = (currentSlide * slidesToShow + i) % products.length;
+      visibleProducts.push(products[idx]);
+    }
+  }
 
   return (
     <div 

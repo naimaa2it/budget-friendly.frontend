@@ -5,6 +5,7 @@ import Image from 'next/image';
 import ProductCard from './ProductCard';
 import ProductInfoTabs from './ProductInfoTabs';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import AddToCartSection from '@/components/cart/AddToCartSection';
 
 export default function ProductDetails({ product, relatedProducts = [] }) {
   // Expect `product` object with fields coming from API
@@ -88,10 +89,8 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
             )}
           </div>
 
-          <div className="flex flex-wrap gap-4">
-            <button className="bg-pink-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-pink-700 transition">
-              Add to bag
-            </button>
+          <div className="flex flex-col gap-4">
+            <AddToCartSection product={product} />
             <button className="border border-red-600 text-red-600 py-3 px-6 rounded-lg font-medium hover:bg-red-50 transition">
               App Price: ৳{product.appPrice || price}
             </button>

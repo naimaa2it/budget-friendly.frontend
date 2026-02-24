@@ -3,6 +3,9 @@ import "./globals.css";
 import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
 import { UserProvider } from '@/components/context/UserContext';
+import { CartProvider } from '@/components/context/CartContext';
+import CartToast from '@/components/cart/CartToast';
+import CartSidebar from '@/components/cart/CartSidebar';
 
 
 
@@ -22,9 +25,14 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${workSans.variable} antialiased`}>
         <UserProvider>
-          <Navbar />
-          {children}
-          <Footer />
+          <CartProvider>
+            <Navbar />
+            {children}
+            <Footer />
+            {/* global UI overlays */}
+            <CartToast />
+            <CartSidebar />
+          </CartProvider>
         </UserProvider>
       </body>
     </html>

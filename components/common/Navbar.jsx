@@ -7,6 +7,8 @@ import AuthModal from "../authentication/AuthModal";
 
 // Simple profile menu that uses UserContext so UI updates immediately on auth changes
 import { useUser } from '@/components/context/UserContext';
+import { useCart } from '@/components/context/CartContext';
+import { useRouter } from 'next/navigation';
 
 function ProfileMenu() {
   const { user, setUser, refreshUser } = useUser();
@@ -83,6 +85,9 @@ function ProfileMenu() {
 }
 
 export default function Navbar() {
+  const { getCartCount, getWishlistCount, toggleSidebar } = useCart();
+  const router = useRouter();
+
   return (
     <header className="border-b border-black/6  bg-[#fffaf6] sticky top-0 z-50">
       <div className="flex items-center gap-5 justify-between max-w-[1200px] mx-auto py-2 px-1 bg-transparent">
@@ -122,12 +127,32 @@ export default function Navbar() {
             </div>
           </form>
 
-          <button className="p-2 text-[#202020] hover:text-[#ac0ad1] group" aria-label="Wishlist" title="Wishlist">
+          <button
+            onClick={() => router.push('/wishlist')}
+            className="relative p-2 text-[#202020] hover:text-[#ac0ad1] group"
+            aria-label="Wishlist"
+            title="Wishlist"
+          >
             <svg className="stroke-current transition-colors duration-200 group-hover:stroke-[#ac0ad1]" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 0 0-7.1 7.1L12 21l8.8-9.3a5 5 0 0 0 0-7.1z"/></svg>
+            {getWishlistCount() > 0 && (
+              <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                {getWishlistCount()}
+              </span>
+            )}
           </button>
 
-          <button className="p-2 text-[#202020] hover:text-[#ac0ad1] group" aria-label="Cart" title="Cart">
+          <button
+            onClick={toggleSidebar}
+            className="relative p-2 text-[#202020] hover:text-[#ac0ad1] group"
+            aria-label="Cart"
+            title="Cart"
+          >
             <svg className="stroke-current transition-colors duration-200 group-hover:stroke-[#ac0ad1]" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="20" r="1"/><circle cx="20" cy="20" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            {getCartCount() > 0 && (
+              <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                {getCartCount()}
+              </span>
+            )}
           </button>
 
           {/* Profile dropdown */}

@@ -4,6 +4,7 @@ import Image from 'next/image';
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { FaEye, FaShoppingCart, FaHeart } from 'react-icons/fa';
+import { useCart } from '@/components/context/CartContext';
 
 export default function ProductCard({ product, imageWidth = 300, imageHeight = 200, imageQuality = 100 }) {
   const router = useRouter();
@@ -20,6 +21,7 @@ export default function ProductCard({ product, imageWidth = 300, imageHeight = 2
   const image = encodeURI(currentImage());
 
   const id = product._id || product.id;
+  const { addToCart, addToWishlist } = useCart();
   const href = `/product/${id}`;
 
   const handleCardClick = () => {
@@ -60,10 +62,24 @@ export default function ProductCard({ product, imageWidth = 300, imageHeight = 2
           >
             <FaEye className="w-4 h-4" />
           </button>
-          <button className="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 hover:text-white transition-colors">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              addToCart(product, 1);
+            }}
+            className="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 hover:text-white transition-colors"
+            title="Add to cart"
+          >
             <FaShoppingCart className="w-4 h-4" />
           </button>
-          <button className="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 hover:text-white transition-colors">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              addToWishlist(product);
+            }}
+            className="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 hover:text-white transition-colors"
+            title="Add to wishlist"
+          >
             <FaHeart className="w-4 h-4" />
           </button>
         </div>

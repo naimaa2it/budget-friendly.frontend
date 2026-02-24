@@ -40,7 +40,7 @@ export default function CartSidebar() {
           isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
         } flex flex-col`}
       >
-      <div className="flex items-center justify-between p-4 bg-black text-white flex-shrink-0">
+      <div className="flex items-center justify-between p-4 bg-black text-white shrink-0">
         <div className="flex items-center gap-2">
           <FaShoppingBag className="w-5 h-5" />
           <h2 className="text-lg font-semibold">My Cart Item(s): {cartItems.length}</h2>
@@ -49,7 +49,7 @@ export default function CartSidebar() {
           <FaTimes />
         </button>
       </div>
-      <div className="p-4 flex-grow overflow-y-auto">
+      <div className="p-4 grow overflow-y-auto">
         {cartItems.length === 0 && <p className="text-center text-gray-500">Your cart is empty</p>}
         {cartItems.map(({ product, quantity }) => {
           const id = product._id || product.id;
@@ -109,7 +109,7 @@ export default function CartSidebar() {
         })}
       </div>
       {cartItems.length > 0 && (
-        <div className="p-4 border-t flex-shrink-0 mt-auto">
+        <div className="p-4 border-t shrink-0 mt-auto">
           <div className="flex justify-between mb-2">
             <span className="font-medium">Total</span>
             <span className="font-semibold">৳{total}</span>

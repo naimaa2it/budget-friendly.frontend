@@ -7,6 +7,7 @@ const nextConfig = {
       'download.logo.wine',
       'static.vecteezy.com',
       'img.icons8.com',
+      'lh3.googleusercontent.com',
     ],
   },
   /* other config options here */

@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { useCart } from '@/components/context/CartContext';
 import { useUser } from '@/components/context/UserContext';
 import AuthModal from '@/components/authentication/AuthModal';
-import { getCities, getZones, getAreas } from '@/lib/locationData';
 import Image from 'next/image';
 import { FaChevronDown } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
@@ -31,8 +30,9 @@ export default function CheckoutPage() {
     coupon: '',
   });
 
-  // Location state
-  const [cities] = useState(getCities());
+  // Location data fetched from API
+  const [locationData, setLocationData] = useState({});
+  const [cities, setCities] = useState([]);
   const [zones, setZones] = useState([]);
   const [areas, setAreas] = useState([]);
 
@@ -53,24 +53,40 @@ export default function CheckoutPage() {
     }
   }, [cartItems.length, router]);
 
+  // fetch location data once
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const resp = await fetch('/api/locations');
+        const json = await resp.json();
+        setLocationData(json.locationData || {});
+        const cityList = json.locationData ? Object.keys(json.locationData) : [];
+        setCities(cityList);
+      } catch (err) {
+        console.error('Failed to load location data', err);
+      }
+    };
+    fetchLocations();
+  }, []);
+
   // Update zones when city changes
   useEffect(() => {
-    if (formData.city) {
-      const availableZones = getZones(formData.city);
+    if (formData.city && locationData[formData.city]) {
+      const availableZones = Object.keys(locationData[formData.city].zones || {});
       setZones(availableZones);
       setFormData(prev => ({ ...prev, zone: '', area: '' }));
       setAreas([]);
     }
-  }, [formData.city]);
+  }, [formData.city, locationData]);
 
   // Update areas when zone changes
   useEffect(() => {
-    if (formData.city && formData.zone) {
-      const availableAreas = getAreas(formData.city, formData.zone);
+    if (formData.city && formData.zone && locationData[formData.city]) {
+      const availableAreas = locationData[formData.city].zones[formData.zone] || [];
       setAreas(availableAreas);
       setFormData(prev => ({ ...prev, area: '' }));
     }
-  }, [formData.city, formData.zone]);
+  }, [formData.city, formData.zone, locationData]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

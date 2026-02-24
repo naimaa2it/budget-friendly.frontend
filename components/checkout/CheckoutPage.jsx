@@ -30,6 +30,11 @@ export default function CheckoutPage() {
     coupon: '',
   });
 
+  // Custom input states
+  const [customCity, setCustomCity] = useState('');
+  const [customZone, setCustomZone] = useState('');
+  const [customArea, setCustomArea] = useState('');
+
   // Location data fetched from API
   const [locationData, setLocationData] = useState({});
   const [cities, setCities] = useState([]);
@@ -91,6 +96,17 @@ export default function CheckoutPage() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Reset custom inputs when switching back from "Other"
+    if (name === 'city' && value !== 'other') {
+      setCustomCity('');
+    }
+    if (name === 'zone' && value !== 'other') {
+      setCustomZone('');
+    }
+    if (name === 'area' && value !== 'other') {
+      setCustomArea('');
+    }
   };
 
   const handlePlaceOrder = async (e) => {
@@ -102,9 +118,22 @@ export default function CheckoutPage() {
       return;
     }
 
+    // Get final values (use custom input if "other" is selected)
+    const finalCity = formData.city === 'other' ? customCity : formData.city;
+    const finalZone = formData.zone === 'other' ? customZone : formData.zone;
+    const finalArea = formData.area === 'other' ? customArea : formData.area;
+
     // Validate form
-    const requiredFields = ['name', 'phone', 'email', 'city', 'zone', 'area', 'address'];
-    const missingFields = requiredFields.filter(field => !formData[field]);
+    const requiredFields = {
+      name: formData.name,
+      phone: formData.phone,
+      email: formData.email,
+      city: finalCity,
+      zone: finalZone,
+      address: formData.address,
+    };
+    
+    const missingFields = Object.entries(requiredFields).filter(([key, value]) => !value);
     
     if (missingFields.length > 0) {
       toast.error('Please fill in all required fields');
@@ -126,9 +155,9 @@ export default function CheckoutPage() {
         name: formData.name,
         phone: formData.phone,
         email: formData.email,
-        city: formData.city,
-        zone: formData.zone,
-        area: formData.area,
+        city: finalCity,
+        zone: finalZone,
+        area: finalArea,
         address: formData.address,
         note: formData.note,
       },
@@ -242,8 +271,19 @@ export default function CheckoutPage() {
                     {cities.map(city => (
                       <option key={city} value={city}>{city}</option>
                     ))}
+                    <option value="other">Other (Type your own)</option>
                   </select>
                   <FaChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  {formData.city === 'other' && (
+                    <input
+                      type="text"
+                      value={customCity}
+                      onChange={(e) => setCustomCity(e.target.value)}
+                      placeholder="Enter your city"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none mt-2"
+                      required
+                    />
+                  )}
                 </div>
 
                 {/* Zone Dropdown */}
@@ -254,14 +294,25 @@ export default function CheckoutPage() {
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg appearance-none focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none bg-white"
                     required
-                    disabled={!formData.city}
+                    disabled={!formData.city || formData.city === 'other'}
                   >
                     <option value="">Zone*</option>
                     {zones.map(zone => (
                       <option key={zone} value={zone}>{zone}</option>
                     ))}
+                    <option value="other">Other (Type your own)</option>
                   </select>
                   <FaChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  {(formData.zone === 'other' || formData.city === 'other') && (
+                    <input
+                      type="text"
+                      value={customZone}
+                      onChange={(e) => setCustomZone(e.target.value)}
+                      placeholder="Enter your zone"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none mt-2"
+                      required
+                    />
+                  )}
                 </div>
 
                 {/* Area Dropdown */}
@@ -271,15 +322,24 @@ export default function CheckoutPage() {
                     value={formData.area}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg appearance-none focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none bg-white"
-                    required
-                    disabled={!formData.zone}
+                    disabled={!formData.zone || formData.zone === 'other' || formData.city === 'other'}
                   >
                     <option value="">Area</option>
                     {areas.map(area => (
                       <option key={area} value={area}>{area}</option>
                     ))}
+                    <option value="other">Other (Type your own)</option>
                   </select>
                   <FaChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  {(formData.area === 'other' || formData.zone === 'other' || formData.city === 'other') && (
+                    <input
+                      type="text"
+                      value={customArea}
+                      onChange={(e) => setCustomArea(e.target.value)}
+                      placeholder="Enter your area"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none mt-2"
+                    />
+                  )}
                 </div>
               </div>
 

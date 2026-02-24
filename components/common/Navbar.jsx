@@ -166,7 +166,7 @@ export default function Navbar() {
 
   React.useEffect(() => {
     if (user && redirectWishlistOnLogin) {
-      router.push('/user?section=wishlist');
+      router.push('/user/wishlist');
       setRedirectWishlistOnLogin(false);
     }
   }, [user, redirectWishlistOnLogin, router]);
@@ -216,7 +216,7 @@ export default function Navbar() {
                 setRedirectWishlistOnLogin(true);
                 setShowAuthModal(true);
               } else {
-                router.push('/user?section=wishlist');
+                router.push('/user/wishlist');
               }
             }}
             className="relative p-2 text-[#202020] hover:text-[#ac0ad1] group"

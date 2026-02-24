@@ -19,7 +19,7 @@ export default function Wishlist() {
       setShowAuth(true);
     } else {
       // if user is now logged in we want to canonicalize the route
-      router.push('/user?section=wishlist');
+      router.push('/user/wishlist');
     }
   }, [user, router]);
 

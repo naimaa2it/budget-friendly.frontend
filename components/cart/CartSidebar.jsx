@@ -98,7 +98,7 @@ export default function CartSidebar() {
         })}
       </div>
       {cartItems.length > 0 && (
-        <div className="p-4 border-t flex-shrink-0">
+        <div className="p-4 border-t flex-shrink-0 mt-auto">
           <div className="flex justify-between mb-2">
             <span className="font-medium">Total</span>
             <span className="font-semibold">৳{total}</span>

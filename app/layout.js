@@ -6,6 +6,7 @@ import { UserProvider } from '@/components/context/UserContext';
 import { CartProvider } from '@/components/context/CartContext';
 import CartToast from '@/components/cart/CartToast';
 import CartSidebar from '@/components/cart/CartSidebar';
+import CartFloating from '@/components/cart/CartFloating';
 
 
 
@@ -32,6 +33,7 @@ export default function RootLayout({ children }) {
             {/* global UI overlays */}
             <CartToast />
             <CartSidebar />
+            <CartFloating />
           </CartProvider>
         </UserProvider>
       </body>

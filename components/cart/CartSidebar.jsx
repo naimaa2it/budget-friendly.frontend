@@ -14,6 +14,14 @@ export default function CartSidebar() {
     removeFromCart,
   } = useCart();
 
+  // lock body scroll when sidebar is open
+  React.useEffect(() => {
+    document.body.style.overflow = isSidebarOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isSidebarOpen]);
+
   const total = cartItems.reduce(
     (sum, { product, quantity }) => sum + (product.price || 0) * quantity,
     0
@@ -26,11 +34,12 @@ export default function CartSidebar() {
   const saved = originalTotal - total;
 
   return (
-    <div
-      className={`fixed top-0 right-0 h-full w-100 bg-[#ffc2e0]/10 shadow-lg transform transition-transform duration-300 z-50 ${
-        isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
-      } flex flex-col`}
-    >
+    <>
+      <div
+        className={`fixed top-0 right-0 h-full w-100 bg-white shadow-lg transform transition-transform duration-300 z-50 ${
+          isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
+        } flex flex-col`}
+      >
       <div className="flex items-center justify-between p-4 bg-black text-white flex-shrink-0">
         <div className="flex items-center gap-2">
           <FaShoppingBag className="w-5 h-5" />
@@ -125,6 +134,7 @@ export default function CartSidebar() {
         </div>
       )}
     </div>
+    </>
   );
 }
 

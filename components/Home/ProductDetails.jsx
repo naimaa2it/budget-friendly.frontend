@@ -72,19 +72,19 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
         {/* mobile thumbnails below image */}
         {images.length > 1 && (
           <>
-            <div className="-mt-4 flex gap-2 lg:hidden">
+            <div className="-mt-4 flex gap-2 lg:hidden ">
               {images.map((img, idx) => (
                 <button
                   key={idx}
-                  className={`border rounded ${currentIndex === idx ? 'border-red-600' : 'border-gray-200'}`}
+                  className={`border rounded ${currentIndex === idx ? 'border-red-600 mr-1' : 'border-gray-300 mr-1'}`}
                   onClick={() => setCurrentIndex(idx)}
                 >
                   <Image
                     src={encodeURI(img)}
                     alt={`${title} thumbnail ${idx + 1}`}
-                    width={60}
-                    height={50}
-                    className="object-contain"
+                    width={80}
+                    height={80}
+                    className="object-contain w-16 h-16"
                   />
                 </button>
               ))}
@@ -139,15 +139,15 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                 {images.map((img, idx) => (
                   <button
                     key={idx}
-                    className={`border rounded ${currentIndex === idx ? 'border-red-600' : 'border-gray-200'}`}
+                    className={`border rounded ${currentIndex === idx ? 'border-red-600 mr-2' : 'border-gray-300 mr-2'}`}
                     onClick={() => setCurrentIndex(idx)}
                   >
                     <Image
                       src={encodeURI(img)}
                       alt={`${title} thumbnail ${idx + 1}`}
-                      width={70}
-                      height={50}
-                      className="object-contain"
+                      width={80}
+                      height={80}
+                      className="object-contain w-20 h-20"
                     />
                   </button>
                 ))}

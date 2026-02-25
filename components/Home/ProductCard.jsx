@@ -8,7 +8,7 @@ import { useCart } from '@/components/context/CartContext';
 import { useUser } from '@/components/context/UserContext';
 import AuthModal from '../authentication/AuthModal';
 
-export default function ProductCard({ product, imageWidth = 300, imageHeight = 200, imageQuality = 100 }) {
+export default function ProductCard({ product, imageWidth = 300, imageHeight = 200, imageQuality = 100, showActionsOnHover = true }) {
   const router = useRouter();
   const price = product.price || (product.variants && product.variants[0]?.price) || 0;
   const compareAt = product.compareAtPrice || (product.variants && product.variants[0]?.compareAtPrice) || null;
@@ -66,7 +66,7 @@ export default function ProductCard({ product, imageWidth = 300, imageHeight = 2
           className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300 cursor-pointer"
         />
 
-        <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div className={`absolute top-3 right-3 flex flex-col gap-2 transition-opacity duration-300 ${showActionsOnHover ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'}`}>
           <button 
             onClick={(e) => {
               e.stopPropagation();

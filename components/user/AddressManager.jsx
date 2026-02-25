@@ -162,7 +162,7 @@ export default function AddressManager() {
         <h2 className="text-2xl font-semibold">My Addresses</h2>
         <button
           onClick={() => openForm(null)}
-          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-green-600"
         >
           Add Address
         </button>

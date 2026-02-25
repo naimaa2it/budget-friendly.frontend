@@ -56,8 +56,9 @@ export default function CartSidebar() {
         {cartItems.length === 0 && <p className="text-center text-gray-500">Your cart is empty</p>}
         {cartItems.map(({ product, quantity }) => {
           const id = product._id || product.id;
-          const price = product.price || 0;
-          const compare = product.compareAtPrice || price;
+          // coerce values to numeric in case they are strings with currency symbols
+          const price = parseFloat(String(product.price).replace(/[^0-9.-]+/g, '')) || 0;
+          const compare = parseFloat(String(product.compareAtPrice || price).replace(/[^0-9.-]+/g, '')) || price;
           const itemSaved = (compare - price) * quantity;
           const thumb = product.images && product.images[0] && product.images[0].url;
           return (

@@ -36,7 +36,9 @@ export default function DealsOfDay() {
         const bests = (bestJson.items || []).map(p => ({
           id: p._id || p.id,
           name: p.title,
-          price: p.price ? `৳${p.price}` : '',
+          // keep numeric price for calculations and attach display string if needed
+          price: typeof p.price === 'number' ? p.price : parseFloat(p.price) || 0,
+          displayPrice: p.price ? `৳${p.price}` : '',
           rating: p.averageRating || 0,
           image: (p.images && p.images[0] && p.images[0].url) || '/assets/placeholder.svg'
         }));
@@ -304,7 +306,7 @@ export default function DealsOfDay() {
                     <div className="flex items-center gap-1 mb-1 text-sm">
                       {renderStars(product.rating)}
                     </div>
-                    <p className="text-red-600 font-bold">{product.price}</p>
+                    <p className="text-red-600 font-bold">৳{product.price}</p>
                   </div>
                 </div>
               ))}

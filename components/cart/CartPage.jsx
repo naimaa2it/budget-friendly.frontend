@@ -73,8 +73,8 @@ export default function CartPage() {
         <div className="bg-white rounded-lg shadow mb-8">
           {cartItems.map(({ product, quantity }) => {
             const id = getId(product);
-            const price = product.price || 0;
-            const compareAt = product.compareAtPrice || price;
+            const price = parseFloat(String(product.price).replace(/[^0-9.-]+/g, '')) || 0;
+            const compareAt = parseFloat(String(product.compareAtPrice || price).replace(/[^0-9.-]+/g, '')) || price;
             const itemSaved = (compareAt - price) * quantity;
             const image = product.images?.[0]?.url || '/assets/placeholder.svg';
             const title = product.title || product.name;

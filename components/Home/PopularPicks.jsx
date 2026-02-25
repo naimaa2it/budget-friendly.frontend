@@ -2,9 +2,19 @@
 
 import Image from 'next/image';
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { FaEye, FaShoppingCart, FaHeart } from 'react-icons/fa';
+import { useCart } from '@/components/context/CartContext';
+import { useUser } from '@/components/context/UserContext';
+import AuthModal from '../authentication/AuthModal';
 
 export default function PopularPicks() {
+  const router = useRouter();
+  const { addToCart, addToWishlist } = useCart();
+  const { user } = useUser();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [pendingWishlist, setPendingWishlist] = useState(null);
+
   const [currentSlide, setCurrentSlide] = useState(0);
   const slideInterval = useRef(null);
   const slideContainerRef = useRef(null);
@@ -23,9 +33,12 @@ export default function PopularPicks() {
           id: p._id || p.id,
           title: p.title,
           subtitle: p.description || p.subtitle || '',
+          // human-readable strings for display in the carousel
           originalPrice: p.compareAtPrice ? `৳${p.compareAtPrice}` : null,
           currentPrice: p.price ? `৳${p.price}` : null,
-          price: p.price ? `৳${p.price}` : null,
+          // keep the raw numeric values for cart calculations
+          price: typeof p.price === 'number' ? p.price : parseFloat(p.price) || 0,
+          compareAtPrice: typeof p.compareAtPrice === 'number' ? p.compareAtPrice : parseFloat(p.compareAtPrice) || (p.price || 0),
           status: p.availability === 'out_of_stock' ? 'Stock Out' : 'In Stock',
           tag: p.badges && p.badges.includes('hot') ? 'Hot' : null,
           discount: p.compareAtPrice && p.price ? `${Math.round((p.compareAtPrice-p.price)/p.compareAtPrice*100)}% Off` : null,
@@ -76,7 +89,17 @@ export default function PopularPicks() {
   useEffect(() => {
     startAutoSlide();
     return () => stopAutoSlide();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // if login happens and a wishlist item was pending
+  useEffect(() => {
+    if (user && pendingWishlist) {
+      addToWishlist(pendingWishlist);
+      setPendingWishlist(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, pendingWishlist]);
 
   const renderStars = (rating) => {
     return (
@@ -166,7 +189,8 @@ export default function PopularPicks() {
             {visibleProducts.map((product) => (
               <div 
                 key={product.id} 
-                className="bg-white rounded-lg border border-gray-200 overflow-hidden group hover:shadow-xl transition-all duration-300"
+                onClick={() => router.push(`/product/${product.id}`)}
+                className="bg-white rounded-lg border border-gray-200 overflow-hidden group hover:shadow-xl transition-all duration-300 cursor-pointer"
               >
                 {/* Product Image Container */}
                 <div className="relative bg-gray-50 p-6 h-54 flex items-center justify-center overflow-hidden">
@@ -197,13 +221,33 @@ export default function PopularPicks() {
 
                   {/* Hover Icons */}
                   <div className="absolute top-3 right-3 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 hover:text-white transition-colors">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); router.push(`/product/${product.id}`); }}
+                      className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 hover:text-white transition-colors"
+                      title="View"
+                    >
                       <FaEye className="w-4 h-4" />
                     </button>
-                    <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 hover:text-white transition-colors">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); addToCart(product, 1); }}
+                      className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 hover:text-white transition-colors"
+                      title="Add to cart"
+                    >
                       <FaShoppingCart className="w-4 h-4" />
                     </button>
-                    <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 hover:text-white transition-colors">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!user) {
+                          setPendingWishlist(product);
+                          setShowAuthModal(true);
+                        } else {
+                          addToWishlist(product);
+                        }
+                      }}
+                      className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 hover:text-white transition-colors"
+                      title="Add to wishlist"
+                    >
                       <FaHeart className="w-4 h-4" />
                     </button>
                   </div>
@@ -224,9 +268,8 @@ export default function PopularPicks() {
                   <h3 className="text-base font-semibold text-gray-900 mb-1 line-clamp-2">
                     {product.subtitle}
                   </h3>
-
                   {/* Price */}
-                  <div className="mb-2"> 
+                  <div className="mb-2">
                     {product.currentPrice ? (
                       <div className="flex items-center gap-1">
                         <span className="text-xl font-bold text-red-600">{product.currentPrice}</span>
@@ -236,6 +279,7 @@ export default function PopularPicks() {
                       <span className="text-xl font-bold text-red-600">{product.price}</span>
                     )}
                   </div>
+
 
                   {/* Rating and Reviews */}
                   <div className="flex items-center gap-2 mb-3">
@@ -254,7 +298,10 @@ export default function PopularPicks() {
                   )}
 
                   {/* Add to Cart Button - Absolute, appears on hover */}
-                  <button className="absolute bottom-4 left-4 right-4 bg-red-600 text-white py-2 rounded-md font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-red-700">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); addToCart(product, 1); }}
+                    className="absolute bottom-4 left-4 right-4 bg-red-600 text-white py-2 rounded-md font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-red-700"
+                  >
                     Add to Cart
                   </button>
                 </div>
@@ -265,6 +312,8 @@ export default function PopularPicks() {
           
         </div>
       </div>
+    
+    <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );
 }

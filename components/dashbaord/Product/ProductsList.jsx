@@ -13,6 +13,7 @@ export default function ProductsList() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState(''); // '', 'draft', 'published', 'archived'
   const [categories, setCategories] = useState([]);
   const [selectedMain, setSelectedMain] = useState(null);
   const [selectedSub, setSelectedSub] = useState(null);
@@ -41,7 +42,8 @@ export default function ProductsList() {
       else if (selectedMain) catIds = collectIds(selectedMain);
 
       const catParam = catIds.length ? catIds.join(',') : '';
-      const q = `${API}/api/admin/products?limit=50&q=${encodeURIComponent(query || '')}${catParam ? `&categoryId=${encodeURIComponent(catParam)}` : ''}`;
+      const statusParam = statusFilter ? `&status=${encodeURIComponent(statusFilter)}` : '';
+      const q = `${API}/api/admin/products?limit=50&q=${encodeURIComponent(query || '')}${catParam ? `&categoryId=${encodeURIComponent(catParam)}` : ''}${statusParam}`;
       const resp = await fetch(q, { credentials: 'include' });
       const body = await resp.json();
       if (resp.ok) setItems(body.items || []);
@@ -51,7 +53,7 @@ export default function ProductsList() {
     } finally {
       setLoading(false);
     }
-  }, [API, query, selectedMain, selectedSub, selectedChild]);
+  }, [API, query, selectedMain, selectedSub, selectedChild, statusFilter]);
 
   useEffect(() => { if (!user) refreshUser(); }, [user, refreshUser]);
 
@@ -100,6 +102,13 @@ export default function ProductsList() {
           {(selectedSub?.children||[]).map(c=> <option key={c._id} value={c._id}>{c.name}</option>)}
         </select>
 
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="border px-3 py-2 rounded bg-white">
+          <option value="">All statuses</option>
+          <option value="draft">📝 Drafts</option>
+          <option value="published">✅ Published</option>
+          <option value="archived">📦 Archived</option>
+        </select>
+
         <input aria-label="Search products" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search products" className="border px-3 py-2 rounded flex-1 min-w-45" />
 
       </div>
@@ -137,7 +146,7 @@ export default function ProductsList() {
                   </td>
                   <td className="py-3">{p.price ? `₹${p.price}` : p.variants?.[0]?.price ? `₹${p.variants[0].price}` : '-'}</td>
                   <td className="py-3">{p.inventory ?? (p.variants?.reduce((s,v)=>s+ (v.inventory||0),0) || 0)}</td>
-                  <td className="py-3"><span className={`px-2 py-1 text-xs rounded ${p.status==='published' ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-700'}`}>{p.status}</span></td>
+                  <td className="py-3"><span className={`px-2 py-1 text-xs rounded ${p.status==='published' ? 'bg-green-50 text-green-700' : p.status==='draft' ? 'bg-yellow-50 text-yellow-700' : 'bg-gray-50 text-gray-700'}`}>{p.status}</span></td>
                   <td className="py-3">
                     <div className="flex gap-2">
                       <Link className="px-2 py-1 border rounded text-sm" href={`/dashabord/products/${p._id}`}>Edit</Link>

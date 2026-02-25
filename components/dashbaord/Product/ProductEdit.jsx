@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/components/context/UserContext';
 
@@ -37,7 +37,7 @@ export default function ProductEdit({ productId }) {
     reviews: [],
     averageRating: 0,
     reviewCount: 0,
-    status: 'published',
+    status: 'draft',
     specs: {},
     seo: { title: '', description: '', keywords: '' },
     featured: false,
@@ -55,6 +55,7 @@ export default function ProductEdit({ productId }) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [newReview, setNewReview] = useState({ authorName: '', rating: '', title: '', body: '' });
+  const [lastSaved, setLastSaved] = useState(null); // Track last auto-save time
 
   // Department autocomplete
   const [departmentSuggestions, setDepartmentSuggestions] = useState([]);
@@ -248,6 +249,79 @@ export default function ProductEdit({ productId }) {
     }
   }, [product.categoryId, product.category, categories]);
 
+  // Auto-save draft to backend
+  const saveDraftToBackend = useCallback(async () => {
+    if (!product.title || !productId) return; // Need title and product ID
+    
+    try {
+      const finalTags = tagStr.split(',').map(s=>s.trim()).filter(Boolean);
+      const finalSizes = sizeStr.split(',').map(s=>s.trim()).filter(Boolean);
+      const payload = { 
+        ...product, 
+        tags: finalTags,
+        sizes: finalSizes,
+        specs: { ...(product.specs || {}), sizes: finalSizes || product.sizes || product.specs?.sizes || [] } 
+      };
+
+      // Update existing product (keep as draft if already draft)
+      const resp = await fetch(`${API}/api/admin/products/${productId}`, { 
+        method: 'PUT', 
+        headers: { 'Content-Type': 'application/json' }, 
+        credentials: 'include', 
+        body: JSON.stringify(payload) 
+      });
+      
+      const body = await resp.json();
+      if (!resp.ok) throw new Error(body.error || 'Save draft failed');
+      
+      setLastSaved(new Date());
+      console.log('Draft auto-saved at', new Date().toLocaleTimeString());
+      return true;
+    } catch (err) {
+      console.error('Failed to save draft:', err);
+      return false;
+    }
+  }, [product, tagStr, sizeStr, productId, API]);
+
+  // Auto-save every 30 seconds when editing
+  useEffect(() => {
+    if (!product.title || loading) return; // Don't save while loading or if no title
+    
+    const timer = setInterval(() => {
+      saveDraftToBackend();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(timer);
+  }, [product.title, loading, saveDraftToBackend]);
+
+  // Save before page unload (back, close tab, power off)
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (product.title && productId) {
+        // Use sendBeacon for reliable saving
+        const finalTags = tagStr.split(',').map(s=>s.trim()).filter(Boolean);
+        const finalSizes = sizeStr.split(',').map(s=>s.trim()).filter(Boolean);
+        const payload = { 
+          ...product, 
+          tags: finalTags,
+          sizes: finalSizes,
+          specs: { ...(product.specs || {}), sizes: finalSizes || product.sizes || product.specs?.sizes || [] } 
+        };
+
+        const url = `${API}/api/admin/products/${productId}`;
+        const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+        
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon(url, blob);
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [product, tagStr, sizeStr, productId, API]);
+
+
   const handleFile = async (file) => {
     const preview = URL.createObjectURL(file);
     setProduct(p => ({ ...p, images: [...(p.images||[]), { url: preview, __local: true, uploading: true }] }));
@@ -366,6 +440,11 @@ export default function ProductEdit({ productId }) {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Edit Product</h1>
               <p className="text-gray-600 mt-1">Update product information in your catalog</p>
+              {lastSaved && (
+                <p className="text-sm text-green-600 mt-1">
+                  ✓ Auto-saved at {lastSaved.toLocaleTimeString()}
+                </p>
+              )}
             </div>
             <button 
               onClick={() => router.push('/dashabord/products')}
@@ -511,6 +590,7 @@ export default function ProductEdit({ productId }) {
                     onChange={e => setProduct(p => ({ ...p, status: e.target.value }))}
                     className={inputClass}
                   >
+                    <option value="draft">Draft</option>
                     <option value="published">Published</option>
                     <option value="archived">Archived</option>
                   </select>

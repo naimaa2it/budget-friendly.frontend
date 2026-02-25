@@ -63,8 +63,7 @@ export default function CartSidebar() {
       </div>
       <div className="p-4 ml-4 grow overflow-y-auto">
         {cartItems.length === 0 && <EmptyAnimation />}
-        <p>Your cart is empty!</p>
-        <button>Explore More</button>
+        
         {cartItems.map(({ product, quantity }) => {
           const id = product._id || product.id;
           // coerce values to numeric in case they are strings with currency symbols

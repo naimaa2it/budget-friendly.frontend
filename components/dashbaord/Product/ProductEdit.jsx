@@ -37,7 +37,7 @@ export default function ProductEdit({ productId }) {
     reviews: [],
     averageRating: 0,
     reviewCount: 0,
-    status: 'draft',
+    status: 'published',
     specs: {},
     seo: { title: '', description: '', keywords: '' },
     featured: false,
@@ -511,7 +511,6 @@ export default function ProductEdit({ productId }) {
                     onChange={e => setProduct(p => ({ ...p, status: e.target.value }))}
                     className={inputClass}
                   >
-                    <option value="draft">Draft</option>
                     <option value="published">Published</option>
                     <option value="archived">Archived</option>
                   </select>

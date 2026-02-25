@@ -51,7 +51,8 @@ export default function AdminsList() {
       {loading ? (
         <div className="text-center py-8 text-gray-500">Loading…</div>
       ) : (
-        <table className="w-full text-left text-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
           <thead className="text-gray-600">
             <tr>
               <th className="py-2">Name</th>
@@ -80,6 +81,7 @@ export default function AdminsList() {
             {items.length === 0 && <tr><td colSpan={5} className="text-center py-8 text-gray-500">No admin accounts found</td></tr>}
           </tbody>
         </table>
+        </div>
       )}
     </div>
   );

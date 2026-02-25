@@ -599,7 +599,7 @@ export default function ProductCreate() {
                     placeholder="0.00"
                     step="0.01"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Show a "was" price to indicate a discount</p>
+                  <p className="text-xs text-gray-500 mt-1">Show a was price to indicate a discount</p>
                 </div>
 
                 {/* Inventory */}
@@ -762,7 +762,7 @@ export default function ProductCreate() {
 
               {(product.variants || []).length === 0 ? (
                 <div className="text-center py-12 bg-gray-50 rounded-xl">
-                  <p className="text-gray-600">No variants yet. Click "Add Variant" to create one.</p>
+                  <p className="text-gray-600">No variants yet. Click Add Variant to create one.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -1185,7 +1185,7 @@ export default function ProductCreate() {
                 </div>
 
                 {(product.faqs || []).length === 0 ? (
-                  <p className="text-center text-gray-500 py-4">No FAQs yet. Click "Add FAQ" to create one.</p>
+                  <p className="text-center text-gray-500 py-4">No FAQs yet. Click Add FAQ to create one.</p>
                 ) : (
                   <div className="space-y-4">
                     {(product.faqs || []).map((f, i) => (

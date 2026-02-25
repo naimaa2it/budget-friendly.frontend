@@ -70,7 +70,8 @@ export default function BlogList() {
       {/* inline editor removed in favor of dedicated page */}
 
       <div className="bg-white rounded shadow overflow-hidden">
-        <table className="w-full text-left">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
           <thead className="bg-gray-50 text-sm text-gray-600">
             <tr>
               <th className="px-4 py-3">Title</th>
@@ -104,6 +105,7 @@ export default function BlogList() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

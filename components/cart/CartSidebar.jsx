@@ -1,11 +1,14 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useCart } from '@/components/context/CartContext';
 import QuantitySelector from './QuantitySelector';
 import { FaTimes, FaShoppingBag, FaTrash } from 'react-icons/fa';
+import Lottie from 'lottie-react';
+
+const EMPTY_ANIM = "https://assets5.lottiefiles.com/packages/lf20_usmfx6bp.json";
 
 export default function CartSidebar() {
   const router = useRouter();
@@ -53,7 +56,9 @@ export default function CartSidebar() {
         </button>
       </div>
       <div className="p-4 grow overflow-y-auto">
-        {cartItems.length === 0 && <p className="text-center text-gray-500">Your cart is empty</p>}
+        {cartItems.length === 0 && (
+          <EmptyAnimation />
+        )}
         {cartItems.map(({ product, quantity }) => {
           const id = product._id || product.id;
           // coerce values to numeric in case they are strings with currency symbols
@@ -153,3 +158,33 @@ export default function CartSidebar() {
 }
 
 function getId(p){return p._id||p.id;}
+
+// small helper component used when sidebar is empty
+function EmptyAnimation() {
+  const router = useRouter();
+  const [anim, setAnim] = useState(null);
+
+  useEffect(() => {
+    fetch(EMPTY_ANIM)
+      .then((r) => r.json())
+      .then((json) => setAnim(json))
+      .catch((err) => console.error('Failed to load sidebar animation', err));
+  }, []);
+
+  return (
+    <div className="text-center">
+      {anim && (
+        <div className="w-full max-w-[120px] mx-auto mb-4" style={{ height: 120 }}>
+          <Lottie animationData={anim} loop autoplay />
+        </div>
+      )}
+      <p className="text-gray-500 mb-4">Your cart is empty</p>
+      <button
+        onClick={() => router.push('/')}
+        className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition text-sm"
+      >
+        Explore More
+      </button>
+    </div>
+  );
+}

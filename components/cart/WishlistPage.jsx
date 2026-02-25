@@ -6,6 +6,7 @@ import { useCart } from '@/components/context/CartContext';
 import Image from 'next/image';
 import { FaTrash } from 'react-icons/fa';
 import ProductCard from '@/components/Home/ProductCard';
+import EmptyState from '@/components/common/EmptyState';
 
 export default function WishlistPage({ embedded = false }) {
   const router = useRouter();
@@ -54,18 +55,13 @@ export default function WishlistPage({ embedded = false }) {
 
   if (products.length === 0) {
     return (
-      <div className={embedded ? "py-8 text-center" : "min-h-screen bg-gray-50 flex items-center justify-center py-16"}>
-        <div className={embedded ? "max-w-xl mx-auto" : "text-center"}>
-          <h1 className="text-3xl font-bold mb-4">Your wishlist is empty</h1>
-          <p className="text-gray-600 mb-8">Browse products and tap the heart icon to save them here.</p>
-          <button
-            onClick={() => router.push('/')}
-            className="bg-red-600 text-white px-8 py-3 rounded-lg hover:bg-red-700 transition"
-          >
-            Continue Shopping
-          </button>
-        </div>
-      </div>
+      <EmptyState
+        title="Your wishlist is empty"
+        description="Browse products and tap the heart icon to save them here."
+        buttonText="Continue Shopping"
+        onButtonClick={() => router.push('/')}
+        className={embedded ? "py-8" : ""}
+      />
     );
   }
 

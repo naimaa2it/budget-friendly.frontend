@@ -40,6 +40,19 @@ Next steps / suggestions
 - (Recommended) Verify Firebase ID tokens on the backend for stronger trust between Firebase and your server.
 - Add server-side routes to manage admin-only actions (user management, settings) and protect them by role.
 
+
+### UI enhancements
+
+A new `EmptyState` component was added in `components/common/EmptyState.jsx` to consolidate empty‑page layouts (cart, wishlist, etc.).
+It now includes a small Lottie animation by default. To enable this you will need to install the animation package:
+
+```bash
+cd yourhaatfrontend
+npm install lottie-react
+``` 
+
+You can override the animation via `animationUrl` or `animationData` props when rendering the component.
+
 ---
 
 ### Category management updates

@@ -7,6 +7,7 @@ import QuantitySelector from '@/components/cart/QuantitySelector';
 import ProductCard from '@/components/Home/ProductCard';
 import Image from 'next/image';
 import { FaTrash } from 'react-icons/fa';
+import EmptyState from '@/components/common/EmptyState';
 
 export default function CartPage() {
   const router = useRouter();
@@ -51,18 +52,12 @@ export default function CartPage() {
 
   if (cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 py-16">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <h1 className="text-3xl font-bold mb-4">Your Cart is Empty</h1>
-          <p className="text-gray-600 mb-8">Start shopping to add items to your cart!</p>
-          <button
-            onClick={() => router.push('/')}
-            className="bg-red-600 text-white px-8 py-3 rounded-lg hover:bg-red-700 transition"
-          >
-            Continue Shopping
-          </button>
-        </div>
-      </div>
+      <EmptyState
+        title="Your Cart is Empty"
+        description="Start shopping to add items to your cart!"
+        buttonText="Continue Shopping"
+        onButtonClick={() => router.push('/')}
+      />
     );
   }
 

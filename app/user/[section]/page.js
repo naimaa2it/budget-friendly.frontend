@@ -6,6 +6,7 @@ import { useUser } from '@/components/context/UserContext';
 import { useParams, useRouter } from 'next/navigation';
 import AuthModal from '@/components/authentication/AuthModal';
 import WishlistPage from '@/components/cart/WishlistPage';
+import AddressManager from '@/components/user/AddressManager';
 
 export default function UserSectionPage() {
   const { user, setUser, refreshUser } = useUser();
@@ -13,7 +14,9 @@ export default function UserSectionPage() {
   const router = useRouter();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ name: '', mobile: '', dob: '' });
+  const [editForm, setEditForm] = useState({ name: '', email: '', mobile: '', dob: '' });
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
 
   const section = params.section || 'profile';
 
@@ -28,9 +31,12 @@ export default function UserSectionPage() {
       setTimeout(() => {
         setEditForm({
           name: user.name || '',
+          email: user.email || '',
           mobile: user.mobile || '',
           dob: user.dob || ''
         });
+        setPreviewImage(user.image || null);
+        setSelectedImageFile(null);
       }, 0);
     }
   }, [user, isEditing]);
@@ -51,9 +57,35 @@ export default function UserSectionPage() {
     router.push('/');
   };
 
-  const handleSaveProfile = () => {
-    // In a real app, you'd save to backend here
-    setIsEditing(false);
+  const handleSaveProfile = async () => {
+    const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    try {
+      const formData = new FormData();
+      formData.append('name', editForm.name);
+      formData.append('email', editForm.email);
+      formData.append('mobile', editForm.mobile);
+      formData.append('dob', editForm.dob);
+      if (selectedImageFile) {
+        formData.append('image', selectedImageFile);
+      }
+
+      const res = await fetch(`${API}/api/user/profile`, {
+        method: 'PUT',
+        credentials: 'include',
+        body: formData
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setIsEditing(false);
+        refreshUser();
+      } else {
+        console.error('Profile save error', data);
+        alert(data.error || 'Failed to save profile');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to save profile');
+    }
   };
 
   if (!user) {
@@ -69,11 +101,26 @@ export default function UserSectionPage() {
             {/* User Profile Section */}
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center gap-3 mb-2">
-                {user.image ? (
-                  <Image src={user.image} alt={user.name || 'User'} width={56} height={56} className="w-14 h-14 rounded-full object-cover" />
+                  {previewImage ? (
+                  <Image src={previewImage} alt={user.name || 'User'} width={56} height={56} className="w-14 h-14 rounded-full object-cover" />
                 ) : (
                   <div className="w-14 h-14 rounded-full bg-orange-400 flex items-center justify-center text-white text-xl font-semibold">
                     {(user.name || user.email || 'U').charAt(0).toUpperCase()}
+                  </div>
+                )}
+                {isEditing && (
+                  <div className="mt-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const f = e.target.files && e.target.files[0];
+                        if (f) {
+                          setSelectedImageFile(f);
+                          setPreviewImage(URL.createObjectURL(f));
+                        }
+                      }}
+                    />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
@@ -257,7 +304,16 @@ export default function UserSectionPage() {
 
                   <div className="border-t border-gray-100 pt-6">
                     <label className="block text-sm text-gray-600 mb-2">Mail Address</label>
-                    <p className="text-lg">{user.email}</p>
+                    {isEditing ? (
+                      <input
+                        type="email"
+                        value={editForm.email}
+                        onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                      />
+                    ) : (
+                      <p className="text-lg">{user.email}</p>
+                    )}
                   </div>
 
                   <div className="border-t border-gray-100 pt-6">
@@ -312,8 +368,7 @@ export default function UserSectionPage() {
 
             {section === 'address' && (
               <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-2xl font-semibold mb-4">My Address</h2>
-                <p className="text-gray-600">No addresses saved yet.</p>
+                <AddressManager />
               </div>
             )}
 

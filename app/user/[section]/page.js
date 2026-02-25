@@ -116,6 +116,15 @@ export default function UserSectionPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <div className=" mx-auto ml-40 -mb-5">
+        {/* always-visible back button */}
+        <button
+          onClick={() => router.back()}
+          className=" px-4  mt-2 text-gray-500 rounded hover:text-gray-900"
+        >
+          ← Back
+        </button>
+      </div>
       <div className="max-w-7xl mx-auto py-8 px-4">
         <div className="flex gap-6">
           {/* Left Sidebar */}
@@ -266,6 +275,7 @@ export default function UserSectionPage() {
 
           {/* Main Content Area */}
           <div className="flex-1">
+            
             {section === 'profile' && (
               <div className="bg-white rounded-lg shadow">
                 <div className="p-6 border-b border-gray-200 flex items-center justify-between">

@@ -164,7 +164,7 @@ export default function AddressManager() {
           onClick={() => openForm(null)}
           className="px-4 py-2 bg-red-500 text-white rounded hover:bg-green-600"
         >
-          Add Address
+          Add New Address
         </button>
       </div>
       {/* inline form */}
@@ -289,7 +289,9 @@ export default function AddressManager() {
       {loading && <p>Loading...</p>}
       {!loading && addresses.length === 0 && <p className="text-gray-600">No addresses saved yet.</p>}
       {!loading && addresses.length > 0 && (
-        <div className="space-y-4">
+        <>
+          <p className="text-sm text-gray-500 mb-2">Total addresses: {addresses.length}</p>
+          <div className="space-y-4">
           {addresses.map(addr => (
             <div key={addr._id} className="p-4 border rounded-lg bg-white">
               <div className="flex justify-between">
@@ -308,7 +310,7 @@ export default function AddressManager() {
             </div>
           ))}
         </div>
-      )}
+      </>)}
     </div>
   );
 }

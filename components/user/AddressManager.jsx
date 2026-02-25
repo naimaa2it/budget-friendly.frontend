@@ -164,14 +164,14 @@ export default function AddressManager() {
           onClick={() => openForm(null)}
           className="px-4 py-2 bg-red-500 text-white rounded hover:bg-green-600"
         >
-          Add New Address
+          Add Address
         </button>
       </div>
       {/* inline form */}
       {formOpen && (
         <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg mb-6">
           <h3 className="text-2xl font-semibold mb-6 text-center">
-            {editingId ? 'Edit Address' : 'Add Address'}
+            {editingId ? 'Edit Address' : 'Add New Address'}
           </h3>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -204,6 +204,7 @@ export default function CategoryPageClient({ slug }) {
                 product={p}
                 imageWidth={360}
                 imageHeight={160}
+                showActionsOnHover={false} // always show add/cart/details/wishlist icons
               />
             ))}
           </div>

@@ -12,6 +12,7 @@ export default function ProductEdit({ productId }) {
   const [product, setProduct] = useState({
     title: '',
     description: '',
+    detailedDescription: '',
     category: '',
     department: '',
     tags: [],
@@ -28,7 +29,7 @@ export default function ProductEdit({ productId }) {
     guidelines: '',
     monthlySold: undefined,
     rewardPoints: undefined,
-    keyAttributes: [],
+    keyAttributes: [], // { level: '', key: '', value: '' }
     customization: { customizable: false, options: [] },
     warranty: { period: '', details: '', provider: '' },
     returnPolicy: { days: undefined, refundable: true, details: '' },
@@ -406,6 +407,18 @@ export default function ProductEdit({ productId }) {
                     onChange={e => setProduct(p => ({ ...p, description: e.target.value }))}
                     className={`${inputClass} h-32`}
                     placeholder="Detailed product description"
+                  />
+                </div>
+
+                {/* Detailed Description */}
+                <div>
+                  <label className={labelClass}>Detailed Description</label>
+                  <p className="text-sm text-gray-600 mb-2">Rich detailed description for the product details page</p>
+                  <textarea
+                    value={product.detailedDescription || ''}
+                    onChange={e => setProduct(p => ({ ...p, detailedDescription: e.target.value }))}
+                    className={`${inputClass} h-48`}
+                    placeholder="Enter comprehensive product details, features, specifications, etc..."
                   />
                 </div>
 
@@ -834,7 +847,7 @@ export default function ProductEdit({ productId }) {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Inventory</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Inventory(Available piece in stock)</label>
                           <input
                             type="number"
                             value={v.inventory ?? ''}
@@ -865,22 +878,33 @@ export default function ProductEdit({ productId }) {
               
               {/* Key Attributes */}
               <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
-                <label className={labelClass}>Key Attributes / Highlights</label>
-                <p className="text-sm text-gray-600 mb-4">Short bullet points highlighting key features</p>
+                <label className={labelClass}>Key Attributes</label>
+                <p className="text-sm text-gray-600 mb-4">Add product specifications and features (e.g., Bluetooth V5.3, Water Resistance, etc.)</p>
                 
                 <div className="space-y-3">
                   {(product.keyAttributes || []).map((a, i) => (
-                    <div key={i} className="flex gap-3 items-center">
+                    <div key={i} className="flex gap-3 items-center bg-white p-3 rounded-lg border border-gray-200">
                       <input
                         type="text"
-                        value={a.label || ''}
+                        value={a.level || ''}
                         onChange={e => setProduct(p => {
                           const arr = [...(p.keyAttributes || [])];
-                          arr[i] = { ...(arr[i] || {}), label: e.target.value };
+                          arr[i] = { ...(arr[i] || {}), level: e.target.value };
                           return { ...p, keyAttributes: arr };
                         })}
-                        placeholder="Label (e.g., Weight)"
-                        className="w-40 px-4 py-2 border border-gray-300 rounded-lg"
+                        placeholder="Level (e.g., Connectivity)"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                      />
+                      <input
+                        type="text"
+                        value={a.key || ''}
+                        onChange={e => setProduct(p => {
+                          const arr = [...(p.keyAttributes || [])];
+                          arr[i] = { ...(arr[i] || {}), key: e.target.value };
+                          return { ...p, keyAttributes: arr };
+                        })}
+                        placeholder="Key (e.g., Bluetooth)"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
                       />
                       <input
                         type="text"
@@ -890,13 +914,13 @@ export default function ProductEdit({ productId }) {
                           arr[i] = { ...(arr[i] || {}), value: e.target.value };
                           return { ...p, keyAttributes: arr };
                         })}
-                        placeholder="Value (e.g., 200g)"
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
+                        placeholder="Value (e.g., V5.3)"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
                       />
                       <button
                         type="button"
                         onClick={() => setProduct(p => ({ ...p, keyAttributes: p.keyAttributes.filter((_, idx) => idx !== i) }))}
-                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                        className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm"
                       >
                         Remove
                       </button>
@@ -904,10 +928,10 @@ export default function ProductEdit({ productId }) {
                   ))}
                   <button
                     type="button"
-                    onClick={() => setProduct(p => ({ ...p, keyAttributes: [...(p.keyAttributes || []), { label: '', value: '' }] }))}
+                    onClick={() => setProduct(p => ({ ...p, keyAttributes: [...(p.keyAttributes || []), { level: '', key: '', value: '' }] }))}
                     className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
                   >
-                    + Add Attribute
+                    + Add Key Attribute
                   </button>
                 </div>
               </div>

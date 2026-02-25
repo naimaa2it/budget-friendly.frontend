@@ -137,7 +137,7 @@ export default function ProductsList() {
                   </td>
                   <td className="py-3">{p.price ? `₹${p.price}` : p.variants?.[0]?.price ? `₹${p.variants[0].price}` : '-'}</td>
                   <td className="py-3">{p.inventory ?? (p.variants?.reduce((s,v)=>s+ (v.inventory||0),0) || 0)}</td>
-                  <td className="py-3"><span className={`px-2 py-1 text-xs rounded ${p.status==='published' ? 'bg-green-50 text-green-700' : p.status==='draft' ? 'bg-yellow-50 text-yellow-700' : 'bg-gray-50 text-gray-700'}`}>{p.status}</span></td>
+                  <td className="py-3"><span className={`px-2 py-1 text-xs rounded ${p.status==='published' ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-700'}`}>{p.status}</span></td>
                   <td className="py-3">
                     <div className="flex gap-2">
                       <Link className="px-2 py-1 border rounded text-sm" href={`/dashabord/products/${p._id}`}>Edit</Link>

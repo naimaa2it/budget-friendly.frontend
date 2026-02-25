@@ -421,7 +421,7 @@ export default function ProductCreate() {
 
                 {/* Compare at Price */}
                 <div>
-                  <label className={labelClass}>Compare at Price (Optional)</label>
+                  <label className={labelClass}>Offer Price (Optional)</label>
                   <input
                     type="number"
                     value={product.compareAtPrice ?? ''}

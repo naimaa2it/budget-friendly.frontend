@@ -29,7 +29,7 @@ export default function ProductEdit({ productId }) {
     guidelines: '',
     monthlySold: undefined,
     rewardPoints: undefined,
-    keyAttributes: [], // { level: '', key: '', value: '' }
+    keyAttributes: [], // { level: '', attributes: [{ key: '', value: '' }] }
     customization: { customizable: false, options: [] },
     warranty: { period: '', details: '', provider: '' },
     returnPolicy: { days: undefined, refundable: true, details: '' },
@@ -879,59 +879,104 @@ export default function ProductEdit({ productId }) {
               {/* Key Attributes */}
               <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
                 <label className={labelClass}>Key Attributes</label>
-                <p className="text-sm text-gray-600 mb-4">Add product specifications and features (e.g., Bluetooth V5.3, Water Resistance, etc.)</p>
+                <p className="text-sm text-gray-600 mb-4">Add product specifications grouped by levels (e.g., Connectivity, Display, etc.)</p>
                 
-                <div className="space-y-3">
-                  {(product.keyAttributes || []).map((a, i) => (
-                    <div key={i} className="flex gap-3 items-center bg-white p-3 rounded-lg border border-gray-200">
-                      <input
-                        type="text"
-                        value={a.level || ''}
-                        onChange={e => setProduct(p => {
-                          const arr = [...(p.keyAttributes || [])];
-                          arr[i] = { ...(arr[i] || {}), level: e.target.value };
-                          return { ...p, keyAttributes: arr };
-                        })}
-                        placeholder="Level (e.g., Connectivity)"
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                      />
-                      <input
-                        type="text"
-                        value={a.key || ''}
-                        onChange={e => setProduct(p => {
-                          const arr = [...(p.keyAttributes || [])];
-                          arr[i] = { ...(arr[i] || {}), key: e.target.value };
-                          return { ...p, keyAttributes: arr };
-                        })}
-                        placeholder="Key (e.g., Bluetooth)"
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                      />
-                      <input
-                        type="text"
-                        value={a.value || ''}
-                        onChange={e => setProduct(p => {
-                          const arr = [...(p.keyAttributes || [])];
-                          arr[i] = { ...(arr[i] || {}), value: e.target.value };
-                          return { ...p, keyAttributes: arr };
-                        })}
-                        placeholder="Value (e.g., V5.3)"
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setProduct(p => ({ ...p, keyAttributes: p.keyAttributes.filter((_, idx) => idx !== i) }))}
-                        className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm"
-                      >
-                        Remove
-                      </button>
+                <div className="space-y-6">
+                  {(product.keyAttributes || []).map((levelGroup, levelIdx) => (
+                    <div key={levelIdx} className="bg-white p-4 rounded-lg border-2 border-gray-300">
+                      {/* Level Header */}
+                      <div className="flex gap-3 items-center mb-3">
+                        <input
+                          type="text"
+                          value={levelGroup.level || ''}
+                          onChange={e => setProduct(p => {
+                            const arr = [...(p.keyAttributes || [])];
+                            arr[levelIdx] = { ...(arr[levelIdx] || {}), level: e.target.value, attributes: arr[levelIdx]?.attributes || [] };
+                            return { ...p, keyAttributes: arr };
+                          })}
+                          placeholder="Level (e.g., General, Connectivity, Display)"
+                          className="flex-1 px-4 py-2 border-2 border-indigo-400 rounded-lg font-semibold text-indigo-700 text-base"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setProduct(p => ({
+                            ...p,
+                            keyAttributes: p.keyAttributes.filter((_, idx) => idx !== levelIdx)
+                          }))}
+                          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium"
+                        >
+                          Remove Level
+                        </button>
+                      </div>
+
+                      {/* Attributes under this level */}
+                      <div className="space-y-2 ml-4">
+                        {(levelGroup.attributes || []).map((attr, attrIdx) => (
+                          <div key={attrIdx} className="flex gap-2 items-center">
+                            <input
+                              type="text"
+                              value={attr.key || ''}
+                              onChange={e => setProduct(p => {
+                                const arr = [...(p.keyAttributes || [])];
+                                const attrs = [...(arr[levelIdx]?.attributes || [])];
+                                attrs[attrIdx] = { ...(attrs[attrIdx] || {}), key: e.target.value };
+                                arr[levelIdx] = { ...arr[levelIdx], attributes: attrs };
+                                return { ...p, keyAttributes: arr };
+                              })}
+                              placeholder="Key (e.g., Brand, Bluetooth)"
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                            />
+                            <input
+                              type="text"
+                              value={attr.value || ''}
+                              onChange={e => setProduct(p => {
+                                const arr = [...(p.keyAttributes || [])];
+                                const attrs = [...(arr[levelIdx]?.attributes || [])];
+                                attrs[attrIdx] = { ...(attrs[attrIdx] || {}), value: e.target.value };
+                                arr[levelIdx] = { ...arr[levelIdx], attributes: attrs };
+                                return { ...p, keyAttributes: arr };
+                              })}
+                              placeholder="Value (e.g., Samsung, V5.3)"
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setProduct(p => {
+                                const arr = [...(p.keyAttributes || [])];
+                                const attrs = (arr[levelIdx]?.attributes || []).filter((_, idx) => idx !== attrIdx);
+                                arr[levelIdx] = { ...arr[levelIdx], attributes: attrs };
+                                return { ...p, keyAttributes: arr };
+                              })}
+                              className="px-3 py-2 bg-red-400 text-white rounded-lg hover:bg-red-500 transition-colors text-sm"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => setProduct(p => {
+                            const arr = [...(p.keyAttributes || [])];
+                            const attrs = [...(arr[levelIdx]?.attributes || []), { key: '', value: '' }];
+                            arr[levelIdx] = { ...arr[levelIdx], attributes: attrs };
+                            return { ...p, keyAttributes: arr };
+                          })}
+                          className="px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors text-sm"
+                        >
+                          + Add Attribute
+                        </button>
+                      </div>
                     </div>
                   ))}
                   <button
                     type="button"
-                    onClick={() => setProduct(p => ({ ...p, keyAttributes: [...(p.keyAttributes || []), { level: '', key: '', value: '' }] }))}
-                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                    onClick={() => setProduct(p => ({ 
+                      ...p, 
+                      keyAttributes: [...(p.keyAttributes || []), { level: '', attributes: [] }] 
+                    }))}
+                    className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors font-medium"
                   >
-                    + Add Key Attribute
+                    + Add New Level
                   </button>
                 </div>
               </div>

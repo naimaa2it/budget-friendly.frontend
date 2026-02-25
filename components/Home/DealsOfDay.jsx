@@ -3,6 +3,10 @@
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { FaHeart, FaShuffle, FaChevronUp, FaChevronDown } from 'react-icons/fa6';
+import { useRouter } from 'next/navigation';
+import { useCart } from '@/components/context/CartContext';
+import { useUser } from '@/components/context/UserContext';
+import AuthModal from '../authentication/AuthModal';
 
 export default function DealsOfDay() {
   const [selectedImage, setSelectedImage] = useState(0);
@@ -17,6 +21,11 @@ export default function DealsOfDay() {
   const [productImages, setProductImages] = useState(['/assets/placeholder.svg']);
   const [mainProduct, setMainProduct] = useState(null);
   const [bestsellerProducts, setBestsellerProducts] = useState([]);
+  const router = useRouter();
+  const { addToCart, addToWishlist } = useCart();
+  const { user } = useUser();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [pendingWishlist, setPendingWishlist] = useState(null);
 
   // fetch deals-of-day product (pick first) and bestseller list
   useEffect(() => {
@@ -80,6 +89,14 @@ export default function DealsOfDay() {
 
     return () => clearInterval(timer);
   }, []);
+  
+  // handle pending wishlist after login
+  useEffect(() => {
+    if (user && pendingWishlist) {
+      addToWishlist(pendingWishlist);
+      setPendingWishlist(null);
+    }
+  }, [user, pendingWishlist, addToWishlist]);
 
   const handleSidebarScroll = (direction) => {
     const itemsToShow = 4;
@@ -250,10 +267,25 @@ export default function DealsOfDay() {
 
                 {/* Action Buttons */}
                 <div className="flex gap-3 mb-4">
-                  <button className="flex-1 bg-gray-900 text-white py-3 rounded-lg font-semibold hover:bg-black transition">
+                  <button
+                    onClick={() => {
+                      if (mainProduct) addToCart(mainProduct, 1);
+                    }}
+                    className="flex-1 bg-gray-900 text-white py-3 rounded-lg font-semibold hover:bg-red-600 transition"
+                  >
                     Add To Cart
                   </button>
-                  <button className="w-12 h-12 border-2 border-gray-300 rounded-lg flex items-center justify-center hover:border-red-500 hover:text-red-500 transition">
+                  <button
+                    onClick={() => {
+                      if (!user) {
+                        setPendingWishlist(mainProduct);
+                        setShowAuthModal(true);
+                      } else if (mainProduct) {
+                        addToWishlist(mainProduct);
+                      }
+                    }}
+                    className="w-12 h-12 border-2 border-gray-300 rounded-lg flex items-center justify-center hover:border-red-500 hover:text-red-500 transition"
+                  >
                     <FaHeart />
                   </button>
                   <button className="w-12 h-12 border-2 border-gray-300 rounded-lg flex items-center justify-center hover:border-red-500 hover:text-red-500 transition">
@@ -292,7 +324,11 @@ export default function DealsOfDay() {
 
             <div className="bg-white border border-gray-200 rounded-b-lg px-3 py-1 space-y-2 flex-1">
               {visibleBestsellers.map((product) => (
-                <div key={product.id} className="flex gap-4 pb-4 border-b border-gray-200 last:border-b-0">
+                <div
+                  key={product.id}
+                  onClick={() => router.push(`/product/${product.id}`)}
+                  className="flex gap-4 pb-4 border-b border-gray-200 last:border-b-0 cursor-pointer hover:bg-gray-50 transition"
+                >
                   <Image
                     src={product.image}
                     alt={product.name}

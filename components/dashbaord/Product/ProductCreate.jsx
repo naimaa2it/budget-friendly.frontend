@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/components/context/UserContext';
 
@@ -37,7 +37,7 @@ export default function ProductCreate() {
     reviews: [],
     averageRating: 0,
     reviewCount: 0,
-    status: 'published',
+    status: 'draft',
     specs: {},
     seo: { title: '', description: '', keywords: '' },
     featured: false,
@@ -50,6 +50,8 @@ export default function ProductCreate() {
 
   const [saving, setSaving] = useState(false);
   const [newReview, setNewReview] = useState({ authorName: '', rating: '', title: '', body: '' });
+  const [draftId, setDraftId] = useState(null); // Track backend draft ID
+  const [lastSaved, setLastSaved] = useState(null);
 
   // helper strings for comma‑separated inputs (tags/sizes) so user can type freely
   const [tagStr, setTagStr] = useState('');
@@ -72,6 +74,41 @@ export default function ProductCreate() {
 
   useEffect(() => { if (!user) refreshUser(); }, [user, refreshUser]);
 
+  // Check for existing draft on mount
+  useEffect(() => {
+    const checkForDraft = async () => {
+      try {
+        // Check backend for latest draft
+        const resp = await fetch(`${API}/api/admin/products?limit=1&status=draft`, { 
+          credentials: 'include' 
+        });
+        const body = await resp.json();
+        
+        if (resp.ok && body.items && body.items.length > 0) {
+          const latestDraft = body.items[0];
+          // Only restore if it's recent (within last 24 hours)
+          const draftAge = Date.now() - new Date(latestDraft.updatedAt).getTime();
+          const twentyFourHours = 24 * 60 * 60 * 1000;
+          
+          if (draftAge < twentyFourHours) {
+            const shouldRestore = confirm(`Found an unsaved draft from ${new Date(latestDraft.updatedAt).toLocaleString()}. Would you like to continue editing it?`);
+            if (shouldRestore) {
+              setProduct(latestDraft);
+              setDraftId(latestDraft._id);
+              setTagStr((latestDraft.tags || []).join(', '));
+              setSizeStr((latestDraft.sizes || []).join(', '));
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error checking for drafts:', err);
+      }
+    };
+    
+    checkForDraft();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // synchronize string states when product loads/changes
   useEffect(() => {
     setTagStr((product.tags || []).join(', '));
@@ -90,6 +127,99 @@ export default function ProductCreate() {
       setCategories(b.categories || []);
     }).catch(() => setCategories([]));
   }, [API]);
+
+  // Auto-save draft to backend
+  const saveDraftToBackend = useCallback(async () => {
+    if (!product.title) return; // Need at least a title to save
+    
+    try {
+      const finalTags = tagStr.split(',').map(s=>s.trim()).filter(Boolean);
+      const finalSizes = sizeStr.split(',').map(s=>s.trim()).filter(Boolean);
+      const payload = { 
+        ...product, 
+        tags: finalTags,
+        sizes: finalSizes,
+        status: 'draft', // Always save as draft for auto-save
+        specs: { ...(product.specs || {}), sizes: finalSizes || product.sizes || product.specs?.sizes || [] } 
+      };
+
+      let resp, body;
+      if (draftId) {
+        // Update existing draft
+        resp = await fetch(`${API}/api/admin/products/${draftId}`, { 
+          method: 'PUT', 
+          headers: { 'Content-Type': 'application/json' }, 
+          credentials: 'include', 
+          body: JSON.stringify(payload) 
+        });
+      } else {
+        // Create new draft
+        resp = await fetch(`${API}/api/admin/products`, { 
+          method: 'POST', 
+          headers: { 'Content-Type': 'application/json' }, 
+          credentials: 'include', 
+          body: JSON.stringify(payload) 
+        });
+      }
+      
+      body = await resp.json();
+      if (!resp.ok) throw new Error(body.error || 'Save draft failed');
+      
+      // Store draft ID if this was a new draft
+      if (!draftId && body.product?._id) {
+        setDraftId(body.product._id);
+      }
+      
+      setLastSaved(new Date());
+      console.log('Draft auto-saved at', new Date().toLocaleTimeString());
+      return true;
+    } catch (err) {
+      console.error('Failed to save draft:', err);
+      return false;
+    }
+  }, [product, tagStr, sizeStr, draftId, API]);
+
+  // Auto-save every 30 seconds
+  useEffect(() => {
+    if (!product.title) return; // Don't save empty product
+    
+    const timer = setInterval(() => {
+      saveDraftToBackend();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(timer);
+  }, [product.title, saveDraftToBackend]);
+
+  // Save before page unload (back, close tab, power off)
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (product.title) {
+        // Use sendBeacon for reliable saving
+        const finalTags = tagStr.split(',').map(s=>s.trim()).filter(Boolean);
+        const finalSizes = sizeStr.split(',').map(s=>s.trim()).filter(Boolean);
+        const payload = { 
+          ...product, 
+          tags: finalTags,
+          sizes: finalSizes,
+          status: 'draft',
+          specs: { ...(product.specs || {}), sizes: finalSizes || product.sizes || product.specs?.sizes || [] } 
+        };
+
+        const url = draftId 
+          ? `${API}/api/admin/products/${draftId}`
+          : `${API}/api/admin/products`;
+        
+        const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+        
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon(url, blob);
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [product, tagStr, sizeStr, draftId, API]);
 
   // Department autocomplete handler
   const handleDepartmentChange = (value) => {
@@ -185,15 +315,37 @@ export default function ProductCreate() {
       // ensure tags/sizes reflect current string inputs
       const finalTags = tagStr.split(',').map(s=>s.trim()).filter(Boolean);
       const finalSizes = sizeStr.split(',').map(s=>s.trim()).filter(Boolean);
-    const payload = { 
-      ...product, 
-      tags: finalTags,
-      sizes: finalSizes,
-      specs: { ...(product.specs || {}), sizes: finalSizes || product.sizes || product.specs?.sizes || [] } 
-    };
-      const resp = await fetch(`${API}/api/admin/products`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) });
-      const body = await resp.json();
+      const payload = { 
+        ...product, 
+        tags: finalTags,
+        sizes: finalSizes,
+        specs: { ...(product.specs || {}), sizes: finalSizes || product.sizes || product.specs?.sizes || [] } 
+      };
+      
+      let resp, body;
+      if (draftId) {
+        // Update existing draft instead of creating new
+        resp = await fetch(`${API}/api/admin/products/${draftId}`, { 
+          method: 'PUT', 
+          headers: { 'Content-Type': 'application/json' }, 
+          credentials: 'include', 
+          body: JSON.stringify(payload) 
+        });
+      } else {
+        // Create new product
+        resp = await fetch(`${API}/api/admin/products`, { 
+          method: 'POST', 
+          headers: { 'Content-Type': 'application/json' }, 
+          credentials: 'include', 
+          body: JSON.stringify(payload) 
+        });
+      }
+      
+      body = await resp.json();
       if (!resp.ok) throw new Error(body.error || 'Save failed');
+      
+      // Clear draft ID and navigate to products list
+      setDraftId(null);
       router.push('/dashabord/products');
     } catch (err) {
       alert(err.message || 'Save failed');
@@ -222,6 +374,11 @@ export default function ProductCreate() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Create New Product</h1>
               <p className="text-gray-600 mt-1">Add a new product to your catalog</p>
+              {lastSaved && (
+                <p className="text-sm text-green-600 mt-1">
+                  ✓ Auto-saved at {lastSaved.toLocaleTimeString()}
+                </p>
+              )}
             </div>
             <button 
               onClick={() => router.push('/dashabord/products')}
@@ -367,6 +524,7 @@ export default function ProductCreate() {
                     onChange={e => setProduct(p => ({ ...p, status: e.target.value }))}
                     className={inputClass}
                   >
+                    <option value="draft">Draft</option>
                     <option value="published">Published</option>
                     <option value="archived">Archived</option>
                   </select>

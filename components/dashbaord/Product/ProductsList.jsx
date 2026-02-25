@@ -65,6 +65,11 @@ export default function ProductsList() {
   useEffect(() => { fetchItems(); }, [fetchItems]);
 
   const handleDelete = async (id, force = false) => {
+    // only admins are allowed to delete products; moderators may archive via backend if needed
+    if (user?.role !== 'admin') {
+      return alert('Only admin users can delete products');
+    }
+
     const msg = force ? 'Permanently delete this product? This cannot be undone.' : 'Archive this product?';
     if (!confirm(msg)) return;
     try {
@@ -150,7 +155,9 @@ export default function ProductsList() {
                   <td className="py-3">
                     <div className="flex gap-2">
                       <Link className="px-2 py-1 border rounded text-sm" href={`/dashabord/products/${p._id}`}>Edit</Link>
-                      <button className="px-2 py-1 border rounded text-sm text-white bg-red-600 hover:bg-red-700" onClick={() => handleDelete(p._id, true)}>Delete</button>
+                      {user?.role === 'admin' && (
+                        <button className="px-2 py-1 border rounded text-sm text-white bg-red-600 hover:bg-red-700" onClick={() => handleDelete(p._id, true)}>Delete</button>
+                      )}
                     </div>
                   </td>
                 </tr>

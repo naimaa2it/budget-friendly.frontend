@@ -17,6 +17,8 @@ export default function UserSectionPage() {
   const [editForm, setEditForm] = useState({ name: '', email: '', mobile: '', dob: '' });
   const [selectedImageFile, setSelectedImageFile] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
+  const [removeImage, setRemoveImage] = useState(false);
+  const [gravatarUrl, setGravatarUrl] = useState(null);
 
   const section = params.section || 'profile';
 
@@ -25,6 +27,22 @@ export default function UserSectionPage() {
       setTimeout(() => setShowAuthModal(true), 0);
     }
   }, [user]);
+
+  // compute gravatar when user email changes
+  useEffect(() => {
+    if (user && user.email) {
+      const computeHash = async (email) => {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(email.trim().toLowerCase());
+        const hashBuffer = await crypto.subtle.digest('MD5', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      };
+      computeHash(user.email).then(h => {
+        setGravatarUrl(`https://www.gravatar.com/avatar/${h}?d=identicon`);
+      });
+    }
+  }, [user && user.email]);
 
   useEffect(() => {
     if (user && !isEditing) {
@@ -35,11 +53,12 @@ export default function UserSectionPage() {
           mobile: user.mobile || '',
           dob: user.dob || ''
         });
-        setPreviewImage(user.image || null);
+        setPreviewImage(user.image || gravatarUrl || null);
         setSelectedImageFile(null);
+        setRemoveImage(false);
       }, 0);
     }
-  }, [user, isEditing]);
+  }, [user, isEditing, gravatarUrl]);
 
   const handleSectionClick = (sec) => {
     router.push(`/user/${sec}`);
@@ -67,6 +86,9 @@ export default function UserSectionPage() {
       formData.append('dob', editForm.dob);
       if (selectedImageFile) {
         formData.append('image', selectedImageFile);
+      }
+      if (removeImage && !selectedImageFile) {
+        formData.append('removeImage', '1');
       }
 
       const res = await fetch(`${API}/api/user/profile`, {
@@ -106,21 +128,6 @@ export default function UserSectionPage() {
                 ) : (
                   <div className="w-14 h-14 rounded-full bg-orange-400 flex items-center justify-center text-white text-xl font-semibold">
                     {(user.name || user.email || 'U').charAt(0).toUpperCase()}
-                  </div>
-                )}
-                {isEditing && (
-                  <div className="mt-2">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const f = e.target.files && e.target.files[0];
-                        if (f) {
-                          setSelectedImageFile(f);
-                          setPreviewImage(URL.createObjectURL(f));
-                        }
-                      }}
-                    />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
@@ -288,6 +295,57 @@ export default function UserSectionPage() {
                   )}
                 </div>
                 <div className="p-6 space-y-6">
+                  {/* avatar + upload row shown only while editing */}
+                  {isEditing && (
+                    <div className="flex items-center gap-4">
+                      <div className="w-20 h-20">
+                        {previewImage ? (
+                          <Image
+                            src={previewImage}
+                            alt={user.name || 'User'}
+                            width={80}
+                            height={80}
+                            className="w-20 h-20 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-20 h-20 rounded-full bg-orange-400 flex items-center justify-center text-white text-2xl font-semibold">
+                            {(user.name || user.email || 'U').charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="cursor-pointer text-sm text-blue-600 hover:underline">
+                          Select image
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const f = e.target.files && e.target.files[0];
+                              if (f) {
+                                setSelectedImageFile(f);
+                                setPreviewImage(URL.createObjectURL(f));
+                                setRemoveImage(false);
+                              }
+                            }}
+                          />
+                        </label>
+                        {(previewImage && !selectedImageFile) && (
+                          <button
+                            type="button"
+                            className="text-sm text-red-500 hover:underline"
+                            onClick={() => {
+                              setRemoveImage(true);
+                              setPreviewImage(gravatarUrl);
+                              setSelectedImageFile(null);
+                            }}
+                          >
+                            Remove image
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
                   <div>
                     <label className="block text-sm text-gray-600 mb-2">Name</label>
                     {isEditing ? (

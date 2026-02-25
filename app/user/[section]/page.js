@@ -273,7 +273,7 @@ export default function UserSectionPage() {
                   {!isEditing ? (
                     <button
                       onClick={() => setIsEditing(true)}
-                      className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                      className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
                     >
                       Edit
                     </button>
@@ -281,13 +281,13 @@ export default function UserSectionPage() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => setIsEditing(false)}
-                        className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                        className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={handleSaveProfile}
-                        className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                        className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
                       >
                         Save
                       </button>

@@ -250,9 +250,13 @@ export default function AuthModal({ isOpen, onClose }) {
       <div className="absolute inset-0 bg-black/40" onClick={onClose}></div>
       <div className="bg-white rounded-lg p-6 relative z-10 w-full max-w-md">
         <button onClick={onClose} className="absolute top-3 right-3 text-gray-600 hover:text-gray-900">✕</button>
-        <div className="flex justify-center items-center gap-2 mb-4">
-          <h2 className="text-2xl font-semibold text-gray-900 mt-3">Continue with</h2>
-          <WebsiteLogo />
+        <div className="flex flex-col items-center gap-2 mb-4">
+          <p className="text-lg font-medium text-gray-700">Hello Trendsetter!</p>
+          <p className="text-sm text-gray-500 italic">"Style it. Power it. Own it."</p>
+          <div className="flex justify-center items-center gap-2">
+            <h2 className="text-2xl font-semibold text-gray-900">Continue with</h2>
+            <WebsiteLogo />
+          </div>
         </div>
 
 

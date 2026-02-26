@@ -204,7 +204,7 @@ export default function Navbar() {
 
   return (
     <header className="relative border-b border-black/6  bg-[#fffaf6] sticky top-0 z-50">
-      <div className="flex items-center gap-5 justify-between max-w-[1200px] mx-auto py-2 px-1 bg-transparent">
+      <div className="flex items-center gap-5 justify-between max-w-[1200px] mx-auto py-1.5 md:py-2 px-1 bg-transparent">
           <WebsiteLogo />
 
         {/* navigation links removed - keeping search centered */}
@@ -212,7 +212,7 @@ export default function Navbar() {
           <form className="hidden md:flex w-full max-w-[400px] flex items-center" role="search" onSubmit={(e) => e.preventDefault()} aria-label="Search form">
             <div className="relative w-full">
               <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[#ff0707] pointer-events-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input className="pl-9 px-3 py-1 rounded-full border border-black/10 w-full outline-none" type="search" placeholder="Search products..." aria-label="Search" />
+              <input className="pl-9 px-3 py-1 rounded-full border border-black/10 w-full outline-none placeholder:text-[14px] placeholder:text-gray-500" type="search" placeholder="Find your favorite product..." aria-label="Search" />
             </div>
           </form>
         </div>
@@ -284,9 +284,9 @@ export default function Navbar() {
             <div className="relative w-full">
               <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[#fc0707] pointer-events-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input
-                className="pl-9 px-3 py-1 rounded-full border border-black/10 w-full outline-none"
+                className="pl-9 px-3 py-1 rounded-full border border-black/10 w-full outline-none placeholder:text-[12px] placeholder:text-gray-500"
                 type="search"
-                placeholder="Search products..."
+                placeholder="Find your favorite product..."
                 aria-label="Search"
                 autoFocus
               />

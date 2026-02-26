@@ -119,7 +119,7 @@ export default function ShopByCategory() {
           ) : rendered.length === 0 ? (
             <div className="text-gray-500 py-8 w-full text-center">No categories available</div>
           ) : (
-            <div className='grid grid-cols-4 gap-2' style={{ width: 'max-content' }}>
+            <div className='grid grid-cols-4 gap-1' style={{ width: 'max-content' }}>
               {rendered.map((cat) => (
                 <div 
                   key={cat._id} 

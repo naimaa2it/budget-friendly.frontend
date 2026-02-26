@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from "next/link";
 import WebsiteLogo from "../shared/WebsiteLogo";
+import CategorySidebar from "../Home/CategorySidebar";
 import AuthModal from "../authentication/AuthModal";
 
 // Simple profile menu that uses UserContext so UI updates immediately on auth changes
@@ -174,6 +175,7 @@ export default function Navbar() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [redirectWishlistOnLogin, setRedirectWishlistOnLogin] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false); // mobile-only 
+  const [catSidebarOpen, setCatSidebarOpen] = useState(false);
   const mobileSearchRef = useRef(null);
   const searchIconRef = useRef(null);
 
@@ -203,9 +205,25 @@ export default function Navbar() {
 
 
   return (
-    <header className="relative bg-[#fffaf6]">
+    <header className="relative bg-[#fffaf6] z-50">
       <div className="flex items-center gap-5 justify-between max-w-[1200px] mx-auto py-1.5 md:py-2 px-1 bg-transparent">
-          <WebsiteLogo />
+          <div className="flex items-center gap-2">
+            {/* hamburger menu */}
+            <button
+              onClick={() => setCatSidebarOpen((v) => !v)}
+              onMouseEnter={() => setCatSidebarOpen(true)}
+              className="p-2 text-[#202020] hover:text-[#ac0ad1]"
+              aria-label="Categories"
+              title="Categories"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="stroke-current">
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+            <WebsiteLogo />
+          </div>
 
         {/* navigation links removed - keeping search centered */}
         <div className="flex-1 flex justify-center">
@@ -269,6 +287,19 @@ export default function Navbar() {
           </div>
         </div>
       </div>
+
+      {/* category sidebar overlay */}
+      {catSidebarOpen && (
+        <div
+          className="fixed top-[56px] left-0 right-0 bottom-0 z-40 flex"
+          onMouseLeave={() => setCatSidebarOpen(false)}
+        >
+          <div className="w-full md:w-64 bg-white shadow-lg h-full">
+            <CategorySidebar onLinkClick={() => setCatSidebarOpen(false)} />
+          </div>
+          <div className="flex-1" onClick={() => setCatSidebarOpen(false)} />
+        </div>
+      )}
 
       {/* mobile search overlay */}
       {mobileSearchOpen && (

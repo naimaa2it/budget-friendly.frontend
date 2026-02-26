@@ -1,260 +1,364 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
-
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+import CategorySidebar from "./CategorySidebar";
 
 const Banner = () => {
-  const [displayText, setDisplayText] = useState("");
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [showCursor, setShowCursor] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedSubcategory, setSelectedSubcategory] = useState("");
-  const [categories, setCategories] = useState([]);
-  const [subcategoriesList, setSubcategoriesList] = useState([]);
-  const [subSubcategoriesList, setSubSubcategoriesList] = useState([]);
-  const [selectedModel, setSelectedModel] = useState("");
-  const [selectedType, setSelectedType] = useState("");
-  const [selectedPrice, setSelectedPrice] = useState("");
+  const [currentSlide, setCurrentSlide] = useState(0);
 
-  const fullText = "Ultimate Protection";
+  const router = useRouter();
 
-  // fetch categories for search
+  // Slider data - Each slide has 2 images side by side
+  const sliderData = [
+    {
+      leftImage: {
+        image: "/assets/banner/banner-bg.webp",
+        title: "35% Cashback !!",
+        subtitle: "Start your daily shopping diversity!",
+        buttonText: "Order Now",
+        buttonLink: "/products/",
+        badge: "FREE DELIVERY",
+      },
+      rightImage: {
+        image: "/assets/banner/banner-bg3.webp",
+        title: "Organic Foods",
+        subtitle: "Start your daily shopping organic foods",
+        buttonText: "Order Now",
+        buttonLink: "/products/c/agriculture/",
+        badge: "SAVE UPTO 20%", 
+      },
+    },
+    {
+      leftImage: {
+        image: "/assets/banner/banner-bg4.webp",
+        title: "Premium Quality",
+        subtitle: "Discover our wide range of products",
+        buttonText: "Order Now",
+        buttonLink: "/products/",
+        badge: "BEST DEALS",
+      },
+      rightImage: {
+        image: "/assets/banner/banner-bg5.webp",
+        title: "Special Offers",
+        subtitle: "Get the best deals on bulk orders today",
+        buttonText: "Order Now",
+        buttonLink: "/products/",
+        badge: "LIMITED TIME",
+      },
+    },
+  ];
+
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch(`${API}/api/products/categories`);
-        const json = await res.json();
-        const tops = (json.categories || []).map(c => ({
-          _id: c._id,
-          name: c.name,
-          slug: c.slug,
-          children: c.children || []
-        }));
-        setCategories(tops);
-      } catch (err) {
-        console.error('banner fetch categories', err);
-      }
-    })();
-  }, []);
+    const timer = setInterval(() => {
+      // On mobile, cycle through 4 slides (2 sets × 2 images each)
+      // On desktop, cycle through 2 slides (each showing 2 images side by side)
+      const totalSlides = typeof window !== 'undefined' && window.innerWidth < 768 
+        ? sliderData.length * 2 
+        : sliderData.length;
+      setCurrentSlide((prev) => (prev + 1) % totalSlides);
+    }, 4000); // Changed to 4 seconds
 
-  // update subcategories when selectedCategory changes
-  useEffect(() => {
-    if (!selectedCategory) {
-      setSubcategoriesList([]);
-      setSelectedSubcategory("");
-      setSubSubcategoriesList([]);
-      return;
-    }
-    const cat = categories.find(c => c._id === selectedCategory || c.slug === selectedCategory);
-    const subs = cat ? cat.children : [];
-    setSubcategoriesList(subs);
-    setSelectedSubcategory("");
-    setSubSubcategoriesList([]);
-  }, [selectedCategory, categories]);
+    return () => clearInterval(timer);
+  }, [sliderData.length]);
 
-  // update sub-subcategories when selectedSubcategory changes
-  useEffect(() => {
-    if (!selectedSubcategory) {
-      setSubSubcategoriesList([]);
-      setSelectedType("");
-      return;
-    }
-    // find subcategory inside existing subcategoriesList or categories
-    let sub = subcategoriesList.find(s => s._id === selectedSubcategory || s.slug === selectedSubcategory);
-    if (!sub) {
-      // maybe need to search in all categories
-      for (const c of categories) {
-        const found = (c.children||[]).find(s => s._id===selectedSubcategory || s.slug===selectedSubcategory);
-        if (found) { sub = found; break; }
-      }
-    }
-    const subs = sub ? sub.children || [] : [];
-    setSubSubcategoriesList(subs);
-    setSelectedType("");
-  }, [selectedSubcategory, subcategoriesList, categories]);
-
-  // Typing animation effect
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    if (currentIndex < fullText.length) {
-      const timer = setTimeout(() => {
-        setDisplayText(fullText.substring(0, currentIndex + 1));
-        setCurrentIndex(currentIndex + 1);
-      }, 80);
-
-      return () => clearTimeout(timer);
-    } else {
-      const cursorTimer = setInterval(() => {
-        setShowCursor((prev) => !prev);
-      }, 500);
-
-      return () => clearInterval(cursorTimer);
-    }
-  }, [currentIndex, fullText]);
-
-  const handleSearch = () => {
-    // assemble query parameters based on selections
-    const params = new URLSearchParams();
-    if (selectedCategory) params.append('category', selectedCategory);
-    if (selectedSubcategory) params.append('subcategory', selectedSubcategory);
-    if (selectedType) params.append('type', selectedType);
-    if (selectedPrice) params.append('price', selectedPrice);
-
-    const url = `/products${params.toString() ? `?${params.toString()}` : ''}`;
-    router.push(url);
+  const nextSlide = () => {
+    const totalSlides = typeof window !== 'undefined' && window.innerWidth < 768 
+      ? sliderData.length * 2 
+      : sliderData.length;
+    setCurrentSlide((prev) => (prev + 1) % totalSlides);
   };
 
+  const prevSlide = () => {
+    const totalSlides = typeof window !== 'undefined' && window.innerWidth < 768 
+      ? sliderData.length * 2 
+      : sliderData.length;
+    setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
+  };
+
+
   return (
-    <div className="relative w-full h-[400px] md:h-[450px] lg:h-[500px] overflow-hidden pt-20">
-      {/* Background Image */}
-      <Image
-        src="/assets/banner.png"
-        alt="Ultimate Protection Banner"
-        fill
-        priority
-        quality={100}
-        sizes="100vw"
-        className="object-cover object-center"
-      />
+    <>
 
-      {/* Content Overlay */}
-      <div className="relative z-10 w-full h-full flex flex-col justify-between px-4 pt-4">
-        {/* Main Heading with Typing Effect - Centered */}
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center max-w-3xl">
-            <h1 className=" font-bold leading-tight">
-              <div className="text-black mb-2 text-3xl md:text-4xl lg:text-4xl">Comes With The</div>
-              <div className="text-red-600 text-4xl md:text-5xl lg:text-6xl">
-                {displayText}
-                <span
-                  className={`inline-block w-1 h-10 md:h-12 lg:h-14 bg-red-600 align-middle ml-1 ${
-                    showCursor ? "opacity-100" : "opacity-0"
-                  } transition-opacity duration-300`}
-                ></span>
-              </div>
-            </h1>
-          </div>
-        </div>
+    <div className="flex flex-col md:flex-row w-full bg-[#FAFAF7] ">
+      {/* Sidebar (desktop only) */}
+      <div className="hidden md:block md:w-[20%] sticky top-[56px] h-[calc(100vh-56px)] overflow-y-auto">
+        <CategorySidebar />
+      </div>
 
-        {/* Search Form - Bottom Attached */}
-        <div className="w-full max-w-6xl mx-auto ">
-          <div className="text-center mb-4">
-            <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-1">
-              Search your desire
-            </h2>
-            <p className="text-sm md:text-base text-gray-700">
-              Filter your results by entering your seeking to ensure you find the perfect fit.
-            </p>
-          </div>
-
-          {/* Search Form */}
-          <div className="bg-gradient-to-r from-[#fce8ed] to-[#d6d6d6] backdrop-blur-sm rounded-t-md shadow-2xl p-4 md:p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
-              {/* Select Main Category */}
-              <div className="flex flex-col">
-                <label className="text-xs font-semibold text-gray-700 mb-1.5">
-                  Category
-                </label>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all duration-300 bg-white text-gray-800 font-medium text-sm"
-                >
-                  <option value="">All Categories</option>
-                  {categories.map(c => (
-                    <option key={c._id} value={c._id}>{c.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Select Subcategory */}
-              <div className="flex flex-col">
-                <label className="text-xs font-semibold text-gray-700 mb-1.5">
-                  Subcategory
-                </label>
-                <select
-                  value={selectedSubcategory}
-                  onChange={(e) => setSelectedSubcategory(e.target.value)}
-                  disabled={!subcategoriesList.length}
-                  className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all duration-300 bg-white text-gray-800 font-medium text-sm"
-                >
-                  <option value="">All Subcategories</option>
-                  {subcategoriesList.map(s => (
-                    <option key={s._id} value={s._id}>{s.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Type (sub‑subcategory) */}
-              <div className="flex flex-col">
-                <label className="text-xs font-semibold text-gray-700 mb-1.5">
-                  Type
-                </label>
-                <select
-                  value={selectedType}
-                  onChange={(e) => setSelectedType(e.target.value)}
-                  disabled={!subSubcategoriesList.length}
-                  className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all duration-300 bg-white text-gray-800 font-medium text-sm"
-                >
-                  <option value="">{subSubcategoriesList.length ? 'Select Type' : 'No types available'}</option>
-                  {subSubcategoriesList.map(s => (
-                    <option key={s._id} value={s._id}>{s.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Price */}
-              <div className="flex flex-col">
-                <label className="text-xs font-semibold text-gray-700 mb-1.5">
-                  Price
-                </label>
-                <select
-                  value={selectedPrice}
-                  onChange={(e) => setSelectedPrice(e.target.value)}
-                  className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all duration-300 bg-white text-gray-800 font-medium text-sm"
-                >
-                  <option value="">Select Price</option>
-                  <option value="0-50">$0 - $50</option>
-                  <option value="50-100">$50 - $100</option>
-                  <option value="100-200">$100 - $200</option>
-                  <option value="200+">$200+</option>
-                </select>
-              </div>
-
-              {/* Search Button */}
-              <div className="flex flex-col">
-                <label className="text-xs font-semibold text-transparent mb-1.5 hidden lg:block">
-                  Search
-                </label>
-                <button
-                  onClick={handleSearch}
-                  className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-sm"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    ></path>
-                  </svg>
-                  Search
-                </button>
+      {/* Banner Section */}
+      <div className="flex-1 flex flex-col gap-4 mt-2">
+        {/* Default Top Banner - Static (banner-bg2) */}
+        <div className="relative h-[180px] md:h-[380px] rounded-lg overflow-hidden ">
+          <Image
+            src="/assets/banner/banner-bg2.webp"
+            alt="Stay home & delivered your daily needs"
+            fill
+            priority
+            quality={90}
+            sizes="100vw"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 ">
+            <div className="h-full flex items-start pt-6 md:pt-8 px-6 md:px-12">
+              <div className="max-w-xl bg-white/0 backdrop-blur-0 p-4 rounded-lg">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold -mt-4 -ml-4  md:-mt-0 bg-gradient-to-r from-yellow-400 to-orange-600 bg-clip-text text-transparent mb-2 leading-tight " >
+                  Stay Home & Delivered
+                </h2>
+                <h3 className="text-2xl md:text-3xl font-semibold text-black mb-3 hidden md:block -ml-4">
+                  your daily need's All at one place
+                </h3>
+                
               </div>
             </div>
           </div>
         </div>
+
+        {/* Bottom Slider Section - 2 Rotating images side by side */}
+        <div className="relative md:grid md:grid-cols-2 gap-4 -mt-1 mb-3">
+          {/* Mobile: Show all images (4 total) one at a time */}
+          <div className="md:hidden">
+            {sliderData.flatMap((slideSet, slideIndex) => [
+              // Left Image
+              <div 
+                key={`left-${slideIndex}`}
+                className={`relative h-[220px] rounded-lg overflow-hidden shadow-lg mb-4 ${
+                  slideIndex * 2 === currentSlide ? 'block' : 'hidden'
+                }`}
+              >
+                <Image
+                  src={slideSet.leftImage.image}
+                  alt={slideSet.leftImage.title}
+                  fill
+                  quality={90}
+                  sizes="100vw"
+                  className="object-fill"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-transparent">
+                  <div className="h-full flex items-center px-4">
+                    <div className="max-w-md bg-white/30 backdrop-blur-sm p-3 rounded-lg">
+                      {slideSet.leftImage.badge && (
+                        <span className="inline-block bg-secondary text-white text-xs font-bold px-3 py-1 rounded-full mb-2 uppercase tracking-wider shadow-lg">
+                          {slideSet.leftImage.badge}
+                        </span>
+                      )}
+                      <h2 className="text-xl font-bold text-black mb-1 leading-tight">
+                        {slideSet.leftImage.title}
+                      </h2>
+                      <p className="text-xs text-white mb-2 font-medium">
+                        {slideSet.leftImage.subtitle}
+                      </p>
+                      <Link
+                        href={slideSet.leftImage.buttonLink}
+                        className="inline-flex items-center gap-2 bg-[#D4E157] hover:bg-[#C0CA33] bg-gradient-to-r from-primary to-brand-olive hover:from-brand-olive hover:to-primary text-white font-semibold py-2 px-4 rounded-md shadow-lg transition-all duration-300 text-xs"
+                      >
+                        {slideSet.leftImage.buttonText}
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>,
+              // Right Image
+              <div 
+                key={`right-${slideIndex}`}
+                className={`relative h-[220px] rounded-lg overflow-hidden shadow-lg mb-4 ${
+                  slideIndex * 2 + 1 === currentSlide ? 'block' : 'hidden'
+                }`}
+              >
+                <Image
+                  src={slideSet.rightImage.image}
+                  alt={slideSet.rightImage.title}
+                  fill
+                  quality={90}
+                  sizes="100vw"
+                  className="object-fill"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-transparent">
+                  <div className="h-full flex items-center px-4">
+                    <div className="max-w-md bg-white/30 backdrop-blur-sm p-3 rounded-lg">
+                      {slideSet.rightImage.badge && (
+                        <span className="inline-block bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full mb-2 uppercase tracking-wider shadow-lg">
+                          {slideSet.rightImage.badge}
+                        </span>
+                      )}
+                      <h2 className="text-xl font-bold text-black mb-1 leading-tight">
+                        {slideSet.rightImage.title}
+                      </h2>
+                      <p className="text-xs text-white mb-2 font-medium">
+                        {slideSet.rightImage.subtitle}
+                      </p>
+                      <Link
+                        href={slideSet.rightImage.buttonLink}
+                        className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-brand-olive hover:from-brand-olive hover:to-primary text-white font-semibold py-2 px-4 rounded-md shadow-lg transition-all duration-300 text-xs"
+                      >
+                        {slideSet.rightImage.buttonText}
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ])}
+          </div>
+
+          {/* Desktop: Show two images side by side */}
+          <div className="hidden md:contents">
+          {sliderData.map((slideSet, slideIndex) => (
+            <React.Fragment key={slideIndex}>
+              {slideIndex === currentSlide && (
+                <>
+                  {/* Left Image */}
+                  <div className="relative h-[220px] md:h-[280px] rounded-lg overflow-hidden shadow-lg">
+                    <Image
+                      src={slideSet.leftImage.image}
+                      alt={slideSet.leftImage.title}
+                      fill
+                      quality={90}
+                      sizes="50vw"
+                      className="object-fill"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-transparent ">
+                      <div className="h-full flex items-center px-4 md:px-6">
+                        <div className="max-w-md bg-white/30 backdrop-blur-sm p-3 rounded-lg">
+                          {slideSet.leftImage.badge && (
+                            <span className="inline-block bg-secondary text-white text-xs font-bold px-3 py-1 rounded-full mb-2 uppercase tracking-wider shadow-lg">
+                              {slideSet.leftImage.badge}
+                            </span>
+                          )}
+                          <h2 className="text-xl md:text-xl lg:text-xl font-bold text-black mb-1 leading-tight">
+                            {slideSet.leftImage.title}
+                          </h2>
+                          <p className="text-xs  text-white mb-2 font-medium" >
+                            {slideSet.leftImage.subtitle}
+                          </p>
+                          <Link
+                            href={slideSet.leftImage.buttonLink}
+                            className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-brand-olive hover:from-brand-olive hover:to-primary text-white font-semibold py-2 px-4 md:px-6 rounded-md shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl text-xs md:text-sm"
+                          >
+                            {slideSet.leftImage.buttonText}
+                            <svg
+                              className="w-3 h-3 md:w-4 md:h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M17 8l4 4m0 0l-4 4m4-4H3"
+                              />
+                            </svg>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Image */}
+                  <div className="relative h-[220px] md:h-[280px] rounded-lg overflow-hidden shadow-lg">
+                    <Image
+                      src={slideSet.rightImage.image}
+                      alt={slideSet.rightImage.title}
+                      fill
+                      quality={90}
+                      sizes="50vw"
+                      className="object-fill"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-transparent">
+                      <div className="h-full flex items-center px-4 md:px-6">
+                        <div className="max-w-md bg-white/30 backdrop-blur-sm p-3 rounded-lg">
+                          {slideSet.rightImage.badge && (
+                            <span className="inline-block bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full mb-2 uppercase tracking-wider shadow-lg">
+                              {slideSet.rightImage.badge}
+                            </span>
+                          )}
+                          <h2 className="text-xl md:text-xl lg:text-xl font-bold text-black mb-1 leading-tight">
+                            {slideSet.rightImage.title}
+                          </h2>
+                          <p className="text-xs text-white mb-2 font-medium" >
+                            {slideSet.rightImage.subtitle}
+                          </p>
+                          <Link
+                            href={slideSet.rightImage.buttonLink}
+                            className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-brand-olive hover:from-brand-olive hover:to-primary text-white font-semibold py-2 px-4 md:px-6 rounded-md shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl text-xs md:text-sm"
+                          >
+                            {slideSet.rightImage.buttonText}
+                            <svg
+                              className="w-3 h-3 md:w-4 md:h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M17 8l4 4m0 0l-4 4m4-4H3"
+                              />
+                            </svg>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </React.Fragment>
+          ))}
+          </div>
+
+          {/* Navigation Arrows - Positioned to control both images */}
+          <button
+            onClick={prevSlide}
+            className="absolute left-1 top-1/2 -translate-y-1/2 z-20 bg-white/80 p-2 rounded-full shadow-lg transition-all duration-300 hover:scale-110 md:block"
+            aria-label="Previous slide"
+          >
+            <svg
+              className="w-5 h-5 text-gray-800"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+
+          <button
+            onClick={nextSlide}
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg transition-all duration-300 hover:scale-110 md:block"
+            aria-label="Next slide"
+          >
+            <svg
+              className="w-5 h-5 text-gray-800"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
+    </>
   );
 };
 

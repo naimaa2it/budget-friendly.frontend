@@ -163,6 +163,9 @@ export default function Navbar() {
   const router = useRouter();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [redirectWishlistOnLogin, setRedirectWishlistOnLogin] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false); // mobile-only 
+  const mobileSearchRef = useRef(null);
+  const searchIconRef = useRef(null);
 
   React.useEffect(() => {
     if (user && redirectWishlistOnLogin) {
@@ -171,45 +174,50 @@ export default function Navbar() {
     }
   }, [user, redirectWishlistOnLogin, router]);
 
+  // close mobile search when clicking outside or on empty space
+  React.useEffect(() => {
+    if (!mobileSearchOpen) return;
+    function handleDocumentClick(e) {
+      if (
+        mobileSearchRef.current &&
+        !mobileSearchRef.current.contains(e.target) &&
+        searchIconRef.current &&
+        !searchIconRef.current.contains(e.target)
+      ) {
+        setMobileSearchOpen(false);
+      }
+    }
+    document.addEventListener('click', handleDocumentClick);
+    return () => document.removeEventListener('click', handleDocumentClick);
+  }, [mobileSearchOpen]);
+
+
   return (
-    <header className="border-b border-black/6  bg-[#fffaf6] sticky top-0 z-50">
+    <header className="relative border-b border-black/6  bg-[#fffaf6] sticky top-0 z-50">
       <div className="flex items-center gap-5 justify-between max-w-[1200px] mx-auto py-2 px-1 bg-transparent">
           <WebsiteLogo />
 
-        <nav className="hidden md:flex gap-4 items-center" aria-label="Main navigation ">
-          {/* Home */}
-          <Link href="/" className="text-[#202020] hover:text-[#ac0ad1] no-underline font-medium relative group inline-flex">
-            Home
-            <span aria-hidden="true" className="absolute left-0 -bottom-1 h-[1.5px] bg-[#ecb8f9] w-0 group-hover:w-full transition-all duration-300"></span>
-          </Link>
-
-          {/* SkinCare */}
-          <Link href="/skincare" className="text-[#202020] hover:text-[#ac0ad1] no-underline font-medium relative group inline-flex">
-            SkinCare
-            <span aria-hidden="true" className="absolute left-0 -bottom-1 h-[1.5px] bg-[#ecb8f9] w-0 group-hover:w-full transition-all duration-300"></span>
-          </Link>
-
-          {/* Cosmetics */}
-          <Link href="/cosmetics" className="text-[#202020] hover:text-[#ac0ad1] no-underline font-medium relative group inline-flex">
-            Cosmetics
-            <span aria-hidden="true" className="absolute left-0 -bottom-1 h-[1.5px] bg-[#ecb8f9] w-0 group-hover:w-full transition-all duration-300"></span>
-          </Link>
-
-          {/* Contact */}
-          <Link href="/contact" className="text-[#202020] hover:text-[#ac0ad1] no-underline font-medium relative group inline-flex">
-            Contact
-            <span aria-hidden="true" className="absolute left-0 -bottom-1 h-[1.5px] bg-[#ecb8f9] w-0 group-hover:w-full transition-all duration-300"></span>
-          </Link>
-        </nav>
-
-        <div className="flex items-center gap-1">
-          <form className="hidden sm:flex items-center" role="search" onSubmit={(e) => e.preventDefault()} aria-label="Search form">
-            <div className="relative">
+        {/* navigation links removed - keeping search centered */}
+        <div className="flex-1 flex justify-center">
+          <form className="hidden md:flex w-full max-w-[400px] flex items-center" role="search" onSubmit={(e) => e.preventDefault()} aria-label="Search form">
+            <div className="relative w-full">
               <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[#202020] pointer-events-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input className="pl-9 px-3 py-1 rounded-full border border-black/10 min-w-[180px] outline-none" type="search" placeholder="Search products..." aria-label="Search" />
+              <input className="pl-9 px-3 py-1 rounded-full border border-black/10 w-full outline-none" type="search" placeholder="Search products..." aria-label="Search" />
             </div>
           </form>
+        </div>
 
+        <div className="flex items-center gap-0.5 md:gap-1">
+          {/* mobile search icon, only visible below md */}
+          <button
+            ref={searchIconRef}
+            onClick={() => setMobileSearchOpen(true)}
+            className="p-2 text-[#202020] hover:text-[#ac0ad1] md:hidden"
+            aria-label="Search"
+            title="Search"
+          >
+            <svg className="stroke-current" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </button>
           <button
             onClick={() => {
               if (!user) {
@@ -251,6 +259,39 @@ export default function Navbar() {
           </div>
         </div>
       </div>
+
+      {/* mobile search overlay */}
+      {mobileSearchOpen && (
+        <div ref={mobileSearchRef} className="absolute top-full left-0 w-full bg-white p-2 z-50 shadow-md">
+          <form
+            className="flex items-center"
+            role="search"
+            onSubmit={(e) => {
+              e.preventDefault();
+              setMobileSearchOpen(false);
+            }}
+          >
+            <div className="relative w-full">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[#202020] pointer-events-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input
+                className="pl-9 px-3 py-1 rounded-full border border-black/10 w-full outline-none"
+                type="search"
+                placeholder="Search products..."
+                aria-label="Search"
+                autoFocus
+              />
+            </div>
+            <button
+              type="button"
+              className="ml-2 p-2 text-[#202020] hover:text-[#ac0ad1]"
+              onClick={() => setMobileSearchOpen(false)}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </form>
+        </div>
+      )}
+
       {showAuthModal && <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />}
     </header>
   );

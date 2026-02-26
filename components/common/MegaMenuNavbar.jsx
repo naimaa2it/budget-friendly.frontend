@@ -182,7 +182,7 @@ export default function MegaMenuNavbar() {
             onMouseLeave={handleMouseLeave}
           >
             <div className="max-w-7xl mx-auto p-6">
-              <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"
+              <div className="grid grid-cols-3 lg:grid-cols-4 gap-6"
                 style={{ maxHeight: '70vh', overflowY: 'auto' }}
               >
                 {getCategorySubcategories(hoveredCategory).map((subcategory) => {

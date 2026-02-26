@@ -3,16 +3,77 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 const Banner = () => {
   const [displayText, setDisplayText] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showCursor, setShowCursor] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSubcategory, setSelectedSubcategory] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [subcategoriesList, setSubcategoriesList] = useState([]);
+  const [subSubcategoriesList, setSubSubcategoriesList] = useState([]);
   const [selectedModel, setSelectedModel] = useState("");
   const [selectedType, setSelectedType] = useState("");
   const [selectedPrice, setSelectedPrice] = useState("");
 
   const fullText = "Ultimate Protection";
+
+  // fetch categories for search
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`${API}/api/products/categories`);
+        const json = await res.json();
+        const tops = (json.categories || []).map(c => ({
+          _id: c._id,
+          name: c.name,
+          slug: c.slug,
+          children: c.children || []
+        }));
+        setCategories(tops);
+      } catch (err) {
+        console.error('banner fetch categories', err);
+      }
+    })();
+  }, []);
+
+  // update subcategories when selectedCategory changes
+  useEffect(() => {
+    if (!selectedCategory) {
+      setSubcategoriesList([]);
+      setSelectedSubcategory("");
+      setSubSubcategoriesList([]);
+      return;
+    }
+    const cat = categories.find(c => c._id === selectedCategory || c.slug === selectedCategory);
+    const subs = cat ? cat.children : [];
+    setSubcategoriesList(subs);
+    setSelectedSubcategory("");
+    setSubSubcategoriesList([]);
+  }, [selectedCategory, categories]);
+
+  // update sub-subcategories when selectedSubcategory changes
+  useEffect(() => {
+    if (!selectedSubcategory) {
+      setSubSubcategoriesList([]);
+      setSelectedType("");
+      return;
+    }
+    // find subcategory inside existing subcategoriesList or categories
+    let sub = subcategoriesList.find(s => s._id === selectedSubcategory || s.slug === selectedSubcategory);
+    if (!sub) {
+      // maybe need to search in all categories
+      for (const c of categories) {
+        const found = (c.children||[]).find(s => s._id===selectedSubcategory || s.slug===selectedSubcategory);
+        if (found) { sub = found; break; }
+      }
+    }
+    const subs = sub ? sub.children || [] : [];
+    setSubSubcategoriesList(subs);
+    setSelectedType("");
+  }, [selectedSubcategory, subcategoriesList, categories]);
 
   // Typing animation effect
   useEffect(() => {
@@ -35,12 +96,15 @@ const Banner = () => {
   }, [currentIndex, fullText]);
 
   const handleSearch = () => {
-    console.log("Search:", {
-      category: selectedCategory,
-      model: selectedModel,
-      type: selectedType,
-      price: selectedPrice,
-    });
+    // assemble query parameters based on selections
+    const params = new URLSearchParams();
+    if (selectedCategory) params.append('category', selectedCategory);
+    if (selectedSubcategory) params.append('subcategory', selectedSubcategory);
+    if (selectedType) params.append('type', selectedType);
+    if (selectedPrice) params.append('price', selectedPrice);
+
+    const url = `/products${params.toString() ? `?${params.toString()}` : ''}`;
+    router.push(url);
   };
 
   return (
@@ -89,43 +153,42 @@ const Banner = () => {
           {/* Search Form */}
           <div className="bg-gradient-to-r from-[#fce8ed] to-[#d6d6d6] backdrop-blur-sm rounded-t-md shadow-2xl p-4 md:p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
-              {/* Select Category */}
+              {/* Select Main Category */}
               <div className="flex flex-col">
                 <label className="text-xs font-semibold text-gray-700 mb-1.5">
-                  Select Category
+                  Category
                 </label>
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all duration-300 bg-white text-gray-800 font-medium text-sm"
                 >
-                  <option value="">Select Category</option>
-                  <option value="parts">Auto Parts</option>
-                  <option value="accessories">Accessories</option>
-                  <option value="tools">Tools</option>
-                  <option value="electronics">Electronics</option>
+                  <option value="">All Categories</option>
+                  {categories.map(c => (
+                    <option key={c._id} value={c._id}>{c.name}</option>
+                  ))}
                 </select>
               </div>
 
-              {/* Select Model */}
+              {/* Select Subcategory */}
               <div className="flex flex-col">
                 <label className="text-xs font-semibold text-gray-700 mb-1.5">
-                  Select Model
+                  Subcategory
                 </label>
                 <select
-                  value={selectedModel}
-                  onChange={(e) => setSelectedModel(e.target.value)}
+                  value={selectedSubcategory}
+                  onChange={(e) => setSelectedSubcategory(e.target.value)}
+                  disabled={!subcategoriesList.length}
                   className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all duration-300 bg-white text-gray-800 font-medium text-sm"
                 >
-                  <option value="">Select Model</option>
-                  <option value="2024">2024</option>
-                  <option value="2023">2023</option>
-                  <option value="2022">2022</option>
-                  <option value="2021">2021</option>
+                  <option value="">All Subcategories</option>
+                  {subcategoriesList.map(s => (
+                    <option key={s._id} value={s._id}>{s.name}</option>
+                  ))}
                 </select>
               </div>
 
-              {/* Type */}
+              {/* Type (sub‑subcategory) */}
               <div className="flex flex-col">
                 <label className="text-xs font-semibold text-gray-700 mb-1.5">
                   Type
@@ -133,13 +196,13 @@ const Banner = () => {
                 <select
                   value={selectedType}
                   onChange={(e) => setSelectedType(e.target.value)}
+                  disabled={!subSubcategoriesList.length}
                   className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all duration-300 bg-white text-gray-800 font-medium text-sm"
                 >
-                  <option value="">Select Type</option>
-                  <option value="sedan">Sedan</option>
-                  <option value="suv">SUV</option>
-                  <option value="truck">Truck</option>
-                  <option value="van">Van</option>
+                  <option value="">{subSubcategoriesList.length ? 'Select Type' : 'No types available'}</option>
+                  {subSubcategoriesList.map(s => (
+                    <option key={s._id} value={s._id}>{s.name}</option>
+                  ))}
                 </select>
               </div>
 

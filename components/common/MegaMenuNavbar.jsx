@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useCategories } from '@/components/context/CategoryContext';
 
 const TAGS = [
@@ -15,43 +16,8 @@ const TAGS = [
 export default function MegaMenuNavbar() {
   const { categories, subcategories, loading } = useCategories();
   const [hoveredCategory, setHoveredCategory] = useState(null);
-  const [isAutoScrolling, setIsAutoScrolling] = useState(true);
   const timeoutRef = useRef(null);
   const scrollContainerRef = useRef(null);
-  const autoScrollIntervalRef = useRef(null);
-
-  // Auto-scroll functionality
-  useEffect(() => {
-    if (!isAutoScrolling || !scrollContainerRef.current) return;
-
-    autoScrollIntervalRef.current = setInterval(() => {
-      const container = scrollContainerRef.current;
-      if (!container) return;
-
-      // Scroll right by 1 pixel
-      container.scrollLeft += 1;
-
-      // Reset to start when reaching the end
-      if (container.scrollLeft >= container.scrollWidth - container.clientWidth - 10) {
-        container.scrollLeft = 0;
-      }
-    }, 30); // Adjust speed here (lower = faster)
-
-    return () => {
-      if (autoScrollIntervalRef.current) {
-        clearInterval(autoScrollIntervalRef.current);
-      }
-    };
-  }, [isAutoScrolling]);
-
-  // Pause auto-scroll on hover
-  const handleContainerMouseEnter = () => {
-    setIsAutoScrolling(false);
-  };
-
-  const handleContainerMouseLeave = () => {
-    setIsAutoScrolling(true);
-  };
 
   // Manual scroll controls
   const scrollLeft = () => {
@@ -98,10 +64,10 @@ export default function MegaMenuNavbar() {
           {/* Left Arrow */}
           <button
             onClick={scrollLeft}
-            className="hidden md:flex absolute left-0 top-0 bottom-0 z-10 items-center justify-center w-10 bg-linear-to-r from-white to-transparent hover:from-gray-50"
+            className="flex absolute left-0 top-0 bottom-0 z-10 items-center justify-center w-8 md:w-10 bg-gradient-to-r from-white via-white to-transparent hover:from-gray-50"
             aria-label="Scroll left"
           >
-            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 md:w-5 md:h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
@@ -109,9 +75,7 @@ export default function MegaMenuNavbar() {
           {/* Scrollable Container */}
           <div
             ref={scrollContainerRef}
-            onMouseEnter={handleContainerMouseEnter}
-            onMouseLeave={handleContainerMouseLeave}
-            className="flex items-center gap-1 px-2 md:px-12 py-0 overflow-x-auto scrollbar-hide scroll-smooth"
+            className="flex items-center gap-1 px-8 md:px-12 py-0 overflow-x-auto scrollbar-hide scroll-smooth"
           >
             {/* Main Categories */}
             {categories.map((category) => {
@@ -163,10 +127,10 @@ export default function MegaMenuNavbar() {
           {/* Right Arrow */}
           <button
             onClick={scrollRight}
-            className="hidden md:flex absolute right-0 top-0 bottom-0 z-10 items-center justify-center w-10 bg-linear-to-l from-white to-transparent hover:from-gray-50"
+            className="flex absolute right-0 top-0 bottom-0 z-10 items-center justify-center w-8 md:w-10 bg-gradient-to-l from-white via-white to-transparent hover:from-gray-50"
             aria-label="Scroll right"
           >
-            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 md:w-5 md:h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
@@ -175,46 +139,52 @@ export default function MegaMenuNavbar() {
         {/* Mega Menu Dropdown - Positioned outside scroll container */}
         {hoveredCategory && (
           <div
-            className="hidden md:block absolute left-0 right-0 top-full bg-white border-t border-gray-200 shadow-xl z-[100]"
+            className="hidden md:block absolute left-4 top-full bg-white border border-gray-200 rounded-b-lg shadow-lg z-[100]"
             onMouseEnter={() => {
               if (timeoutRef.current) clearTimeout(timeoutRef.current);
             }}
             onMouseLeave={handleMouseLeave}
           >
-            <div className="max-w-7xl mx-auto p-6">
-              <div className="grid grid-cols-3 lg:grid-cols-4 gap-6"
+            <div className="px-6 py-6">
+              <div className="grid grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-4"
                 style={{ maxHeight: '70vh', overflowY: 'auto' }}
               >
                 {getCategorySubcategories(hoveredCategory).map((subcategory) => {
                   const subSubcats = getSubSubcategories(subcategory._id);
-                  const iconMap = {
-                    'Serums & Treatments': '💧',
-                    'Moisturizers': '🧴',
-                    'Cleansers': '🧼',
-                    'Face Mask': '😷',
-                    'Acne Treatment': '💊',
-                    'Sun Protection': '☀️',
-                    'Lip Care': '💋',
-                    'Toners & Exfoliators': '✨',
-                    'Eyes': '👁️',
-                    'Skin Care Sets & Kits': '🎁',
-                  };
 
                   return (
-                    <div key={subcategory._id} className="space-y-2">
+                    <div key={subcategory._id} className="space-y-3">
+                      {/* Subcategory with Icon */}
                       <Link
                         href={`/category/${subcategory.slug}`}
-                        className="flex items-center gap-2 font-semibold text-gray-800 hover:text-pink-600 transition-colors group"
+                        className="flex items-center gap-2.5 group"
                       >
-                        <span className="text-xl lg:text-2xl group-hover:scale-110 transition-transform">
-                          {iconMap[subcategory.name] || '📦'}
-                        </span>
-                        <span className="text-xs lg:text-sm">{subcategory.name}</span>
+                        {/* Small Icon/Image */}
+                        <div className="w-9 h-9 rounded-full bg-pink-50 flex items-center justify-center flex-shrink-0 group-hover:bg-pink-100 transition-colors">
+                          {subcategory.image ? (
+                            <div className="relative w-9 h-9 rounded-full overflow-hidden">
+                              <Image
+                                src={subcategory.image}
+                                alt={subcategory.name}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <span className="text-lg">📦</span>
+                          )}
+                        </div>
+                        
+                        {/* Category Name */}
+                        <h3 className="font-semibold text-sm text-gray-800 group-hover:text-pink-600 transition-colors">
+                          {subcategory.name}
+                        </h3>
                       </Link>
                       
+                      {/* Sub-subcategories List */}
                       {subSubcats.length > 0 && (
-                        <ul className="space-y-1.5 ml-6 lg:ml-8">
-                          {subSubcats.slice(0, 6).map((subSubcat) => (
+                        <ul className="space-y-2 pl-0">
+                          {subSubcats.map((subSubcat) => (
                             <li key={subSubcat._id}>
                               <Link
                                 href={`/category/${subSubcat.slug}`}
@@ -224,16 +194,6 @@ export default function MegaMenuNavbar() {
                               </Link>
                             </li>
                           ))}
-                          {subSubcats.length > 6 && (
-                            <li>
-                              <Link
-                                href={`/category/${subcategory.slug}`}
-                                className="text-xs text-pink-600 hover:underline font-medium"
-                              >
-                                View all →
-                              </Link>
-                            </li>
-                          )}
                         </ul>
                       )}
                     </div>

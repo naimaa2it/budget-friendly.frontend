@@ -91,10 +91,10 @@ export default function MegaMenuNavbar() {
   };
 
   return (
-    <div className="bg-white border-b border-gray-200">
-      <div className="max-w-7xl mx-auto">
+    <div className="bg-white border-b border-gray-200 relative">
+      <div className="max-w-7xl mx-auto relative">
         {/* Single Row: Categories First, then Tags with Arrows */}
-        <nav className="relative">
+        <nav>
           {/* Left Arrow */}
           <button
             onClick={scrollLeft}
@@ -121,13 +121,13 @@ export default function MegaMenuNavbar() {
               return (
                 <div
                   key={category._id}
-                  className="relative shrink-0"
-                  onMouseEnter={() => handleMouseEnter(category._id)}
+                  className="shrink-0"
+                  onMouseEnter={() => hasSubcategories && handleMouseEnter(category._id)}
                   onMouseLeave={handleMouseLeave}
                 >
                   <Link
                     href={`/category/${category.slug}`}
-                    className={`flex items-center gap-0.5 md:gap-1 px-2 md:px-3 py-0.5 text-[8px] font-medium text-gray-700 hover:text-pink-600 hover:bg-pink-50 transition-colors duration-150 whitespace-nowrap ${
+                    className={`flex items-center gap-0.5 md:gap-1 px-2 md:px-3 py-2 text-[8px] font-medium text-gray-700 hover:text-pink-600 hover:bg-pink-50 transition-colors duration-150 whitespace-nowrap ${
                       isHovered ? 'text-pink-600 bg-pink-50' : ''
                     }`}
                   >
@@ -143,83 +143,16 @@ export default function MegaMenuNavbar() {
                       </svg>
                     )}
                   </Link>
-
-                  {/* Mega Menu Dropdown - Only on desktop */}
-                  {hasSubcategories && isHovered && (
-                    <div
-                      className="hidden md:grid absolute left-0 top-full w-full max-w-6xl bg-white border border-gray-200 shadow-2xl rounded-lg mt-0 p-6 grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-6 z-50"
-                      style={{ maxHeight: '80vh', overflowY: 'auto' }}
-                      onMouseEnter={() => handleMouseEnter(category._id)}
-                      onMouseLeave={handleMouseLeave}
-                    >
-                      {getCategorySubcategories(category._id).map((subcategory) => {
-                        const subSubcats = getSubSubcategories(subcategory._id);
-                        const iconMap = {
-                          'Serums & Treatments': '💧',
-                          'Moisturizers': '🧴',
-                          'Cleansers': '🧼',
-                          'Face Mask': '😷',
-                          'Acne Treatment': '💊',
-                          'Sun Protection': '☀️',
-                          'Lip Care': '💋',
-                          'Toners & Exfoliators': '✨',
-                          'Eyes': '👁️',
-                          'Skin Care Sets & Kits': '🎁',
-                        };
-
-                        return (
-                          <div key={subcategory._id} className="space-y-2">
-                            <Link
-                              href={`/category/${subcategory.slug}`}
-                              className="flex items-center gap-2 font-semibold text-gray-800 hover:text-pink-600 transition-colors group"
-                            >
-                              <span className="text-xl lg:text-2xl group-hover:scale-110 transition-transform">
-                                {iconMap[subcategory.name] || '📦'}
-                              </span>
-                              <span className="text-xs lg:text-sm">{subcategory.name}</span>
-                            </Link>
-                            
-                            {subSubcats.length > 0 && (
-                              <ul className="space-y-1.5 ml-6 lg:ml-8">
-                                {subSubcats.slice(0, 6).map((subSubcat) => (
-                                  <li key={subSubcat._id}>
-                                    <Link
-                                      href={`/category/${subSubcat.slug}`}
-                                      className="text-xs text-gray-600 hover:text-pink-600 hover:underline transition-colors block"
-                                    >
-                                      {subSubcat.name}
-                                    </Link>
-                                  </li>
-                                ))}
-                                {subSubcats.length > 6 && (
-                                  <li>
-                                    <Link
-                                      href={`/category/${subcategory.slug}`}
-                                      className="text-xs text-pink-600 hover:underline font-medium"
-                                    >
-                                      View all →
-                                    </Link>
-                                  </li>
-                                )}
-                              </ul>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
                 </div>
               );
             })}
-
-            
 
             {/* Tags */}
             {TAGS.map((tag) => (
               <Link
                 key={tag.name}
                 href={`/products?tag=${tag.name.toLowerCase().replace(/\s+/g, '-')}`}
-                className={`flex items-center gap-1 px-2 md:px-2.5 py-0.5 whitespace-nowrap text-[12px] font-medium ${tag.color} hover:bg-gray-50 transition-colors shrink-0`}
+                className={`flex items-center gap-1 px-2 md:px-2.5 py-2 whitespace-nowrap text-[12px] font-medium ${tag.color} hover:bg-gray-50 transition-colors shrink-0`}
               >
                 <span className="text-sm">{tag.icon}</span>
                 <span className="hidden sm:inline">{tag.name}</span>
@@ -238,6 +171,78 @@ export default function MegaMenuNavbar() {
             </svg>
           </button>
         </nav>
+
+        {/* Mega Menu Dropdown - Positioned outside scroll container */}
+        {hoveredCategory && (
+          <div
+            className="hidden md:block absolute left-0 right-0 top-full bg-white border-t border-gray-200 shadow-xl z-[100]"
+            onMouseEnter={() => {
+              if (timeoutRef.current) clearTimeout(timeoutRef.current);
+            }}
+            onMouseLeave={handleMouseLeave}
+          >
+            <div className="max-w-7xl mx-auto p-6">
+              <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"
+                style={{ maxHeight: '70vh', overflowY: 'auto' }}
+              >
+                {getCategorySubcategories(hoveredCategory).map((subcategory) => {
+                  const subSubcats = getSubSubcategories(subcategory._id);
+                  const iconMap = {
+                    'Serums & Treatments': '💧',
+                    'Moisturizers': '🧴',
+                    'Cleansers': '🧼',
+                    'Face Mask': '😷',
+                    'Acne Treatment': '💊',
+                    'Sun Protection': '☀️',
+                    'Lip Care': '💋',
+                    'Toners & Exfoliators': '✨',
+                    'Eyes': '👁️',
+                    'Skin Care Sets & Kits': '🎁',
+                  };
+
+                  return (
+                    <div key={subcategory._id} className="space-y-2">
+                      <Link
+                        href={`/category/${subcategory.slug}`}
+                        className="flex items-center gap-2 font-semibold text-gray-800 hover:text-pink-600 transition-colors group"
+                      >
+                        <span className="text-xl lg:text-2xl group-hover:scale-110 transition-transform">
+                          {iconMap[subcategory.name] || '📦'}
+                        </span>
+                        <span className="text-xs lg:text-sm">{subcategory.name}</span>
+                      </Link>
+                      
+                      {subSubcats.length > 0 && (
+                        <ul className="space-y-1.5 ml-6 lg:ml-8">
+                          {subSubcats.slice(0, 6).map((subSubcat) => (
+                            <li key={subSubcat._id}>
+                              <Link
+                                href={`/category/${subSubcat.slug}`}
+                                className="text-xs text-gray-600 hover:text-pink-600 hover:underline transition-colors block"
+                              >
+                                {subSubcat.name}
+                              </Link>
+                            </li>
+                          ))}
+                          {subSubcats.length > 6 && (
+                            <li>
+                              <Link
+                                href={`/category/${subcategory.slug}`}
+                                className="text-xs text-pink-600 hover:underline font-medium"
+                              >
+                                View all →
+                              </Link>
+                            </li>
+                          )}
+                        </ul>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <style jsx>{`

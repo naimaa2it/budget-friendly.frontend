@@ -80,18 +80,18 @@ export default function ShopByCategory() {
   });
 
   return (
-    <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-      <div className='max-w-5xl mx-auto flex justify-between items-center mt-2 mb-3 px-2'>
-        <h1 className='text-2xl md:text-3xl font-bold text-gray-900 text-center'>
+    <div className='max-w-7xl mx-auto px-4 sm:px-2 lg:px-8'>
+      <div className='max-w-5xl mx-auto flex justify-between items-center mt-2 mb-3 px-2 '>
+        <h1 className='text-xl md:text-3xl font-bold text-gray-900 text-center mt-4'>
           Shop By <span className='border-b-2 border-red-500'>Category</span>
         </h1>
-        <div className='flex gap-2'>
+        <div className='flex gap-2 mt-4'>
           <button
             onClick={scrollLeft}
             className="bg-white rounded-full p-2 shadow-lg hover:bg-gray-50"
             aria-label="Scroll left"
           >
-            <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="md:w-4 md:h-4 w-3 h-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
@@ -100,7 +100,7 @@ export default function ShopByCategory() {
             className="bg-white rounded-full p-2 shadow-lg hover:bg-gray-50"
             aria-label="Scroll right"
           >
-            <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="md:w-4 md:h-4 w-3 h-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>

@@ -203,7 +203,7 @@ export default function Navbar() {
 
 
   return (
-    <header className="relative border-b border-black/6  bg-[#fffaf6] sticky top-0 z-50">
+    <header className="relative bg-[#fffaf6]">
       <div className="flex items-center gap-5 justify-between max-w-[1200px] mx-auto py-1.5 md:py-2 px-1 bg-transparent">
           <WebsiteLogo />
 

@@ -1,6 +1,7 @@
 import { Work_Sans } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/common/Navbar";
+import MegaMenuNavbar from "@/components/common/MegaMenuNavbar";
 import Footer from "@/components/common/Footer";
 import { UserProvider } from '@/components/context/UserContext';
 import { CartProvider } from '@/components/context/CartContext';
@@ -29,7 +30,10 @@ export default function RootLayout({ children }) {
       <body className={`${workSans.variable} antialiased`}>
         <UserProvider>
           <CartProvider>
-            <Navbar />
+            <div className="sticky top-0 z-50">
+              <Navbar />
+              <MegaMenuNavbar />
+            </div>
             {children}
             <Footer />
             {/* global UI overlays */}

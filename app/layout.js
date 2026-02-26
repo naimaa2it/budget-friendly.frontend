@@ -32,7 +32,7 @@ export default function RootLayout({ children }) {
         <UserProvider>
           <CartProvider>
             <CategoryProvider>
-              <div className="sticky top-0 z-50">
+              <div className="sticky top-0 z-50 bg-white">
                 <Navbar />
                 <MegaMenuNavbar />
               </div>

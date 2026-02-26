@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import Link from 'next/link';
 import { PiFishThin , PiTireThin,PiLeafThin} from 'react-icons/pi';
 import { GiRopeCoil,GiPeanut,GiWoodPile } from 'react-icons/gi';
@@ -43,19 +43,16 @@ export default function ShopByCategory() {
   const { categories: rawCategories, loading } = useCategories();
   const { user } = useUser();
   const scrollContainerRef = useRef(null);
+  const [page, setPage] = useState(0);
+  const pageSize = 4;
+  const totalPages = Math.ceil(rawCategories.length / pageSize);
 
   const scrollLeft = () => {
-    if (scrollContainerRef.current) {
-      const itemWidth = (scrollContainerRef.current.clientWidth) / 4;
-      scrollContainerRef.current.scrollBy({ left: -(itemWidth * 4), behavior: 'smooth' });
-    }
+    setPage((prev) => Math.max(prev - 1, 0));
   };
 
   const scrollRight = () => {
-    if (scrollContainerRef.current) {
-      const itemWidth = (scrollContainerRef.current.clientWidth) / 4;
-      scrollContainerRef.current.scrollBy({ left: (itemWidth * 4), behavior: 'smooth' });
-    }
+    setPage((prev) => Math.min(prev + 1, totalPages - 1));
   };
 
   // Convert context categories to display format
@@ -90,6 +87,7 @@ export default function ShopByCategory() {
             onClick={scrollLeft}
             className="bg-white rounded-full p-2 shadow-lg hover:bg-rose-50 border border-rose-400"
             aria-label="Scroll left"
+            disabled={page === 0}
           >
             <svg className="md:w-4 md:h-4 w-3 h-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -99,6 +97,7 @@ export default function ShopByCategory() {
             onClick={scrollRight}
             className="bg-white rounded-full p-2 shadow-lg hover:bg-rose-50 border border-rose-400"
             aria-label="Scroll right"
+            disabled={page === totalPages - 1}
           >
             <svg className="md:w-4 md:h-4 w-3 h-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -108,30 +107,25 @@ export default function ShopByCategory() {
       </div>
 
       <div className='relative'>
-        {/* Mobile: Scrollable Grid Layout with 4 columns */}
-        <div 
-          ref={scrollContainerRef}
-          className='md:hidden overflow-x-auto scrollbar-hide scroll-smooth px-4 mb-4'
-          style={{ scrollSnapType: 'x mandatory' }}
-        >
+        {/* Mobile: Paginated Grid Layout with 4 columns */}
+        <div className='md:hidden px-4 mb-4'>
           {loading ? (
             <div className="text-gray-500 py-8 w-full text-center">Loading categories...</div>
           ) : rendered.length === 0 ? (
             <div className="text-gray-500 py-8 w-full text-center">No categories available</div>
           ) : (
-            <div className='grid grid-cols-4 gap-1' style={{ width: 'max-content' }}>
-              {rendered.map((cat) => (
-                <div 
-                  key={cat._id} 
+            <div className='grid grid-cols-4 gap-2'>
+              {rendered.slice(page * pageSize, (page + 1) * pageSize).map((cat) => (
+                <div
+                  key={cat._id}
                   className='flex flex-col items-center group'
-                  style={{ 
+                  style={{
                     width: 'calc((100vw - 40px) / 4)',
-                    scrollSnapAlign: 'start'
                   }}
                 >
                   <Link href={cat.link} className='cursor-pointer flex flex-col items-center w-full'>
-                    <div 
-                      className='relative rounded-full border-2 border-white shadow-lg bg-gradient-to-r from-rose-100 to-purple-100 group-hover:scale-105 transition-transform overflow-visible'
+                    <div
+                      className='relative rounded-full border-2 border-white shadow-lg bg-gradient-to-r from-[#fff3dc] to-rose-100 group-hover:scale-105 transition-transform overflow-visible '
                       style={{
                         width: 'calc((100vw - 40px) / 4 - 4px)',
                         height: 'calc((100vw - 40px) / 4 - 4px)'
@@ -149,11 +143,9 @@ export default function ShopByCategory() {
                           className='w-full h-full object-contain group-hover:blur-sm transition-all duration-300'
                         />
                       </div>
-
-                      <div className='absolute inset-0 bg-gradient-to-r from-rose-400 to-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center'>
+                      <div className='absolute inset-0 bg-gradient-to-r from-[#fff3dc] to-rose-100 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center'>
                         <span className='text-white font-bold text-center px-1 text-[9px] leading-tight'>{cat.name}</span>
                       </div>
-
                       {cat.icon && (
                         <div className='absolute top-0.5 -left-0.5 bg-white rounded-full p-0.5 shadow z-20 border border-gray-100'>
                           {typeof cat.icon === 'string' ? (
@@ -194,11 +186,9 @@ export default function ShopByCategory() {
                         className='w-full h-full object-contain group-hover:blur-sm transition-all duration-300'
                       />
                     </div>
-
                     <div className='absolute inset-0 bg-gradient-to-r from-rose-400 to-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center'>
                       <span className='text-white font-bold text-center px-2 text-base'>{cat.name}</span>
                     </div>
-
                     {cat.icon && (
                       <div className='absolute top-2 -left-1 bg-white rounded-full p-1 shadow z-20 border border-gray-100'>
                         {typeof cat.icon === 'string' ? (

@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useCategories } from "@/components/context/CategoryContext";
 
 const CategorySidebar = ({ onLinkClick }) => {
-  const { categories, loading } = useCategories();
+  const { categories, loading, subcategories } = useCategories();
   const [expandedCategory, setExpandedCategory] = useState(null); // for mobile
   const [activeCategory, setActiveCategory] = useState(null); // for desktop hover
 
@@ -24,7 +24,7 @@ const CategorySidebar = ({ onLinkClick }) => {
   };
 
   return (
-    <div className="relative w-full bg-white h-full pb-6 overflow-y-auto" onMouseLeave={() => setActiveCategory(null)}>
+    <div className="relative w-full bg-white h-full pb-6 overflow-y-auto">
       {/* left list */}
       <div className="w-full pb-4 pt-2 px-4">
           {loading ? (
@@ -71,7 +71,7 @@ const CategorySidebar = ({ onLinkClick }) => {
                 <div className="md:hidden">
                   {expandedCategory === category._id && (
                     <div className="bg-gray-50 py-2">
-                      {category.subcategories?.map((subcategory) => (
+                      {(subcategories[category._id] || []).map((subcategory) => (
                         <Link
                           key={subcategory._id}
                           href={`/products/c/${category.name.replace(/\s+/g, "-")}/${subcategory.name.replace(/\s+/g, "-")}/`}
@@ -92,9 +92,7 @@ const CategorySidebar = ({ onLinkClick }) => {
       {/* floating subcategory panel (desktop) */}
       {activeCategory && (
         <div className="hidden md:block absolute top-0 left-full w-[220px] max-h-full bg-gray-50 overflow-y-auto px-4 py-2 shadow-lg">
-          {categories
-            .find((c) => c._id === activeCategory)
-            ?.subcategories?.map((subcategory) => (
+          {(subcategories[activeCategory] || []).map((subcategory) => (
               <Link
                 key={subcategory._id}
                 href={`/products/c/${

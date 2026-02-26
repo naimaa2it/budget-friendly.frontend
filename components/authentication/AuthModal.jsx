@@ -250,10 +250,11 @@ export default function AuthModal({ isOpen, onClose }) {
       <div className="absolute inset-0 bg-black/40" onClick={onClose}></div>
       <div className="bg-white rounded-lg p-6 relative z-10 w-full max-w-md">
         <button onClick={onClose} className="absolute top-3 right-3 text-gray-600 hover:text-gray-900">✕</button>
-       <div className='flex justify-center text-3xl'>
-        <WebsiteLogo/>
+        <div className="flex justify-center items-center gap-2 mb-4">
+          <h2 className="text-2xl font-semibold text-gray-900 mt-3">Continue with</h2>
+          <WebsiteLogo />
         </div>
-        <h2 className="text-2xl font-semibold mb-4 text-gray-900 text-center">Continue to Budget Friendly</h2>
+
 
         {view === 'choose' && (
           <div className="space-y-3">

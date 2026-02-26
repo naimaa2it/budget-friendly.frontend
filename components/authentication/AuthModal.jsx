@@ -253,21 +253,21 @@ export default function AuthModal({ isOpen, onClose }) {
         {/* header area */}
         <div className="bg-gradient-to-r from-pink-100 to-white px-6 py-5 text-center">
           <p className="text-lg font-semibold text-gray-800">Hello Trendsetter!</p>
-          <p className="text-sm text-gray-600 italic mb-2">"Style it. Power it. Own it."</p>
+          <p className="text-sm text-gray-600 italic ">"Style it. Power it. Own it."</p>
           <div className="flex justify-center items-center gap-2">
-            <h2 className="text-2xl font-bold text-gray-900">Continue with</h2>
-            <WebsiteLogo className="w-6 h-6" />
+            <h2 className="text-xl font-bold text-gray-900 mt-2">Continue with</h2>
+            <WebsiteLogo className="w-6 h-6 " />
           </div>
         </div>
-        <div className="p-6">
-
+        <div className="px-6 py-3">
+ 
 
         {view === 'choose' && (
-          <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
+          <div className="space-y-3 bg-gray-50 px-4 rounded-lg">
             <button 
               onClick={handleGoogle} 
               disabled={isLoading}
-              className="w-full border border-gray-200 px-4 py-3 flex items-center justify-center gap-3 text-gray-800 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              className="w-full border border-gray-200 px-4 py-3 flex items-center justify-center gap-3 text-gray-800 bg-white hover:bg-rose-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
               {isLoading ? (
                 <svg className="animate-spin h-5 w-5 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -287,7 +287,7 @@ export default function AuthModal({ isOpen, onClose }) {
             <button 
               onClick={() => { clearMessages(); setView('email-login'); }} 
               disabled={isLoading}
-              className="w-full border border-gray-200 px-4 py-3 flex items-center justify-center gap-3 text-gray-800 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              className="w-full border border-gray-200 px-4 py-3 flex items-center justify-center gap-3 text-gray-800 bg-white hover:bg-rose-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
               <svg className="w-5 h-5 text-gray-800" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                 <path d="M3 7.5v9A2.5 2.5 0 0 0 5.5 19h13a2.5 2.5 0 0 0 2.5-2.5v-9A2.5 2.5 0 0 0 18.5 5h-13A2.5 2.5 0 0 0 3 7.5z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>

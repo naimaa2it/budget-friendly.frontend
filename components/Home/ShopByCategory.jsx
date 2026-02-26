@@ -88,7 +88,7 @@ export default function ShopByCategory() {
         <div className='flex gap-2 mt-4'>
           <button
             onClick={scrollLeft}
-            className="bg-white rounded-full p-2 shadow-lg hover:bg-gray-50"
+            className="bg-white rounded-full p-2 shadow-lg hover:bg-rose-50 border border-rose-400"
             aria-label="Scroll left"
           >
             <svg className="md:w-4 md:h-4 w-3 h-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,7 +97,7 @@ export default function ShopByCategory() {
           </button>
           <button
             onClick={scrollRight}
-            className="bg-white rounded-full p-2 shadow-lg hover:bg-gray-50"
+            className="bg-white rounded-full p-2 shadow-lg hover:bg-rose-50 border border-rose-400"
             aria-label="Scroll right"
           >
             <svg className="md:w-4 md:h-4 w-3 h-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

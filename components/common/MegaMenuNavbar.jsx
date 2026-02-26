@@ -91,8 +91,8 @@ export default function MegaMenuNavbar() {
                 >
                   <Link
                     href={`/category/${category.slug}`}
-                    className={`flex items-center gap-0.5 md:gap-1 px-2 md:px-3 py-0.5 text-[8px] font-medium text-gray-700 hover:text-pink-600 hover:bg-pink-50 transition-colors duration-150 whitespace-nowrap ${
-                      isHovered ? 'text-pink-600 bg-pink-50' : ''
+                    className={`flex items-center gap-0.5 md:gap-1 px-2 md:px-3 py-0.5 text-[8px] font-medium text-gray-700 hover:text-red-600 hover:bg-pink-50 transition-colors duration-150 whitespace-nowrap ${
+                      isHovered ? 'text-red-600 bg-pink-50' : ''
                     }`}
                   >
                     <span className="text-[12px]">{category.name}</span>
@@ -176,7 +176,7 @@ export default function MegaMenuNavbar() {
                         )}
                         
                         {/* Category Name */}
-                        <h3 className="font-semibold text-sm text-gray-800 group-hover:text-pink-600 transition-colors">
+                        <h3 className="font-semibold text-sm text-gray-800 group-hover:text-rose-600 transition-colors">
                           {subcategory.name}
                         </h3>
                       </Link>
@@ -188,7 +188,7 @@ export default function MegaMenuNavbar() {
                             <li key={subSubcat._id}>
                               <Link
                                 href={`/category/${subSubcat.slug}`}
-                                className="text-xs text-gray-600 hover:text-pink-600 hover:underline transition-colors block"
+                                className="text-xs text-gray-600 hover:text-red-600 hover:underline transition-colors block"
                               >
                                 {subSubcat.name}
                               </Link>

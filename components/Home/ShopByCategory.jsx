@@ -81,16 +81,11 @@ export default function ShopByCategory() {
 
   return (
     <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-      <div className='max-w-5xl mx-auto flex justify-between items-center mt-2'>
-        <h1 className='text-2xl md:text-3xl font-bold text-gray-900 text-center mt-5 mb-4 md:mb-2'>
+      <div className='max-w-5xl mx-auto flex justify-between items-center mt-2 mb-3 px-2'>
+        <h1 className='text-2xl md:text-3xl font-bold text-gray-900 text-center'>
           Shop By <span className='border-b-2 border-red-500'>Category</span>
         </h1>
-        
-      </div>
-
-      <div className='relative'>
-        {/* Mobile: Arrow Navigation Above Categories */}
-        <div className='md:hidden flex justify-end gap-2 mb-3 px-4'>
+        <div className='flex gap-2'>
           <button
             onClick={scrollLeft}
             className="bg-white rounded-full p-2 shadow-lg hover:bg-gray-50"
@@ -110,7 +105,9 @@ export default function ShopByCategory() {
             </svg>
           </button>
         </div>
+      </div>
 
+      <div className='relative'>
         {/* Mobile: Scrollable Grid Layout with 4 columns */}
         <div 
           ref={scrollContainerRef}

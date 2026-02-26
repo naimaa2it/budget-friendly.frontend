@@ -66,14 +66,14 @@ export default function ShopByCategory() {
 
   return (
     <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-      <div className='max-w-5xl mx-auto flex justify-between items-center mt-5 mb-6'>
+      <div className='max-w-5xl mx-auto flex justify-between items-center mt-2'>
         <h1 className='text-3xl font-bold text-gray-900 text-center mt-5 mb-2'>
           Shop By <span className='border-b-2 border-red-500'>Category</span>
         </h1>
         
       </div>
 
-      <div className='flex flex-wrap justify-center gap-6 mb-10 mt-6'>
+      <div className='flex flex-wrap justify-center gap-5 mb-4'>
         {loading ? (
           <div className="text-gray-500 py-8">Loading categories...</div>
         ) : rendered.length === 0 ? (
@@ -84,7 +84,7 @@ export default function ShopByCategory() {
 
 
               <Link href={cat.link} className='cursor-pointer flex flex-col items-center'>
-                <div className='relative w-40 h-40 rounded-full border-4 border-white shadow-lg bg-gradient-to-r from-red-100 to-pink-100 group-hover:scale-105 transition-transform overflow-visible'>
+                <div className='relative w-38 h-38 rounded-full border-5 border-white shadow-lg bg-gradient-to-r from-rose-100 to-purple-100 group-hover:scale-105 transition-transform overflow-visible'>
                   <div className='w-full h-full rounded-full overflow-hidden'>
                     <Image
                       src={encodeURI(cat.image)}
@@ -98,7 +98,7 @@ export default function ShopByCategory() {
                     />
                   </div>
 
-                  <div className='absolute inset-0 bg-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center'>
+                  <div className='absolute inset-0 bg-gradient-to-r from-rose-400 to-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center'>
                     <span className='text-white font-bold text-center px-2 text-base'>{cat.name}</span>
                   </div>
 

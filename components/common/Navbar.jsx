@@ -217,7 +217,7 @@ export default function Navbar() {
           </form>
         </div>
 
-        <div className="flex items-center gap-0.5 md:gap-1">
+        <div className="flex items-center gap-0 md:gap-1">
           {/* mobile search icon, only visible below md */}
           <button
             ref={searchIconRef}

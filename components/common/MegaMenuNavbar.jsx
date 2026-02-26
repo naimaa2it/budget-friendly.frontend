@@ -91,7 +91,7 @@ export default function MegaMenuNavbar() {
                 >
                   <Link
                     href={`/category/${category.slug}`}
-                    className={`flex items-center gap-0.5 md:gap-1 px-2 md:px-3 py-2 text-[8px] font-medium text-gray-700 hover:text-pink-600 hover:bg-pink-50 transition-colors duration-150 whitespace-nowrap ${
+                    className={`flex items-center gap-0.5 md:gap-1 px-2 md:px-3 py-0.5 text-[8px] font-medium text-gray-700 hover:text-pink-600 hover:bg-pink-50 transition-colors duration-150 whitespace-nowrap ${
                       isHovered ? 'text-pink-600 bg-pink-50' : ''
                     }`}
                   >

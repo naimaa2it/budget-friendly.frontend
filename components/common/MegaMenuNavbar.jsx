@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useCategories } from '@/components/context/CategoryContext';
 
@@ -15,7 +15,56 @@ const TAGS = [
 export default function MegaMenuNavbar() {
   const { categories, subcategories, loading } = useCategories();
   const [hoveredCategory, setHoveredCategory] = useState(null);
+  const [isAutoScrolling, setIsAutoScrolling] = useState(true);
   const timeoutRef = useRef(null);
+  const scrollContainerRef = useRef(null);
+  const autoScrollIntervalRef = useRef(null);
+
+  // Auto-scroll functionality
+  useEffect(() => {
+    if (!isAutoScrolling || !scrollContainerRef.current) return;
+
+    autoScrollIntervalRef.current = setInterval(() => {
+      const container = scrollContainerRef.current;
+      if (!container) return;
+
+      // Scroll right by 1 pixel
+      container.scrollLeft += 1;
+
+      // Reset to start when reaching the end
+      if (container.scrollLeft >= container.scrollWidth - container.clientWidth - 10) {
+        container.scrollLeft = 0;
+      }
+    }, 30); // Adjust speed here (lower = faster)
+
+    return () => {
+      if (autoScrollIntervalRef.current) {
+        clearInterval(autoScrollIntervalRef.current);
+      }
+    };
+  }, [isAutoScrolling]);
+
+  // Pause auto-scroll on hover
+  const handleContainerMouseEnter = () => {
+    setIsAutoScrolling(false);
+  };
+
+  const handleContainerMouseLeave = () => {
+    setIsAutoScrolling(true);
+  };
+
+  // Manual scroll controls
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: -200, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: 200, behavior: 'smooth' });
+    }
+  };
 
   const handleMouseEnter = (categoryId) => {
     if (timeoutRef.current) {
@@ -42,11 +91,28 @@ export default function MegaMenuNavbar() {
   };
 
   return (
-    <div className="bg-white ">
-      <div className="max-w-[1200px] mx-auto">
-        {/* Single Row: Categories First, then Tags */}
+    <div className="bg-white border-b border-gray-200">
+      <div className="max-w-7xl mx-auto">
+        {/* Single Row: Categories First, then Tags with Arrows */}
         <nav className="relative">
-          <div className="flex items-center gap-1 px-2 md:px-4 py-0 overflow-x-auto scrollbar-hide">
+          {/* Left Arrow */}
+          <button
+            onClick={scrollLeft}
+            className="hidden md:flex absolute left-0 top-0 bottom-0 z-10 items-center justify-center w-10 bg-linear-to-r from-white to-transparent hover:from-gray-50"
+            aria-label="Scroll left"
+          >
+            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          {/* Scrollable Container */}
+          <div
+            ref={scrollContainerRef}
+            onMouseEnter={handleContainerMouseEnter}
+            onMouseLeave={handleContainerMouseLeave}
+            className="flex items-center gap-1 px-2 md:px-12 py-0 overflow-x-auto scrollbar-hide scroll-smooth"
+          >
             {/* Main Categories */}
             {categories.map((category) => {
               const hasSubcategories = getCategorySubcategories(category._id).length > 0;
@@ -55,13 +121,13 @@ export default function MegaMenuNavbar() {
               return (
                 <div
                   key={category._id}
-                  className="relative flex-shrink-0"
+                  className="relative shrink-0"
                   onMouseEnter={() => handleMouseEnter(category._id)}
                   onMouseLeave={handleMouseLeave}
                 >
                   <Link
                     href={`/category/${category.slug}`}
-                    className={`flex items-center gap-0.5 md:gap-1 px-2 md:px-3  text-[8px] font-medium text-gray-700 hover:text-pink-600 hover:bg-pink-50 transition-colors duration-150 whitespace-nowrap ${
+                    className={`flex items-center gap-0.5 md:gap-1 px-2 md:px-3 py-0.5 text-[8px] font-medium text-gray-700 hover:text-pink-600 hover:bg-pink-50 transition-colors duration-150 whitespace-nowrap ${
                       isHovered ? 'text-pink-600 bg-pink-50' : ''
                     }`}
                   >
@@ -81,7 +147,7 @@ export default function MegaMenuNavbar() {
                   {/* Mega Menu Dropdown - Only on desktop */}
                   {hasSubcategories && isHovered && (
                     <div
-                      className="hidden md:grid absolute left-0 top-full min-w-[800px] max-w-[1000px] bg-white border border-gray-200 shadow-2xl rounded-lg mt-0 p-6 grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6 z-50"
+                      className="hidden md:grid absolute left-0 top-full w-full max-w-6xl bg-white border border-gray-200 shadow-2xl rounded-lg mt-0 p-6 grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-6 z-50"
                       style={{ maxHeight: '80vh', overflowY: 'auto' }}
                       onMouseEnter={() => handleMouseEnter(category._id)}
                       onMouseLeave={handleMouseLeave}
@@ -153,13 +219,24 @@ export default function MegaMenuNavbar() {
               <Link
                 key={tag.name}
                 href={`/products?tag=${tag.name.toLowerCase().replace(/\s+/g, '-')}`}
-                className={`flex items-center gap-1 px-2 md:px-2.5 pb-0.5 whitespace-nowrap text-[12px] font-medium ${tag.color} hover:bg-gray-50 transition-colors flex-shrink-0`}
+                className={`flex items-center gap-1 px-2 md:px-2.5 py-0.5 whitespace-nowrap text-[12px] font-medium ${tag.color} hover:bg-gray-50 transition-colors shrink-0`}
               >
                 <span className="text-sm">{tag.icon}</span>
                 <span className="hidden sm:inline">{tag.name}</span>
               </Link>
             ))}
           </div>
+
+          {/* Right Arrow */}
+          <button
+            onClick={scrollRight}
+            className="hidden md:flex absolute right-0 top-0 bottom-0 z-10 items-center justify-center w-10 bg-linear-to-l from-white to-transparent hover:from-gray-50"
+            aria-label="Scroll right"
+          >
+            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </nav>
       </div>
 

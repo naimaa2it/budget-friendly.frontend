@@ -5,6 +5,7 @@ import MegaMenuNavbar from "@/components/common/MegaMenuNavbar";
 import Footer from "@/components/common/Footer";
 import { UserProvider } from '@/components/context/UserContext';
 import { CartProvider } from '@/components/context/CartContext';
+import { CategoryProvider } from '@/components/context/CategoryContext';
 import CartToast from '@/components/cart/CartToast';
 import CartSidebar from '@/components/cart/CartSidebar';
 import CartFloating from '@/components/cart/CartFloating';
@@ -30,17 +31,19 @@ export default function RootLayout({ children }) {
       <body className={`${workSans.variable} antialiased`}>
         <UserProvider>
           <CartProvider>
-            <div className="sticky top-0 z-50">
-              <Navbar />
-              <MegaMenuNavbar />
-            </div>
-            {children}
-            <Footer />
-            {/* global UI overlays */}
-            <CartToast />
-            <CartSidebar />
-            <CartFloating />
-            <ToastProvider />
+            <CategoryProvider>
+              <div className="sticky top-0 z-50">
+                <Navbar />
+                <MegaMenuNavbar />
+              </div>
+              {children}
+              <Footer />
+              {/* global UI overlays */}
+              <CartToast />
+              <CartSidebar />
+              <CartFloating />
+              <ToastProvider />
+            </CategoryProvider>
           </CartProvider>
         </UserProvider>
       </body>

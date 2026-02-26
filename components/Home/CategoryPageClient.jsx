@@ -5,12 +5,14 @@ import ProductCard from './ProductCard';
 import CategoryFilters from './CategoryFilters';
 import Link from 'next/link';
 import { useUser } from '@/components/context/UserContext';
+import { useCategories } from '@/components/context/CategoryContext';
 import { FaTrash } from 'react-icons/fa';
 import Image from 'next/image';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export default function CategoryPageClient({ slug }) {
+  const { getCategoryBySlug, categoriesMap, getSubcategories } = useCategories();
   const [category, setCategory] = useState(null);
   const [parentCategory, setParentCategory] = useState(null);
   const [subcategories, setSubcategories] = useState([]);
@@ -21,32 +23,15 @@ export default function CategoryPageClient({ slug }) {
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
 
-  // fetch category tree + products
+  // fetch products using category from context
   useEffect(() => {
     if (!slug) return;
     setLoading(true);
     (async () => {
       try {
-        const catsResp = await fetch(`${API}/api/products/categories`);
-        const catsJson = await catsResp.json();
-        const flat = [];
-        const parentMap = {};
-        const lookupById = {};
-        const walk = (nodes, parent = null) => {
-          for (const n of (nodes || [])) {
-            flat.push(n);
-            lookupById[String(n._id)] = n;
-            if (parent) parentMap[String(n._id)] = parent._id;
-            if (n.children && n.children.length) walk(n.children, n);
-          }
-        };
-        walk(catsJson.categories || []);
-
-        // try to match using stored slug value first, fall back to name-based guess
-        let match = flat.find(c => String(c.slug) === slug);
-        if (!match) {
-          match = flat.find(c => (c.name || '').toLowerCase().replace(/\s+/g, '-') === slug);
-        }
+        // Get category from context instead of fetching
+        let match = getCategoryBySlug(slug);
+        
         if (!match) {
           setCategory({ name: slug, description: '' });
           setSubcategories([]);
@@ -58,27 +43,28 @@ export default function CategoryPageClient({ slug }) {
         }
 
         setCategory(match);
-        setSubcategories(match.children || []);
-        // determine if this category has a parent (thus a subcategory page)
-        const parentId = parentMap[String(match._id)];
-        setIsSubcategoryPage(Boolean(parentId));
-        if (parentId) {
-          setParentCategory(lookupById[String(parentId)] || null);
+        const subs = getSubcategories(match._id);
+        setSubcategories(subs);
+        
+        // determine if this category has a parent
+        setIsSubcategoryPage(Boolean(match.parent));
+        if (match.parent && categoriesMap[match.parent]) {
+          setParentCategory(categoriesMap[match.parent]);
         } else {
           setParentCategory(null);
         }
 
-        // gather all descendant category ids (include self) so that products
-        // in sub‑categories are also loaded
-        const collectIds = node => {
-          let ids = [String(node._id)];
-          if (node.children && node.children.length) {
-            node.children.forEach(c => ids = ids.concat(collectIds(c)));
-          }
+        // gather all descendant category ids (include self)
+        const collectIds = (catId) => {
+          let ids = [String(catId)];
+          const children = getSubcategories(catId);
+          children.forEach(c => ids = ids.concat(collectIds(c._id)));
           return ids;
         };
-        const ids = collectIds(match);
+        const ids = collectIds(match._id);
         const param = ids.join(',');
+        
+        // Fetch products
         const prodResp = await fetch(`${API}/api/products?categoryId=${encodeURIComponent(param)}&limit=200`);
         const prodJson = await prodResp.json();
         const items = (prodJson.items || []).map(p => ({
@@ -87,6 +73,7 @@ export default function CategoryPageClient({ slug }) {
         }));
         setProducts(items);
         setFiltered(items);
+        
         // determine best-selling subset
         const best = items.filter(p => Array.isArray(p.badges) && p.badges.includes('best_seller'));
         setBestSelling(best);
@@ -98,7 +85,7 @@ export default function CategoryPageClient({ slug }) {
         setLoading(false);
       }
     })();
-  }, [slug]);
+  }, [slug, getCategoryBySlug, categoriesMap, getSubcategories]);
 
   const stats = useMemo(() => {
     const prices = products.map(p => p.price || 0);

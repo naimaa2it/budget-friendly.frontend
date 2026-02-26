@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { PiFishThin , PiTireThin,PiLeafThin} from 'react-icons/pi';
 import { GiRopeCoil,GiPeanut,GiWoodPile } from 'react-icons/gi';
 import { FaArrowRight, FaTrash } from 'react-icons/fa';
 import { useUser } from '@/components/context/UserContext';
+import { useCategories } from '@/components/context/CategoryContext';
 import Image from 'next/image';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -39,27 +40,16 @@ const categoryAssets = {
 };
 
 export default function ShopByCategory() {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { categories: rawCategories, loading } = useCategories();
   const { user } = useUser();
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const res = await fetch(`${API}/api/products/categories`);
-        const json = await res.json();
-        if (!mounted) return;
-        // API returns tree: { categories: [...] } — take top-level nodes and prefer uploaded image when available
-        setCategories((json.categories || []).map(c => ({ _id: c._id, name: c.name, slug: c.slug, image: (c.images && c.images[0] && c.images[0].url) ? c.images[0].url : undefined })));
-      } catch (err) {
-        console.error('Failed to fetch categories', err);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    })();
-    return () => { mounted = false; };
-  }, []);
+  // Convert context categories to display format
+  const categories = rawCategories.map(c => ({
+    _id: c._id,
+    name: c.name,
+    slug: c.slug,
+    image: (c.images && c.images[0] && c.images[0].url) ? c.images[0].url : undefined
+  }));
 
   const rendered = (categories || []).map((category) => {
     const assets = categoryAssets[category.name] || {};

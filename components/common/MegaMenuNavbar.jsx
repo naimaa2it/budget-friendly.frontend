@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import Link from 'next/link';
+import { useCategories } from '@/components/context/CategoryContext';
 
 const TAGS = [
   { name: 'Best Seller', icon: '⭐', color: 'text-yellow-600' },
@@ -12,56 +13,9 @@ const TAGS = [
 ];
 
 export default function MegaMenuNavbar() {
-  const [categories, setCategories] = useState([]);
-  const [activeCategory, setActiveCategory] = useState(null);
+  const { categories, subcategories, loading } = useCategories();
   const [hoveredCategory, setHoveredCategory] = useState(null);
-  const [subcategories, setSubcategories] = useState({});
   const timeoutRef = useRef(null);
-  const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
-    try {
-      const res = await fetch(`${API}/api/products/categories`);
-      if (res.ok) {
-        const data = await res.json();
-        // The API returns a tree structure with { categories: [...] }
-        // We need to flatten it to work with our component
-        const flattenCategories = (cats, result = []) => {
-          cats.forEach(cat => {
-            result.push({ ...cat, parent: cat.parent || null });
-            if (cat.children && cat.children.length > 0) {
-              flattenCategories(cat.children, result);
-            }
-          });
-          return result;
-        };
-        
-        const allCategories = flattenCategories(data.categories || []);
-        
-        // Get only level 0 (main) categories
-        const mainCategories = allCategories.filter(cat => cat.level === 0);
-        setCategories(mainCategories);
-        
-        // Organize subcategories by parent
-        const subMap = {};
-        allCategories.forEach(cat => {
-          if (cat.parent) {
-            if (!subMap[cat.parent]) {
-              subMap[cat.parent] = [];
-            }
-            subMap[cat.parent].push(cat);
-          }
-        });
-        setSubcategories(subMap);
-      }
-    } catch (err) {
-      console.error('Failed to fetch categories:', err);
-    }
-  };
 
   const handleMouseEnter = (categoryId) => {
     if (timeoutRef.current) {
@@ -127,7 +81,7 @@ export default function MegaMenuNavbar() {
                   {/* Mega Menu Dropdown - Only on desktop */}
                   {hasSubcategories && isHovered && (
                     <div
-                      className="hidden md:block absolute left-0 top-full min-w-[800px] max-w-[1000px] bg-white border border-gray-200 shadow-2xl rounded-lg mt-0 p-6 grid grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6 z-50"
+                      className="hidden md:grid absolute left-0 top-full min-w-[800px] max-w-[1000px] bg-white border border-gray-200 shadow-2xl rounded-lg mt-0 p-6 grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6 z-50"
                       style={{ maxHeight: '80vh', overflowY: 'auto' }}
                       onMouseEnter={() => handleMouseEnter(category._id)}
                       onMouseLeave={handleMouseLeave}

@@ -116,7 +116,7 @@ export default function MegaMenuNavbar() {
               <Link
                 key={tag.name}
                 href={`/products?tag=${tag.name.toLowerCase().replace(/\s+/g, '-')}`}
-                className={`flex items-center gap-1 px-2 md:px-2.5 py-2 whitespace-nowrap text-[12px] font-medium ${tag.color} hover:bg-gray-50 transition-colors shrink-0`}
+                className={`flex items-center gap-1 px-2 md:px-2.5 py-0.5 whitespace-nowrap text-[12px] font-medium ${tag.color} hover:bg-gray-50 transition-colors shrink-0`}
               >
                 <span className="text-sm">{tag.icon}</span>
                 <span className="hidden sm:inline">{tag.name}</span>
@@ -160,20 +160,20 @@ export default function MegaMenuNavbar() {
                         className="flex items-center gap-2.5 group"
                       >
                         {/* Small Icon/Image */}
-                        <div className="w-9 h-9 rounded-full bg-pink-50 flex items-center justify-center flex-shrink-0 group-hover:bg-pink-100 transition-colors">
-                          {subcategory.image ? (
-                            <div className="relative w-9 h-9 rounded-full overflow-hidden">
-                              <Image
-                                src={subcategory.image}
-                                alt={subcategory.name}
-                                fill
-                                className="object-cover"
-                              />
-                            </div>
-                          ) : (
+                        {subcategory.images && subcategory.images[0]?.url ? (
+                          <div className="relative w-9 h-9 rounded-full overflow-hidden shrink-0 bg-gray-100">
+                            <Image
+                              src={subcategory.images[0].url}
+                              alt={subcategory.name}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-9 h-9 rounded-full bg-pink-50 flex items-center justify-center shrink-0 group-hover:bg-pink-100 transition-colors">
                             <span className="text-lg">📦</span>
-                          )}
-                        </div>
+                          </div>
+                        )}
                         
                         {/* Category Name */}
                         <h3 className="font-semibold text-sm text-gray-800 group-hover:text-pink-600 transition-colors">

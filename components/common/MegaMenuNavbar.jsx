@@ -107,11 +107,11 @@ export default function MegaMenuNavbar() {
                 >
                   <Link
                     href={`/category/${category.slug}`}
-                    className={`flex items-center gap-0.5 md:gap-1 px-2 md:px-3 py-2 text-xs font-medium text-gray-700 hover:text-pink-600 hover:bg-pink-50 transition-colors duration-150 whitespace-nowrap ${
+                    className={`flex items-center gap-0.5 md:gap-1 px-2 md:px-3  text-[8px] font-medium text-gray-700 hover:text-pink-600 hover:bg-pink-50 transition-colors duration-150 whitespace-nowrap ${
                       isHovered ? 'text-pink-600 bg-pink-50' : ''
                     }`}
                   >
-                    <span className="text-sm">{category.name}</span>
+                    <span className="text-[12px]">{category.name}</span>
                     {hasSubcategories && (
                       <svg
                         className={`w-3 h-3 transition-transform ${isHovered ? 'rotate-180' : ''}`}
@@ -192,17 +192,14 @@ export default function MegaMenuNavbar() {
               );
             })}
 
-            {/* Divider */}
-            {categories.length > 0 && (
-              <div className="h-4 w-px bg-gray-300 mx-2 flex-shrink-0"></div>
-            )}
+            
 
             {/* Tags */}
             {TAGS.map((tag) => (
               <Link
                 key={tag.name}
                 href={`/products?tag=${tag.name.toLowerCase().replace(/\s+/g, '-')}`}
-                className={`flex items-center gap-1 px-2 md:px-2.5 py-2 whitespace-nowrap text-xs font-medium ${tag.color} hover:bg-gray-50 transition-colors flex-shrink-0`}
+                className={`flex items-center gap-1 px-2 md:px-2.5 py-0.5 whitespace-nowrap text-[12px] font-medium ${tag.color} hover:bg-gray-50 transition-colors flex-shrink-0`}
               >
                 <span className="text-sm">{tag.icon}</span>
                 <span className="hidden sm:inline">{tag.name}</span>

@@ -70,13 +70,7 @@ export default function ShopByCategory() {
         <h1 className='text-3xl font-bold text-gray-900 text-center mt-5 mb-2'>
           Shop By <span className='border-b-2 border-red-500'>Category</span>
         </h1>
-        <Link 
-          href="/products" 
-          className='px-6 py-2 bg-gray-100 text-red-600 rounded-md hover:bg-red-700 hover:text-white transition font-medium flex items-center gap-2'
-        >
-          View All
-          <FaArrowRight className='w-4 h-4' />
-        </Link>
+        
       </div>
 
       <div className='flex flex-wrap justify-center gap-6 mb-10 mt-6'>
@@ -90,7 +84,7 @@ export default function ShopByCategory() {
 
 
               <Link href={cat.link} className='cursor-pointer flex flex-col items-center'>
-                <div className='relative w-40 h-40 rounded-full border-4 border-white shadow-lg bg-red-100/30 group-hover:scale-105 transition-transform overflow-visible'>
+                <div className='relative w-40 h-40 rounded-full border-4 border-white shadow-lg bg-gradient-to-r from-red-100 to-pink-100 group-hover:scale-105 transition-transform overflow-visible'>
                   <div className='w-full h-full rounded-full overflow-hidden'>
                     <Image
                       src={encodeURI(cat.image)}

@@ -84,7 +84,7 @@ const Banner = () => {
 
     <div className="flex flex-col md:flex-row w-full bg-[#FAFAF7] ">
       {/* Sidebar (desktop only) */}
-      <div className="hidden md:block md:w-[20%] sticky top-[56px] h-[calc(100vh-56px)] overflow-y-auto">
+      <div className="hidden md:block md:w-[240px] min-w-[200px] sticky top-[56px] h-[calc(100vh-56px)] overflow-y-auto">
         <CategorySidebar />
       </div>
 

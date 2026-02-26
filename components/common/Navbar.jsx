@@ -49,7 +49,7 @@ function ProfileMenu() {
   return (
     <>
       <div ref={ref} className="relative">
-        <button onClick={handleProfileClick} className="w-8 h-8 p-1 rounded-full border border-[#f2b7ff] text-[#202020] hover:text-[#ac0ad1] flex items-center justify-center overflow-hidden" aria-label="Profile" title="Profile">
+        <button onClick={handleProfileClick} className="w-8 h-8 p-1 rounded-full border border-[#f2b7ff] text-[#202020] hover:text-[#ac0ad1] flex items-center justify-center overflow-hidden bg-white" aria-label="Profile" title="Profile">
           {user && user.image && !imgError && user.image !== 'undefined' && user.image !== 'null' ? (
             <img
               src={user.image}
@@ -57,6 +57,10 @@ function ProfileMenu() {
               className="w-6 h-6 rounded-full object-cover"
               onError={() => setImgError(true)}
             />
+          ) : user && user.email ? (
+            <span className="text-sm font-semibold text-gray-700">
+              {user.email.charAt(0).toUpperCase()}
+            </span>
           ) : (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-3-3.87"/><path d="M4 21v-2a4 4 0 0 1 3-3.87"/><circle cx="12" cy="7" r="4"/></svg>
           )}

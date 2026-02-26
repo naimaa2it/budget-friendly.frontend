@@ -14,6 +14,7 @@ function ProfileMenu() {
   const { user, setUser, refreshUser } = useUser();
   const [open, setOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const ref = useRef(null);
   const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -48,9 +49,14 @@ function ProfileMenu() {
   return (
     <>
       <div ref={ref} className="relative">
-        <button onClick={handleProfileClick} className="p-1 rounded-full border border-[#f2b7ff] text-[#202020] hover:text-[#ac0ad1]" aria-label="Profile" title="Profile">
-          {user && user.image ? (
-            <img src={user.image} alt={user.name || 'User'} className="w-6 h-6 rounded-full object-cover" />
+        <button onClick={handleProfileClick} className="w-8 h-8 p-1 rounded-full border border-[#f2b7ff] text-[#202020] hover:text-[#ac0ad1] flex items-center justify-center overflow-hidden" aria-label="Profile" title="Profile">
+          {user && user.image && !imgError && user.image !== 'undefined' && user.image !== 'null' ? (
+            <img
+              src={user.image}
+              alt={user.name || 'User'}
+              className="w-6 h-6 rounded-full object-cover"
+              onError={() => setImgError(true)}
+            />
           ) : (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-3-3.87"/><path d="M4 21v-2a4 4 0 0 1 3-3.87"/><circle cx="12" cy="7" r="4"/></svg>
           )}
@@ -201,7 +207,7 @@ export default function Navbar() {
         <div className="flex-1 flex justify-center">
           <form className="hidden md:flex w-full max-w-[400px] flex items-center" role="search" onSubmit={(e) => e.preventDefault()} aria-label="Search form">
             <div className="relative w-full">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[#202020] pointer-events-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[#ff0707] pointer-events-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input className="pl-9 px-3 py-1 rounded-full border border-black/10 w-full outline-none" type="search" placeholder="Search products..." aria-label="Search" />
             </div>
           </form>
@@ -272,7 +278,7 @@ export default function Navbar() {
             }}
           >
             <div className="relative w-full">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[#202020] pointer-events-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[#fc0707] pointer-events-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input
                 className="pl-9 px-3 py-1 rounded-full border border-black/10 w-full outline-none"
                 type="search"

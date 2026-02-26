@@ -149,6 +149,12 @@ export default function AuthModal({ isOpen, onClose }) {
         throw new Error(errBody.error || `Backend responded with ${resp.status}`);
       }
 
+      // update context immediately using response body if available
+      const data = await resp.json().catch(() => ({}));
+      if (data.user) {
+        setUser(data.user);
+      }
+      // still refresh to be safe
       await refreshUser();
       onClose();
     } catch (err) {
@@ -200,13 +206,16 @@ export default function AuthModal({ isOpen, onClose }) {
       }
 
       // send user info to backend to create session
-      await fetch(`${API}/api/auth/firebase-login`, {
+      const resp2 = await fetch(`${API}/api/auth/firebase-login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ email: userCredential.user.email, name: userCredential.user.displayName || name, image: userCredential.user.photoURL || '' })
       });
-
+      const data2 = await resp2.json().catch(() => ({}));
+      if (data2.user) {
+        setUser(data2.user);
+      }
       await refreshUser();
       onClose();
     } catch (err) {

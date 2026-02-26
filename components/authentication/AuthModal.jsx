@@ -248,24 +248,26 @@ export default function AuthModal({ isOpen, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40" onClick={onClose}></div>
-      <div className="bg-white rounded-lg p-6 relative z-10 w-full max-w-md">
+      <div className="bg-white rounded-lg p-0 relative z-10 w-full max-w-md overflow-hidden shadow-xl">
         <button onClick={onClose} className="absolute top-3 right-3 text-gray-600 hover:text-gray-900">✕</button>
-        <div className="flex flex-col items-center gap-2 mb-4">
-          <p className="text-lg font-medium text-gray-700">Hello Trendsetter!</p>
-          <p className="text-sm text-gray-500 italic">"Style it. Power it. Own it."</p>
+        {/* header area */}
+        <div className="bg-gradient-to-r from-pink-100 to-white px-6 py-5 text-center">
+          <p className="text-lg font-semibold text-gray-800">Hello Trendsetter!</p>
+          <p className="text-sm text-gray-600 italic mb-2">"Style it. Power it. Own it."</p>
           <div className="flex justify-center items-center gap-2">
-            <h2 className="text-2xl font-semibold text-gray-900">Continue with</h2>
-            <WebsiteLogo />
+            <h2 className="text-2xl font-bold text-gray-900">Continue with</h2>
+            <WebsiteLogo className="w-6 h-6" />
           </div>
         </div>
+        <div className="p-6">
 
 
         {view === 'choose' && (
-          <div className="space-y-3">
+          <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
             <button 
               onClick={handleGoogle} 
               disabled={isLoading}
-              className="w-full border border-gray-200 px-4 py-3 flex items-center justify-center gap-3 text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+              className="w-full border border-gray-200 px-4 py-3 flex items-center justify-center gap-3 text-gray-800 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
               {isLoading ? (
                 <svg className="animate-spin h-5 w-5 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -285,7 +287,7 @@ export default function AuthModal({ isOpen, onClose }) {
             <button 
               onClick={() => { clearMessages(); setView('email-login'); }} 
               disabled={isLoading}
-              className="w-full border border-gray-200 px-4 py-3 flex items-center justify-center gap-3 text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+              className="w-full border border-gray-200 px-4 py-3 flex items-center justify-center gap-3 text-gray-800 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
               <svg className="w-5 h-5 text-gray-800" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                 <path d="M3 7.5v9A2.5 2.5 0 0 0 5.5 19h13a2.5 2.5 0 0 0 2.5-2.5v-9A2.5 2.5 0 0 0 18.5 5h-13A2.5 2.5 0 0 0 3 7.5z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -445,6 +447,7 @@ export default function AuthModal({ isOpen, onClose }) {
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

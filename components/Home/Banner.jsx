@@ -84,8 +84,8 @@ const Banner = () => {
     <>
 
     <div className="relative flex flex-col md:flex-row md:items-start w-full bg-[#FAFAF7]">
-      {/* Sidebar (desktop only) — h-auto so height matches category list content */}
-      <div className="hidden md:block md:w-[240px] min-w-[200px] sticky top-[56px] h-auto overflow-visible z-10">
+      {/* Sidebar (desktop only) — h-fit so height = category list content only */}
+      <div className="hidden md:block md:w-[240px] min-w-[200px] overflow-visible z-10 relative h-fit">
         <CategorySidebar />
       </div>
 
@@ -97,10 +97,10 @@ const Banner = () => {
             className="fixed inset-0 bg-black/40"
             onClick={() => setMobileMenuOpen(false)}
           />
-          {/* Drawer panel — only as tall as its content */}
-          <div className="relative w-[80%] max-w-xs bg-white shadow-2xl flex flex-col z-10" style={{ maxHeight: "85vh" }}>
+          {/* Drawer panel — natural content height, no flex stretching */}
+          <div className="relative w-[80%] max-w-xs bg-white shadow-2xl z-10">
             {/* Drawer header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-rose-600 shrink-0">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-rose-600">
               <span className="text-white font-bold text-sm tracking-wide">All Categories</span>
               <button
                 onClick={() => setMobileMenuOpen(false)}
@@ -112,8 +112,8 @@ const Banner = () => {
                 </svg>
               </button>
             </div>
-            {/* Category list — scrollable if content overflows */}
-            <div className="overflow-y-auto">
+            {/* Category list — scrollable only if content overflows viewport */}
+            <div style={{ maxHeight: "80vh", overflowY: "auto" }}>
               <CategorySidebar onLinkClick={() => setMobileMenuOpen(false)} />
             </div>
           </div>
@@ -137,7 +137,7 @@ const Banner = () => {
         </div>
 
         {/* Default Top Banner - Static (banner-bg2) */}
-        <div className="relative h-[180px] md:h-[380px] rounded-lg overflow-hidden ">
+        <div className="relative h-[180px] md:h-[380px] rounded-2xl overflow-hidden max-w-6xl">
           <Image
             src="/banner/Oven_Big_banner_1.jpg"
             alt="Stay home & delivered your daily needs"
@@ -145,7 +145,7 @@ const Banner = () => {
             priority
             quality={90}
             sizes="100vw"
-            className="object-cover"
+            className="object-fit"
           />
         </div> 
       </div>

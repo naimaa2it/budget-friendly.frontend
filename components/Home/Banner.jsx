@@ -83,9 +83,9 @@ const Banner = () => {
   return (
     <>
 
-    <div className="relative flex flex-col md:flex-row w-full bg-[#FAFAF7]">
-      {/* Sidebar (desktop only) — z-10 so flyout renders above banner image text */}
-      <div className="hidden md:block md:w-[240px] min-w-[200px] sticky top-[56px] h-auto self-start overflow-visible z-10 relative">
+    <div className="relative flex flex-col md:flex-row md:items-start w-full bg-[#FAFAF7]">
+      {/* Sidebar (desktop only) — h-auto so height matches category list content */}
+      <div className="hidden md:block md:w-[240px] min-w-[200px] sticky top-[56px] h-auto overflow-visible z-10">
         <CategorySidebar />
       </div>
 

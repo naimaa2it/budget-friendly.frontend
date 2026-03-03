@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useUser } from "@/components/context/UserContext";
 import toast from "react-hot-toast";
+import AuthModal from "@/components/authentication/AuthModal";
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -41,6 +42,7 @@ export default function ProductInfoTabs({ product }) {
   // Reviews state
   const [reviews, setReviews] = useState(product?.reviews || []);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
   const [reviewForm, setReviewForm] = useState({ name: '', rating: 0, body: '' });
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
@@ -347,7 +349,20 @@ export default function ProductInfoTabs({ product }) {
                 <button
                   onClick={() => {
                     if (!user) {
-                      toast.error('Please login first to give a review');
+                      toast(
+                        (t) => (
+                          <span className="flex items-center gap-2">
+                            Please login first to give a review.{' '}
+                            <button
+                              onClick={() => { toast.dismiss(t.id); setShowAuthModal(true); }}
+                              className="font-semibold text-pink-600 underline hover:text-pink-800"
+                            >
+                              Login
+                            </button>
+                          </span>
+                        ),
+                        { icon: '🔒' }
+                      );
                       return;
                     }
                     setEditingIndex(null);
@@ -508,6 +523,7 @@ export default function ProductInfoTabs({ product }) {
           )}
         </div>
       </div>
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </section>
   );
 }

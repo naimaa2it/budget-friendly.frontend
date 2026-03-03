@@ -150,16 +150,6 @@ export default function DealsOfDay() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Product Image Section */}
               <div>
-                {/* Discount Badge */}
-                <div className="absolute top-4 left-4 w-16 h-16 bg-red-600 rounded-full flex items-center justify-center z-10">
-                  <span className="text-white font-bold text-sm">-14%</span>
-                </div>
-
-                {/* New Badge */}
-                <div className="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded text-sm font-semibold z-10">
-                  New
-                </div>
-
                 {/* Main Product Image */}
                 <div className="relative bg-white rounded-lg mb-4 h-96 flex items-center justify-center">
                   <Image

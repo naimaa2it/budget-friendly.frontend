@@ -19,18 +19,16 @@
   }
 }
 
-html, body {
-  /* allow normal scrolling but hide native scrollbars for a clean look */
-  overflow-x: auto;
-  overflow-y: auto;
+html {
+  /* clip horizontal overflow without creating a scroll container (preserves sticky) */
+  overflow-x: clip;
   /* Firefox */
   scrollbar-width: none;
   /* IE 10+ */
   -ms-overflow-style: none;
 }
 
-html::-webkit-scrollbar,
-body::-webkit-scrollbar {
+html::-webkit-scrollbar {
   display: none;
 }
 

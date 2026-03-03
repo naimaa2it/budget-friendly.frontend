@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PiFishThin , PiTireThin,PiLeafThin} from 'react-icons/pi';
 import { GiRopeCoil,GiPeanut,GiWoodPile } from 'react-icons/gi';
@@ -44,7 +44,21 @@ export default function ShopByCategory() {
   const { user } = useUser();
   const scrollContainerRef = useRef(null);
   const [page, setPage] = useState(0);
-  const pageSize = 4;
+
+  // determine page size based on window width: mobile 4, tablet 5, large 6
+  const [pageSize, setPageSize] = useState(4);
+  useEffect(() => {
+    const update = () => {
+      const w = window.innerWidth;
+      if (w >= 1024) setPageSize(6);      // large devices
+      else if (w >= 768) setPageSize(5);  // tablets
+      else setPageSize(4);               // mobiles
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+
   const totalPages = Math.ceil(rawCategories.length / pageSize);
 
   const scrollLeft = () => {
@@ -77,8 +91,8 @@ export default function ShopByCategory() {
   });
 
   return (
-    <div className='max-w-7xl mx-auto px-4 sm:px-2 lg:px-8'>
-      <div className='max-w-5xl mx-auto flex justify-between items-center mt-2 mb-3 px-2 '>
+    <div className='max-w-7xl mx-auto px-2 mt-10 mb-6'>
+      <div className='max-w-6xl mx-auto flex justify-between items-center mt-2 mb-4 px-6 '>
         <h1 className='text-xl md:text-3xl font-bold text-gray-900 text-center mt-4'>
           Shop By <span className='border-b-2 border-red-500'>Category</span>
         </h1>
@@ -106,52 +120,46 @@ export default function ShopByCategory() {
         </div>
       </div>
 
-      <div className='relative'>
-        {/* Mobile: Paginated Grid Layout with 4 columns */}
-        <div className='md:hidden px-4 mb-4'>
-          {loading ? (
-            <div className="text-gray-500 py-8 w-full text-center">Loading categories...</div>
-          ) : rendered.length === 0 ? (
-            <div className="text-gray-500 py-8 w-full text-center">No categories available</div>
-          ) : (
-            <div className='grid grid-cols-4 gap-2'>
-              {rendered.slice(page * pageSize, (page + 1) * pageSize).map((cat) => (
+      <div className='relative max-w-6xl mx-auto'>
+        {/* unified paginated layout */}
+        {loading ? (
+          <div className="text-gray-500 py-8 w-full text-center">Loading categories...</div>
+        ) : rendered.length === 0 ? (
+          <div className="text-gray-500 py-8 w-full text-center">No categories available</div>
+        ) : (
+          <div className='grid  mb-4 grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-6'>
+            {rendered
+              .slice(page * pageSize, (page + 1) * pageSize)
+              .map((cat) => (
                 <div
                   key={cat._id}
                   className='flex flex-col items-center group'
-                  style={{
-                    width: 'calc((100vw - 40px) / 4)',
-                  }}
                 >
-                  <Link href={cat.link} className='cursor-pointer flex flex-col items-center w-full'>
+                  <Link href={cat.link} className='cursor-pointer flex flex-col items-center '>
                     <div
-                      className='relative rounded-full border-2 border-white shadow-lg bg-gradient-to-r from-[#fff3dc] to-rose-100 group-hover:scale-105 transition-transform overflow-visible '
-                      style={{
-                        width: 'calc((100vw - 40px) / 4 - 4px)',
-                        height: 'calc((100vw - 40px) / 4 - 4px)'
-                      }}
+                      className='relative rounded-full border-2 border-white shadow-lg bg-gradient-to-r from-[#fff3dc] to-rose-100 group-hover:scale-105 transition-transform overflow-visible w-24 h-24 md:w-38 md:h-38 lg:w-42 lg:h-42'
                     >
-                      <div className='w-full h-full rounded-full overflow-hidden'>
+                      <div className='absolute inset-0 rounded-full overflow-hidden w-full h-full'>
                         <Image
                           src={encodeURI(cat.image)}
                           alt={cat.name}
-                          width={160}
-                          height={160}
+                          fill
+                          style={{ objectFit: 'contain' }}
                           loading="lazy"
                           decoding="async"
                           onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/assets/placeholder.svg'; }}
-                          className='w-full h-full object-contain group-hover:blur-sm transition-all duration-300'
+                          className='group-hover:blur-sm transition-all duration-300'
                         />
                       </div>
-                      <div className='absolute inset-0 bg-gradient-to-r from-[#fff3dc] to-rose-100 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center'>
-                        <span className='text-white font-bold text-center px-1 text-[9px] leading-tight'>{cat.name}</span>
+                      <div className='absolute inset-0 bg-gradient-to-r from-[#fff3dc] to-rose-100 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center shadow-lg '>
+                        <span className='text-[#fd6b66] font-bold text-center px-1 text-[16px] leading-tight'>{cat.name}</span>
                       </div>
                       {cat.icon && (
-                        <div className='absolute top-0.5 -left-0.5 bg-white rounded-full p-0.5 shadow z-20 border border-gray-100'>
+                        <div className='absolute top-1 left-1 bg-white rounded-full p-1 shadow z-20 border border-gray-100'>
                           {typeof cat.icon === 'string' ? (
-                            <img src={cat.icon} alt="" className="w-4 h-4 object-contain" />
+                            <img src={cat.icon} alt="" className="w-6 h-6 object-contain" />
                           ) : (
-                            React.cloneElement(cat.icon, { className: 'w-4 h-4 text-gray-700' })
+                            React.cloneElement(cat.icon, { className: 'w-6 h-6 text-gray-700' })
                           )}
                         </div>
                       )}
@@ -159,51 +167,8 @@ export default function ShopByCategory() {
                   </Link>
                 </div>
               ))}
-            </div>
-          )}
-        </div>
-
-        {/* Desktop: Flex Wrap Layout */}
-        <div className='hidden md:flex flex-wrap justify-center gap-5 mb-4'>
-          {loading ? (
-            <div className="text-gray-500 py-8">Loading categories...</div>
-          ) : rendered.length === 0 ? (
-            <div className="text-gray-500 py-8">No categories available</div>
-          ) : (
-            rendered.map((cat) => (
-              <div key={cat._id} className='relative flex flex-col items-center group w-40'>
-                <Link href={cat.link} className='cursor-pointer flex flex-col items-center'>
-                  <div className='relative w-38 h-38 rounded-full border-5 border-white shadow-lg bg-gradient-to-r from-rose-100 to-purple-100 group-hover:scale-105 transition-transform overflow-visible'>
-                    <div className='w-full h-full rounded-full overflow-hidden'>
-                      <Image
-                        src={encodeURI(cat.image)}
-                        alt={cat.name}
-                        width={160}
-                        height={160}
-                        loading="lazy"
-                        decoding="async"
-                        onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/assets/placeholder.svg'; }}
-                        className='w-full h-full object-contain group-hover:blur-sm transition-all duration-300'
-                      />
-                    </div>
-                    <div className='absolute inset-0 bg-gradient-to-r from-rose-400 to-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center'>
-                      <span className='text-white font-bold text-center px-2 text-base'>{cat.name}</span>
-                    </div>
-                    {cat.icon && (
-                      <div className='absolute top-2 -left-1 bg-white rounded-full p-1 shadow z-20 border border-gray-100'>
-                        {typeof cat.icon === 'string' ? (
-                          <img src={cat.icon} alt="" className="w-8 h-8 object-contain" />
-                        ) : (
-                          React.cloneElement(cat.icon, { className: 'w-8 h-8 text-gray-700' })
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </Link>
-              </div>
-            ))
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <style jsx>{`

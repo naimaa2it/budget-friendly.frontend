@@ -90,8 +90,10 @@ export default function ProductInfoTabs({ product }) {
           )}
 
           {activeTab === "specification" && (
-            <div className="animate-fadeIn">
-              {product?.specifications ? (
+            <div className="animate-fadeIn space-y-6">
+
+              {/* Rich-text specifications (admin free-form) */}
+              {product?.specifications && (
                 <div
                   className="prose prose-sm max-w-none text-gray-700
                     [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1
@@ -101,8 +103,108 @@ export default function ProductInfoTabs({ product }) {
                     [&_strong]:font-semibold [&_em]:italic"
                   dangerouslySetInnerHTML={{ __html: product.specifications }}
                 />
-              ) : (
-                <p className="text-gray-700">No specifications found.</p>
+              )}
+
+              {/* Key Attributes – grouped by level */}
+              {product?.keyAttributes?.length > 0 && (
+                <div className="space-y-4">
+                  {product.keyAttributes.map((group, gi) => (
+                    <div key={gi}>
+                      {group.level && (
+                        <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-1">
+                          {group.level}
+                        </h3>
+                      )}
+                      <table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
+                        <tbody>
+                          {(group.attributes || []).map((attr, ai) => (
+                            <tr key={ai} className={`border-b border-gray-100 ${ai % 2 === 0 ? "bg-gray-50" : "bg-white"}`}>
+                              <td className="px-4 py-2 font-medium text-gray-700 w-2/5">{attr.key}</td>
+                              <td className="px-4 py-2 text-gray-600">{attr.value}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Specs object (category-specific flat key-values) */}
+              {product?.specs && Object.keys(product.specs).filter(k => k !== 'sizes').length > 0 && (
+                <div>
+                  <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-1">General Specs</h3>
+                  <table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
+                    <tbody>
+                      {Object.entries(product.specs)
+                        .filter(([k]) => k !== 'sizes')
+                        .map(([key, val], i) => (
+                          <tr key={i} className={`border-b border-gray-100 ${i % 2 === 0 ? "bg-gray-50" : "bg-white"}`}>
+                            <td className="px-4 py-2 font-medium text-gray-700 w-2/5 capitalize">{key.replace(/_/g, ' ')}</td>
+                            <td className="px-4 py-2 text-gray-600">{Array.isArray(val) ? val.join(', ') : String(val)}</td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Variants */}
+              {product?.variants?.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-1">Variants</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
+                      <thead className="bg-gray-100 text-gray-600">
+                        <tr>
+                          <th className="px-4 py-2 text-left font-medium">Variant</th>
+                          {product.variants.some(v => v.sku) && <th className="px-4 py-2 text-left font-medium">SKU</th>}
+                          <th className="px-4 py-2 text-left font-medium">Price</th>
+                          <th className="px-4 py-2 text-left font-medium">Stock</th>
+                          {product.variants.some(v => v.attributes && Object.keys(v.attributes).length > 0) && (
+                            <th className="px-4 py-2 text-left font-medium">Attributes</th>
+                          )}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {product.variants.map((v, i) => (
+                          <tr key={i} className={`border-b border-gray-100 ${i % 2 === 0 ? "bg-gray-50" : "bg-white"}`}>
+                            <td className="px-4 py-2 text-gray-800">{v.title || `Variant ${i + 1}`}</td>
+                            {product.variants.some(x => x.sku) && <td className="px-4 py-2 text-gray-500">{v.sku || '—'}</td>}
+                            <td className="px-4 py-2 text-gray-800">
+                              {v.compareAtPrice && v.compareAtPrice > v.price ? (
+                                <span>
+                                  <span className="line-through text-gray-400 mr-1">${v.compareAtPrice}</span>
+                                  <span className="text-green-600 font-medium">${v.price}</span>
+                                </span>
+                              ) : (
+                                <span>${v.price}</span>
+                              )}
+                            </td>
+                            <td className="px-4 py-2">
+                              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${v.inventory > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+                                {v.inventory > 0 ? `${v.inventory} in stock` : 'Out of stock'}
+                              </span>
+                            </td>
+                            {product.variants.some(x => x.attributes && Object.keys(x.attributes).length > 0) && (
+                              <td className="px-4 py-2 text-gray-600">
+                                {v.attributes && Object.entries(v.attributes).map(([k, val]) => (
+                                  <span key={k} className="mr-2 capitalize"><span className="font-medium">{k}:</span> {val}</span>
+                                ))}
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Fallback */}
+              {!product?.specifications && !product?.keyAttributes?.length && !product?.variants?.length &&
+                !(product?.specs && Object.keys(product.specs).filter(k => k !== 'sizes').length > 0) && (
+                <p className="text-gray-500">No specifications found.</p>
               )}
             </div>
           )}

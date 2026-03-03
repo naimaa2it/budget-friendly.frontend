@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useUser } from "@/components/context/UserContext";
+import toast from "react-hot-toast";
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -340,28 +341,26 @@ export default function ProductInfoTabs({ product }) {
           {activeTab === "reviews" && (
             <div className="animate-fadeIn">
 
-              {/* Top bar: count + Add button (logged-in users only) */}
+              {/* Top bar: count + Add button (always visible) */}
               <div className="flex items-center justify-between mb-4">
                 <p className="text-sm text-gray-500">{reviews.length} review{reviews.length !== 1 ? 's' : ''}</p>
-                {user ? (
-                  <button
-                    onClick={() => {
-                      setEditingIndex(null);
-                      setReviewForm({ name: defaultName, rating: 0, body: '' });
-                      setReviewError('');
-                      setReviewDone(false);
-                      setShowReviewForm(v => !v);
-                    }}
-                    className="flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-                    {showReviewForm ? 'Cancel' : 'Add Your Precious Review'}
-                  </button>
-                ) : (
-                  <span className="text-sm text-gray-500 italic border border-gray-300 rounded-lg px-4 py-2">
-                    Please <span className="text-green-600 font-semibold">login</span> first to give a review
-                  </span>
-                )}
+                <button
+                  onClick={() => {
+                    if (!user) {
+                      toast.error('Please login first to give a review');
+                      return;
+                    }
+                    setEditingIndex(null);
+                    setReviewForm({ name: defaultName, rating: 0, body: '' });
+                    setReviewError('');
+                    setReviewDone(false);
+                    setShowReviewForm(v => !v);
+                  }}
+                  className="flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                  {showReviewForm ? 'Cancel' : 'Add Your Precious Review'}
+                </button>
               </div>
 
               {/* Collapsible form at top */}

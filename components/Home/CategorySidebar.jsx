@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useCategories } from "@/components/context/CategoryContext";
 
 const CategorySidebar = ({ onLinkClick }) => {
@@ -10,6 +9,19 @@ const CategorySidebar = ({ onLinkClick }) => {
   const [expandedCategory, setExpandedCategory] = useState(null);
   const [activeCategory, setActiveCategory] = useState(null);
   const timeoutRef = useRef(null);
+  const containerRef = useRef(null);
+
+  // Collapse when clicking anywhere outside the sidebar + flyout
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setActiveCategory(null);
+        setExpandedCategory(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleMouseEnter = (categoryId) => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -44,6 +56,7 @@ const CategorySidebar = ({ onLinkClick }) => {
 
   return (
     <div
+      ref={containerRef}
       className="relative w-full bg-white h-full flex"
       onMouseLeave={handleMouseLeave}
     >
@@ -127,84 +140,64 @@ const CategorySidebar = ({ onLinkClick }) => {
             })}
       </div>
 
-      {/* Desktop flyout mega-panel — styled like MegaMenuNavbar */}
+      {/* Desktop flyout panel — bold name + plain text list, no images */}
       {activeCategory && activeCategoryData && (
         <div
-          className="hidden md:block absolute top-0 left-full z-200 w-95 bg-white border border-gray-200 shadow-2xl rounded-r-lg"
-          style={{ minHeight: "100%", maxHeight: "80vh", overflowY: "auto" }}
+          className="hidden md:block absolute top-0 left-full z-200 w-56 bg-white border border-gray-200 shadow-2xl"
+          style={{ maxHeight: "80vh", overflowY: "auto" }}
           onMouseEnter={() => {
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
           }}
           onMouseLeave={handleMouseLeave}
         >
-          <div className="px-5 py-4">
-            {/* Panel header */}
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-[0.12em] mb-4 pb-2 border-b border-gray-100">
+          {/* Category heading */}
+          <div className="px-4 py-2.5 border-b border-gray-100 bg-pink-50">
+            <Link
+              href={`/category/${activeCategoryData.slug}`}
+              className="font-bold text-sm text-rose-600 hover:underline"
+              onClick={handleLinkClick}
+            >
               {activeCategoryData.name}
-            </h3>
+            </Link>
+          </div>
 
-            {/* Grid of subcategories with icons */}
-            <div className="grid grid-cols-2 gap-x-4 gap-y-5">
-              {getSubcategoriesLevel1(activeCategory).map((subcategory) => {
-                const subSubs = getSubSubcategories(subcategory._id);
-                return (
-                  <div key={subcategory._id} className="space-y-2">
-                    {/* Subcategory with icon */}
+          {/* Subcategories — no images, no gap */}
+          <div>
+            {getSubcategoriesLevel1(activeCategory).map((subcategory) => {
+              const subSubs = getSubSubcategories(subcategory._id);
+              return (
+                <div key={subcategory._id}>
+                  <Link
+                    href={`/category/${subcategory.slug}`}
+                    className="block px-4 py-2 font-semibold text-sm text-gray-800 hover:text-rose-600 hover:bg-pink-50 transition-colors"
+                    onClick={handleLinkClick}
+                  >
+                    {subcategory.name}
+                  </Link>
+                  {subSubs.map((sub) => (
                     <Link
-                      href={`/category/${subcategory.slug}`}
-                      className="flex items-center gap-2.5 group"
+                      key={sub._id}
+                      href={`/category/${sub.slug}`}
+                      className="block pl-7 pr-4 py-1.5 text-xs text-gray-500 hover:text-rose-600 hover:bg-pink-50 transition-colors"
                       onClick={handleLinkClick}
                     >
-                      {subcategory.images && subcategory.images[0]?.url ? (
-                        <div className="relative w-9 h-9 rounded-full overflow-hidden shrink-0 bg-gray-100">
-                          <Image
-                            src={subcategory.images[0].url}
-                            alt={subcategory.name}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-9 h-9 rounded-full bg-pink-50 flex items-center justify-center shrink-0 group-hover:bg-pink-100 transition-colors">
-                          <span className="text-base">📦</span>
-                        </div>
-                      )}
-                      <span className="font-semibold text-sm text-gray-800 group-hover:text-rose-600 transition-colors leading-tight">
-                        {subcategory.name}
-                      </span>
+                      {sub.name}
                     </Link>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
 
-                    {/* Sub-subcategories list */}
-                    {subSubs.length > 0 && (
-                      <ul className="space-y-1 pl-1">
-                        {subSubs.map((sub) => (
-                          <li key={sub._id}>
-                            <Link
-                              href={`/category/${sub.slug}`}
-                              className="text-xs text-gray-500 hover:text-rose-600 hover:underline transition-colors block"
-                              onClick={handleLinkClick}
-                            >
-                              {sub.name}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* View all link */}
-            <div className="mt-5 pt-3 border-t border-gray-100">
-              <Link
-                href={`/category/${activeCategoryData.slug}`}
-                className="text-xs font-semibold text-rose-600 hover:text-rose-700 hover:underline transition-colors"
-                onClick={handleLinkClick}
-              >
-                View all in {activeCategoryData.name} →
-              </Link>
-            </div>
+          {/* View all */}
+          <div className="px-4 py-2.5 border-t border-gray-100">
+            <Link
+              href={`/category/${activeCategoryData.slug}`}
+              className="text-xs font-semibold text-rose-600 hover:underline"
+              onClick={handleLinkClick}
+            >
+              View all in {activeCategoryData.name} →
+            </Link>
           </div>
         </div>
       )}

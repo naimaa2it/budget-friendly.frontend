@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/components/context/UserContext';
+import RichTextEditor from '@/components/dashbaord/RichTextEditor';
 
 export default function ProductCreate() {
   const router = useRouter();
@@ -423,15 +424,17 @@ export default function ProductCreate() {
                   />
                 </div>
 
-                {/* Detailed Description */}
+                {/* Detailed Description – rich text */}
                 <div>
                   <label className={labelClass}>Detailed Description</label>
-                  <p className="text-sm text-gray-600 mb-2">Rich detailed description for the product details page</p>
-                  <textarea
+                  <p className="text-sm text-gray-600 mb-2">
+                    Use bold, italic, bullet lists, headings etc. Exactly as you type, it will be saved and shown on the product page.
+                  </p>
+                  <RichTextEditor
                     value={product.detailedDescription || ''}
-                    onChange={e => setProduct(p => ({ ...p, detailedDescription: e.target.value }))}
-                    className={`${inputClass} h-48`}
-                    placeholder="Enter comprehensive product details, features, specifications, etc..."
+                    onChange={html => setProduct(p => ({ ...p, detailedDescription: html }))}
+                    placeholder="Enter product details, features, highlights…"
+                    minHeight="min-h-[220px]"
                   />
                 </div>
 

@@ -75,10 +75,17 @@ export default function ProductInfoTabs({ product }) {
                 {product?.description ||
                   "No description available for this product."}
               </p>
-              <p>
-                {product?.detailedDescription || "No detailed description available."
-                }
-              </p>
+              {product?.detailedDescription ? (
+                <div
+                  className="mt-4 prose prose-sm max-w-none text-gray-700
+                    [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1
+                    [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-1
+                    [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-3
+                    [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-2
+                    [&_strong]:font-semibold [&_em]:italic"
+                  dangerouslySetInnerHTML={{ __html: product.detailedDescription }}
+                />
+              ) : null}
             </div>
           )}
 
@@ -114,12 +121,12 @@ export default function ProductInfoTabs({ product }) {
 
           {activeTab === "guides" && (
             <div className="animate-fadeIn">
-              {product?.guides ? (
+              {product?.guidelines ? (
                 <div className="prose max-w-none">
-                  <div dangerouslySetInnerHTML={{ __html: product.guides }} />
+                  <div dangerouslySetInnerHTML={{ __html: product.guidelines }} />
                 </div>
               ) : (
-                <p className="text-gray-700">No guides available.</p>
+                <p className="text-gray-700">No guidelines available.</p>
               )}
             </div>
           )}

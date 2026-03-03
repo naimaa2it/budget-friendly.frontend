@@ -85,7 +85,7 @@ const Banner = () => {
 
     <div className="relative flex flex-col md:flex-row w-full bg-[#FAFAF7]">
       {/* Sidebar (desktop only) — z-10 so flyout renders above banner image text */}
-      <div className="hidden md:block md:w-[240px] min-w-[200px] sticky top-[56px] h-[calc(100vh-56px)] overflow-visible z-10 relative">
+      <div className="hidden md:block md:w-[240px] min-w-[200px] sticky top-[56px] h-auto self-start overflow-visible z-10 relative">
         <CategorySidebar />
       </div>
 

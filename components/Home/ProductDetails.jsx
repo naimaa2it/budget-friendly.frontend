@@ -113,7 +113,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
           {/* rating placeholder */}
           <div className="flex items-center gap-2">
             {/* star icons could be added here */}
-            <span className="text-sm text-gray-500">(0 reviews)</span>
+            <span className="text-sm text-gray-500">(0 reviews)</span> <button onClick={() => document.getElementById('reviews').scrollIntoView({ behavior: 'smooth' })}>Write a review</button>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-2xl font-bold text-red-600">৳{price}</span>

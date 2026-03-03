@@ -28,6 +28,7 @@ export default function ProductCreate() {
     colors: [],
     sizes: [],
     guidelines: '',
+    specifications: '',
     monthlySold: undefined,
     rewardPoints: undefined,
     keyAttributes: [], // { level: '', attributes: [{ key: '', value: '' }] }
@@ -902,12 +903,24 @@ export default function ProductCreate() {
               {/* Care Guidelines */}
               <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
                 <label className={labelClass}>Care & Handling Instructions</label>
-                <p className="text-sm text-gray-600 mb-4">Washing, care, or usage instructions</p>
-                <textarea
+                <p className="text-sm text-gray-600 mb-2">Use bold, italic, bullet lists etc. Saved and shown exactly as typed on the Guides tab.</p>
+                <RichTextEditor
                   value={product.guidelines || ''}
-                  onChange={e => setProduct(p => ({ ...p, guidelines: e.target.value }))}
-                  className={`${inputClass} h-32`}
-                  placeholder="Machine wash cold, tumble dry low..."
+                  onChange={html => setProduct(p => ({ ...p, guidelines: html }))}
+                  placeholder="e.g. Machine wash cold, tumble dry low…"
+                  minHeight="min-h-[160px]"
+                />
+              </div>
+
+              {/* Specifications – rich text */}
+              <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                <label className={labelClass}>Specifications (Rich Text)</label>
+                <p className="text-sm text-gray-600 mb-2">Use bold, italic, bullet lists, headings etc. Shown on the Specification tab exactly as typed.</p>
+                <RichTextEditor
+                  value={product.specifications || ''}
+                  onChange={html => setProduct(p => ({ ...p, specifications: html }))}
+                  placeholder="e.g. • Processor: Snapdragon 8 Gen 3&#10;• RAM: 12 GB"
+                  minHeight="min-h-[220px]"
                 />
               </div>
 

@@ -91,28 +91,16 @@ export default function ProductInfoTabs({ product }) {
 
           {activeTab === "specification" && (
             <div className="animate-fadeIn">
-              {product?.specifications?.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
-                    <tbody>
-                      {product.specifications.map((spec, index) => (
-                        <tr
-                          key={index}
-                          className={`border-b border-gray-200 ${
-                            index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                          }`}
-                        >
-                          <td className="px-4 py-2 font-medium text-gray-800 w-1/3">
-                            {spec.key}
-                          </td>
-                          <td className="px-4 py-2 text-gray-700">
-                            {spec.value}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+              {product?.specifications ? (
+                <div
+                  className="prose prose-sm max-w-none text-gray-700
+                    [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1
+                    [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-1
+                    [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-3
+                    [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-2
+                    [&_strong]:font-semibold [&_em]:italic"
+                  dangerouslySetInnerHTML={{ __html: product.specifications }}
+                />
               ) : (
                 <p className="text-gray-700">No specifications found.</p>
               )}
@@ -122,11 +110,17 @@ export default function ProductInfoTabs({ product }) {
           {activeTab === "guides" && (
             <div className="animate-fadeIn">
               {product?.guidelines ? (
-                <div className="prose max-w-none">
-                  <div dangerouslySetInnerHTML={{ __html: product.guidelines }} />
-                </div>
+                <div
+                  className="prose prose-sm max-w-none text-gray-700
+                    [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1
+                    [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-1
+                    [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-3
+                    [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-2
+                    [&_strong]:font-semibold [&_em]:italic"
+                  dangerouslySetInnerHTML={{ __html: product.guidelines }}
+                />
               ) : (
-                <p className="text-gray-700">No guidelines available.</p>
+                <p className="text-gray-700">No guides available.</p>
               )}
             </div>
           )}

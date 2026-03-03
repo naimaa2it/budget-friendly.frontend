@@ -64,20 +64,6 @@ const Banner = () => {
     return () => clearInterval(timer);
   }, [sliderData.length]);
 
-  const nextSlide = () => {
-    const totalSlides = typeof window !== 'undefined' && window.innerWidth < 768 
-      ? sliderData.length * 2 
-      : sliderData.length;
-    setCurrentSlide((prev) => (prev + 1) % totalSlides);
-  };
-
-  const prevSlide = () => {
-    const totalSlides = typeof window !== 'undefined' && window.innerWidth < 768 
-      ? sliderData.length * 2 
-      : sliderData.length;
-    setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
-  };
-
 
   return (
     <>

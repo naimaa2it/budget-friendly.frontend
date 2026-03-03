@@ -291,13 +291,13 @@ export default function Navbar() {
       {/* category sidebar overlay */}
       {catSidebarOpen && (
         <div
-          className="fixed top-[56px] left-0 right-0 bottom-0 z-40 flex"
+          className="fixed top-14 left-0 right-0 bottom-0 z-40 flex items-start"
           onMouseLeave={() => setCatSidebarOpen(false)}
         >
-          <div className="w-full md:w-64 bg-white shadow-lg h-full">
+          <div className="w-full md:w-64 bg-white shadow-lg h-auto">
             <CategorySidebar onLinkClick={() => setCatSidebarOpen(false)} />
           </div>
-          <div className="flex-1" onClick={() => setCatSidebarOpen(false)} />
+          <div className="flex-1 h-full" onClick={() => setCatSidebarOpen(false)} />
         </div>
       )}
 

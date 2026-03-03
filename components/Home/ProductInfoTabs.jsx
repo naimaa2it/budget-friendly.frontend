@@ -75,6 +75,10 @@ export default function ProductInfoTabs({ product }) {
                 {product?.description ||
                   "No description available for this product."}
               </p>
+              <p>
+                {product?.detailedDescription || "No detailed description available."
+                }
+              </p>
             </div>
           )}
 

@@ -57,11 +57,16 @@ const CategorySidebar = ({ onLinkClick }) => {
   return (
     <div
       ref={containerRef}
-      className="relative w-full bg-white flex"
-      onMouseLeave={handleMouseLeave}
+      className="relative w-full inline-flex flex-col"
+      onMouseLeave={() => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(() => {
+          setActiveCategory(null);
+        }, 100);
+      }}
     >
-      {/* Left category list — natural content height */}
-      <div className="w-full pb-2 pt-2">
+      {/* Left category list — bg-white only on the content div, natural height */}
+      <div className="w-full pb-2 pt-2 bg-white flex-none">
         {loading
           ? [...Array(6)].map((_, i) => (
               <div key={i} className="border-b border-gray-200 pt-4 pb-3">
@@ -142,15 +147,19 @@ const CategorySidebar = ({ onLinkClick }) => {
             })}
       </div>
 
-      {/* Desktop flyout panel — content-adaptive width, 3 columns */}
+      {/* Desktop flyout panel — content-adaptive width and height, 3 columns */}
       {activeCategory && activeCategoryData && (
         <div
           className="hidden md:block absolute top-0 left-full z-200 bg-white border border-gray-200 shadow-2xl w-max"
-          style={{ maxHeight: "80vh", overflowY: "auto" }}
           onMouseEnter={() => {
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
           }}
-          onMouseLeave={handleMouseLeave}
+          onMouseLeave={() => {
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+            timeoutRef.current = setTimeout(() => {
+              setActiveCategory(null);
+            }, 100);
+          }}
         >
           {/* Category heading — bold */}
           <div className="px-5 py-2.5 border-b border-gray-100 bg-pink-50">

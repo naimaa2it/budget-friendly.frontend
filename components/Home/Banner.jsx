@@ -75,9 +75,11 @@ const Banner = () => {
       </div>
 
       {/* Banner Section */}
-      <div className="flex-1 flex flex-col gap-4 mt-2">
+      {/* apply horizontal padding so the banner area leaves a little space on each side
+          and still expands to fill remaining width beside the sidebar */}
+      <div className="flex-1 flex flex-col gap-4 mt-2 px-2 md:px-4">
         {/* Default Top Banner - Static (banner-bg2) */}
-        <div className="relative h-[140px] md:h-[340px] rounded-2xl overflow-hidden max-w-5xl mx-1 md:mx-0">
+        <div className="relative h-[140px] md:h-[340px] rounded-2xl overflow-hidden w-full mx-auto ">
           <Image
             src="/banner/Oven_Big_banner_1.jpg"
             alt="Stay home & delivered your daily needs"

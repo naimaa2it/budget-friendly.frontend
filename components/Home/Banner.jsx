@@ -8,6 +8,7 @@ import CategorySidebar from "./CategorySidebar";
 
 const Banner = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const router = useRouter();
 
@@ -82,14 +83,59 @@ const Banner = () => {
   return (
     <>
 
-    <div className="flex flex-col md:flex-row w-full bg-[#FAFAF7] ">
-      {/* Sidebar (desktop only) */}
-      <div className="hidden md:block md:w-[240px] min-w-[200px] sticky top-[56px] h-[calc(100vh-56px)] overflow-y-auto">
+    <div className="relative flex flex-col md:flex-row w-full bg-[#FAFAF7]">
+      {/* Sidebar (desktop only) — overflow-visible so flyout panel isn't clipped */}
+      <div className="hidden md:block md:w-[240px] min-w-[200px] sticky top-[56px] h-[calc(100vh-56px)] overflow-visible">
         <CategorySidebar />
       </div>
 
+      {/* Mobile Category Drawer — full component height overlay */}
+      {mobileMenuOpen && (
+        <div className="md:hidden absolute inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          {/* Drawer panel */}
+          <div className="relative w-[80%] max-w-xs bg-white h-full shadow-2xl flex flex-col z-10">
+            {/* Drawer header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-rose-600">
+              <span className="text-white font-bold text-sm tracking-wide">All Categories</span>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-white hover:text-rose-100 transition-colors"
+                aria-label="Close menu"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            {/* Category list — full remaining height */}
+            <div className="flex-1 overflow-hidden">
+              <CategorySidebar onLinkClick={() => setMobileMenuOpen(false)} />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Banner Section */}
       <div className="flex-1 flex flex-col gap-4 mt-2">
+        {/* Mobile hamburger button — opens category drawer */}
+        <div className="md:hidden flex items-center gap-2 px-3 py-2 bg-white border-b border-gray-100">
+          <button
+            onClick={() => setMobileMenuOpen(true)}
+            className="flex items-center gap-2 text-gray-700 hover:text-rose-600 transition-colors"
+            aria-label="Open categories"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+            <span className="text-sm font-semibold">All Categories</span>
+          </button>
+        </div>
+
         {/* Default Top Banner - Static (banner-bg2) */}
         <div className="relative h-[180px] md:h-[380px] rounded-lg overflow-hidden ">
           <Image

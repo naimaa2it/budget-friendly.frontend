@@ -88,7 +88,7 @@ const CategorySidebar = ({ onLinkClick }) => {
                 >
                   <button
                     onClick={() => toggleCategory(category._id)}
-                    className={`w-full flex items-center justify-between px-4 py-3 transition-colors duration-200 group ${
+                    className={`w-full flex items-center justify-between px-4 py-2 transition-colors duration-200 group ${
                       isActive ? "bg-pink-50" : "hover:bg-pink-50"
                     }`}
                   >
@@ -106,7 +106,7 @@ const CategorySidebar = ({ onLinkClick }) => {
                     </div>
                     {hasSubs && (
                       <svg
-                        className={`w-4 h-4 shrink-0 transition-transform duration-200 ${
+                        className={`w-3 h-3 shrink-0 transition-transform duration-200 ${
                           isActive ? "text-rose-500" : "text-gray-400"
                         } ${expandedCategory === category._id ? "rotate-90 md:rotate-0" : ""}`}
                         fill="none"
@@ -123,18 +123,19 @@ const CategorySidebar = ({ onLinkClick }) => {
                     )}
                   </button>
 
-                  {/* Mobile accordion — 3-column grid, not bold, no truncation */}
+                  {/* Mobile accordion — 2-column grid, clear and readable */}
                   <div className="md:hidden">
                     {expandedCategory === category._id && (
-                      <div className="bg-gray-50 px-3 py-2">
-                        <div className="grid grid-cols-3 gap-x-2 gap-y-0.5">
+                      <div className="bg-gray-50 border-t border-gray-100 px-4 py-2">
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-0">
                           {(subcategories[category._id] || []).map((subcategory) => (
                             <Link
                               key={subcategory._id}
                               href={`/category/${subcategory.slug}`}
-                              className="block py-1.5 px-1 text-xs font-normal text-gray-600 hover:text-rose-600 transition-colors duration-150"
+                              className="flex items-center gap-1.5 py-1 text-xs text-gray-700 hover:text-rose-600 transition-colors duration-150 border-b border-gray-100"
                               onClick={handleLinkClick}
                             >
+                              <span className="w-1 h-1 rounded-full bg-rose-300 shrink-0" />
                               {subcategory.name}
                             </Link>
                           ))}

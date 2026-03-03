@@ -298,7 +298,7 @@ export default function Navbar() {
           />
           {/* Panel — 70vw on mobile, 256px on desktop, content height */}
           <div
-            className="relative w-[70vw] md:w-64 bg-white shadow-2xl z-10"
+            className="relative w-[80vw] md:w-68 bg-white shadow-2xl z-10"
             onMouseLeave={() => setCatSidebarOpen(false)}
           >
             {/* Header */}

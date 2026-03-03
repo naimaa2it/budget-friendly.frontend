@@ -118,16 +118,16 @@ const CategorySidebar = ({ onLinkClick }) => {
                     )}
                   </button>
 
-                  {/* Mobile accordion — 3-column grid */}
+                  {/* Mobile accordion — 3-column grid, not bold, no truncation */}
                   <div className="md:hidden">
                     {expandedCategory === category._id && (
                       <div className="bg-gray-50 px-3 py-2">
-                        <div className="grid grid-cols-3 gap-x-2 gap-y-1">
+                        <div className="grid grid-cols-3 gap-x-2 gap-y-0.5">
                           {(subcategories[category._id] || []).map((subcategory) => (
                             <Link
                               key={subcategory._id}
                               href={`/category/${subcategory.slug}`}
-                              className="block py-1.5 px-1 text-xs text-gray-700 hover:text-rose-600 transition-colors duration-150 truncate"
+                              className="block py-1.5 px-1 text-xs font-normal text-gray-600 hover:text-rose-600 transition-colors duration-150"
                               onClick={handleLinkClick}
                             >
                               {subcategory.name}
@@ -142,18 +142,18 @@ const CategorySidebar = ({ onLinkClick }) => {
             })}
       </div>
 
-      {/* Desktop flyout panel — 3-column grid, no images */}
+      {/* Desktop flyout panel — content-adaptive width, 3 columns */}
       {activeCategory && activeCategoryData && (
         <div
-          className="hidden md:block absolute top-0 left-full z-200 bg-white border border-gray-200 shadow-2xl"
-          style={{ minWidth: "340px", maxWidth: "420px", maxHeight: "80vh", overflowY: "auto" }}
+          className="hidden md:block absolute top-0 left-full z-200 bg-white border border-gray-200 shadow-2xl w-max"
+          style={{ maxHeight: "80vh", overflowY: "auto" }}
           onMouseEnter={() => {
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
           }}
           onMouseLeave={handleMouseLeave}
         >
-          {/* Category heading */}
-          <div className="px-4 py-2.5 border-b border-gray-100 bg-pink-50">
+          {/* Category heading — bold */}
+          <div className="px-5 py-2.5 border-b border-gray-100 bg-pink-50">
             <Link
               href={`/category/${activeCategoryData.slug}`}
               className="font-bold text-sm text-rose-600 hover:underline"
@@ -163,14 +163,14 @@ const CategorySidebar = ({ onLinkClick }) => {
             </Link>
           </div>
 
-          {/* Subcategories in 3-column grid */}
-          <div className="px-4 py-3">
-            <div className="grid grid-cols-3 gap-x-3 gap-y-0.5">
+          {/* Subcategories — not bold, 3 columns, full text no truncation */}
+          <div className="px-5 py-3">
+            <div className="grid grid-cols-3 gap-x-10 gap-y-0.5">
               {getSubcategoriesLevel1(activeCategory).map((subcategory) => (
                 <Link
                   key={subcategory._id}
                   href={`/category/${subcategory.slug}`}
-                  className="block py-1.5 text-sm text-gray-700 font-medium hover:text-rose-600 transition-colors truncate"
+                  className="block py-1.5 text-sm font-normal text-gray-600 whitespace-nowrap hover:text-rose-600 transition-colors"
                   onClick={handleLinkClick}
                 >
                   {subcategory.name}
@@ -180,7 +180,7 @@ const CategorySidebar = ({ onLinkClick }) => {
           </div>
 
           {/* View all */}
-          <div className="px-4 py-2.5 border-t border-gray-100">
+          <div className="px-5 py-2.5 border-t border-gray-100">
             <Link
               href={`/category/${activeCategoryData.slug}`}
               className="text-xs font-semibold text-rose-600 hover:underline"

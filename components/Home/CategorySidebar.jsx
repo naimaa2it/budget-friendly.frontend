@@ -57,11 +57,11 @@ const CategorySidebar = ({ onLinkClick }) => {
   return (
     <div
       ref={containerRef}
-      className="relative w-full bg-white h-full flex"
+      className="relative w-full bg-white flex"
       onMouseLeave={handleMouseLeave}
     >
-      {/* Left category list — scrollable */}
-      <div className="w-full overflow-y-auto pb-6 pt-2">
+      {/* Left category list — natural content height */}
+      <div className="w-full pb-2 pt-2">
         {loading
           ? [...Array(6)].map((_, i) => (
               <div key={i} className="border-b border-gray-200 pt-4 pb-3">
@@ -118,20 +118,22 @@ const CategorySidebar = ({ onLinkClick }) => {
                     )}
                   </button>
 
-                  {/* Mobile-only accordion expansion */}
+                  {/* Mobile accordion — 3-column grid */}
                   <div className="md:hidden">
                     {expandedCategory === category._id && (
-                      <div className="bg-gray-50 py-2">
-                        {(subcategories[category._id] || []).map((subcategory) => (
-                          <Link
-                            key={subcategory._id}
-                            href={`/category/${subcategory.slug}`}
-                            className="block px-8 py-2 text-sm text-gray-700 hover:bg-rose-50 hover:text-rose-600 transition-colors duration-150"
-                            onClick={handleLinkClick}
-                          >
-                            {subcategory.name}
-                          </Link>
-                        ))}
+                      <div className="bg-gray-50 px-3 py-2">
+                        <div className="grid grid-cols-3 gap-x-2 gap-y-1">
+                          {(subcategories[category._id] || []).map((subcategory) => (
+                            <Link
+                              key={subcategory._id}
+                              href={`/category/${subcategory.slug}`}
+                              className="block py-1.5 px-1 text-xs text-gray-700 hover:text-rose-600 transition-colors duration-150 truncate"
+                              onClick={handleLinkClick}
+                            >
+                              {subcategory.name}
+                            </Link>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -140,11 +142,11 @@ const CategorySidebar = ({ onLinkClick }) => {
             })}
       </div>
 
-      {/* Desktop flyout panel — bold name + plain text list, no images */}
+      {/* Desktop flyout panel — 3-column grid, no images */}
       {activeCategory && activeCategoryData && (
         <div
-          className="hidden md:block absolute top-0 left-full z-200 w-56 bg-white border border-gray-200 shadow-2xl"
-          style={{ maxHeight: "80vh", overflowY: "auto" }}
+          className="hidden md:block absolute top-0 left-full z-200 bg-white border border-gray-200 shadow-2xl"
+          style={{ minWidth: "340px", maxWidth: "420px", maxHeight: "80vh", overflowY: "auto" }}
           onMouseEnter={() => {
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
           }}
@@ -161,32 +163,20 @@ const CategorySidebar = ({ onLinkClick }) => {
             </Link>
           </div>
 
-          {/* Subcategories — no images, no gap */}
-          <div>
-            {getSubcategoriesLevel1(activeCategory).map((subcategory) => {
-              const subSubs = getSubSubcategories(subcategory._id);
-              return (
-                <div key={subcategory._id}>
-                  <Link
-                    href={`/category/${subcategory.slug}`}
-                    className="block px-4 py-2 font-semibold text-sm text-gray-800 hover:text-rose-600 hover:bg-pink-50 transition-colors"
-                    onClick={handleLinkClick}
-                  >
-                    {subcategory.name}
-                  </Link>
-                  {subSubs.map((sub) => (
-                    <Link
-                      key={sub._id}
-                      href={`/category/${sub.slug}`}
-                      className="block pl-7 pr-4 py-1.5 text-xs text-gray-500 hover:text-rose-600 hover:bg-pink-50 transition-colors"
-                      onClick={handleLinkClick}
-                    >
-                      {sub.name}
-                    </Link>
-                  ))}
-                </div>
-              );
-            })}
+          {/* Subcategories in 3-column grid */}
+          <div className="px-4 py-3">
+            <div className="grid grid-cols-3 gap-x-3 gap-y-0.5">
+              {getSubcategoriesLevel1(activeCategory).map((subcategory) => (
+                <Link
+                  key={subcategory._id}
+                  href={`/category/${subcategory.slug}`}
+                  className="block py-1.5 text-sm text-gray-700 font-medium hover:text-rose-600 transition-colors truncate"
+                  onClick={handleLinkClick}
+                >
+                  {subcategory.name}
+                </Link>
+              ))}
+            </div>
           </div>
 
           {/* View all */}

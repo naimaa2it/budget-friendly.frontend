@@ -84,23 +84,23 @@ const Banner = () => {
     <>
 
     <div className="relative flex flex-col md:flex-row w-full bg-[#FAFAF7]">
-      {/* Sidebar (desktop only) — overflow-visible so flyout panel isn't clipped */}
-      <div className="hidden md:block md:w-[240px] min-w-[200px] sticky top-[56px] h-[calc(100vh-56px)] overflow-visible">
+      {/* Sidebar (desktop only) — z-10 so flyout renders above banner image text */}
+      <div className="hidden md:block md:w-[240px] min-w-[200px] sticky top-[56px] h-[calc(100vh-56px)] overflow-visible z-10 relative">
         <CategorySidebar />
       </div>
 
-      {/* Mobile Category Drawer — full component height overlay */}
+      {/* Mobile Category Drawer — content height, not full height */}
       {mobileMenuOpen && (
-        <div className="md:hidden absolute inset-0 z-50 flex">
-          {/* Backdrop */}
+        <div className="md:hidden absolute top-0 left-0 right-0 z-50">
+          {/* Backdrop covers the whole banner area */}
           <div
-            className="absolute inset-0 bg-black/40"
+            className="fixed inset-0 bg-black/40"
             onClick={() => setMobileMenuOpen(false)}
           />
-          {/* Drawer panel */}
-          <div className="relative w-[80%] max-w-xs bg-white h-full shadow-2xl flex flex-col z-10">
+          {/* Drawer panel — only as tall as its content */}
+          <div className="relative w-[80%] max-w-xs bg-white shadow-2xl flex flex-col z-10" style={{ maxHeight: "85vh" }}>
             {/* Drawer header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-rose-600">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-rose-600 shrink-0">
               <span className="text-white font-bold text-sm tracking-wide">All Categories</span>
               <button
                 onClick={() => setMobileMenuOpen(false)}
@@ -112,8 +112,8 @@ const Banner = () => {
                 </svg>
               </button>
             </div>
-            {/* Category list — full remaining height */}
-            <div className="flex-1 overflow-hidden">
+            {/* Category list — scrollable if content overflows */}
+            <div className="overflow-y-auto">
               <CategorySidebar onLinkClick={() => setMobileMenuOpen(false)} />
             </div>
           </div>

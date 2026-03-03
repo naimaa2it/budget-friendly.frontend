@@ -240,7 +240,7 @@ export default function Navbar() {
           <button
             ref={searchIconRef}
             onClick={() => setMobileSearchOpen(true)}
-            className="p-2 text-[#202020] hover:text-[#ac0ad1] md:hidden"
+            className="p-2 text-[#202020] hover:text-[#ac0ad1] md:hidden "
             aria-label="Search"
             title="Search"
           >
@@ -302,8 +302,8 @@ export default function Navbar() {
             onMouseLeave={() => setCatSidebarOpen(false)}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-              <span className="text-sm font-bold text-gray-700 tracking-wide">Shop for</span>
+            <div className="flex items-center justify-between px-6 py-2 border-b border-gray-100">
+             
               <button
                 onClick={() => setCatSidebarOpen(false)}
                 className="md:hidden p-1 text-gray-400 hover:text-gray-600"

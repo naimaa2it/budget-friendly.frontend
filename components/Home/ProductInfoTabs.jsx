@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useUser } from "@/components/context/UserContext";
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -32,12 +33,15 @@ function StarRating({ value, onChange }) {
 
 export default function ProductInfoTabs({ product }) {
   const [activeTab, setActiveTab] = useState("description");
+  const { user } = useUser();
+  // default display name from logged-in user
+  const defaultName = user ? (user.name || user.email?.split('@')[0] || '') : '';
 
   // Reviews state
   const [reviews, setReviews] = useState(product?.reviews || []);
   const [showReviewForm, setShowReviewForm] = useState(false);
-  const [editingIndex, setEditingIndex] = useState(null); // null = new, number = editing
-  const [reviewForm, setReviewForm] = useState({ name: '', rating: 0, title: '', body: '' });
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [reviewForm, setReviewForm] = useState({ name: '', rating: 0, body: '' });
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewError, setReviewError] = useState('');
   const [reviewDone, setReviewDone] = useState(false);
@@ -63,12 +67,13 @@ export default function ProductInfoTabs({ product }) {
       const res = await fetch(url, {
         method: isEdit ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ authorName: reviewForm.name, rating: reviewForm.rating, title: reviewForm.title, body: reviewForm.body }),
+        credentials: 'include',
+        body: JSON.stringify({ authorName: reviewForm.name || defaultName, rating: reviewForm.rating, body: reviewForm.body }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to submit');
       setReviews(data.reviews || []);
-      setReviewForm({ name: '', rating: 0, title: '', body: '' });
+      setReviewForm({ name: '', rating: 0, body: '' });
       setEditingIndex(null);
       setShowReviewForm(false);
       setReviewDone(true);
@@ -81,23 +86,11 @@ export default function ProductInfoTabs({ product }) {
 
   const handleReviewEdit = (idx) => {
     const r = reviews[idx];
-    setReviewForm({ name: r.authorName || '', rating: r.rating || 0, title: r.title || '', body: r.body || '' });
+    setReviewForm({ name: r.authorName || defaultName, rating: r.rating || 0, body: r.body || '' });
     setEditingIndex(idx);
     setReviewDone(false);
     setReviewError('');
     setShowReviewForm(true);
-  };
-
-  const handleReviewDelete = async (idx) => {
-    if (!confirm('Delete this review?')) return;
-    try {
-      const res = await fetch(`${API}/api/products/${product._id}/reviews/${idx}`, { method: 'DELETE' });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to delete');
-      setReviews(data.reviews || []);
-    } catch (err) {
-      alert(err.message);
-    }
   };
 
   const handleQuestionSubmit = async (e) => {
@@ -347,22 +340,28 @@ export default function ProductInfoTabs({ product }) {
           {activeTab === "reviews" && (
             <div className="animate-fadeIn">
 
-              {/* Top bar: count + Add button */}
+              {/* Top bar: count + Add button (logged-in users only) */}
               <div className="flex items-center justify-between mb-4">
                 <p className="text-sm text-gray-500">{reviews.length} review{reviews.length !== 1 ? 's' : ''}</p>
-                <button
-                  onClick={() => {
-                    setEditingIndex(null);
-                    setReviewForm({ name: '', rating: 0, title: '', body: '' });
-                    setReviewError('');
-                    setReviewDone(false);
-                    setShowReviewForm(v => !v);
-                  }}
-                  className="flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-                  {showReviewForm ? 'Cancel' : 'Add Your Precious Review'}
-                </button>
+                {user ? (
+                  <button
+                    onClick={() => {
+                      setEditingIndex(null);
+                      setReviewForm({ name: defaultName, rating: 0, body: '' });
+                      setReviewError('');
+                      setReviewDone(false);
+                      setShowReviewForm(v => !v);
+                    }}
+                    className="flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                    {showReviewForm ? 'Cancel' : 'Add Your Precious Review'}
+                  </button>
+                ) : (
+                  <span className="text-sm text-gray-500 italic border border-gray-300 rounded-lg px-4 py-2">
+                    Please <span className="text-green-600 font-semibold">login</span> first to give a review
+                  </span>
+                )}
               </div>
 
               {/* Collapsible form at top */}
@@ -385,17 +384,7 @@ export default function ProductInfoTabs({ product }) {
                             value={reviewForm.name}
                             onChange={e => setReviewForm(f => ({ ...f, name: e.target.value }))}
                             className="block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-pink-400"
-                            placeholder="Your Name"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Review Title</label>
-                          <input
-                            type="text"
-                            value={reviewForm.title}
-                            onChange={e => setReviewForm(f => ({ ...f, title: e.target.value }))}
-                            className="block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-pink-400"
-                            placeholder="e.g. Great product!"
+                            placeholder={defaultName || 'Your Name'}
                           />
                         </div>
                       </div>
@@ -450,16 +439,14 @@ export default function ProductInfoTabs({ product }) {
                           <span className="font-semibold text-gray-800">{r.authorName || r.user || 'Anonymous'}</span>
                           {r.createdAt && <span className="text-xs text-gray-400">{new Date(r.createdAt).toLocaleDateString()}</span>}
                         </div>
-                        {/* Edit / Delete */}
+                        {/* Edit only for own review — no Delete (admin-only) */}
                         <div className="flex gap-2 flex-shrink-0">
-                          <button
-                            onClick={() => handleReviewEdit(i)}
-                            className="text-xs text-blue-500 hover:text-blue-700 border border-blue-200 rounded px-2 py-0.5 transition"
-                          >Edit</button>
-                          <button
-                            onClick={() => handleReviewDelete(i)}
-                            className="text-xs text-red-500 hover:text-red-700 border border-red-200 rounded px-2 py-0.5 transition"
-                          >Delete</button>
+                          {user && r.user?.toString() === user._id?.toString() && (
+                            <button
+                              onClick={() => handleReviewEdit(i)}
+                              className="text-xs text-blue-500 hover:text-blue-700 border border-blue-200 rounded px-2 py-0.5 transition"
+                            >Edit</button>
+                          )}
                         </div>
                       </div>
                       {r.title && <p className="font-medium text-gray-700 mb-0.5">{r.title}</p>}

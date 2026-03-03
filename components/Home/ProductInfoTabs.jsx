@@ -1,9 +1,97 @@
 "use client";
 import { useState } from "react";
 
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
+function StarRating({ value, onChange }) {
+  const [hovered, setHovered] = useState(0);
+  return (
+    <div className="flex items-center gap-1">
+      {[1,2,3,4,5].map(star => (
+        <button
+          key={star}
+          type="button"
+          onClick={() => onChange(star)}
+          onMouseEnter={() => setHovered(star)}
+          onMouseLeave={() => setHovered(0)}
+          className="focus:outline-none"
+        >
+          <svg
+            className={`w-7 h-7 transition-colors ${
+              star <= (hovered || value) ? 'text-yellow-400' : 'text-gray-300'
+            }`}
+            fill="currentColor" viewBox="0 0 20 20"
+          >
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.37 2.455a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.538 1.118l-3.37-2.455a1 1 0 00-1.175 0l-3.37 2.455c-.783.57-1.838-.197-1.538-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.013 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z" />
+          </svg>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function ProductInfoTabs({ product }) {
   const [activeTab, setActiveTab] = useState("description");
-  // tabs: description, specification, guides, reviews, questions
+
+  // Reviews state
+  const [reviews, setReviews] = useState(product?.reviews || []);
+  const [reviewForm, setReviewForm] = useState({ name: '', rating: 0, title: '', body: '' });
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewError, setReviewError] = useState('');
+  const [reviewDone, setReviewDone] = useState(false);
+
+  // Questions state
+  const [faqs, setFaqs] = useState(product?.faqs || []);
+  const [questionForm, setQuestionForm] = useState({ question: '' });
+  const [questionSubmitting, setQuestionSubmitting] = useState(false);
+  const [questionError, setQuestionError] = useState('');
+  const [questionDone, setQuestionDone] = useState(false);
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    setReviewError('');
+    if (!reviewForm.rating) return setReviewError('Please select a star rating.');
+    if (!reviewForm.body.trim()) return setReviewError('Please write a comment.');
+    setReviewSubmitting(true);
+    try {
+      const res = await fetch(`${API}/api/products/${product._id}/reviews`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ authorName: reviewForm.name, rating: reviewForm.rating, title: reviewForm.title, body: reviewForm.body }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to submit');
+      setReviews(data.reviews || []);
+      setReviewForm({ name: '', rating: 0, title: '', body: '' });
+      setReviewDone(true);
+    } catch (err) {
+      setReviewError(err.message);
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
+
+  const handleQuestionSubmit = async (e) => {
+    e.preventDefault();
+    setQuestionError('');
+    if (!questionForm.question.trim()) return setQuestionError('Please enter your question.');
+    setQuestionSubmitting(true);
+    try {
+      const res = await fetch(`${API}/api/products/${product._id}/questions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: questionForm.question }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to submit');
+      setQuestionForm({ question: '' });
+      setQuestionDone(true);
+    } catch (err) {
+      setQuestionError(err.message);
+    } finally {
+      setQuestionSubmitting(false);
+    }
+  };
 
   return (
     <section className="w-full bg-white mt-10 mb-6 rounded-2xl">
@@ -229,100 +317,133 @@ export default function ProductInfoTabs({ product }) {
 
           {activeTab === "reviews" && (
             <div className="animate-fadeIn">
-              {product?.reviews && product.reviews.length > 0 ? (
-                <ul className="space-y-4">
-                  {product.reviews.map((r, i) => (
-                    <li key={i} className="border p-3 rounded">
-                      <p className="font-medium">{r.user || 'User'}</p>
-                      <p className="text-gray-700">{r.comment}</p>
+              {/* Existing reviews */}
+              {reviews.length > 0 ? (
+                <ul className="space-y-4 mb-8">
+                  {reviews.map((r, i) => (
+                    <li key={i} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        {[1,2,3,4,5].map(s => (
+                          <svg key={s} className={`w-4 h-4 ${s <= r.rating ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.37 2.455a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.538 1.118l-3.37-2.455a1 1 0 00-1.175 0l-3.37 2.455c-.783.57-1.838-.197-1.538-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.013 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z" />
+                          </svg>
+                        ))}
+                        <span className="font-semibold text-gray-800 ml-1">{r.authorName || r.user || 'Anonymous'}</span>
+                        {r.createdAt && <span className="text-xs text-gray-400 ml-auto">{new Date(r.createdAt).toLocaleDateString()}</span>}
+                      </div>
+                      {r.title && <p className="font-medium text-gray-700 mb-0.5">{r.title}</p>}
+                      <p className="text-gray-600">{r.body || r.comment}</p>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-gray-700">No reviews yet.</p>
+                <p className="text-gray-500 mb-8">No reviews yet. Be the first to review!</p>
               )}
 
-              {/* review submission form */}
-              <div className="mt-8">
-                <h3 className="text-lg font-semibold mb-4">Write a review</h3>
-                <form className="space-y-4 max-w-2xl">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Your Name</label>
-                      <input
-                        type="text"
-                        className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                        placeholder="Your Name"
-                      />
+              {/* Write a review form */}
+              <div className="border-t pt-6">
+                <h3 className="text-lg font-semibold mb-4">Write a Review</h3>
+                {reviewDone ? (
+                  <div className="bg-green-50 border border-green-200 text-green-700 rounded-lg px-4 py-3">
+                    ✓ Thank you! Your review has been submitted.
+                  </div>
+                ) : (
+                  <form onSubmit={handleReviewSubmit} className="space-y-4 max-w-2xl">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
+                        <input
+                          type="text"
+                          value={reviewForm.name}
+                          onChange={e => setReviewForm(f => ({ ...f, name: e.target.value }))}
+                          className="block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                          placeholder="Your Name"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Review Title</label>
+                        <input
+                          type="text"
+                          value={reviewForm.title}
+                          onChange={e => setReviewForm(f => ({ ...f, title: e.target.value }))}
+                          className="block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                          placeholder="e.g. Great product!"
+                        />
+                      </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Email</label>
-                      <input
-                        type="email"
-                        className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                        placeholder="Email"
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Rating <span className="text-red-500">*</span></label>
+                      <StarRating value={reviewForm.rating} onChange={r => setReviewForm(f => ({ ...f, rating: r }))} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Comment <span className="text-red-500">*</span></label>
+                      <textarea
+                        value={reviewForm.body}
+                        onChange={e => setReviewForm(f => ({ ...f, body: e.target.value }))}
+                        className="block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                        rows={4}
+                        placeholder="Share details of your experience with this product"
                       />
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Rating</label>
-                    <div className="flex items-center gap-1 mt-1">
-                      {[1,2,3,4,5].map((_, idx)=> (
-                        <svg key={idx} className="w-6 h-6 text-gray-300 hover:text-green-500 cursor-pointer" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.37 2.455a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.538 1.118l-3.37-2.455a1 1 0 00-1.175 0l-3.37 2.455c-.783.57-1.838-.197-1.538-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.013 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z" />
-                        </svg>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Comment</label>
-                    <textarea
-                      className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                      rows={4}
-                      placeholder="Share details of your own experience about this product"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="bg-pink-600 text-white py-2 px-4 rounded-md hover:bg-pink-700 transition"
-                  >
-                    Submit review
-                  </button>
-                </form>
+                    {reviewError && <p className="text-red-500 text-sm">{reviewError}</p>}
+                    <button
+                      type="submit"
+                      disabled={reviewSubmitting}
+                      className="bg-pink-600 text-white py-2 px-6 rounded-md hover:bg-pink-700 transition disabled:opacity-60"
+                    >
+                      {reviewSubmitting ? 'Submitting…' : 'Submit Review'}
+                    </button>
+                  </form>
+                )}
               </div>
             </div>
           )}
 
           {activeTab === "questions" && (
-            <div className="animate-fadeIn max-w-6xl bg-gray-50">
-              <form className="space-y-6 max-w-xl mx-auto bg-gray-50 p-6 rounded-lg shadow-md">
+            <div className="animate-fadeIn">
+              {/* Existing answered FAQs */}
+              {faqs.filter(f => f.answer).length > 0 && (
+                <div className="mb-8 space-y-4">
+                  <h3 className="text-base font-semibold text-gray-700">Answered Questions</h3>
+                  {faqs.filter(f => f.answer).map((faq, i) => (
+                    <div key={i} className="border border-gray-200 rounded-lg p-4">
+                      <p className="font-medium text-gray-800">Q: {faq.question}</p>
+                      <p className="text-gray-600 mt-1">A: {faq.answer}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Ask a question form */}
+              <div className={faqs.filter(f => f.answer).length > 0 ? 'border-t pt-6' : ''}>
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Ask a Question</h3>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                  <input
-                    type="text"
-                    className="mt-1 block w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="Full Name"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Question</label>
-                  <textarea
-                    className="mt-1 block w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    rows={5}
-                    placeholder="Enter Your Message"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full bg-green-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-green-700 transition"
-                >
-                  Send Message
-                </button>
-              </form>
+                {questionDone ? (
+                  <div className="bg-green-50 border border-green-200 text-green-700 rounded-lg px-4 py-3 max-w-xl">
+                    ✓ Your question has been submitted. We'll answer it soon!
+                  </div>
+                ) : (
+                  <form onSubmit={handleQuestionSubmit} className="space-y-4 max-w-xl">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Your Question <span className="text-red-500">*</span></label>
+                      <textarea
+                        value={questionForm.question}
+                        onChange={e => setQuestionForm({ question: e.target.value })}
+                        className="block w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                        rows={4}
+                        placeholder="What would you like to know about this product?"
+                      />
+                    </div>
+                    {questionError && <p className="text-red-500 text-sm">{questionError}</p>}
+                    <button
+                      type="submit"
+                      disabled={questionSubmitting}
+                      className="w-full bg-green-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-60"
+                    >
+                      {questionSubmitting ? 'Submitting…' : 'Send Question'}
+                    </button>
+                  </form>
+                )}
+              </div>
             </div>
           )}
         </div>

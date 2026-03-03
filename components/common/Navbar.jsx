@@ -290,14 +290,32 @@ export default function Navbar() {
 
       {/* category sidebar overlay */}
       {catSidebarOpen && (
-        <div
-          className="fixed top-14 left-0 right-0 bottom-0 z-40 flex items-start"
-          onMouseLeave={() => setCatSidebarOpen(false)}
-        >
-          <div className="w-full md:w-64 bg-white shadow-lg h-auto">
+        <div className="fixed top-14 left-0 right-0 bottom-0 z-40 flex items-start">
+          {/* Backdrop — clicking closes */}
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setCatSidebarOpen(false)}
+          />
+          {/* Panel — 70vw on mobile, 256px on desktop, content height */}
+          <div
+            className="relative w-[70vw] md:w-64 bg-white shadow-2xl z-10"
+            onMouseLeave={() => setCatSidebarOpen(false)}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+              <span className="text-sm font-bold text-gray-700 tracking-wide">Shop for</span>
+              <button
+                onClick={() => setCatSidebarOpen(false)}
+                className="md:hidden p-1 text-gray-400 hover:text-gray-600"
+                aria-label="Close"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
             <CategorySidebar onLinkClick={() => setCatSidebarOpen(false)} />
           </div>
-          <div className="flex-1 h-full" onClick={() => setCatSidebarOpen(false)} />
         </div>
       )}
 

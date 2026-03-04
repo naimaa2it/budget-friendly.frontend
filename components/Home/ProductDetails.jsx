@@ -42,7 +42,7 @@ function StockBadge({ inventory, availability }) {
       </span>
     );
   }
-  return <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-green-600"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />In Stock{inventory != null ? ` (${inventory} available)` : ''}</span>;
+  return <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />Only{inventory != null ? ` ${inventory}` : ''} items left in Stock</span>;
 }
 
 export default function ProductDetails({ product, relatedProducts = [] }) {

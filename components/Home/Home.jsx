@@ -10,9 +10,9 @@ export default function Home() {
   return (
     <>
     <Banner/>
-    <OccasionSections/>
     <ShopByCategory/>
     <PopularPicks/>
+    <OccasionSections/>
     <DealsOfDay/>
     <OffersToSayYes/>
     </>

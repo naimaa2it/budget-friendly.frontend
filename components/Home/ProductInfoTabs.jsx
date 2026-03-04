@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useUser } from "@/components/context/UserContext";
 import toast from "react-hot-toast";
 import AuthModal from "@/components/authentication/AuthModal";
@@ -36,6 +36,18 @@ function StarRating({ value, onChange }) {
 export default function ProductInfoTabs({ product }) {
   const [activeTab, setActiveTab] = useState("description");
   const { user } = useUser();
+
+  // listen for external open-review requests
+  useEffect(() => {
+    const handler = () => {
+      setActiveTab('reviews');
+      const el = document.getElementById('reviews-tab');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    };
+    window.addEventListener('openReviews', handler);
+    return () => window.removeEventListener('openReviews', handler);
+  }, []);
+
   // default display name from logged-in user
   const defaultName = user ? (user.name || user.email?.split('@')[0] || '') : '';
 

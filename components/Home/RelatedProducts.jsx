@@ -20,7 +20,7 @@ export default function RelatedProducts({ products = [] }) {
         >
           {products.map(p => (
             <div key={p._id || p.id} className="shrink-0 w-46">
-              <ProductCard product={p} imageHeight={150} imageWidth={200} />
+              <ProductCard product={p} imageHeight={150} imageWidth={200} showDiscount={true} maxTags={2} />
             </div>
           ))}
         </div>

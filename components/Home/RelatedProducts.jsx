@@ -19,7 +19,7 @@ export default function RelatedProducts({ products = [] }) {
           className="flex gap-4 overflow-x-auto scrollbar-hide"
         >
           {products.map(p => (
-            <div key={p._id || p.id} className="shrink-0 w-40">
+            <div key={p._id || p.id} className="shrink-0 w-46">
               <ProductCard product={p} imageHeight={150} imageWidth={200} />
             </div>
           ))}

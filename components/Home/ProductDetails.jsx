@@ -42,7 +42,7 @@ function StockBadge({ inventory, availability }) {
       </span>
     );
   }
-  return <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />Only{inventory != null ? ` ${inventory}` : ''} items left in Stock</span>;
+  return <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600"><span className="w-2 h-2 rounded-full bg-rose-500 inline-block" />Only{inventory != null ? ` ${inventory}` : ''} items left in Stock</span>;
 }
 
 export default function ProductDetails({ product, relatedProducts = [] }) {
@@ -89,11 +89,11 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                   <button
                     key={idx}
                     onClick={() => setCurrentIndex(idx)}
-                    className={`rounded border-2 overflow-hidden transition aspect-square ${
+                    className={`rounded border-1 overflow-hidden transition aspect-square ${
                       currentIndex === idx ? 'border-gray-900' : 'border-gray-200 hover:border-gray-400'
                     }`}
                   >
-                    <Image src={encodeURI(img)} alt={`${title} ${idx + 1}`} width={64} height={64} className="object-contain w-full h-full p-1" />
+                    <Image src={encodeURI(img)} alt={`${title} ${idx + 1}`} width={64} height={64} className="object-contain w-full h-full p-0" />
                   </button>
                 ))}
               </div>
@@ -105,9 +105,9 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                   <FaChevronLeft className="w-3 h-3 text-gray-600" />
                 </button>
               )}
-              <Image src={encodeURI(currentImage)} alt={title} width={600} height={600} className="w-full h-full object-contain p-6" />
+              <Image src={encodeURI(currentImage)} alt={title} width={600} height={600} className="w-full h-full object-contain p-0" />
               {images.length > 1 && (
-                <button onClick={nextImage} className="absolute right-2 z-10 p-1.5 bg-white border border-gray-300 rounded-full shadow-sm hover:bg-gray-50 transition">
+                <button onClick={nextImage} className="absolute right-2 z-10 p-1.5 bg-white border border-gray-300 rounded-fulls shadow-sm hover:bg-gray-50 transition">
                   <FaChevronRight className="w-3 h-3 text-gray-600" />
                 </button>
               )}
@@ -177,7 +177,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
               <FaClock className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
               <span>
                 Delivers in: <strong className="text-gray-700 font-medium">3–5 Working Days</strong>{' '}
-                <a href="/pages/shipping-policy" className="underline underline-offset-2 hover:text-gray-700 transition">Shipping &amp; Return</a>
+                <a href="/pages/shipping-policy" className="underline underline-offset-2 text-black text-xs hover:text-gray-700 transition">Shipping &amp; Return</a>
               </span>
             </div>
             <div className="flex items-center gap-2">

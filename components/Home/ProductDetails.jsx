@@ -87,6 +87,27 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
     window.dispatchEvent(new Event('openReviews'));
   };
 
+  // Map common color names to hex so swatches always show the right colour
+  const COLOR_MAP = {
+    red: '#ef4444', blue: '#3b82f6', green: '#22c55e', yellow: '#facc15',
+    orange: '#f97316', purple: '#a855f7', pink: '#ec4899', black: '#111827',
+    white: '#ffffff', gray: '#9ca3af', grey: '#9ca3af', brown: '#92400e',
+    navy: '#1e3a5f', 'navy blue': '#1e3a5f', skyblue: '#7dd3fc',
+    'sky blue': '#7dd3fc', 'light blue': '#93c5fd', 'dark blue': '#1d4ed8',
+    teal: '#14b8a6', cyan: '#06b6d4', indigo: '#6366f1', violet: '#7c3aed',
+    gold: '#ca8a04', silver: '#d1d5db', beige: '#e5d3b3', cream: '#fef9c3',
+    maroon: '#7f1d1d', magenta: '#d946ef', lime: '#84cc16', olive: '#65a30d',
+    coral: '#fb7185', salmon: '#fda4af', turquoise: '#2dd4bf',
+    'off white': '#f5f5f5', offwhite: '#f5f5f5', 'light green': '#86efac',
+    'dark green': '#15803d', 'light gray': '#e5e7eb', 'dark gray': '#4b5563',
+    'rose gold': '#d4a5a5', charcoal: '#374151', mustard: '#ca8a04',
+  };
+  const resolveColor = (col) => {
+    if (col.hex) return col.hex;
+    const key = (col.name || '').toLowerCase().trim();
+    return COLOR_MAP[key] || col.name;
+  };
+
   return (
     <div key={product?._id || product?.id} className="max-w-6xl mx-auto py-6 px-4">
 
@@ -212,12 +233,12 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                     key={idx}
                     onClick={() => setSelectedColor(selectedColor?.name === col.name ? null : col)}
                     title={col.name}
-                    className={`w-7 h-7 rounded-full border-2 transition-all ${
+                    className={`w-7 h-7 border-2 transition-all ${
                       selectedColor?.name === col.name
                         ? 'border-gray-900 ring-2 ring-gray-900 ring-offset-1 scale-110'
                         : 'border-gray-200 hover:border-gray-500'
                     }`}
-                    style={{ backgroundColor: col.hex || col.name }}
+                    style={{ backgroundColor: resolveColor(col) }}
                   />
                 ))}
               </div>

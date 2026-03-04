@@ -193,7 +193,7 @@ export default function CategoryPageClient({ slug }) {
                 imageHeight={160}
                 showDiscount={false}
                 maxTags={2}
-                showActionsOnHover={false}
+                showActionsOnHover={true}
               />
             ))}
           </div>

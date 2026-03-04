@@ -105,14 +105,14 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                   <FaChevronLeft className="w-3 h-3 text-gray-600" />
                 </button>
               )}
-              <Image src={encodeURI(currentImage)} alt={title} width={600} height={600} className="w-full h-full object-contain p-0" />
+              <Image src={encodeURI(currentImage)} alt={title} width={600} height={600} className="w-full h-full object-contain p-2" />
               {images.length > 1 && (
-                <button onClick={nextImage} className="absolute right-2 z-10 p-1.5 bg-white border border-gray-300 rounded-fulls shadow-sm hover:bg-gray-50 transition">
+                <button onClick={nextImage} className="absolute right-2 z-10 p-1.5 bg-white border border-gray-300 rounded-full shadow-sm hover:bg-gray-50 transition">
                   <FaChevronRight className="w-3 h-3 text-gray-600" />
                 </button>
               )}
               {discountPct && (
-                <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded">
+                <span className="absolute top-3 left-3 bg-gradient-to-r from-red-400 to-red-600 text-white text-xs font-bold px-2 py-0.5 rounded">
                   -{discountPct}%
                 </span>
               )}
@@ -121,16 +121,17 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                 <div className="absolute top-3 right-3 flex flex-col gap-1 items-end">
                   {product.badges.map(badge => {
                     const map = {
-                      best_seller:     { label: 'Best Seller',    cls: 'bg-yellow-500 text-white' },
-                      hot:             { label: 'Hot',            cls: 'bg-orange-500 text-white' },
-                      new_arrival:     { label: 'New Arrival',    cls: 'bg-blue-500 text-white' },
-                      trending:        { label: 'Trending',       cls: 'bg-purple-500 text-white' },
-                      limited:         { label: 'Limited',        cls: 'bg-red-600 text-white' },
-                      popular_pics:    { label: 'Popular',        cls: 'bg-pink-500 text-white' },
+                      best_seller:     { label: '⭐ Best Seller',    cls: 'bg-gradient-to-r from-yellow-200 to-yellow-300 text-yellow-800' },
+                      hot:             { label: '🔥 Hot',            cls: 'bg-gradient-to-r from-orange-200 to-orange-300 text-orange-800' },
+                      new_arrival:     { label: '🎀 New Arrival',    cls: 'bg-gradient-to-r from-blue-200 to-blue-300 text-blue-800' },
+                      trending:        { label: '📈 Trending',       cls: 'bg-gradient-to-r from-purple-200 to-purple-300 text-purple-800' },
+                      limited:         { label: '🔒 Limited',        cls: 'bg-gradient-to-r from-red-200 to-red-300 text-red-800' },
+                      popular_pics:    { label: '🎉 Popular',        cls: 'bg-gradient-to-r from-pink-200 to-pink-300 text-pink-800' },
+                      deals_of_the_day:{ label: '🏷️ Deal of the Day',cls: 'bg-gradient-to-r from-green-200 to-green-300 text-green-800' },
                     };
                     const b = map[badge];
                     return b ? (
-                      <span key={badge} className={`${b.cls} text-[10px] font-bold px-2 py-0.5 rounded`}>
+                      <span key={badge} className={`${b.cls} text-[10px] font-bold px-2 py-0.5 rounded`}> 
                         {b.label}
                       </span>
                     ) : null;
@@ -188,7 +189,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
          
 
           {/* Shipping info */}
-          <div className="flex flex-col gap-2 mb-3 text-sm text-gray-500">
+          <div className="flex flex-col gap-2 mb-3 text-sm text-gray-600">
             <div className="flex items-center gap-2">
               <FaTruck className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
               <span>Free shipping on all orders over <strong className="text-gray-700 font-medium">1000 BDT</strong>.</span>

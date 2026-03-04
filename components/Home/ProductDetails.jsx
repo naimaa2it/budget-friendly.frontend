@@ -103,9 +103,20 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
     'rose gold': '#d4a5a5', charcoal: '#374151', mustard: '#ca8a04',
   };
   const resolveColor = (col) => {
-    if (col.hex) return col.hex;
+    // 1. Use hex if provided — ensure it starts with #
+    if (col.hex && col.hex.trim()) {
+      const h = col.hex.trim();
+      return h.startsWith('#') ? h : `#${h}`;
+    }
+    // 2. Look up name in map (exact, then partial)
     const key = (col.name || '').toLowerCase().trim();
-    return COLOR_MAP[key] || col.name;
+    if (COLOR_MAP[key]) return COLOR_MAP[key];
+    // partial match — e.g. "Dark Navy Blue" → try "navy blue", "blue"
+    for (const mapKey of Object.keys(COLOR_MAP)) {
+      if (key.includes(mapKey)) return COLOR_MAP[mapKey];
+    }
+    // 3. Return as-is (valid CSS color names like "red", "blue" still work)
+    return col.name || '#cccccc';
   };
 
   return (
@@ -227,20 +238,37 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                 <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Available Colors:</span>
                 {selectedColor && <span className="text-xs text-gray-500">{selectedColor.name}</span>}
               </div>
-              <div className="flex flex-wrap gap-2">
-                {productColors.map((col, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedColor(selectedColor?.name === col.name ? null : col)}
-                    title={col.name}
-                    className={`w-7 h-7 border-2 transition-all ${
-                      selectedColor?.name === col.name
-                        ? 'border-gray-900 ring-2 ring-gray-900 ring-offset-1 scale-110'
-                        : 'border-gray-200 hover:border-gray-500'
-                    }`}
-                    style={{ backgroundColor: resolveColor(col) }}
-                  />
-                ))}
+              <div className="flex flex-wrap gap-3">
+                {productColors.map((col, idx) => {
+                    const isSelected = selectedColor?.name === col.name;
+                    const color = resolveColor(col);
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => setSelectedColor(isSelected ? null : col)}
+                        title={col.name}
+                        className="flex flex-col items-center gap-1 transition-all"
+                      >
+                        <span
+                          className={`w-8 h-8 block transition-all ${
+                            isSelected ? 'scale-110' : 'hover:scale-105'
+                          }`}
+                          style={{
+                            backgroundColor: color,
+                            border: isSelected
+                              ? `3px solid ${color}`
+                              : '2px solid #e5e7eb',
+                            outline: isSelected ? `3px solid ${color}` : undefined,
+                            outlineOffset: isSelected ? '2px' : undefined,
+                            boxShadow: isSelected ? `0 0 0 3px ${color}40` : undefined,
+                          }}
+                        />
+                        <span className={`text-[9px] leading-none ${
+                          isSelected ? 'font-bold text-gray-900' : 'text-gray-400'
+                        }`}>{col.name}</span>
+                      </button>
+                    );
+                  })}
               </div>
             </div>
           )}

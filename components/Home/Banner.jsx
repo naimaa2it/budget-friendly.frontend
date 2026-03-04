@@ -1,98 +1,133 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import CategorySidebar from "./CategorySidebar";
 
+const FALLBACK = [
+  {
+    _id: 'fallback-1',
+    image: { url: '/banner/Oven_Big_banner_1.jpg' },
+    title: '',
+    subtitle: '',
+    buttonText: '',
+    buttonLink: '/',
+    badge: '',
+  },
+];
+
 const Banner = () => {
-  const [currentSlide, setCurrentSlide] = useState(0);
-
-  const router = useRouter();
-
-  // Slider data - Each slide has 2 images side by side
-  const sliderData = [
-    {
-      leftImage: {
-        image: "/assets/banner/banner-bg.webp",
-        title: "35% Cashback !!",
-        subtitle: "Start your daily shopping diversity!",
-        buttonText: "Order Now",
-        buttonLink: "/products/",
-        badge: "FREE DELIVERY",
-      },
-      rightImage: {
-        image: "/assets/banner/banner-bg3.webp",
-        title: "Organic Foods",
-        subtitle: "Start your daily shopping organic foods",
-        buttonText: "Order Now",
-        buttonLink: "/products/c/agriculture/",
-        badge: "SAVE UPTO 20%", 
-      },
-    },
-    {
-      leftImage: {
-        image: "/assets/banner/banner-bg4.webp",
-        title: "Premium Quality",
-        subtitle: "Discover our wide range of products",
-        buttonText: "Order Now",
-        buttonLink: "/products/",
-        badge: "BEST DEALS",
-      },
-      rightImage: {
-        image: "/assets/banner/banner-bg5.webp",
-        title: "Special Offers",
-        subtitle: "Get the best deals on bulk orders today",
-        buttonText: "Order Now",
-        buttonLink: "/products/",
-        badge: "LIMITED TIME",
-      },
-    },
-  ];
+  const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+  const [slides, setSlides] = useState([]);
+  const [current, setCurrent] = useState(0);
+  const autoRef = useRef(null);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      // On mobile, cycle through 4 slides (2 sets × 2 images each)
-      // On desktop, cycle through 2 slides (each showing 2 images side by side)
-      const totalSlides = typeof window !== 'undefined' && window.innerWidth < 768 
-        ? sliderData.length * 2 
-        : sliderData.length;
-      setCurrentSlide((prev) => (prev + 1) % totalSlides);
-    }, 4000); // Changed to 4 seconds
+    fetch(`${API}/api/banners`)
+      .then(r => r.json())
+      .then(b => setSlides((b.items || []).length > 0 ? b.items : FALLBACK))
+      .catch(() => setSlides(FALLBACK));
+  }, [API]);
 
-    return () => clearInterval(timer);
-  }, [sliderData.length]);
+  const total = slides.length;
 
+  const startAuto = useCallback(() => {
+    clearInterval(autoRef.current);
+    if (total <= 1) return;
+    autoRef.current = setInterval(() => setCurrent(p => (p + 1) % total), 4000);
+  }, [total]);
+
+  useEffect(() => {
+    startAuto();
+    return () => clearInterval(autoRef.current);
+  }, [startAuto]);
+
+  const go = (dir) => {
+    setCurrent(p => (p + dir + total) % total);
+    startAuto();
+  };
+
+  const slide = slides[current] || slides[0];
 
   return (
-    <>
-
     <div className="relative flex flex-col md:flex-row md:items-start w-full bg-[#FAFAF7]">
-      {/* Sidebar (desktop only) — h-fit so height = category list content only */}
+      {/* Sidebar (desktop only) */}
       <div className="hidden md:block md:w-[240px] min-w-[200px] overflow-visible z-10 relative h-fit">
         <CategorySidebar />
       </div>
 
       {/* Banner Section */}
-      {/* apply horizontal padding so the banner area leaves a little space on each side
-          and still expands to fill remaining width beside the sidebar */}
       <div className="flex-1 flex flex-col gap-4 mt-2 px-2 md:px-4">
-        {/* Default Top Banner - Static (banner-bg2) */}
-        <div className="relative h-[140px] md:h-[340px] rounded-2xl overflow-hidden w-full mx-auto ">
-          <Image
-            src="/banner/Oven_Big_banner_1.jpg"
-            alt="Stay home & delivered your daily needs"
-            fill
-            priority
-            quality={100}
-            sizes="100vw"
-            className="object-fit"
-          />
-        </div> 
+        <div
+          className="relative h-[140px] md:h-[340px] rounded-2xl overflow-hidden w-full mx-auto"
+          onMouseEnter={() => clearInterval(autoRef.current)}
+          onMouseLeave={startAuto}
+        >
+          {slide && (
+            <Image
+              key={slide._id || current}
+              src={slide.image?.url || '/assets/placeholder.svg'}
+              alt={slide.title || 'Banner'}
+              fill
+              priority
+              quality={90}
+              sizes="100vw"
+              className="object-cover transition-opacity duration-500"
+            />
+          )}
+
+          {/* Overlay content */}
+          {(slide?.title || slide?.badge || slide?.buttonText) && (
+            <div className="absolute inset-0 flex flex-col justify-center px-8 md:px-14 bg-gradient-to-r from-black/40 via-black/10 to-transparent">
+              {slide.badge && (
+                <span className="inline-block bg-white text-gray-900 text-xs font-bold px-3 py-1 rounded-full w-fit mb-2">
+                  {slide.badge}
+                </span>
+              )}
+              {slide.title && (
+                <h2 className="text-white text-xl md:text-3xl font-bold drop-shadow mb-1">{slide.title}</h2>
+              )}
+              {slide.subtitle && (
+                <p className="text-white/90 text-sm md:text-base mb-4 drop-shadow">{slide.subtitle}</p>
+              )}
+              {slide.buttonText && slide.buttonLink && (
+                <Link
+                  href={slide.buttonLink}
+                  className="inline-block bg-white text-gray-900 font-semibold text-sm px-5 py-2 rounded-full hover:bg-gray-100 transition w-fit"
+                >
+                  {slide.buttonText}
+                </Link>
+              )}
+            </div>
+          )}
+
+          {/* Prev / Next arrows */}
+          {total > 1 && (
+            <>
+              <button onClick={() => go(-1)}
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow text-gray-700 transition z-10">
+                ‹
+              </button>
+              <button onClick={() => go(1)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow text-gray-700 transition z-10">
+                ›
+              </button>
+            </>
+          )}
+
+          {/* Dots */}
+          {total > 1 && (
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+              {slides.map((_, i) => (
+                <button key={i} onClick={() => { setCurrent(i); startAuto(); }}
+                  className={`h-1.5 rounded-full transition-all ${i === current ? 'bg-white w-5' : 'bg-white/50 w-1.5'}`} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
-    </>
   );
 };
 

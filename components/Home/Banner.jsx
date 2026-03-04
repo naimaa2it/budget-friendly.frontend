@@ -60,9 +60,10 @@ const Banner = () => {
       {/* Banner Section */}
       <div className="flex-1 flex flex-col gap-4 mt-2 px-2 md:px-4">
         <div
-          className="relative h-[140px] md:h-[340px] rounded-2xl overflow-hidden w-full mx-auto"
+          className="relative h-[140px] md:h-[340px] rounded-2xl overflow-hidden w-full mx-auto cursor-pointer"
           onMouseEnter={() => clearInterval(autoRef.current)}
           onMouseLeave={startAuto}
+          onClick={() => { if (slide?.buttonLink) window.location.href = slide.buttonLink; }}
         >
           {slide && (
             <Image
@@ -105,11 +106,11 @@ const Banner = () => {
           {/* Prev / Next arrows */}
           {total > 1 && (
             <>
-              <button onClick={() => go(-1)}
+              <button onClick={(e) => { e.stopPropagation(); go(-1); }}
                 className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow text-gray-700 transition z-10">
                 ‹
               </button>
-              <button onClick={() => go(1)}
+              <button onClick={(e) => { e.stopPropagation(); go(1); }}
                 className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow text-gray-700 transition z-10">
                 ›
               </button>
@@ -120,7 +121,7 @@ const Banner = () => {
           {total > 1 && (
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
               {slides.map((_, i) => (
-                <button key={i} onClick={() => { setCurrent(i); startAuto(); }}
+                <button key={i} onClick={(e) => { e.stopPropagation(); setCurrent(i); startAuto(); }}
                   className={`h-1.5 rounded-full transition-all ${i === current ? 'bg-white w-5' : 'bg-white/50 w-1.5'}`} />
               ))}
             </div>

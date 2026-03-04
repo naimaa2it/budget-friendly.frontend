@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/components/context/UserContext';
+import MediaPicker from '@/components/dashbaord/MediaPicker';
 
 export default function CategoryEdit({ categoryId }) {
   const router = useRouter();
@@ -28,6 +29,7 @@ export default function CategoryEdit({ categoryId }) {
   const [selectedSubSub, setSelectedSubSub] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
 
   useEffect(() => { if (!user) refreshUser(); }, [user, refreshUser]);
 
@@ -185,8 +187,21 @@ export default function CategoryEdit({ categoryId }) {
                 <input type="file" accept="image/*" className="hidden" onChange={e => e.target.files && e.target.files[0] && handleFile(e.target.files[0])} />
                 Upload
               </label>
+              <button type="button" onClick={() => setShowPicker(true)}
+                className="w-24 h-24 flex flex-col items-center justify-center border border-dashed border-indigo-300 rounded cursor-pointer text-xs text-indigo-500 bg-indigo-50 hover:bg-indigo-100 gap-1">
+                <span className="text-lg">🖼</span>Library
+              </button>
             </div>
           </div>
+
+          <MediaPicker
+            open={showPicker}
+            onSelect={asset => {
+              setCategory(c => ({ ...c, images: [...(c.images || []), { url: asset.url, public_id: asset.public_id }] }));
+              setShowPicker(false);
+            }}
+            onClose={() => setShowPicker(false)}
+          />
 
           <div>
             <label className="block text-sm font-medium">Parent category (choose hierarchy)</label>

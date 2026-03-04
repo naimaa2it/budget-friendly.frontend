@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/components/context/UserContext';
 import RichTextEditor from '@/components/dashbaord/RichTextEditor';
+import MediaPicker from '@/components/dashbaord/MediaPicker';
 
 export default function ProductEdit({ productId }) {
   const router = useRouter();
@@ -56,6 +57,7 @@ export default function ProductEdit({ productId }) {
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
   const [newReview, setNewReview] = useState({ authorName: '', rating: '', title: '', body: '' });
   const [lastSaved, setLastSaved] = useState(null); // Track last auto-save time
 
@@ -834,6 +836,20 @@ export default function ProductEdit({ productId }) {
                     <p className="text-xs text-gray-500">PNG, JPG, WebP up to 10MB</p>
                   </div>
                 </label>
+
+                <button type="button" onClick={() => setShowPicker(true)}
+                  className="mt-3 flex items-center gap-2 px-4 py-2 border border-indigo-200 rounded-lg text-sm text-indigo-600 hover:bg-indigo-50 transition">
+                  🖼 Select from Media Library
+                </button>
+
+                <MediaPicker
+                  open={showPicker}
+                  onSelect={asset => {
+                    setProduct(p => ({ ...p, images: [...(p.images || []), { url: asset.url, public_id: asset.public_id }] }));
+                    setShowPicker(false);
+                  }}
+                  onClose={() => setShowPicker(false)}
+                />
 
                 {/* Image Preview Grid */}
                 {(product.images || []).length > 0 && (

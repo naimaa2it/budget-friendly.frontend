@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/components/context/UserContext';
+import MediaPicker from '@/components/dashbaord/MediaPicker';
 
 export default function CategoryCreate({ categoryId = 'new', parentId = null, onSuccess }) {
   const router = useRouter();
@@ -12,6 +13,7 @@ export default function CategoryCreate({ categoryId = 'new', parentId = null, on
   const [name, setName] = useState('');
   const [images, setImages] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
 
 
   useEffect(() => { if (!user) refreshUser(); }, [user, refreshUser]);
@@ -98,8 +100,21 @@ export default function CategoryCreate({ categoryId = 'new', parentId = null, on
                 <input type="file" accept="image/*" className="hidden" onChange={e => e.target.files && e.target.files[0] && handleFile(e.target.files[0])} />
                 Upload
               </label>
+              <button type="button" onClick={() => setShowPicker(true)}
+                className="w-24 h-24 flex flex-col items-center justify-center border border-dashed border-indigo-300 rounded cursor-pointer text-xs text-indigo-500 bg-indigo-50 hover:bg-indigo-100 gap-1">
+                <span className="text-lg">🖼</span>Library
+              </button>
             </div>
             <div className="text-xs text-gray-500 mt-2">Recommended: square image (e.g. 800×800). Uploads are optimized automatically.</div>
+
+            <MediaPicker
+              open={showPicker}
+              onSelect={asset => {
+                setImages(imgs => [...imgs, { url: asset.url, public_id: asset.public_id }]);
+                setShowPicker(false);
+              }}
+              onClose={() => setShowPicker(false)}
+            />
           </div>
 
           <div>

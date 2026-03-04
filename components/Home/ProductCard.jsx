@@ -63,7 +63,7 @@ export default function ProductCard({ product, imageWidth = 300, imageHeight = 2
     <> 
     <div 
       onClick={handleCardClick} 
-      className="bg-white rounded-lg border border-gray-200 overflow-hidden group hover:shadow-xl transition-all duration-300 flex flex-col cursor-pointer"
+      className="bg-white rounded-lg border border-gray-200 overflow-hidden group hover:shadow-xl transition-all duration-300 flex flex-col cursor-pointer h-full"
     >
       <div
         className="relative bg-gray-50 px-2 flex items-center justify-center overflow-hidden"

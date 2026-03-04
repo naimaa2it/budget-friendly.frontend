@@ -4,11 +4,13 @@ import PopularPicks from './PopularPicks'
 import DealsOfDay from './DealsOfDay'
 import OffersToSayYes from './OffersToSayYes'
 import Banner from './Banner'
+import OccasionSections from './OccasionSections'
 
 export default function Home() {
   return (
     <>
     <Banner/>
+    <OccasionSections/>
     <ShopByCategory/>
     <PopularPicks/>
     <DealsOfDay/>

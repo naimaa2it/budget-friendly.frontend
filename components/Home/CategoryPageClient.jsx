@@ -191,7 +191,9 @@ export default function CategoryPageClient({ slug }) {
                 product={p}
                 imageWidth={360}
                 imageHeight={160}
-                showActionsOnHover={false} // always show add/cart/details/wishlist icons
+                showDiscount={false}
+                maxTags={2}
+                showActionsOnHover={false}
               />
             ))}
           </div>
@@ -214,7 +216,7 @@ export default function CategoryPageClient({ slug }) {
             <>
               <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {(showAll ? filtered : filtered.slice(0, 5)).map(p => (
-                  <ProductCard key={p._id} product={p} />
+                  <ProductCard key={p._id} product={p} showDiscount={true} maxTags={2} />
                 ))}
               </div>
             </>

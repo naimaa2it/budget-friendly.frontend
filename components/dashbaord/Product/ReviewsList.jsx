@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -24,6 +25,23 @@ export default function ReviewsList() {
   const [saving, setSaving] = useState(false);
   const [filter, setFilter] = useState('');
 
+  // category filter state
+  const [categories, setCategories] = useState([]);
+  const [selectedMain, setSelectedMain] = useState(null);
+  const [selectedSub, setSelectedSub] = useState(null);
+  const [selectedChild, setSelectedChild] = useState(null);
+
+  // sort state: 'date_desc' | 'date_asc' | 'rating_desc' | 'rating_asc'
+  const [sortBy, setSortBy] = useState('date_desc');
+
+  // collect all descendant ids for a category node
+  const collectIds = node => {
+    if (!node) return [];
+    let ids = [String(node._id)];
+    (node.children || []).forEach(c => { ids = ids.concat(collectIds(c)); });
+    return ids;
+  };
+
   const fetchReviews = async () => {
     setLoading(true);
     try {
@@ -39,6 +57,13 @@ export default function ReviewsList() {
   };
 
   useEffect(() => { fetchReviews(); }, []);
+
+  useEffect(() => {
+    fetch(`${API}/api/products/categories`)
+      .then(r => r.json())
+      .then(b => setCategories(b.categories || []))
+      .catch(() => setCategories([]));
+  }, [API]);
 
   const handleDelete = async (productId, index) => {
     if (!confirm('Delete this review permanently?')) return;
@@ -85,18 +110,41 @@ export default function ReviewsList() {
     }
   };
 
-  const filtered = filter
-    ? rows.filter(r =>
-        r.productTitle?.toLowerCase().includes(filter.toLowerCase()) ||
-        r.authorName?.toLowerCase().includes(filter.toLowerCase()) ||
-        r.body?.toLowerCase().includes(filter.toLowerCase())
-      )
-    : rows;
+  // build active category id set
+  const activeCatIds = (() => {
+    if (selectedChild) return new Set(collectIds(selectedChild).map(String));
+    if (selectedSub) return new Set(collectIds(selectedSub).map(String));
+    if (selectedMain) return new Set(collectIds(selectedMain).map(String));
+    return null;
+  })();
+
+  const filtered = rows
+    .filter(r => {
+      // text search
+      if (filter) {
+        const q = filter.toLowerCase();
+        if (
+          !r.productTitle?.toLowerCase().includes(q) &&
+          !r.authorName?.toLowerCase().includes(q) &&
+          !r.body?.toLowerCase().includes(q)
+        ) return false;
+      }
+      // category filter
+      if (activeCatIds && !activeCatIds.has(String(r.categoryId))) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'date_asc') return new Date(a.createdAt) - new Date(b.createdAt);
+      if (sortBy === 'rating_desc') return (b.rating || 0) - (a.rating || 0);
+      if (sortBy === 'rating_asc') return (a.rating || 0) - (b.rating || 0);
+      // date_desc (default)
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
 
   return (
     <div className="max-w-6xl mx-auto bg-white p-6 rounded shadow">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div>
           <h2 className="text-lg font-semibold text-gray-800">Reviews Management</h2>
           <p className="text-sm text-gray-500 mt-0.5">{rows.length} total review{rows.length !== 1 ? 's' : ''}</p>
@@ -109,11 +157,63 @@ export default function ReviewsList() {
         />
       </div>
 
+      {/* Category + sort filters */}
+      <div className="flex flex-wrap items-center gap-3 mb-6">
+        <select
+          value={selectedMain?._id || ''}
+          onChange={e => {
+            const main = categories.find(c => String(c._id) === e.target.value) || null;
+            setSelectedMain(main); setSelectedSub(null); setSelectedChild(null);
+          }}
+          className="border px-3 py-2 rounded text-sm bg-white"
+        >
+          <option value="">All categories</option>
+          {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+        </select>
+
+        <select
+          value={selectedSub?._id || ''}
+          onChange={e => {
+            const sub = (selectedMain?.children || []).find(c => String(c._id) === e.target.value) || null;
+            setSelectedSub(sub); setSelectedChild(null);
+          }}
+          className="border px-3 py-2 rounded text-sm bg-white"
+          disabled={!selectedMain}
+        >
+          <option value="">Sub category</option>
+          {(selectedMain?.children || []).map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+        </select>
+
+        <select
+          value={selectedChild?._id || ''}
+          onChange={e => {
+            const child = (selectedSub?.children || []).find(c => String(c._id) === e.target.value) || null;
+            setSelectedChild(child);
+          }}
+          className="border px-3 py-2 rounded text-sm bg-white"
+          disabled={!selectedSub}
+        >
+          <option value="">Sub‑sub category</option>
+          {(selectedSub?.children || []).map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+        </select>
+
+        <select
+          value={sortBy}
+          onChange={e => setSortBy(e.target.value)}
+          className="border px-3 py-2 rounded text-sm bg-white ml-auto"
+        >
+          <option value="date_desc">Newest first</option>
+          <option value="date_asc">Oldest first</option>
+          <option value="rating_desc">Highest rating</option>
+          <option value="rating_asc">Lowest rating</option>
+        </select>
+      </div>
+
       {loading ? (
         <div className="text-center py-16 text-gray-400">Loading reviews…</div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-16 text-gray-400">
-          {filter ? 'No reviews match your search.' : 'No reviews yet.'}
+          {filter || activeCatIds ? 'No reviews match your filters.' : 'No reviews yet.'}
         </div>
       ) : (
         <div className="space-y-4">
@@ -125,8 +225,10 @@ export default function ReviewsList() {
                 {/* Product & meta */}
                 <div className="flex flex-wrap items-start justify-between gap-2 mb-3">
                   <div>
-                    <span className="text-xs font-medium bg-pink-50 text-pink-700 px-2 py-0.5 rounded">
-                      {row.productTitle || 'Unknown Product'}
+                    <span className="text-xs font-medium bg-pink-50 text-pink-700 px-2 py-0.5 rounded hover:bg-pink-100 transition">
+                      <Link href={`/product/${row.productId}`} target="_blank" rel="noopener noreferrer">
+                        {row.productTitle || 'Unknown Product'}
+                      </Link>
                     </span>
                     <div className="flex items-center gap-2 mt-1">
                       <Stars value={row.rating} />

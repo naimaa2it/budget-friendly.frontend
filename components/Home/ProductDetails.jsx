@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import ProductInfoTabs from './ProductInfoTabs';
-import { FaChevronLeft, FaChevronRight, FaStar, FaStarHalfAlt, FaRegStar, FaFacebook, FaTwitter, FaWhatsapp, FaCopy, FaTruck, FaClock } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaStar, FaStarHalfAlt, FaRegStar, FaFacebook, FaTwitter, FaWhatsapp, FaCopy, FaTruck, FaClock, FaTimes, FaGift, FaCommentDots, FaPencilAlt } from 'react-icons/fa';
 import AddToCartSection from '@/components/cart/AddToCartSection';
 import RelatedProducts from './RelatedProducts';
 import { FaCartShopping } from 'react-icons/fa6';
+import RecentlyViewed, { saveRecentlyViewed } from './RecentlyViewed';
 
 function StarDisplay({ value = 0, count = 0 }) {
   const stars = [];
@@ -49,7 +50,16 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
   const images = (product?.images || []).map(i => i.url);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [selectedColor, setSelectedColor] = useState(null);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [zoomOpen, setZoomOpen] = useState(false);
   const currentImage = images[currentIndex] || '/assets/placeholder.svg';
+
+  // Save to recently-viewed list on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (product) saveRecentlyViewed(product);
+  }, [product?._id]); // intentionally using _id — only re-save when product changes
 
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
   const handleCopy = () => {
@@ -63,6 +73,10 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
 
   const { title, description, price, compareAtPrice, inventory, availability, averageRating = 0, reviewCount = 0, tags = [], category } = product;
   const discountPct = compareAtPrice && compareAtPrice > price ? Math.round(((compareAtPrice - price) / compareAtPrice) * 100) : null;
+  const categoryName = typeof category === 'object' ? (category?.name || '') : (category || '');
+  const isClothing = /cloth|apparel|fashion|wear|shirt|pant|dress|garment|tshirt|t-shirt|trouser|jean|tops?|suit|jacket|hoodie|sweater|kurti|saree|lehenga|kurta|blouse|skirt|frock/i.test(categoryName);
+  const productColors = product.colors || [];
+  const productSizes = product.sizes || [];
 
   const specs = product.specs || {};
   const specArray = Object.entries(specs).map(([k, v]) => ({ key: k, value: String(v) }));
@@ -77,10 +91,10 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
     <div key={product?._id || product?.id} className="max-w-6xl mx-auto py-6 px-4">
 
       {/* ── Main product section ── */}
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col lg:flex-row gap-6">
 
-        {/* ── LEFT: image gallery (50%) ── */}
-        <div className="w-full lg:w-1/2 flex flex-col gap-3">
+        {/* ── LEFT: image gallery ── */}
+        <div className="w-full lg:w-[42%] flex flex-col gap-3">
           <div className="flex gap-3">
             {/* Vertical thumbnail strip */}
             {images.length > 1 && (
@@ -105,7 +119,13 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                   <FaChevronLeft className="w-3 h-3 text-gray-600" />
                 </button>
               )}
-              <Image src={encodeURI(currentImage)} alt={title} width={600} height={600} className="w-full h-full object-contain p-2" />
+              <button
+                onClick={() => setZoomOpen(true)}
+                className="w-full h-full cursor-zoom-in group flex items-center justify-center"
+                title="Click to zoom"
+              >
+                <Image src={encodeURI(currentImage)} alt={title} width={600} height={600} className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300" />
+              </button>
               {images.length > 1 && (
                 <button onClick={nextImage} className="absolute right-2 z-10 p-1.5 bg-white border border-gray-300 rounded-full shadow-sm hover:bg-gray-50 transition">
                   <FaChevronRight className="w-3 h-3 text-gray-600" />
@@ -142,8 +162,8 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
           </div>
         </div>
 
-        {/* ── RIGHT: product info (50%) ── */}
-        <div className="w-full lg:w-1/2 flex flex-col">
+        {/* ── MIDDLE: product info ── */}
+        <div className="w-full lg:flex-1 flex flex-col">
 
           {/* Title */}
           <h1 className="text-xl font-bold text-gray-900 leading-tight mb-1.5">{title}</h1>
@@ -178,6 +198,58 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
           <div className="mb-3">
             <StockBadge inventory={inventory} availability={availability} />
           </div>
+
+          {/* Color swatches */}
+          {productColors.length > 0 && (
+            <div className="mb-3">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Available Colors:</span>
+                {selectedColor && <span className="text-xs text-gray-500">{selectedColor.name}</span>}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {productColors.map((col, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedColor(selectedColor?.name === col.name ? null : col)}
+                    title={col.name}
+                    className={`w-7 h-7 rounded-full border-2 transition-all ${
+                      selectedColor?.name === col.name
+                        ? 'border-gray-900 ring-2 ring-gray-900 ring-offset-1 scale-110'
+                        : 'border-gray-200 hover:border-gray-500'
+                    }`}
+                    style={{ backgroundColor: col.hex || col.name }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Size selector — clothing category only */}
+          {isClothing && productSizes.length > 0 && (
+            <div className="mb-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Size:</span>
+                {selectedSize && (
+                  <span className="text-xs text-gray-500">Selected: <strong className="text-gray-700">{selectedSize}</strong></span>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {productSizes.map((size, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedSize(selectedSize === size ? null : size)}
+                    className={`min-w-[36px] h-8 px-3 text-xs font-semibold rounded border transition-all ${
+                      selectedSize === size
+                        ? 'bg-gray-900 text-white border-gray-900'
+                        : 'bg-white text-gray-700 border-gray-200 hover:border-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <hr className="border-gray-200 mb-3 mt-1" />
 
@@ -251,6 +323,60 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
           </div>
 
         </div>
+        {/* ── RIGHT: Available Offers sidebar ── */}
+        <div className="w-full lg:w-52 flex-shrink-0 flex flex-col gap-3">
+
+          {/* Available Offer card */}
+          <div className="border border-gray-200 rounded-lg overflow-hidden">
+            <div className="bg-gray-50 border-b border-gray-200 px-3 py-2">
+              <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">Available Offer</p>
+            </div>
+
+            {/* Reward Points */}
+            <div className="px-3 py-3 flex items-start gap-3 border-b border-gray-100">
+              <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                <FaGift className="text-blue-500 w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <p className="text-[11px] font-bold text-gray-800">Earn Points, Save More</p>
+                {product.rewardPoints > 0 ? (
+                  <p className="text-xs text-blue-600 font-semibold mt-0.5">
+                    Earn <strong className='text-red-500'>{product.rewardPoints}</strong> points on this order
+                  </p>
+                ) : (
+                  <p className="text-[10px] text-gray-400 mt-0.5">Points credited after delivery</p>
+                )}
+              </div>
+            </div>
+
+            {/* Ask about product */}
+            <div className="px-3 py-2.5">
+              <button
+                onClick={() => {
+                  const el = document.getElementById('reviews-tab');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  window.dispatchEvent(new Event('openQuestions'));
+                }}
+                className="w-full flex items-center gap-2 text-[11px] font-semibold text-gray-700 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded px-3 py-2 transition-all"
+              >
+                <FaCommentDots className="text-orange-400 w-3.5 h-3.5 flex-shrink-0" />
+                Ask about this product
+              </button>
+            </div>
+
+            {/* Write a review */}
+            <div className="px-3 pb-3">
+              <button
+                onClick={scrollToReviews}
+                className="w-full flex items-center gap-2 text-[11px] font-semibold text-gray-700 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded px-3 py-2 transition-all"
+              >
+                <FaPencilAlt className="text-green-500 w-3 h-3 flex-shrink-0" />
+                Write your Awesome Review
+              </button>
+            </div>
+          </div>
+
+        </div>
       </div>
 
       {/* related products */}
@@ -260,6 +386,76 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
       <div id="reviews-tab">
         <ProductInfoTabs product={tabProduct} />
       </div>
+
+      {/* recently viewed */}
+      <RecentlyViewed currentProductId={product?._id} />
+
+      {/* ── Image Zoom Modal ── */}
+      {zoomOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setZoomOpen(false)}
+        >
+          <div
+            className="relative max-w-4xl max-h-[90vh] w-full h-full flex items-center justify-center"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setZoomOpen(false)}
+              className="absolute top-2 right-2 z-10 w-8 h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center shadow-md transition"
+            >
+              <FaTimes className="w-3.5 h-3.5 text-gray-700" />
+            </button>
+
+            {/* Prev / Next */}
+            {images.length > 1 && (
+              <button
+                onClick={() => setCurrentIndex(i => (i - 1 + images.length) % images.length)}
+                className="absolute left-2 z-10 p-2 bg-white/90 rounded-full shadow-md hover:bg-white transition"
+              >
+                <FaChevronLeft className="w-4 h-4 text-gray-700" />
+              </button>
+            )}
+            {images.length > 1 && (
+              <button
+                onClick={() => setCurrentIndex(i => (i + 1) % images.length)}
+                className="absolute right-2 z-10 p-2 bg-white/90 rounded-full shadow-md hover:bg-white transition"
+              >
+                <FaChevronRight className="w-4 h-4 text-gray-700" />
+              </button>
+            )}
+
+            {/* Zoomed image */}
+            <div className="bg-white rounded-xl overflow-hidden flex items-center justify-center" style={{ maxWidth: '700px', maxHeight: '80vh', width: '100%', height: '100%' }}>
+              <Image
+                src={encodeURI(currentImage)}
+                alt={title}
+                width={900}
+                height={900}
+                className="w-full h-full object-contain p-4"
+              />
+            </div>
+
+            {/* Thumbnail strip */}
+            {images.length > 1 && (
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                {images.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentIndex(idx)}
+                    className={`w-10 h-10 rounded border-2 overflow-hidden bg-white transition ${
+                      currentIndex === idx ? 'border-white' : 'border-white/30 hover:border-white/70'
+                    }`}
+                  >
+                    <Image src={encodeURI(img)} alt={`thumb-${idx}`} width={40} height={40} className="w-full h-full object-contain" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

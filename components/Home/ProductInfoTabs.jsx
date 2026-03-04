@@ -49,12 +49,14 @@ export default function ProductInfoTabs({ product }) {
   const [reviewError, setReviewError] = useState('');
   const [reviewDone, setReviewDone] = useState(false);
 
-  // Questions state
+  // Questions / Q&A state
   const [faqs, setFaqs] = useState(product?.faqs || []);
-  const [questionForm, setQuestionForm] = useState({ question: '' });
+  const [showQuestionForm, setShowQuestionForm] = useState(false);
+  const [questionForm, setQuestionForm] = useState({ name: '', question: '' });
   const [questionSubmitting, setQuestionSubmitting] = useState(false);
   const [questionError, setQuestionError] = useState('');
-  const [questionDone, setQuestionDone] = useState(false);
+  const [editingQIndex, setEditingQIndex] = useState(null);
+  const [helpfulLoading, setHelpfulLoading] = useState(null); // index being voted
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
@@ -102,19 +104,68 @@ export default function ProductInfoTabs({ product }) {
     if (!questionForm.question.trim()) return setQuestionError('Please enter your question.');
     setQuestionSubmitting(true);
     try {
-      const res = await fetch(`${API}/api/products/${product._id}/questions`, {
-        method: 'POST',
+      const isEdit = editingQIndex !== null;
+      const url = isEdit
+        ? `${API}/api/products/${product._id}/questions/${editingQIndex}`
+        : `${API}/api/products/${product._id}/questions`;
+      const res = await fetch(url, {
+        method: isEdit ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: questionForm.question }),
+        credentials: 'include',
+        body: JSON.stringify({ question: questionForm.question, askerName: questionForm.name || defaultName }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to submit');
-      setQuestionForm({ question: '' });
-      setQuestionDone(true);
+      setFaqs(data.faqs || []);
+      setQuestionForm({ name: '', question: '' });
+      setEditingQIndex(null);
+      setShowQuestionForm(false);
+      toast.success(isEdit ? 'Question updated!' : 'Your question has been submitted!');
     } catch (err) {
       setQuestionError(err.message);
     } finally {
       setQuestionSubmitting(false);
+    }
+  };
+
+  const handleQuestionEdit = (idx) => {
+    const f = faqs[idx];
+    setQuestionForm({ name: f.askerName || defaultName, question: f.question });
+    setEditingQIndex(idx);
+    setQuestionError('');
+    setShowQuestionForm(true);
+    setActiveTab('questions');
+  };
+
+  const handleHelpful = async (idx) => {
+    if (!user) {
+      toast(
+        (t) => (
+          <span className="flex items-center gap-2">
+            Please login to vote.
+            <button
+              onClick={() => { toast.dismiss(t.id); setShowAuthModal(true); }}
+              className="font-semibold text-pink-600 underline hover:text-pink-800"
+            >Login</button>
+          </span>
+        ),
+        { icon: '🔒' }
+      );
+      return;
+    }
+    setHelpfulLoading(idx);
+    try {
+      const res = await fetch(`${API}/api/products/${product._id}/questions/${idx}/helpful`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed');
+      setFaqs(data.faqs || []);
+    } catch (err) {
+      toast.error(err.message || 'Failed to vote');
+    } finally {
+      setHelpfulLoading(null);
     }
   };
 
@@ -476,49 +527,171 @@ export default function ProductInfoTabs({ product }) {
 
           {activeTab === "questions" && (
             <div className="animate-fadeIn">
-              {/* Existing answered FAQs */}
-              {faqs.filter(f => f.answer).length > 0 && (
-                <div className="mb-8 space-y-4">
-                  <h3 className="text-base font-semibold text-gray-700">Answered Questions</h3>
-                  {faqs.filter(f => f.answer).map((faq, i) => (
-                    <div key={i} className="border border-gray-200 rounded-lg p-4">
-                      <p className="font-medium text-gray-800">Q: {faq.question}</p>
-                      <p className="text-gray-600 mt-1">A: {faq.answer}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
 
-              {/* Ask a question form */}
-              <div className={faqs.filter(f => f.answer).length > 0 ? 'border-t pt-6' : ''}>
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Ask a Question</h3>
-                {questionDone ? (
-                  <div className="bg-green-50 border border-green-200 text-green-700 rounded-lg px-4 py-3 max-w-xl">
-                    ✓ Your question has been submitted. We'll answer it soon!
-                  </div>
-                ) : (
-                  <form onSubmit={handleQuestionSubmit} className="space-y-4 max-w-xl">
+              {/* Top bar */}
+              <div className="flex items-center justify-between mb-5">
+                <p className="text-sm text-gray-500">
+                  {faqs.length} question{faqs.length !== 1 ? 's' : ''}
+                  {faqs.filter(f => f.answer).length > 0 &&
+                    <span className="ml-1 text-green-600">· {faqs.filter(f => f.answer).length} answered</span>}
+                </p>
+                <button
+                  onClick={() => {
+                    if (!user) {
+                      toast(
+                        (t) => (
+                          <span className="flex items-center gap-2">
+                            Please login first to ask a question.{' '}
+                            <button
+                              onClick={() => { toast.dismiss(t.id); setShowAuthModal(true); }}
+                              className="font-semibold text-pink-600 underline hover:text-pink-800"
+                            >Login</button>
+                          </span>
+                        ),
+                        { icon: '🔒' }
+                      );
+                      return;
+                    }
+                    setEditingQIndex(null);
+                    setQuestionForm({ name: defaultName, question: '' });
+                    setQuestionError('');
+                    setShowQuestionForm(v => !v);
+                  }}
+                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                  {showQuestionForm && editingQIndex === null ? 'Cancel' : 'Ask a Question'}
+                </button>
+              </div>
+
+              {/* Collapsible question form */}
+              {showQuestionForm && (
+                <div className="bg-green-50 border border-green-200 rounded-xl p-5 mb-6">
+                  <h3 className="text-base font-semibold text-gray-800 mb-4">
+                    {editingQIndex !== null ? '✏️ Edit Your Question' : '❓ Ask a Question'}
+                  </h3>
+                  <form onSubmit={handleQuestionSubmit} className="space-y-4 max-w-2xl">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Your Question <span className="text-red-500">*</span></label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
+                      <input
+                        type="text"
+                        value={questionForm.name}
+                        onChange={e => setQuestionForm(f => ({ ...f, name: e.target.value }))}
+                        className="block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-400"
+                        placeholder={defaultName || 'Your Name'}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Your Question <span className="text-red-500">*</span>
+                      </label>
                       <textarea
                         value={questionForm.question}
-                        onChange={e => setQuestionForm({ question: e.target.value })}
+                        onChange={e => setQuestionForm(f => ({ ...f, question: e.target.value }))}
                         className="block w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-500"
                         rows={4}
                         placeholder="What would you like to know about this product?"
                       />
                     </div>
                     {questionError && <p className="text-red-500 text-sm">{questionError}</p>}
-                    <button
-                      type="submit"
-                      disabled={questionSubmitting}
-                      className="w-full bg-green-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-60"
-                    >
-                      {questionSubmitting ? 'Submitting…' : 'Send Question'}
-                    </button>
+                    <div className="flex gap-3">
+                      <button
+                        type="submit"
+                        disabled={questionSubmitting}
+                        className="bg-green-600 text-white py-2 px-6 rounded-md hover:bg-green-700 transition disabled:opacity-60"
+                      >
+                        {questionSubmitting ? 'Saving…' : editingQIndex !== null ? 'Update Question' : 'Submit Question'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setShowQuestionForm(false); setEditingQIndex(null); }}
+                        className="py-2 px-4 border border-gray-300 rounded-md text-gray-600 hover:bg-gray-100 transition"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </form>
-                )}
-              </div>
+                </div>
+              )}
+
+              {/* Questions list — answered first, then unanswered */}
+              {faqs.length === 0 ? (
+                <p className="text-gray-500 py-6 text-center">No questions yet. Be the first to ask!</p>
+              ) : (
+                <ul className="space-y-4">
+                  {[...faqs]
+                    .map((f, i) => ({ ...f, _origIndex: i }))
+                    .sort((a, b) => {
+                      // answered before unanswered, then by helpful desc, then newest
+                      if (!!a.answer !== !!b.answer) return a.answer ? -1 : 1;
+                      if ((b.helpful || 0) !== (a.helpful || 0)) return (b.helpful || 0) - (a.helpful || 0);
+                      return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+                    })
+                    .map((faq) => {
+                      const idx = faq._origIndex;
+                      const isOwnQuestion = user && faq.user?.toString() === user._id?.toString();
+                      const hasVoted = user && (faq.helpfulBy || []).map(String).includes(user._id?.toString());
+                      return (
+                        <li key={idx} className="border border-gray-200 rounded-xl overflow-hidden">
+                          {/* Question row */}
+                          <div className="flex items-start gap-3 p-4 bg-gray-50">
+                            <div className="flex-shrink-0 w-7 h-7 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-xs mt-0.5">Q</div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-gray-800 font-medium leading-snug">{faq.question}</p>
+                              <div className="flex items-center gap-2 mt-1 flex-wrap text-xs text-gray-400">
+                                <span>{faq.askerName || 'Anonymous'}</span>
+                                {faq.createdAt && <span>· {new Date(faq.createdAt).toLocaleDateString()}</span>}
+                                {!faq.answer && (
+                                  <span className="bg-yellow-50 text-yellow-700 border border-yellow-200 rounded px-1.5 py-0.5 text-xs font-medium">Awaiting answer</span>
+                                )}
+                              </div>
+                            </div>
+                            {/* Edit own unanswered question */}
+                            {isOwnQuestion && !faq.answer && (
+                              <button
+                                onClick={() => handleQuestionEdit(idx)}
+                                className="flex-shrink-0 text-xs text-blue-500 hover:text-blue-700 border border-blue-200 rounded px-2 py-0.5 transition"
+                              >Edit</button>
+                            )}
+                          </div>
+
+                          {/* Answer row */}
+                          {faq.answer && (
+                            <div className="flex items-start gap-3 p-4 border-t border-gray-100 bg-white">
+                              <div className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-xs mt-0.5">A</div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-gray-700 leading-snug">{faq.answer}</p>
+                                <div className="flex items-center gap-3 mt-2 flex-wrap">
+                                  {faq.answeredBy && (
+                                    <span className="text-xs text-gray-400">
+                                      by <span className="font-medium text-gray-600">{faq.answeredBy}</span>
+                                      {faq.answeredAt && <span> · {new Date(faq.answeredAt).toLocaleDateString()}</span>}
+                                    </span>
+                                  )}
+                                  {/* Helpful vote */}
+                                  <button
+                                    onClick={() => handleHelpful(idx)}
+                                    disabled={helpfulLoading === idx}
+                                    className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition ${
+                                      hasVoted
+                                        ? 'bg-green-50 border-green-300 text-green-700 font-semibold'
+                                        : 'border-gray-200 text-gray-500 hover:border-green-300 hover:text-green-700'
+                                    }`}
+                                  >
+                                    <svg className="w-3.5 h-3.5" fill={hasVoted ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21H5a2 2 0 01-2-2v-7a2 2 0 012-2h2.924L14 3v7z" />
+                                    </svg>
+                                    Helpful{faq.helpful > 0 && <span className="font-semibold">({faq.helpful})</span>}
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
+                </ul>
+              )}
             </div>
           )}
         </div>

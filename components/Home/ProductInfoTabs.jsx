@@ -56,7 +56,12 @@ export default function ProductInfoTabs({ product }) {
   const [questionSubmitting, setQuestionSubmitting] = useState(false);
   const [questionError, setQuestionError] = useState('');
   const [editingQIndex, setEditingQIndex] = useState(null);
-  const [helpfulLoading, setHelpfulLoading] = useState(null); // index being voted
+  // per-question inline answer forms: { [qIdx]: { show, name, body, submitting, error, editingAIdx } }
+  const [answerForms, setAnswerForms] = useState({});
+  const [answerHelpfulLoading, setAnswerHelpfulLoading] = useState(null); // `${qIdx}-${aIdx}`
+
+  const setAnswerForm = (qIdx, patch) =>
+    setAnswerForms(prev => ({ ...prev, [qIdx]: { ...prev[qIdx], ...patch } }));
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
@@ -137,25 +142,53 @@ export default function ProductInfoTabs({ product }) {
     setActiveTab('questions');
   };
 
-  const handleHelpful = async (idx) => {
+  const handleAnswerSubmit = async (e, qIdx) => {
+    e.preventDefault();
+    const form = answerForms[qIdx] || {};
+    if (!form.body?.trim()) { setAnswerForm(qIdx, { error: 'Please write an answer.' }); return; }
+    setAnswerForm(qIdx, { submitting: true, error: '' });
+    try {
+      const isEdit = form.editingAIdx !== undefined && form.editingAIdx !== null;
+      const url = isEdit
+        ? `${API}/api/products/${product._id}/questions/${qIdx}/answers/${form.editingAIdx}`
+        : `${API}/api/products/${product._id}/questions/${qIdx}/answers`;
+      const res = await fetch(url, {
+        method: isEdit ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ body: form.body, authorName: form.name || defaultName }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to submit');
+      setFaqs(data.faqs || []);
+      setAnswerForm(qIdx, { show: false, body: '', name: '', submitting: false, editingAIdx: null });
+      toast.success(isEdit ? 'Answer updated!' : 'Answer submitted!');
+    } catch (err) {
+      setAnswerForm(qIdx, { submitting: false, error: err.message });
+    }
+  };
+
+  const handleAnswerEditStart = (qIdx, aIdx) => {
+    const ans = faqs[qIdx]?.answers?.[aIdx];
+    setAnswerForm(qIdx, { show: true, body: ans?.body || '', name: ans?.authorName || defaultName, editingAIdx: aIdx, error: '' });
+  };
+
+  const handleAnswerHelpful = async (qIdx, aIdx) => {
     if (!user) {
       toast(
         (t) => (
           <span className="flex items-center gap-2">
             Please login to vote.
-            <button
-              onClick={() => { toast.dismiss(t.id); setShowAuthModal(true); }}
-              className="font-semibold text-pink-600 underline hover:text-pink-800"
-            >Login</button>
+            <button onClick={() => { toast.dismiss(t.id); setShowAuthModal(true); }} className="font-semibold text-pink-600 underline hover:text-pink-800">Login</button>
           </span>
         ),
         { icon: '🔒' }
       );
       return;
     }
-    setHelpfulLoading(idx);
+    setAnswerHelpfulLoading(`${qIdx}-${aIdx}`);
     try {
-      const res = await fetch(`${API}/api/products/${product._id}/questions/${idx}/helpful`, {
+      const res = await fetch(`${API}/api/products/${product._id}/questions/${qIdx}/answers/${aIdx}/helpful`, {
         method: 'POST',
         credentials: 'include',
       });
@@ -165,7 +198,7 @@ export default function ProductInfoTabs({ product }) {
     } catch (err) {
       toast.error(err.message || 'Failed to vote');
     } finally {
-      setHelpfulLoading(null);
+      setAnswerHelpfulLoading(null);
     }
   };
 
@@ -532,8 +565,8 @@ export default function ProductInfoTabs({ product }) {
               <div className="flex items-center justify-between mb-5">
                 <p className="text-sm text-gray-500">
                   {faqs.length} question{faqs.length !== 1 ? 's' : ''}
-                  {faqs.filter(f => f.answer).length > 0 &&
-                    <span className="ml-1 text-green-600">· {faqs.filter(f => f.answer).length} answered</span>}
+                  {faqs.filter(f => (f.answers?.length || 0) > 0).length > 0 &&
+                    <span className="ml-1 text-green-600">· {faqs.filter(f => (f.answers?.length || 0) > 0).length} answered</span>}
                 </p>
                 <button
                   onClick={() => {
@@ -542,10 +575,7 @@ export default function ProductInfoTabs({ product }) {
                         (t) => (
                           <span className="flex items-center gap-2">
                             Please login first to ask a question.{' '}
-                            <button
-                              onClick={() => { toast.dismiss(t.id); setShowAuthModal(true); }}
-                              className="font-semibold text-pink-600 underline hover:text-pink-800"
-                            >Login</button>
+                            <button onClick={() => { toast.dismiss(t.id); setShowAuthModal(true); }} className="font-semibold text-pink-600 underline hover:text-pink-800">Login</button>
                           </span>
                         ),
                         { icon: '🔒' }
@@ -564,7 +594,7 @@ export default function ProductInfoTabs({ product }) {
                 </button>
               </div>
 
-              {/* Collapsible question form */}
+              {/* Ask / edit question form */}
               {showQuestionForm && (
                 <div className="bg-green-50 border border-green-200 rounded-xl p-5 mb-6">
                   <h3 className="text-base font-semibold text-gray-800 mb-4">
@@ -573,66 +603,47 @@ export default function ProductInfoTabs({ product }) {
                   <form onSubmit={handleQuestionSubmit} className="space-y-4 max-w-2xl">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
-                      <input
-                        type="text"
-                        value={questionForm.name}
-                        onChange={e => setQuestionForm(f => ({ ...f, name: e.target.value }))}
-                        className="block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-400"
-                        placeholder={defaultName || 'Your Name'}
-                      />
+                      <input type="text" value={questionForm.name} onChange={e => setQuestionForm(f => ({ ...f, name: e.target.value }))} className="block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-400" placeholder={defaultName || 'Your Name'} />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Your Question <span className="text-red-500">*</span>
-                      </label>
-                      <textarea
-                        value={questionForm.question}
-                        onChange={e => setQuestionForm(f => ({ ...f, question: e.target.value }))}
-                        className="block w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                        rows={4}
-                        placeholder="What would you like to know about this product?"
-                      />
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Your Question <span className="text-red-500">*</span></label>
+                      <textarea value={questionForm.question} onChange={e => setQuestionForm(f => ({ ...f, question: e.target.value }))} className="block w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-500" rows={4} placeholder="What would you like to know about this product?" />
                     </div>
                     {questionError && <p className="text-red-500 text-sm">{questionError}</p>}
                     <div className="flex gap-3">
-                      <button
-                        type="submit"
-                        disabled={questionSubmitting}
-                        className="bg-green-600 text-white py-2 px-6 rounded-md hover:bg-green-700 transition disabled:opacity-60"
-                      >
+                      <button type="submit" disabled={questionSubmitting} className="bg-green-600 text-white py-2 px-6 rounded-md hover:bg-green-700 transition disabled:opacity-60">
                         {questionSubmitting ? 'Saving…' : editingQIndex !== null ? 'Update Question' : 'Submit Question'}
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => { setShowQuestionForm(false); setEditingQIndex(null); }}
-                        className="py-2 px-4 border border-gray-300 rounded-md text-gray-600 hover:bg-gray-100 transition"
-                      >
-                        Cancel
-                      </button>
+                      <button type="button" onClick={() => { setShowQuestionForm(false); setEditingQIndex(null); }} className="py-2 px-4 border border-gray-300 rounded-md text-gray-600 hover:bg-gray-100 transition">Cancel</button>
                     </div>
                   </form>
                 </div>
               )}
 
-              {/* Questions list — answered first, then unanswered */}
+              {/* Questions list */}
               {faqs.length === 0 ? (
                 <p className="text-gray-500 py-6 text-center">No questions yet. Be the first to ask!</p>
               ) : (
-                <ul className="space-y-4">
+                <ul className="space-y-5">
                   {[...faqs]
                     .map((f, i) => ({ ...f, _origIndex: i }))
                     .sort((a, b) => {
-                      // answered before unanswered, then by helpful desc, then newest
-                      if (!!a.answer !== !!b.answer) return a.answer ? -1 : 1;
-                      if ((b.helpful || 0) !== (a.helpful || 0)) return (b.helpful || 0) - (a.helpful || 0);
+                      const aHas = (a.answers?.length || 0) > 0;
+                      const bHas = (b.answers?.length || 0) > 0;
+                      if (aHas !== bHas) return aHas ? -1 : 1;
                       return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
                     })
                     .map((faq) => {
                       const idx = faq._origIndex;
                       const isOwnQuestion = user && faq.user?.toString() === user._id?.toString();
-                      const hasVoted = user && (faq.helpfulBy || []).map(String).includes(user._id?.toString());
+                      const answers = faq.answers || [];
+                      const officialAnswer = answers.find(a => a.isOfficial);
+                      const communityAnswers = answers.filter(a => !a.isOfficial).sort((a, b) => (b.helpful || 0) - (a.helpful || 0));
+                      const aForm = answerForms[idx] || {};
+
                       return (
                         <li key={idx} className="border border-gray-200 rounded-xl overflow-hidden">
+
                           {/* Question row */}
                           <div className="flex items-start gap-3 p-4 bg-gray-50">
                             <div className="flex-shrink-0 w-7 h-7 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-xs mt-0.5">Q</div>
@@ -641,52 +652,126 @@ export default function ProductInfoTabs({ product }) {
                               <div className="flex items-center gap-2 mt-1 flex-wrap text-xs text-gray-400">
                                 <span>{faq.askerName || 'Anonymous'}</span>
                                 {faq.createdAt && <span>· {new Date(faq.createdAt).toLocaleDateString()}</span>}
-                                {!faq.answer && (
-                                  <span className="bg-yellow-50 text-yellow-700 border border-yellow-200 rounded px-1.5 py-0.5 text-xs font-medium">Awaiting answer</span>
-                                )}
+                                {answers.length === 0 && <span className="bg-yellow-50 text-yellow-700 border border-yellow-200 rounded px-1.5 py-0.5 font-medium">Awaiting answer</span>}
+                                {answers.length > 0 && <span className="text-green-600 font-medium">{answers.length} answer{answers.length !== 1 ? 's' : ''}</span>}
                               </div>
                             </div>
-                            {/* Edit own unanswered question */}
-                            {isOwnQuestion && !faq.answer && (
-                              <button
-                                onClick={() => handleQuestionEdit(idx)}
-                                className="flex-shrink-0 text-xs text-blue-500 hover:text-blue-700 border border-blue-200 rounded px-2 py-0.5 transition"
-                              >Edit</button>
+                            {isOwnQuestion && (
+                              <button onClick={() => handleQuestionEdit(idx)} className="flex-shrink-0 text-xs text-blue-500 hover:text-blue-700 border border-blue-200 rounded px-2 py-0.5 transition">Edit</button>
                             )}
                           </div>
 
-                          {/* Answer row */}
-                          {faq.answer && (
-                            <div className="flex items-start gap-3 p-4 border-t border-gray-100 bg-white">
-                              <div className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-xs mt-0.5">A</div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-gray-700 leading-snug">{faq.answer}</p>
-                                <div className="flex items-center gap-3 mt-2 flex-wrap">
-                                  {faq.answeredBy && (
-                                    <span className="text-xs text-gray-400">
-                                      by <span className="font-medium text-gray-600">{faq.answeredBy}</span>
-                                      {faq.answeredAt && <span> · {new Date(faq.answeredAt).toLocaleDateString()}</span>}
-                                    </span>
-                                  )}
-                                  {/* Helpful vote */}
+                          {/* Official seller answer */}
+                          {officialAnswer && (() => {
+                            const oIdx = answers.indexOf(officialAnswer);
+                            const hasVotedO = user && (officialAnswer.helpfulBy || []).map(String).includes(user._id?.toString());
+                            return (
+                              <div className="flex items-start gap-3 p-4 border-t border-green-100 bg-green-50/40">
+                                <div className="flex-shrink-0 w-7 h-7 rounded-full bg-green-600 flex items-center justify-center text-white font-bold text-xs mt-0.5">A</div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                    <span className="text-xs font-semibold bg-green-600 text-white px-2 py-0.5 rounded">Seller Answer</span>
+                                    <span className="text-xs text-gray-500">{officialAnswer.authorName || 'Seller'}</span>
+                                    {officialAnswer.createdAt && <span className="text-xs text-gray-400">· {new Date(officialAnswer.createdAt).toLocaleDateString()}</span>}
+                                  </div>
+                                  <p className="text-gray-800 leading-snug text-sm">{officialAnswer.body}</p>
                                   <button
-                                    onClick={() => handleHelpful(idx)}
-                                    disabled={helpfulLoading === idx}
-                                    className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition ${
-                                      hasVoted
-                                        ? 'bg-green-50 border-green-300 text-green-700 font-semibold'
-                                        : 'border-gray-200 text-gray-500 hover:border-green-300 hover:text-green-700'
-                                    }`}
+                                    onClick={() => handleAnswerHelpful(idx, oIdx)}
+                                    disabled={answerHelpfulLoading === `${idx}-${oIdx}`}
+                                    className={`mt-2 flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition ${hasVotedO ? 'bg-green-50 border-green-300 text-green-700 font-semibold' : 'border-gray-200 text-gray-500 hover:border-green-300 hover:text-green-700'}`}
                                   >
-                                    <svg className="w-3.5 h-3.5" fill={hasVoted ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21H5a2 2 0 01-2-2v-7a2 2 0 012-2h2.924L14 3v7z" />
-                                    </svg>
-                                    Helpful{faq.helpful > 0 && <span className="font-semibold">({faq.helpful})</span>}
+                                    <svg className="w-3.5 h-3.5" fill={hasVotedO ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21H5a2 2 0 01-2-2v-7a2 2 0 012-2h2.924L14 3v7z" /></svg>
+                                    Helpful{officialAnswer.helpful > 0 && <span className="font-semibold ml-0.5">({officialAnswer.helpful})</span>}
                                   </button>
                                 </div>
                               </div>
+                            );
+                          })()}
+
+                          {/* Community answers */}
+                          {communityAnswers.length > 0 && (
+                            <div className="divide-y divide-gray-100 border-t border-gray-100">
+                              {communityAnswers.map((ans) => {
+                                const aIdx = answers.indexOf(ans);
+                                const isOwnAns = user && ans.user?.toString() === user._id?.toString();
+                                const hasVotedA = user && (ans.helpfulBy || []).map(String).includes(user._id?.toString());
+                                return (
+                                  <div key={aIdx} className="flex items-start gap-3 p-4 bg-white">
+                                    <div className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-xs mt-0.5">A</div>
+                                    <div className="flex-1 min-w-0">
+                                      {aForm.show && aForm.editingAIdx === aIdx ? (
+                                        <form onSubmit={e => handleAnswerSubmit(e, idx)} className="space-y-2">
+                                          <textarea value={aForm.body || ''} onChange={e => setAnswerForm(idx, { body: e.target.value })} rows={3} className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+                                          {aForm.error && <p className="text-red-500 text-xs">{aForm.error}</p>}
+                                          <div className="flex gap-2">
+                                            <button type="submit" disabled={aForm.submitting} className="text-xs px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 font-medium">{aForm.submitting ? 'Saving…' : 'Update'}</button>
+                                            <button type="button" onClick={() => setAnswerForm(idx, { show: false, editingAIdx: null })} className="text-xs px-3 py-1.5 rounded border text-gray-600">Cancel</button>
+                                          </div>
+                                        </form>
+                                      ) : (
+                                        <>
+                                          <p className="text-gray-700 text-sm leading-snug">{ans.body}</p>
+                                          <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                                            <span className="text-xs text-gray-400">{ans.authorName || 'Anonymous'}{ans.createdAt && <> · {new Date(ans.createdAt).toLocaleDateString()}</>}</span>
+                                            <button
+                                              onClick={() => handleAnswerHelpful(idx, aIdx)}
+                                              disabled={answerHelpfulLoading === `${idx}-${aIdx}`}
+                                              className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition ${hasVotedA ? 'bg-green-50 border-green-300 text-green-700 font-semibold' : 'border-gray-200 text-gray-500 hover:border-green-300 hover:text-green-700'}`}
+                                            >
+                                              <svg className="w-3.5 h-3.5" fill={hasVotedA ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21H5a2 2 0 01-2-2v-7a2 2 0 012-2h2.924L14 3v7z" /></svg>
+                                              Helpful{ans.helpful > 0 && <span className="font-semibold ml-0.5">({ans.helpful})</span>}
+                                            </button>
+                                            {isOwnAns && (
+                                              <button onClick={() => handleAnswerEditStart(idx, aIdx)} className="text-xs text-blue-500 hover:text-blue-700 border border-blue-200 rounded px-2 py-0.5 transition">Edit</button>
+                                            )}
+                                          </div>
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
                           )}
+
+                          {/* Write an answer */}
+                          <div className="border-t border-gray-100 bg-gray-50/60">
+                            {!aForm.show || (aForm.editingAIdx !== null && aForm.editingAIdx !== undefined) ? (
+                              <button
+                                onClick={() => {
+                                  if (!user) {
+                                    toast(
+                                      (t) => (
+                                        <span className="flex items-center gap-2">
+                                          Please login to answer.
+                                          <button onClick={() => { toast.dismiss(t.id); setShowAuthModal(true); }} className="font-semibold text-pink-600 underline hover:text-pink-800">Login</button>
+                                        </span>
+                                      ),
+                                      { icon: '🔒' }
+                                    );
+                                    return;
+                                  }
+                                  setAnswerForm(idx, { show: true, body: '', name: defaultName, editingAIdx: null, error: '' });
+                                }}
+                                className="w-full text-center text-xs text-green-700 font-semibold py-2.5 hover:bg-green-50 transition"
+                              >
+                                + Write an Answer
+                              </button>
+                            ) : aForm.editingAIdx === null ? (
+                              <div className="p-4">
+                                <p className="text-xs font-medium text-gray-600 mb-2">Your Answer</p>
+                                <form onSubmit={e => handleAnswerSubmit(e, idx)} className="space-y-2">
+                                  <textarea value={aForm.body || ''} onChange={e => setAnswerForm(idx, { body: e.target.value })} rows={3} placeholder="Share your experience or knowledge…" className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-300" />
+                                  {aForm.error && <p className="text-red-500 text-xs">{aForm.error}</p>}
+                                  <div className="flex gap-2">
+                                    <button type="submit" disabled={aForm.submitting} className="text-xs px-4 py-1.5 rounded bg-green-600 text-white hover:bg-green-700 disabled:opacity-60 font-medium transition">{aForm.submitting ? 'Submitting…' : 'Submit Answer'}</button>
+                                    <button type="button" onClick={() => setAnswerForm(idx, { show: false })} className="text-xs px-3 py-1.5 rounded border text-gray-600 hover:bg-gray-50 transition">Cancel</button>
+                                  </div>
+                                </form>
+                              </div>
+                            ) : null}
+                          </div>
+
                         </li>
                       );
                     })}

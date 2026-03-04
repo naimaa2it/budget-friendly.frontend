@@ -171,7 +171,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
               {/* Product badges — top right */}
               {product.badges?.length > 0 && (
                 <div className="absolute top-3 right-3 flex flex-col gap-1 items-end">
-                  {product.badges.map(badge => {
+                  {product.badges.slice(0, 3).map(badge => {
                     const map = {
                       best_seller:     { label: '⭐ Best Seller',    cls: 'bg-gradient-to-r from-yellow-200 to-yellow-300 text-yellow-800' },
                       hot:             { label: '🔥 Hot',            cls: 'bg-gradient-to-r from-orange-200 to-orange-300 text-orange-800' },

@@ -40,7 +40,7 @@ export default function DealsOfDay() {
           setProductImages((deal.images || []).map(i => i.url));
           // optionally set countdown from deal.expiry or similar; leaving existing timer
         }
-        const bestResp = await fetch(`${API}/api/products?badge=bestseller&limit=20`);
+        const bestResp = await fetch(`${API}/api/products?badge=best_seller&limit=20`);
         const bestJson = await bestResp.json();
         const bests = (bestJson.items || []).map(p => ({
           id: p._id || p.id,

@@ -115,7 +115,7 @@ export default function MegaMenuNavbar() {
             {TAGS.map((tag) => (
               <Link
                 key={tag.name}
-                href={`/products?tag=${tag.name.toLowerCase().replace(/\s+/g, '-')}`}
+                href={`/tag/${tag.name.toLowerCase().replace(/\s+/g, '-')}`}
                 className={`flex items-center gap-1 px-2 md:px-2.5 py-0.5 whitespace-nowrap text-[12px] font-medium ${tag.color} hover:bg-gray-50 transition-colors shrink-0`}
               >
                 <span className="text-sm">{tag.icon}</span>

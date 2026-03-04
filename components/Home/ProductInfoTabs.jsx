@@ -215,69 +215,38 @@ export default function ProductInfoTabs({ product }) {
   };
 
   return (
-    <section className="w-full bg-white mt-10 mb-6 rounded-2xl">
-      <div className="max-w-7xl mx-auto px-2 lg:px-8 ">
-        {/* Header */}
-        <div className="flex gap-4 overflow-x-auto whitespace-nowrap border-b border-gray-200 mb-3 md:grid md:grid-cols-5 md:gap-x-4 md:overflow-visible">
-          <button
-            onClick={() => setActiveTab("description")}
-            className={`px-1 md:px-6 py-3 text-sm md:text-lg font-semibold transition-all duration-200 ${
-              activeTab === "description"
-                ? "border-b-2 border-green-600 text-green-600"
-                : "text-gray-600 hover:text-green-600"
-            }`}
-          >
-            Description
-          </button>
-
-          <button
-            onClick={() => setActiveTab("specification")}
-            className={`px-1 md:px-6 py-3 text-sm md:text-lg font-semibold transition-all duration-200 ${
-              activeTab === "specification"
-                ? "border-b-2 border-green-600 text-green-600"
-                : "text-gray-600 hover:text-green-600"
-            }`}
-          >
-            Specification
-          </button>
-
-          <button
-            onClick={() => setActiveTab("guides")}
-            className={`px-1 md:px-6 py-3 text-sm md:text-lg font-semibold transition-all duration-200 ${
-              activeTab === "guides"
-                ? "border-b-2 border-green-600 text-green-600"
-                : "text-gray-600 hover:text-green-600"
-            }`}
-          >
-            Guides
-          </button>
-
-
-          <button
-            onClick={() => setActiveTab("reviews")}
-            className={`px-1 md:px-6 py-3 text-sm md:text-lg font-semibold transition-all duration-200 ${
-              activeTab === "reviews"
-                ? "border-b-2 border-green-600 text-green-600"
-                : "text-gray-600 hover:text-green-600"
-            }`}
-          >
-            Reviews
-          </button>
-
-          <button
-            onClick={() => setActiveTab("questions")}
-            className={`px-1 md:px-6 py-3 text-sm md:text-lg font-semibold transition-all duration-200 ${
-              activeTab === "questions"
-                ? "border-b-2 border-green-600 text-green-600"
-                : "text-gray-600 hover:text-green-600"
-            }`}
-          >
-            Questions
-          </button>
+    <section className="w-full bg-white mt-10 mb-6">
+      <div className="max-w-7xl mx-auto px-2 lg:px-8">
+        {/* ── Tab bar ── */}
+        <div className="flex gap-1 overflow-x-auto whitespace-nowrap border-b border-gray-200 mb-6">
+          {[
+            { key: 'description',   label: 'Description' },
+            { key: 'specification', label: 'Specification' },
+            { key: 'guides',        label: 'Guides' },
+            { key: 'reviews',       label: 'Reviews', count: reviews.length },
+            { key: 'questions',     label: 'Q&A',     count: faqs.length },
+          ].map(t => (
+            <button
+              key={t.key}
+              onClick={() => setActiveTab(t.key)}
+              className={`relative flex items-center gap-1.5 px-4 py-3 text-sm font-semibold transition-all duration-200 border-b-2 ${
+                activeTab === t.key
+                  ? 'border-gray-900 text-gray-900'
+                  : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300'
+              }`}
+            >
+              {t.label}
+              {t.count > 0 && (
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none ${
+                  activeTab === t.key ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-500'
+                }`}>{t.count}</span>
+              )}
+            </button>
+          ))}
         </div>
 
-        {/* Content */}
-        <div className="bg-white p-2 mb-4">
+        {/* ── Content ── */}
+        <div className="pb-8">
           {activeTab === "description" && (
             <div className="animate-fadeIn">
               <p className="text-gray-700 leading-relaxed whitespace-pre-line">
@@ -439,9 +408,12 @@ export default function ProductInfoTabs({ product }) {
           {activeTab === "reviews" && (
             <div className="animate-fadeIn">
 
-              {/* Top bar: count + Add button (always visible) */}
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-sm text-gray-500">{reviews.length} review{reviews.length !== 1 ? 's' : ''}</p>
+              {/* Top bar */}
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <h2 className="text-base font-bold text-gray-900">Customer Reviews</h2>
+                  <p className="text-xs text-gray-400 mt-0.5">{reviews.length} review{reviews.length !== 1 ? 's' : ''}</p>
+                </div>
                 <button
                   onClick={() => {
                     if (!user) {
@@ -467,65 +439,56 @@ export default function ProductInfoTabs({ product }) {
                     setReviewDone(false);
                     setShowReviewForm(v => !v);
                   }}
-                  className="flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition"
+                  className="flex items-center gap-2 bg-gray-900 hover:bg-gray-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-                  {showReviewForm ? 'Cancel' : 'Add Your Precious Review'}
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                  {showReviewForm ? 'Cancel' : 'Write a Review'}
                 </button>
               </div>
 
-              {/* Collapsible form at top */}
+              {/* Review form */}
               {showReviewForm && (
-                <div className="bg-pink-50 border border-pink-200 rounded-xl p-5 mb-6">
-                  <h3 className="text-base font-semibold text-gray-800 mb-4">
+                <div className="border border-gray-200 rounded-xl p-5 mb-6 bg-gray-50">
+                  <h3 className="text-sm font-bold text-gray-800 mb-4">
                     {editingIndex !== null ? '✏️ Edit Your Review' : '⭐ Write a Review'}
                   </h3>
                   {reviewDone ? (
-                    <div className="bg-green-50 border border-green-200 text-green-700 rounded-lg px-4 py-3">
-                      ✓ {editingIndex !== null ? 'Review updated!' : 'Thank you! Your review has been submitted.'}
+                    <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 rounded-lg px-4 py-3 text-sm">
+                      <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                      {editingIndex !== null ? 'Review updated!' : 'Thank you! Your review has been submitted.'}
                     </div>
                   ) : (
                     <form onSubmit={handleReviewSubmit} className="space-y-4 max-w-2xl">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
-                          <input
-                            type="text"
-                            value={reviewForm.name}
-                            onChange={e => setReviewForm(f => ({ ...f, name: e.target.value }))}
-                            className="block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-pink-400"
-                            placeholder={defaultName || 'Your Name'}
-                          />
-                        </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Your Name</label>
+                        <input
+                          type="text"
+                          value={reviewForm.name}
+                          onChange={e => setReviewForm(f => ({ ...f, name: e.target.value }))}
+                          className="block w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white"
+                          placeholder={defaultName || 'Your Name'}
+                        />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Rating <span className="text-red-500">*</span></label>
+                        <label className="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Rating <span className="text-red-400">*</span></label>
                         <StarRating value={reviewForm.rating} onChange={r => setReviewForm(f => ({ ...f, rating: r }))} />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Comment <span className="text-red-500">*</span></label>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Comment <span className="text-red-400">*</span></label>
                         <textarea
                           value={reviewForm.body}
                           onChange={e => setReviewForm(f => ({ ...f, body: e.target.value }))}
-                          className="block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                          className="block w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white"
                           rows={4}
-                          placeholder="Share details of your experience with this product"
+                          placeholder="Share your experience with this product…"
                         />
                       </div>
-                      {reviewError && <p className="text-red-500 text-sm">{reviewError}</p>}
+                      {reviewError && <p className="text-red-500 text-xs">{reviewError}</p>}
                       <div className="flex gap-3">
-                        <button
-                          type="submit"
-                          disabled={reviewSubmitting}
-                          className="bg-pink-600 text-white py-2 px-6 rounded-md hover:bg-pink-700 transition disabled:opacity-60"
-                        >
+                        <button type="submit" disabled={reviewSubmitting} className="bg-gray-900 text-white text-sm py-2 px-6 rounded-lg hover:bg-gray-700 transition disabled:opacity-60">
                           {reviewSubmitting ? 'Saving…' : editingIndex !== null ? 'Update Review' : 'Submit Review'}
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => { setShowReviewForm(false); setEditingIndex(null); }}
-                          className="py-2 px-4 border border-gray-300 rounded-md text-gray-600 hover:bg-gray-100 transition"
-                        >
+                        <button type="button" onClick={() => { setShowReviewForm(false); setEditingIndex(null); }} className="text-sm py-2 px-4 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-100 transition">
                           Cancel
                         </button>
                       </div>
@@ -534,38 +497,48 @@ export default function ProductInfoTabs({ product }) {
                 </div>
               )}
 
-              {/* Existing reviews */}
+              {/* Review list */}
               {reviews.length > 0 ? (
-                <ul className="space-y-4">
-                  {reviews.map((r, i) => (
-                    <li key={i} className="border border-gray-200 rounded-lg p-4">
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {[1,2,3,4,5].map(s => (
-                            <svg key={s} className={`w-4 h-4 ${s <= r.rating ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.37 2.455a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.538 1.118l-3.37-2.455a1 1 0 00-1.175 0l-3.37 2.455c-.783.57-1.838-.197-1.538-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.013 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z" />
-                            </svg>
-                          ))}
-                          <span className="font-semibold text-gray-800">{r.authorName || r.user || 'Anonymous'}</span>
-                          {r.createdAt && <span className="text-xs text-gray-400">{new Date(r.createdAt).toLocaleDateString()}</span>}
+                <ul className="space-y-3">
+                  {reviews.map((r, i) => {
+                    const initials = (r.authorName || r.user || 'A').charAt(0).toUpperCase();
+                    return (
+                      <li key={i} className="flex gap-4 p-4 border border-gray-100 rounded-xl hover:border-gray-200 transition">
+                        {/* Avatar */}
+                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-sm font-bold text-gray-600">
+                          {initials}
                         </div>
-                        {/* Edit only for own review — no Delete (admin-only) */}
-                        <div className="flex gap-2 flex-shrink-0">
-                          {user && r.user?.toString() === user._id?.toString() && (
-                            <button
-                              onClick={() => handleReviewEdit(i)}
-                              className="text-xs text-blue-500 hover:text-blue-700 border border-blue-200 rounded px-2 py-0.5 transition"
-                            >Edit</button>
-                          )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-semibold text-sm text-gray-900">{r.authorName || r.user || 'Anonymous'}</span>
+                              {r.createdAt && <span className="text-xs text-gray-400">{new Date(r.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>}
+                            </div>
+                            {user && r.user?.toString() === user._id?.toString() && (
+                              <button onClick={() => handleReviewEdit(i)} className="text-xs text-gray-400 hover:text-gray-700 border border-gray-200 rounded-md px-2.5 py-0.5 transition flex-shrink-0">Edit</button>
+                            )}
+                          </div>
+                          {/* Stars */}
+                          <div className="flex gap-0.5 mb-2">
+                            {[1,2,3,4,5].map(s => (
+                              <svg key={s} className={`w-3.5 h-3.5 ${s <= r.rating ? 'text-yellow-400' : 'text-gray-200'}`} fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.37 2.455a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.538 1.118l-3.37-2.455a1 1 0 00-1.175 0l-3.37 2.455c-.783.57-1.838-.197-1.538-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.013 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z" />
+                              </svg>
+                            ))}
+                          </div>
+                          {r.title && <p className="font-semibold text-sm text-gray-800 mb-0.5">{r.title}</p>}
+                          <p className="text-sm text-gray-600 leading-relaxed">{r.body || r.comment}</p>
                         </div>
-                      </div>
-                      {r.title && <p className="font-medium text-gray-700 mb-0.5">{r.title}</p>}
-                      <p className="text-gray-600">{r.body || r.comment}</p>
-                    </li>
-                  ))}
+                      </li>
+                    );
+                  })}
                 </ul>
               ) : (
-                <p className="text-gray-500">No reviews yet. Be the first to review!</p>
+                <div className="text-center py-12 border border-dashed border-gray-200 rounded-xl">
+                  <p className="text-2xl mb-2">✍️</p>
+                  <p className="text-sm font-medium text-gray-600">No reviews yet</p>
+                  <p className="text-xs text-gray-400 mt-1">Be the first to share your experience!</p>
+                </div>
               )}
             </div>
           )}
@@ -575,11 +548,14 @@ export default function ProductInfoTabs({ product }) {
 
               {/* Top bar */}
               <div className="flex items-center justify-between mb-5">
-                <p className="text-sm text-gray-500">
-                  {faqs.length} question{faqs.length !== 1 ? 's' : ''}
-                  {faqs.filter(f => (f.answers?.length || 0) > 0).length > 0 &&
-                    <span className="ml-1 text-green-600">· {faqs.filter(f => (f.answers?.length || 0) > 0).length} answered</span>}
-                </p>
+                <div>
+                  <h2 className="text-base font-bold text-gray-900">Questions &amp; Answers</h2>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {faqs.length} question{faqs.length !== 1 ? 's' : ''}
+                    {faqs.filter(f => (f.answers?.length || 0) > 0).length > 0 &&
+                      <span className="ml-1 text-green-600">· {faqs.filter(f => (f.answers?.length || 0) > 0).length} answered</span>}
+                  </p>
+                </div>
                 <button
                   onClick={() => {
                     if (!user) {
@@ -599,34 +575,34 @@ export default function ProductInfoTabs({ product }) {
                     setQuestionError('');
                     setShowQuestionForm(v => !v);
                   }}
-                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition"
+                  className="flex items-center gap-2 bg-gray-900 hover:bg-gray-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
                   {showQuestionForm && editingQIndex === null ? 'Cancel' : 'Ask a Question'}
                 </button>
               </div>
 
               {/* Ask / edit question form */}
               {showQuestionForm && (
-                <div className="bg-green-50 border border-green-200 rounded-xl p-5 mb-6">
-                  <h3 className="text-base font-semibold text-gray-800 mb-4">
+                <div className="border border-gray-200 rounded-xl p-5 mb-6 bg-gray-50">
+                  <h3 className="text-sm font-bold text-gray-800 mb-4">
                     {editingQIndex !== null ? '✏️ Edit Your Question' : '❓ Ask a Question'}
                   </h3>
                   <form onSubmit={handleQuestionSubmit} className="space-y-4 max-w-2xl">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
-                      <input type="text" value={questionForm.name} onChange={e => setQuestionForm(f => ({ ...f, name: e.target.value }))} className="block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-400" placeholder={defaultName || 'Your Name'} />
+                      <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Your Name</label>
+                      <input type="text" value={questionForm.name} onChange={e => setQuestionForm(f => ({ ...f, name: e.target.value }))} className="block w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white" placeholder={defaultName || 'Your Name'} />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Your Question <span className="text-red-500">*</span></label>
-                      <textarea value={questionForm.question} onChange={e => setQuestionForm(f => ({ ...f, question: e.target.value }))} className="block w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-500" rows={4} placeholder="What would you like to know about this product?" />
+                      <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Your Question <span className="text-red-400">*</span></label>
+                      <textarea value={questionForm.question} onChange={e => setQuestionForm(f => ({ ...f, question: e.target.value }))} className="block w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white" rows={4} placeholder="What would you like to know about this product?" />
                     </div>
-                    {questionError && <p className="text-red-500 text-sm">{questionError}</p>}
+                    {questionError && <p className="text-red-500 text-xs">{questionError}</p>}
                     <div className="flex gap-3">
-                      <button type="submit" disabled={questionSubmitting} className="bg-green-600 text-white py-2 px-6 rounded-md hover:bg-green-700 transition disabled:opacity-60">
+                      <button type="submit" disabled={questionSubmitting} className="bg-gray-900 text-white text-sm py-2 px-6 rounded-lg hover:bg-gray-700 transition disabled:opacity-60">
                         {questionSubmitting ? 'Saving…' : editingQIndex !== null ? 'Update Question' : 'Submit Question'}
                       </button>
-                      <button type="button" onClick={() => { setShowQuestionForm(false); setEditingQIndex(null); }} className="py-2 px-4 border border-gray-300 rounded-md text-gray-600 hover:bg-gray-100 transition">Cancel</button>
+                      <button type="button" onClick={() => { setShowQuestionForm(false); setEditingQIndex(null); }} className="text-sm py-2 px-4 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-100 transition">Cancel</button>
                     </div>
                   </form>
                 </div>
@@ -634,9 +610,13 @@ export default function ProductInfoTabs({ product }) {
 
               {/* Questions list */}
               {faqs.length === 0 ? (
-                <p className="text-gray-500 py-6 text-center">No questions yet. Be the first to ask!</p>
+                <div className="text-center py-12 border border-dashed border-gray-200 rounded-xl">
+                  <p className="text-2xl mb-2">💬</p>
+                  <p className="text-sm font-medium text-gray-600">No questions yet</p>
+                  <p className="text-xs text-gray-400 mt-1">Be the first to ask a question!</p>
+                </div>
               ) : (
-                <ul className="space-y-5">
+                <ul className="space-y-4">
                   {[...faqs]
                     .map((f, i) => ({ ...f, _origIndex: i }))
                     .sort((a, b) => {
@@ -654,22 +634,22 @@ export default function ProductInfoTabs({ product }) {
                       const aForm = answerForms[idx] || {};
 
                       return (
-                        <li key={idx} className="border border-gray-200 rounded-xl overflow-hidden">
+                        <li key={idx} className="border border-gray-100 rounded-xl overflow-hidden">
 
-                          {/* Question row */}
-                          <div className="flex items-start gap-3 p-4 bg-gray-50">
-                            <div className="flex-shrink-0 w-7 h-7 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-xs mt-0.5">Q</div>
+                          {/* Question */}
+                          <div className="flex items-start gap-3 p-4 border-l-4 border-gray-900 bg-white">
+                            <div className="flex-shrink-0 w-7 h-7 rounded-full bg-gray-900 flex items-center justify-center text-white font-bold text-xs mt-0.5">Q</div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-gray-800 font-medium leading-snug">{faq.question}</p>
-                              <div className="flex items-center gap-2 mt-1 flex-wrap text-xs text-gray-400">
-                                <span>{faq.askerName || 'Anonymous'}</span>
-                                {faq.createdAt && <span>· {new Date(faq.createdAt).toLocaleDateString()}</span>}
-                                {answers.length === 0 && <span className="bg-yellow-50 text-yellow-700 border border-yellow-200 rounded px-1.5 py-0.5 font-medium">Awaiting answer</span>}
-                                {answers.length > 0 && <span className="text-green-600 font-medium">{answers.length} answer{answers.length !== 1 ? 's' : ''}</span>}
+                              <p className="text-gray-900 font-semibold text-sm leading-snug">{faq.question}</p>
+                              <div className="flex items-center gap-2 mt-1.5 flex-wrap text-xs text-gray-400">
+                                <span className="font-medium text-gray-500">{faq.askerName || 'Anonymous'}</span>
+                                {faq.createdAt && <span>· {new Date(faq.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>}
+                                {answers.length === 0 && <span className="bg-amber-50 text-amber-600 border border-amber-200 rounded-full px-2 py-0.5 font-medium text-[10px]">Awaiting answer</span>}
+                                {answers.length > 0 && <span className="bg-green-50 text-green-700 border border-green-200 rounded-full px-2 py-0.5 font-medium text-[10px]">{answers.length} answer{answers.length !== 1 ? 's' : ''}</span>}
                               </div>
                             </div>
                             {isOwnQuestion && (
-                              <button onClick={() => handleQuestionEdit(idx)} className="flex-shrink-0 text-xs text-blue-500 hover:text-blue-700 border border-blue-200 rounded px-2 py-0.5 transition">Edit</button>
+                              <button onClick={() => handleQuestionEdit(idx)} className="flex-shrink-0 text-xs text-gray-400 hover:text-gray-700 border border-gray-200 rounded-md px-2.5 py-0.5 transition">Edit</button>
                             )}
                           </div>
 
@@ -678,22 +658,24 @@ export default function ProductInfoTabs({ product }) {
                             const oIdx = answers.indexOf(officialAnswer);
                             const hasVotedO = user && (officialAnswer.helpfulBy || []).map(String).includes(user._id?.toString());
                             return (
-                              <div className="flex items-start gap-3 p-4 border-t border-green-100 bg-green-50/40">
-                                <div className="flex-shrink-0 w-7 h-7 rounded-full bg-green-600 flex items-center justify-center text-white font-bold text-xs mt-0.5">A</div>
+                              <div className="flex items-start gap-3 p-4 border-l-4 border-green-500 bg-green-50/50">
+                                <div className="flex-shrink-0 w-7 h-7 rounded-full bg-green-600 flex items-center justify-center text-white font-bold text-xs mt-0.5">S</div>
                                 <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                    <span className="text-xs font-semibold bg-green-600 text-white px-2 py-0.5 rounded">Seller Answer</span>
+                                  <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                                    <span className="text-[10px] font-bold bg-green-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wide">Seller</span>
                                     <span className="text-xs text-gray-500">{officialAnswer.authorName || 'Seller'}</span>
                                     {officialAnswer.createdAt && <span className="text-xs text-gray-400">· {new Date(officialAnswer.createdAt).toLocaleDateString()}</span>}
                                   </div>
-                                  <p className="text-gray-800 leading-snug text-sm">{officialAnswer.body}</p>
+                                  <p className="text-gray-800 text-sm leading-relaxed">{officialAnswer.body}</p>
                                   <button
                                     onClick={() => handleAnswerHelpful(idx, oIdx)}
                                     disabled={answerHelpfulLoading === `${idx}-${oIdx}`}
-                                    className={`mt-2 flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition ${hasVotedO ? 'bg-green-50 border-green-300 text-green-700 font-semibold' : 'border-gray-200 text-gray-500 hover:border-green-300 hover:text-green-700'}`}
+                                    className={`mt-2 flex items-center gap-1.5 text-xs px-3 py-1 rounded-full border transition ${
+                                      hasVotedO ? 'bg-green-100 border-green-300 text-green-700 font-semibold' : 'border-gray-200 text-gray-500 hover:border-green-300 hover:text-green-700'
+                                    }`}
                                   >
                                     <svg className="w-3.5 h-3.5" fill={hasVotedO ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21H5a2 2 0 01-2-2v-7a2 2 0 012-2h2.924L14 3v7z" /></svg>
-                                    Helpful{officialAnswer.helpful > 0 && <span className="font-semibold ml-0.5">({officialAnswer.helpful})</span>}
+                                    Helpful{officialAnswer.helpful > 0 && <span className="font-semibold">({officialAnswer.helpful})</span>}
                                   </button>
                                 </div>
                               </div>
@@ -702,41 +684,44 @@ export default function ProductInfoTabs({ product }) {
 
                           {/* Community answers */}
                           {communityAnswers.length > 0 && (
-                            <div className="divide-y divide-gray-100 border-t border-gray-100">
+                            <div className="divide-y divide-gray-100">
                               {communityAnswers.map((ans) => {
                                 const aIdx = answers.indexOf(ans);
                                 const isOwnAns = user && ans.user?.toString() === user._id?.toString();
                                 const hasVotedA = user && (ans.helpfulBy || []).map(String).includes(user._id?.toString());
+                                const initials = (ans.authorName || 'A').charAt(0).toUpperCase();
                                 return (
-                                  <div key={aIdx} className="flex items-start gap-3 p-4 bg-white">
-                                    <div className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-xs mt-0.5">A</div>
+                                  <div key={aIdx} className="flex items-start gap-3 p-4 border-l-4 border-blue-300 bg-blue-50/30">
+                                    <div className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-xs mt-0.5">{initials}</div>
                                     <div className="flex-1 min-w-0">
                                       {aForm.show && aForm.editingAIdx === aIdx ? (
                                         <form onSubmit={e => handleAnswerSubmit(e, idx)} className="space-y-2">
-                                          <textarea value={aForm.body || ''} onChange={e => setAnswerForm(idx, { body: e.target.value })} rows={3} className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+                                          <textarea value={aForm.body || ''} onChange={e => setAnswerForm(idx, { body: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 bg-white" />
                                           {aForm.error && <p className="text-red-500 text-xs">{aForm.error}</p>}
                                           <div className="flex gap-2">
-                                            <button type="submit" disabled={aForm.submitting} className="text-xs px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 font-medium">{aForm.submitting ? 'Saving…' : 'Update'}</button>
-                                            <button type="button" onClick={() => setAnswerForm(idx, { show: false, editingAIdx: null })} className="text-xs px-3 py-1.5 rounded border text-gray-600">Cancel</button>
+                                            <button type="submit" disabled={aForm.submitting} className="text-xs px-3 py-1.5 rounded-lg bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-60 font-medium">{aForm.submitting ? 'Saving…' : 'Update'}</button>
+                                            <button type="button" onClick={() => setAnswerForm(idx, { show: false, editingAIdx: null })} className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600">Cancel</button>
                                           </div>
                                         </form>
                                       ) : (
                                         <>
-                                          <p className="text-gray-700 text-sm leading-snug">{ans.body}</p>
-                                          <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                                            <span className="text-xs text-gray-400">{ans.authorName || 'Anonymous'}{ans.createdAt && <> · {new Date(ans.createdAt).toLocaleDateString()}</>}</span>
-                                            <button
-                                              onClick={() => handleAnswerHelpful(idx, aIdx)}
-                                              disabled={answerHelpfulLoading === `${idx}-${aIdx}`}
-                                              className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition ${hasVotedA ? 'bg-green-50 border-green-300 text-green-700 font-semibold' : 'border-gray-200 text-gray-500 hover:border-green-300 hover:text-green-700'}`}
-                                            >
-                                              <svg className="w-3.5 h-3.5" fill={hasVotedA ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21H5a2 2 0 01-2-2v-7a2 2 0 012-2h2.924L14 3v7z" /></svg>
-                                              Helpful{ans.helpful > 0 && <span className="font-semibold ml-0.5">({ans.helpful})</span>}
-                                            </button>
+                                          <div className="flex items-center justify-between mb-1">
+                                            <span className="text-xs font-medium text-gray-600">{ans.authorName || 'Anonymous'}{ans.createdAt && <span className="font-normal text-gray-400"> · {new Date(ans.createdAt).toLocaleDateString()}</span>}</span>
                                             {isOwnAns && (
-                                              <button onClick={() => handleAnswerEditStart(idx, aIdx)} className="text-xs text-blue-500 hover:text-blue-700 border border-blue-200 rounded px-2 py-0.5 transition">Edit</button>
+                                              <button onClick={() => handleAnswerEditStart(idx, aIdx)} className="text-xs text-gray-400 hover:text-gray-700 border border-gray-200 rounded-md px-2.5 py-0.5 transition">Edit</button>
                                             )}
                                           </div>
+                                          <p className="text-gray-700 text-sm leading-relaxed">{ans.body}</p>
+                                          <button
+                                            onClick={() => handleAnswerHelpful(idx, aIdx)}
+                                            disabled={answerHelpfulLoading === `${idx}-${aIdx}`}
+                                            className={`mt-1.5 flex items-center gap-1.5 text-xs px-3 py-1 rounded-full border transition ${
+                                              hasVotedA ? 'bg-green-100 border-green-300 text-green-700 font-semibold' : 'border-gray-200 text-gray-500 hover:border-green-300 hover:text-green-700'
+                                            }`}
+                                          >
+                                            <svg className="w-3.5 h-3.5" fill={hasVotedA ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21H5a2 2 0 01-2-2v-7a2 2 0 012-2h2.924L14 3v7z" /></svg>
+                                            Helpful{ans.helpful > 0 && <span className="font-semibold">({ans.helpful})</span>}
+                                          </button>
                                         </>
                                       )}
                                     </div>
@@ -747,7 +732,7 @@ export default function ProductInfoTabs({ product }) {
                           )}
 
                           {/* Write an answer */}
-                          <div className="border-t border-gray-100 bg-gray-50/60">
+                          <div className="bg-gray-50 border-t border-gray-100">
                             {!aForm.show || (aForm.editingAIdx !== null && aForm.editingAIdx !== undefined) ? (
                               <button
                                 onClick={() => {
@@ -765,19 +750,19 @@ export default function ProductInfoTabs({ product }) {
                                   }
                                   setAnswerForm(idx, { show: true, body: '', name: defaultName, editingAIdx: null, error: '' });
                                 }}
-                                className="w-full text-center text-xs text-green-700 font-semibold py-2.5 hover:bg-green-50 transition"
+                                className="w-full text-center text-xs text-gray-500 font-semibold py-2.5 hover:bg-gray-100 hover:text-gray-800 transition"
                               >
                                 + Write an Answer
                               </button>
                             ) : aForm.editingAIdx === null ? (
                               <div className="p-4">
-                                <p className="text-xs font-medium text-gray-600 mb-2">Your Answer</p>
+                                <p className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Your Answer</p>
                                 <form onSubmit={e => handleAnswerSubmit(e, idx)} className="space-y-2">
-                                  <textarea value={aForm.body || ''} onChange={e => setAnswerForm(idx, { body: e.target.value })} rows={3} placeholder="Share your experience or knowledge…" className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-300" />
+                                  <textarea value={aForm.body || ''} onChange={e => setAnswerForm(idx, { body: e.target.value })} rows={3} placeholder="Share your experience or knowledge…" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white" />
                                   {aForm.error && <p className="text-red-500 text-xs">{aForm.error}</p>}
                                   <div className="flex gap-2">
-                                    <button type="submit" disabled={aForm.submitting} className="text-xs px-4 py-1.5 rounded bg-green-600 text-white hover:bg-green-700 disabled:opacity-60 font-medium transition">{aForm.submitting ? 'Submitting…' : 'Submit Answer'}</button>
-                                    <button type="button" onClick={() => setAnswerForm(idx, { show: false })} className="text-xs px-3 py-1.5 rounded border text-gray-600 hover:bg-gray-50 transition">Cancel</button>
+                                    <button type="submit" disabled={aForm.submitting} className="text-xs px-4 py-1.5 rounded-lg bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-60 font-medium transition">{aForm.submitting ? 'Submitting…' : 'Submit Answer'}</button>
+                                    <button type="button" onClick={() => setAnswerForm(idx, { show: false })} className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition">Cancel</button>
                                   </div>
                                 </form>
                               </div>

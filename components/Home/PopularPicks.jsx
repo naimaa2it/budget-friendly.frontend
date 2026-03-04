@@ -40,8 +40,10 @@ export default function PopularPicks() {
           price: typeof p.price === 'number' ? p.price : parseFloat(p.price) || 0,
           compareAtPrice: typeof p.compareAtPrice === 'number' ? p.compareAtPrice : parseFloat(p.compareAtPrice) || (p.price || 0),
           status: p.availability === 'out_of_stock' ? 'Stock Out' : 'In Stock',
-          tag: p.badges && p.badges.includes('hot') ? 'Hot' : null,
-          discount: p.compareAtPrice && p.price ? `${Math.round((p.compareAtPrice-p.price)/p.compareAtPrice*100)}% Off` : null,
+          badges: p.badges || [],
+          discount: p.compareAtPrice && p.price && p.compareAtPrice > p.price
+            ? Math.round((p.compareAtPrice - p.price) / p.compareAtPrice * 100)
+            : null,
           image: (p.images && p.images[0] && p.images[0].url) || '/assets/placeholder.svg',
           rating: p.averageRating || 0,
           reviews: `(${p.reviewCount || 0})`,
@@ -205,19 +207,38 @@ export default function PopularPicks() {
                     className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
                   />
                   
-                  {/* Tags */}
-                  <div className="absolute top-3 left-3 flex flex-col gap-1">
-                    {product.discount && (
-                      <span className="bg-green-600 text-white text-xs font-bold px-2 py-1 rounded">
-                        {product.discount}
-                      </span>
-                    )}
-                    {product.tag && (
-                      <span className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
-                        {product.tag}
-                      </span>
-                    )}
-                  </div>
+                  {/* Tags — max 3 shown */}
+                  {(() => {
+                    const badgeMap = {
+                      best_seller:      { label: '⭐ Best Seller',  cls: 'bg-yellow-500 text-white' },
+                      hot:              { label: '🔥 Hot',          cls: 'bg-red-600 text-white' },
+                      new_arrival:      { label: '🎁 New Arrival',  cls: 'bg-blue-600 text-white' },
+                      trending:         { label: '📈 Trending',     cls: 'bg-purple-600 text-white' },
+                      limited:          { label: '⏳ Limited',      cls: 'bg-orange-500 text-white' },
+                      popular_pics:     { label: '👍 Popular',      cls: 'bg-pink-600 text-white' },
+                      deals_of_the_day: { label: '🏷️ Deal',         cls: 'bg-emerald-600 text-white' },
+                    };
+                    const tags = [];
+                    if (product.discount) {
+                      tags.push(
+                        <span key="disc" className="bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 rounded">
+                          -{product.discount}%
+                        </span>
+                      );
+                    }
+                    for (const badge of (product.badges || [])) {
+                      if (tags.length >= 3) break;
+                      const b = badgeMap[badge];
+                      if (b) tags.push(
+                        <span key={badge} className={`${b.cls} text-[10px] font-bold px-2 py-0.5 rounded`}>
+                          {b.label}
+                        </span>
+                      );
+                    }
+                    return tags.length > 0 ? (
+                      <div className="absolute top-1 left-1 flex flex-col gap-0.5">{tags}</div>
+                    ) : null;
+                  })()}
 
                   {/* Hover Icons */}
                   <div className="absolute top-3 right-3 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -269,14 +290,14 @@ export default function PopularPicks() {
                     {product.subtitle}
                   </h3>
                   {/* Price */}
-                  <div className="mb-2">
-                    {product.currentPrice ? (
-                      <div className="flex items-center gap-1">
-                        <span className="text-xl font-bold text-red-600">{product.currentPrice}</span>
-                        <span className="text-sm text-gray-500 line-through">{product.originalPrice}</span>
-                      </div>
-                    ) : (
-                      <span className="text-xl font-bold text-red-600">{product.price}</span>
+                  <div className="mb-2 flex items-baseline gap-2 flex-wrap">
+                    <span className="text-lg font-bold text-red-600">
+                      ৳{product.price?.toLocaleString()}
+                    </span>
+                    {product.compareAtPrice && product.compareAtPrice > product.price && (
+                      <span className="text-sm text-gray-400 line-through">
+                        ৳{product.compareAtPrice?.toLocaleString()}
+                      </span>
                     )}
                   </div>
 

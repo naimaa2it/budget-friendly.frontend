@@ -1,7 +1,7 @@
 "use client"
 import React from 'react'
 import Link from 'next/link'
-import WebsiteLogo from '../shared/WebsiteLogo'
+import WebsiteLogo from '@/components/Shared/WebsiteLogo'
 
 export default function Footer() {
   return (

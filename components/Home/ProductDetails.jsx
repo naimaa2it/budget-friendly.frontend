@@ -116,6 +116,27 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                   -{discountPct}%
                 </span>
               )}
+              {/* Product badges — top right */}
+              {product.badges?.length > 0 && (
+                <div className="absolute top-3 right-3 flex flex-col gap-1 items-end">
+                  {product.badges.map(badge => {
+                    const map = {
+                      best_seller:     { label: 'Best Seller',    cls: 'bg-yellow-500 text-white' },
+                      hot:             { label: 'Hot',            cls: 'bg-orange-500 text-white' },
+                      new_arrival:     { label: 'New Arrival',    cls: 'bg-blue-500 text-white' },
+                      trending:        { label: 'Trending',       cls: 'bg-purple-500 text-white' },
+                      limited:         { label: 'Limited',        cls: 'bg-red-600 text-white' },
+                      popular_pics:    { label: 'Popular',        cls: 'bg-pink-500 text-white' },
+                    };
+                    const b = map[badge];
+                    return b ? (
+                      <span key={badge} className={`${b.cls} text-[10px] font-bold px-2 py-0.5 rounded`}>
+                        {b.label}
+                      </span>
+                    ) : null;
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>

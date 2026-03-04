@@ -5,6 +5,7 @@ import DealsOfDay from './DealsOfDay'
 import OffersToSayYes from './OffersToSayYes'
 import Banner from './Banner'
 import OccasionSections from './OccasionSections'
+import FeaturedSections from './FeaturedSections'
 
 export default function Home() {
   return (
@@ -13,6 +14,7 @@ export default function Home() {
     <ShopByCategory/>
     <PopularPicks/>
     <OccasionSections/>
+    <FeaturedSections/>
     <DealsOfDay/>
     <OffersToSayYes/>
     </>

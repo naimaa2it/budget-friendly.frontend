@@ -69,8 +69,8 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
   const tabProduct = { ...product, description, specifications: specArray };
 
   const scrollToReviews = () => {
-    const el = document.getElementById('reviews-tab');
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    // activate tab and scroll
+    window.dispatchEvent(new Event('openReviews'));
   };
 
   return (
@@ -152,7 +152,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
           <div className="flex items-center gap-2 mb-1">
             <StarDisplay value={averageRating} count={reviewCount} />
             <span className="text-gray-300">|</span>
-            <button onClick={scrollToReviews} className="text-xs text-gray-500 hover:text-gray-800 underline underline-offset-3 transition">
+            <button onClick={scrollToReviews} className="text-xs text-gray-600 hover:text-gray-800 underline underline-offset-3 transition">
               Write a review
             </button>
           </div>

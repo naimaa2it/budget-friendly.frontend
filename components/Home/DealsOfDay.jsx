@@ -153,7 +153,7 @@ export default function DealsOfDay() {
                 {/* Main Product Image */}
                 <div className="relative bg-white rounded-lg mb-4 h-96 flex items-center justify-center">
                   <Image
-                    src={encodeURI(productImages[selectedImage])}
+                    src={encodeURI(productImages[selectedImage] || '/assets/placeholder.svg')}
                     alt="Product"
                     loading="lazy"
                     decoding="async"
@@ -175,7 +175,7 @@ export default function DealsOfDay() {
                       }`}
                     >
                       <Image
-                        src={encodeURI(img)}
+                        src={encodeURI(img || '/assets/placeholder.svg')}
                         alt={`Thumbnail ${index + 1}`}
                         loading="lazy"
                         decoding="async"

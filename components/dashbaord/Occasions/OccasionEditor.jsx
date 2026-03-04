@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
+import MediaPicker from '@/components/dashbaord/MediaPicker';
 
 const EMPTY_CARD = { image: { url: '', public_id: '' }, subtitle: '', label: '', link: '/' };
 
@@ -14,6 +15,7 @@ export default function OccasionEditor({ sectionId = null, onSuccess, onCancel }
   const [cards, setCards]           = useState([]);
   const [loading, setLoading]       = useState(false);
   const [saving, setSaving]         = useState(false);
+  const [pickerIdx, setPickerIdx]   = useState(null); // which card index has picker open
   const fileRefs = useRef({});
 
   // Load existing section if editing
@@ -203,12 +205,17 @@ export default function OccasionEditor({ sectionId = null, onSuccess, onCancel }
                     className="hidden"
                     onChange={e => { const f = e.target.files?.[0]; if (f) handleCardImageUpload(idx, f); }}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setPickerIdx(idx)}
+                    className="mt-1 text-[10px] text-blue-600 hover:underline block w-full text-center"
+                  >From Library</button>
                   {card.image?.url && !card.image.__uploading && (
                     <button
                       onClick={() => updateCard(idx, 'image', { url: '', public_id: '' })}
-                      className="mt-1 text-xs text-red-500 hover:text-red-700 block w-full text-center"
+                      className="mt-0.5 text-[10px] text-red-500 hover:text-red-700 block w-full text-center"
                     >
-                      Remove image
+                      Remove
                     </button>
                   )}
                 </div>
@@ -269,6 +276,18 @@ export default function OccasionEditor({ sectionId = null, onSuccess, onCancel }
           ))}
         </div>
       </div>
+
+      {/* Media Picker for card images */}
+      <MediaPicker
+        open={pickerIdx !== null}
+        onSelect={asset => {
+          if (pickerIdx !== null) {
+            updateCard(pickerIdx, 'image', { url: asset.url, public_id: asset.public_id });
+            setPickerIdx(null);
+          }
+        }}
+        onClose={() => setPickerIdx(null)}
+      />
 
       {/* Footer buttons */}
       <div className="flex gap-3 justify-end border-t pt-4">

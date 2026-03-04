@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/components/context/UserContext';
+import MediaPicker from '@/components/dashbaord/MediaPicker';
 
 export default function BlogEdit({ postId }) {
   const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -17,6 +18,7 @@ export default function BlogEdit({ postId }) {
   const [featuredImage, setFeaturedImage] = useState('');
   const [status, setStatus] = useState('draft');
   const [saving, setSaving] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
   const editorRef = useRef(null);
   const lastRange = useRef(null);
 
@@ -183,6 +185,8 @@ export default function BlogEdit({ postId }) {
           <label onMouseDown={saveSelection} className="px-2 py-1 border rounded cursor-pointer">
             Img<input onChange={handleImageChange} type="file" accept="image/*" className="hidden" />
           </label>
+          <button type="button" onMouseDown={saveSelection} onClick={() => setShowPicker(true)}
+            className="px-2 py-1 border rounded text-blue-600 hover:bg-blue-50">Library</button>
           <button type="button" onClick={() => exec('undo')} className="px-2 py-1 border rounded">↶</button>
           <button type="button" onClick={() => exec('redo')} className="px-2 py-1 border rounded">↷</button>
         </div>
@@ -210,6 +214,16 @@ export default function BlogEdit({ postId }) {
         <button onClick={() => handleSave(true)} className="px-4 py-2 bg-green-600 text-white rounded" disabled={saving}>Publish</button>
         <button onClick={handleCancel} className="px-4 py-2 border rounded">Cancel</button>
       </div>
+
+      <MediaPicker
+        open={showPicker}
+        onClose={() => setShowPicker(false)}
+        onSelect={asset => {
+          restoreSelection();
+          exec('insertImage', asset.url);
+          setShowPicker(false);
+        }}
+      />
     </div>
   );
 }

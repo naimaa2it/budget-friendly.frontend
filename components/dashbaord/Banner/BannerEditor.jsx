@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
+import MediaPicker from '@/components/dashbaord/MediaPicker';
 
 export default function BannerEditor({ bannerId = null, onSuccess, onCancel }) {
   const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -16,6 +17,7 @@ export default function BannerEditor({ bannerId = null, onSuccess, onCancel }) {
   const [uploading, setUploading]   = useState(false);
   const [saving, setSaving]         = useState(false);
   const [loading, setLoading]       = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
   const fileRef = useRef(null);
 
   useEffect(() => {
@@ -120,7 +122,25 @@ export default function BannerEditor({ bannerId = null, onSuccess, onCancel }) {
         </div>
         <input ref={fileRef} type="file" accept="image/*" className="hidden"
           onChange={e => handleImageUpload(e.target.files[0])} />
+        <div className="mt-2 flex items-center gap-2">
+          <button type="button" onClick={() => setShowPicker(true)}
+            className="text-xs px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600 flex items-center gap-1">
+            <span>🖼</span> Select from Media Library
+          </button>
+          {image.url && (
+            <button type="button" onClick={() => setImage({ url: '', public_id: '' })}
+              className="text-xs px-3 py-1.5 border border-red-200 rounded-lg hover:bg-red-50 text-red-500">
+              Remove
+            </button>
+          )}
+        </div>
       </div>
+
+      <MediaPicker
+        open={showPicker}
+        onSelect={asset => { setImage({ url: asset.url, public_id: asset.public_id }); setShowPicker(false); }}
+        onClose={() => setShowPicker(false)}
+      />
 
       {/* Text fields */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

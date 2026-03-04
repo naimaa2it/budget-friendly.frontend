@@ -8,10 +8,28 @@ import { useCart } from '@/components/context/CartContext';
 import { useUser } from '@/components/context/UserContext';
 import AuthModal from '../authentication/AuthModal';
 
-export default function ProductCard({ product, imageWidth = 300, imageHeight = 200, imageQuality = 100, showActionsOnHover = true }) {
+export default function ProductCard({ product, imageWidth = 300, imageHeight = 200, imageQuality = 100, showActionsOnHover = true, showDiscount = true, maxTags = 2 }) {
   const router = useRouter();
   const price = product.price || (product.variants && product.variants[0]?.price) || 0;
   const compareAt = product.compareAtPrice || (product.variants && product.variants[0]?.compareAtPrice) || null;
+  const discountPct = showDiscount && compareAt && compareAt > price
+    ? Math.round(((compareAt - price) / compareAt) * 100)
+    : null;
+
+  // badge config — priority order determines which 2 show first
+  const BADGE_PRIORITY = ['hot','best_seller','new_arrival','trending','limited','popular_pics','deals_of_the_day'];
+  const BADGE_MAP = {
+    best_seller:      { label: 'Best Seller', cls: 'bg-yellow-400 text-yellow-900' },
+    hot:              { label: 'Hot',         cls: 'bg-red-500 text-white' },
+    new_arrival:      { label: 'New',         cls: 'bg-blue-500 text-white' },
+    trending:         { label: 'Trending',    cls: 'bg-purple-500 text-white' },
+    limited:          { label: 'Limited',     cls: 'bg-orange-500 text-white' },
+    popular_pics:     { label: 'Popular',     cls: 'bg-pink-500 text-white' },
+    deals_of_the_day: { label: 'Deal',        cls: 'bg-emerald-500 text-white' },
+  };
+  const sortedBadges = BADGE_PRIORITY.filter(b => (product.badges || []).includes(b));
+  const visibleTags = sortedBadges.slice(0, maxTags);
+
   // handle hover/click image swap
   const images = (product.images && product.images.length) ? product.images.map(i => i.url) : ['/assets/placeholder.svg'];
   const [useSecond, setUseSecond] = React.useState(false);
@@ -66,7 +84,27 @@ export default function ProductCard({ product, imageWidth = 300, imageHeight = 2
           className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300 cursor-pointer"
         />
 
-        <div className={`absolute top-3 right-3 flex flex-col gap-2 transition-opacity duration-300 ${showActionsOnHover ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'}`}>
+        {/* Overlay: discount LEFT, tags RIGHT — hidden on hover to show action buttons */}
+        <div className="absolute inset-x-0 top-0 flex items-start justify-between p-1.5 pointer-events-none group-hover:opacity-0 transition-opacity duration-200">
+          {/* Discount badge — top left */}
+          <div>
+            {discountPct && (
+              <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm leading-none">
+                -{discountPct}%
+              </span>
+            )}
+          </div>
+          {/* Tags — top right, stacked */}
+          <div className="flex flex-col items-end gap-0.5">
+            {visibleTags.map(b => (
+              <span key={b} className={`${BADGE_MAP[b].cls} text-[9px] font-bold px-1.5 py-0.5 rounded-sm leading-none`}>
+                {BADGE_MAP[b].label}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className={`absolute top-2 right-2 flex flex-col gap-1.5 transition-opacity duration-300 ${showActionsOnHover ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'}`}>
           <button 
             onClick={(e) => {
               e.stopPropagation();
@@ -109,9 +147,11 @@ export default function ProductCard({ product, imageWidth = 300, imageHeight = 2
         <h3 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-2">{product.description || product.title}</h3>
 
         <div className="mb-2">
-          <div className="flex items-center gap-2">
-            <span className="text-lg font-bold text-red-600">৳{price}</span>
-            {compareAt && <span className="text-sm text-gray-500 line-through">৳{compareAt}</span>}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-lg font-bold text-red-600">৳{price?.toLocaleString()}</span>
+            {compareAt && compareAt > price && (
+              <span className="text-sm text-gray-500 line-through">৳{compareAt?.toLocaleString()}</span>
+            )}
           </div>
         </div>
 

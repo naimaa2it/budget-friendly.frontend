@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import ProductInfoTabs from './ProductInfoTabs';
-import { FaChevronLeft, FaChevronRight, FaStar, FaStarHalfAlt, FaRegStar, FaShareAlt, FaFacebook, FaTwitter, FaWhatsapp, FaCopy, FaTruck, FaShieldAlt, FaClock } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaStar, FaStarHalfAlt, FaRegStar, FaFacebook, FaTwitter, FaWhatsapp, FaCopy, FaTruck, FaClock } from 'react-icons/fa';
 import AddToCartSection from '@/components/cart/AddToCartSection';
 import RelatedProducts from './RelatedProducts';
 
@@ -44,12 +44,6 @@ function StockBadge({ inventory, availability }) {
   return <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-green-600"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />In Stock{inventory != null ? ` (${inventory} available)` : ''}</span>;
 }
 
-const TRUST_BADGES = [
-  { src: 'https://img.icons8.com/?size=100&id=TO90p62OH8nn&format=png&color=000000', alt: 'Genuine', label: '100% Genuine Products' },
-  { src: 'https://img.icons8.com/?size=100&id=BHOd3uqHFKXN&format=png&color=000000', alt: 'Secure', label: '100% Secure Payments' },
-  { src: 'https://img.icons8.com/?size=100&id=45147&format=png&color=000000', alt: 'Help', label: 'Help Center (+8809666737475)' },
-];
-
 export default function ProductDetails({ product, relatedProducts = [] }) {
   const images = (product?.images || []).map(i => i.url);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -79,184 +73,172 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
   };
 
   return (
-    <div key={product?._id || product?.id} className="max-w-6xl mx-auto py-8 px-4">
+    <div key={product?._id || product?.id} className="max-w-6xl mx-auto py-10 px-4">
 
       {/* ── Main product section ── */}
-      <div className="flex flex-col lg:flex-row gap-10">
+      <div className="flex flex-col lg:flex-row gap-12">
 
-        {/* ── LEFT: image gallery ── */}
-        <div className="w-full lg:w-[45%] flex flex-col gap-4">
-
-          {/* Vertical thumbnails + main image */}
+        {/* ── LEFT: image gallery (50%) ── */}
+        <div className="w-full lg:w-1/2 flex flex-col gap-3">
           <div className="flex gap-3">
             {/* Vertical thumbnail strip */}
             {images.length > 1 && (
-              <div className="flex flex-col gap-2 w-[72px] flex-shrink-0">
+              <div className="flex flex-col gap-2 w-16 flex-shrink-0">
                 {images.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => setCurrentIndex(idx)}
-                    className={`rounded-lg border-2 overflow-hidden transition flex-shrink-0 ${
-                      currentIndex === idx ? 'border-red-500 shadow-md' : 'border-gray-200 hover:border-gray-400'
+                    className={`rounded border-2 overflow-hidden transition aspect-square ${
+                      currentIndex === idx ? 'border-gray-900' : 'border-gray-200 hover:border-gray-400'
                     }`}
                   >
-                    <Image src={encodeURI(img)} alt={`${title} ${idx + 1}`} width={72} height={72} className="object-contain w-full h-[68px] p-1" />
+                    <Image src={encodeURI(img)} alt={`${title} ${idx + 1}`} width={64} height={64} className="object-contain w-full h-full p-1" />
                   </button>
                 ))}
               </div>
             )}
-
             {/* Main image */}
-            <div className="relative bg-white rounded-xl border border-gray-200 shadow-sm flex-1 aspect-square flex items-center justify-center overflow-hidden">
+            <div className="relative bg-white border border-gray-200 flex-1 aspect-square flex items-center justify-center overflow-hidden rounded">
               {images.length > 1 && (
-                <button onClick={prevImage} className="absolute left-2 z-10 p-1.5 bg-white border border-red-400 rounded-full shadow hover:bg-red-50 transition">
-                  <FaChevronLeft className="w-3 h-3 text-red-600" />
+                <button onClick={prevImage} className="absolute left-2 z-10 p-1.5 bg-white border border-gray-300 rounded-full shadow-sm hover:bg-gray-50 transition">
+                  <FaChevronLeft className="w-3 h-3 text-gray-600" />
                 </button>
               )}
-              <Image
-                src={encodeURI(currentImage)}
-                alt={title}
-                width={600}
-                height={600}
-                className="w-full h-full object-contain p-4"
-              />
+              <Image src={encodeURI(currentImage)} alt={title} width={600} height={600} className="w-full h-full object-contain p-6" />
               {images.length > 1 && (
-                <button onClick={nextImage} className="absolute right-2 z-10 p-1.5 bg-white border border-red-400 rounded-full shadow hover:bg-red-50 transition">
-                  <FaChevronRight className="w-3 h-3 text-red-600" />
+                <button onClick={nextImage} className="absolute right-2 z-10 p-1.5 bg-white border border-gray-300 rounded-full shadow-sm hover:bg-gray-50 transition">
+                  <FaChevronRight className="w-3 h-3 text-gray-600" />
                 </button>
               )}
               {discountPct && (
-                <span className="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+                <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded">
                   -{discountPct}%
                 </span>
               )}
             </div>
           </div>
-
         </div>
 
-        {/* ── RIGHT: product info ── */}
-        <div className="flex-1 flex flex-col gap-4">
+        {/* ── RIGHT: product info (50%) ── */}
+        <div className="w-full lg:w-1/2 flex flex-col">
 
-          {/* 1. Title */}
-          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 leading-snug">{title}</h1>
+          {/* Title */}
+          <h1 className="text-2xl font-bold text-gray-900 leading-tight mb-2">{title}</h1>
 
-          {/* 2. Stars + review count + write review */}
-          <div className="flex flex-wrap items-center gap-3">
+          {/* Stars + review link */}
+          <div className="flex items-center gap-2 mb-4">
             <StarDisplay value={averageRating} count={reviewCount} />
-            <span className="text-gray-300">|</span>
-            <button
-              id="reviews"
-              onClick={scrollToReviews}
-              className="text-sm font-semibold text-pink-600 hover:text-pink-800 underline underline-offset-2 transition"
-            >
-              ✍️ Write Your Precious Review
+            <span className="text-gray-300 text-lg">|</span>
+            <button onClick={scrollToReviews} className="text-sm text-gray-500 hover:text-gray-800 underline underline-offset-2 transition">
+              Write a review
             </button>
           </div>
 
-          {/* 3. Prices */}
-          <div className="flex items-baseline gap-3 flex-wrap">
-            <span className="text-3xl font-bold text-red-600">৳{price?.toLocaleString()}</span>
+          <hr className="border-gray-200 mb-4" />
+
+          {/* Price */}
+          <div className="flex items-center gap-3 flex-wrap mb-4">
+            <span className="text-2xl font-bold text-gray-900">৳{price?.toLocaleString()}</span>
             {compareAtPrice && compareAtPrice > price && (
-              <>
-                <span className="text-xl text-gray-400 line-through">৳{compareAtPrice?.toLocaleString()}</span>
-                <span className="bg-green-100 text-green-800 text-sm font-bold px-2.5 py-0.5 rounded-full">
-                  {discountPct}% OFF
-                </span>
-              </>
+              <span className="text-lg text-gray-400 line-through font-normal">৳{compareAtPrice?.toLocaleString()}</span>
             )}
           </div>
 
-          {/* 4. Short description */}
+          <hr className="border-gray-200 mb-4" />
+
+          {/* Description */}
           {description && (
-            <p className="text-gray-600 text-sm leading-relaxed line-clamp-4 border-l-4 border-gray-200 pl-3">
+            <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-4">
               {description}
             </p>
           )}
 
-          {/* 5. Stock indicator */}
-          <div>
+          {/* Stock */}
+          <div className="mb-4">
             <StockBadge inventory={inventory} availability={availability} />
           </div>
 
-          {/* 6. Add to cart (qty + wishlist + add to bag) */}
-          <div className="pt-1">
+          <hr className="border-gray-200 mb-4" />
+
+          {/* Add to cart */}
+          <div className="mb-4">
             <AddToCartSection product={product} />
           </div>
 
-          {/* 7. Shipping & checkout info */}
-          <div className="flex flex-col gap-2 border border-dashed border-gray-300 rounded-xl p-3 bg-gray-50 text-sm">
-            <div className="flex items-center gap-2 text-green-700 font-semibold">
-              <FaTruck className="w-4 h-4 flex-shrink-0" />
-              <span>Free shipping on all orders over <span className="font-bold">1000 BDT</span>.</span>
+          {/* Payment icons + Guaranteed Safe Checkout */}
+          <div className="bg-gray-50 border border-gray-200 rounded px-4 py-3 mb-4">
+            <div className="flex flex-wrap items-center justify-center gap-2 mb-2">
+              {[
+                { label: 'VISA', cls: 'bg-blue-700 text-white' },
+                { label: 'Mastercard', cls: 'bg-red-600 text-white' },
+                { label: 'bKash', cls: 'bg-pink-600 text-white' },
+                { label: 'Nagad', cls: 'bg-orange-500 text-white' },
+                { label: 'Rocket', cls: 'bg-purple-600 text-white' },
+                { label: 'COD', cls: 'bg-gray-700 text-white' },
+              ].map(p => (
+                <span key={p.label} className={`${p.cls} text-[10px] font-bold px-2.5 py-1 rounded`}>{p.label}</span>
+              ))}
             </div>
-            <div className="flex items-center gap-2 text-gray-600">
-              <FaClock className="w-4 h-4 flex-shrink-0 text-orange-500" />
-              <span>Delivers in: <span className="font-semibold text-gray-800">3–5 working days</span> &mdash;{' '}
-                <a href="/pages/shipping-policy" className="text-blue-600 hover:underline text-xs">Shipping &amp; Policy</a>
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-gray-600">
-              <FaShieldAlt className="w-4 h-4 flex-shrink-0 text-green-600" />
-              <span className="font-semibold text-gray-800">Guaranteed safe &amp; secure checkout</span>
-            </div>
-           
+            <p className="text-center text-xs text-gray-500 font-medium">Guaranteed Safe Checkout</p>
           </div>
 
-          {/* 8. Category, Tags & Share */}
-          <div className="flex flex-col gap-2 text-sm border-t pt-3">
+          {/* Shipping info */}
+          <div className="flex flex-col gap-2.5 mb-4 text-sm text-gray-600">
+            <div className="flex items-center gap-2.5">
+              <FaTruck className="w-4 h-4 text-gray-500 flex-shrink-0" />
+              <span>Free shipping on all orders over <strong className="text-gray-900">1000 BDT</strong>.</span>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <FaClock className="w-4 h-4 text-gray-500 flex-shrink-0" />
+              <span>
+                Delivers in: <strong className="text-gray-900">3–5 Working Days</strong>{' '}
+                <a href="/pages/shipping-policy" className="underline underline-offset-2 hover:text-gray-900 transition">Shipping &amp; Return</a>
+              </span>
+            </div>
+          </div>
+
+          <hr className="border-gray-200 mb-4" />
+
+          {/* SKU / Category / Tags / Share */}
+          <div className="flex flex-col gap-2.5 text-sm">
+            {product.sku && (
+              <div className="flex items-center gap-2">
+                <span className="text-gray-500 w-20 flex-shrink-0 font-medium">SKU:</span>
+                <span className="text-gray-700">{product.sku}</span>
+              </div>
+            )}
             {category && (
               <div className="flex items-center gap-2">
-                <span className="text-gray-500 font-medium w-20 flex-shrink-0">Category:</span>
-                <span className="text-gray-800 font-semibold">{category}</span>
+                <span className="text-gray-500 w-20 flex-shrink-0 font-medium">Category:</span>
+                <span className="text-gray-700">{typeof category === 'object' ? category.name : category}</span>
               </div>
             )}
             {tags.length > 0 && (
-              <div className="flex items-start gap-2">
-                <span className="text-gray-500 font-medium w-20 flex-shrink-0 mt-0.5">Tags:</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {tags.map(tag => (
-                    <span key={tag} className="bg-gray-100 text-gray-700 px-2.5 py-0.5 rounded-full text-xs font-medium border border-gray-200">
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
+              <div className="flex items-center gap-2">
+                <span className="text-gray-500 w-20 flex-shrink-0 font-medium">Tags:</span>
+                <span className="text-gray-700">{tags.join(', ')}</span>
               </div>
             )}
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-gray-500 font-medium w-20 flex-shrink-0">Share:</span>
-              <div className="flex items-center gap-2">
-                <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer"
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 transition">
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500 w-20 flex-shrink-0 font-medium">Share :</span>
+              <div className="flex items-center gap-3">
+                <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-blue-600 transition">
                   <FaFacebook className="w-4 h-4" />
                 </a>
-                <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(title)}`} target="_blank" rel="noopener noreferrer"
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-sky-500 text-white hover:bg-sky-600 transition">
+                <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(title)}`} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-sky-500 transition">
                   <FaTwitter className="w-4 h-4" />
                 </a>
-                <a href={`https://wa.me/?text=${encodeURIComponent(title + ' ' + shareUrl)}`} target="_blank" rel="noopener noreferrer"
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-green-500 text-white hover:bg-green-600 transition">
+                <a href={`https://wa.me/?text=${encodeURIComponent(title + ' ' + shareUrl)}`} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-green-600 transition">
                   <FaWhatsapp className="w-4 h-4" />
                 </a>
-                <button onClick={handleCopy}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 transition" title="Copy link">
-                  <FaCopy className="w-3.5 h-3.5" />
+                <button onClick={handleCopy} title="Copy link" className="text-gray-500 hover:text-gray-800 transition">
+                  <FaCopy className="w-4 h-4" />
                 </button>
-                {copied && <span className="text-xs text-green-600 font-medium">Copied!</span>}
+                {copied && <span className="text-xs text-green-600">Copied!</span>}
               </div>
             </div>
           </div>
 
-          {/* 9. Trust badges */}
-          <div className="mt-2 grid grid-cols-3 gap-3 border-t pt-4">
-            {TRUST_BADGES.map(b => (
-              <div key={b.alt} className="flex flex-col items-center gap-1.5 text-center">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={b.src} alt={b.alt} className="w-9 h-9" />
-                <span className="text-xs text-gray-600 leading-tight">{b.label}</span>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
 

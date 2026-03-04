@@ -156,11 +156,7 @@ export default function TagPageClient({ slug }) {
               {config.description}
             </p>
 
-            {!loading && (
-              <p className="mt-4 text-white/70 text-sm font-medium">
-                {products.length} product{products.length !== 1 ? 's' : ''} found
-              </p>
-            )}
+            
           </div>
 
           {/* Decorative circles */}
@@ -216,9 +212,7 @@ export default function TagPageClient({ slug }) {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-gray-800">
                   {config.icon} {config.label}
-                  <span className="ml-2 text-sm font-normal text-gray-400">
-                    ({filtered.length} products)
-                  </span>
+                  
                 </h2>
               </div>
 

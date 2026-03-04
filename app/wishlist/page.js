@@ -6,11 +6,6 @@ import { useRouter } from 'next/navigation';
 import AuthModal from '@/components/authentication/AuthModal';
 import WishlistPage from '@/components/cart/WishlistPage';
 
-export const metadata = {
-  title: 'Wishlist - YourHaat',
-  description: 'Your saved products',
-};
-
 export default function Wishlist() {
   const { user } = useUser();
   const router = useRouter();

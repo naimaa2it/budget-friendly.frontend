@@ -48,6 +48,17 @@ export default function ProductInfoTabs({ product }) {
     return () => window.removeEventListener('openReviews', handler);
   }, []);
 
+  // listen for external open-questions (Q&A) requests
+  useEffect(() => {
+    const handler = () => {
+      setActiveTab('questions');
+      const el = document.getElementById('reviews-tab');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    };
+    window.addEventListener('openQuestions', handler);
+    return () => window.removeEventListener('openQuestions', handler);
+  }, []);
+
   // default display name from logged-in user
   const defaultName = user ? (user.name || user.email?.split('@')[0] || '') : '';
 

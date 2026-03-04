@@ -6,6 +6,7 @@ import ProductInfoTabs from './ProductInfoTabs';
 import { FaChevronLeft, FaChevronRight, FaStar, FaStarHalfAlt, FaRegStar, FaFacebook, FaTwitter, FaWhatsapp, FaCopy, FaTruck, FaClock } from 'react-icons/fa';
 import AddToCartSection from '@/components/cart/AddToCartSection';
 import RelatedProducts from './RelatedProducts';
+import { FaCartShopping } from 'react-icons/fa6';
 
 function StarDisplay({ value = 0, count = 0 }) {
   const stars = [];
@@ -73,10 +74,10 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
   };
 
   return (
-    <div key={product?._id || product?.id} className="max-w-6xl mx-auto py-10 px-4">
+    <div key={product?._id || product?.id} className="max-w-6xl mx-auto py-6 px-4">
 
       {/* ── Main product section ── */}
-      <div className="flex flex-col lg:flex-row gap-12">
+      <div className="flex flex-col lg:flex-row gap-8">
 
         {/* ── LEFT: image gallery (50%) ── */}
         <div className="w-full lg:w-1/2 flex flex-col gap-3">
@@ -123,104 +124,92 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
         <div className="w-full lg:w-1/2 flex flex-col">
 
           {/* Title */}
-          <h1 className="text-2xl font-bold text-gray-900 leading-tight mb-2">{title}</h1>
+          <h1 className="text-xl font-bold text-gray-900 leading-tight mb-1.5">{title}</h1>
 
           {/* Stars + review link */}
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-1">
             <StarDisplay value={averageRating} count={reviewCount} />
-            <span className="text-gray-300 text-lg">|</span>
-            <button onClick={scrollToReviews} className="text-sm text-gray-500 hover:text-gray-800 underline underline-offset-2 transition">
+            <span className="text-gray-300">|</span>
+            <button onClick={scrollToReviews} className="text-xs text-gray-500 hover:text-gray-800 underline underline-offset-3 transition">
               Write a review
             </button>
           </div>
 
-          <hr className="border-gray-200 mb-4" />
-
           {/* Price */}
-          <div className="flex items-center gap-3 flex-wrap mb-4">
-            <span className="text-2xl font-bold text-gray-900">৳{price?.toLocaleString()}</span>
+          <div className="flex items-center gap-3 flex-wrap mb-3">
+            <span className="text-xl font-bold text-gray-900">৳{price?.toLocaleString()}</span>
             {compareAtPrice && compareAtPrice > price && (
-              <span className="text-lg text-gray-400 line-through font-normal">৳{compareAtPrice?.toLocaleString()}</span>
+              <span className="text-sm text-gray-400 line-through font-normal">৳{compareAtPrice?.toLocaleString()}</span>
             )}
           </div>
 
-          <hr className="border-gray-200 mb-4" />
+          <hr className="border-gray-200 mb-3 -mt-3" />
 
           {/* Description */}
           {description && (
-            <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-4">
+            <p className="text-gray-500 text-sm leading-relaxed mb-1 line-clamp-4">
               {description}
             </p>
           )}
 
           {/* Stock */}
-          <div className="mb-4">
+          <div className="mb-3">
             <StockBadge inventory={inventory} availability={availability} />
           </div>
 
-          <hr className="border-gray-200 mb-4" />
+          <hr className="border-gray-200 mb-3 mt-1" />
 
           {/* Add to cart */}
-          <div className="mb-4">
+          <div className="mb-3">
             <AddToCartSection product={product} />
           </div>
 
-          {/* Payment icons + Guaranteed Safe Checkout */}
-          <div className="bg-gray-50 border border-gray-200 rounded px-4 py-3 mb-4">
-            <div className="flex flex-wrap items-center justify-center gap-2 mb-2">
-              {[
-                { label: 'VISA', cls: 'bg-blue-700 text-white' },
-                { label: 'Mastercard', cls: 'bg-red-600 text-white' },
-                { label: 'bKash', cls: 'bg-pink-600 text-white' },
-                { label: 'Nagad', cls: 'bg-orange-500 text-white' },
-                { label: 'Rocket', cls: 'bg-purple-600 text-white' },
-                { label: 'COD', cls: 'bg-gray-700 text-white' },
-              ].map(p => (
-                <span key={p.label} className={`${p.cls} text-[10px] font-bold px-2.5 py-1 rounded`}>{p.label}</span>
-              ))}
-            </div>
-            <p className="text-center text-xs text-gray-500 font-medium">Guaranteed Safe Checkout</p>
-          </div>
+         
 
           {/* Shipping info */}
-          <div className="flex flex-col gap-2.5 mb-4 text-sm text-gray-600">
-            <div className="flex items-center gap-2.5">
-              <FaTruck className="w-4 h-4 text-gray-500 flex-shrink-0" />
-              <span>Free shipping on all orders over <strong className="text-gray-900">1000 BDT</strong>.</span>
+          <div className="flex flex-col gap-2 mb-3 text-sm text-gray-500">
+            <div className="flex items-center gap-2">
+              <FaTruck className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+              <span>Free shipping on all orders over <strong className="text-gray-700 font-medium">1000 BDT</strong>.</span>
             </div>
-            <div className="flex items-center gap-2.5">
-              <FaClock className="w-4 h-4 text-gray-500 flex-shrink-0" />
+            
+            <div className="flex items-center gap-2">
+              <FaClock className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
               <span>
-                Delivers in: <strong className="text-gray-900">3–5 Working Days</strong>{' '}
-                <a href="/pages/shipping-policy" className="underline underline-offset-2 hover:text-gray-900 transition">Shipping &amp; Return</a>
+                Delivers in: <strong className="text-gray-700 font-medium">3–5 Working Days</strong>{' '}
+                <a href="/pages/shipping-policy" className="underline underline-offset-2 hover:text-gray-700 transition">Shipping &amp; Return</a>
               </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <FaCartShopping className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+              <span>Guaranteed Safe Checkout</span>
             </div>
           </div>
 
-          <hr className="border-gray-200 mb-4" />
+          <hr className="border-gray-100 mb-3" />
 
           {/* SKU / Category / Tags / Share */}
-          <div className="flex flex-col gap-2.5 text-sm">
+          <div className="flex flex-col gap-2 text-sm">
             {product.sku && (
               <div className="flex items-center gap-2">
-                <span className="text-gray-500 w-20 flex-shrink-0 font-medium">SKU:</span>
-                <span className="text-gray-700">{product.sku}</span>
+                <span className="text-gray-400 w-20 flex-shrink-0">SKU:</span>
+                <span className="text-gray-600">{product.sku}</span>
               </div>
             )}
             {category && (
               <div className="flex items-center gap-2">
-                <span className="text-gray-500 w-20 flex-shrink-0 font-medium">Category:</span>
-                <span className="text-gray-700">{typeof category === 'object' ? category.name : category}</span>
+                <span className="text-gray-400 w-20 flex-shrink-0">Category:</span>
+                <span className="text-gray-600">{typeof category === 'object' ? category.name : category}</span>
               </div>
             )}
             {tags.length > 0 && (
               <div className="flex items-center gap-2">
-                <span className="text-gray-500 w-20 flex-shrink-0 font-medium">Tags:</span>
-                <span className="text-gray-700">{tags.join(', ')}</span>
+                <span className="text-gray-400 w-20 flex-shrink-0">Tags:</span>
+                <span className="text-gray-600">{tags.join(', ')}</span>
               </div>
             )}
             <div className="flex items-center gap-2">
-              <span className="text-gray-500 w-20 flex-shrink-0 font-medium">Share :</span>
+              <span className="text-gray-400 w-20 flex-shrink-0">Share:</span>
               <div className="flex items-center gap-3">
                 <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-blue-600 transition">
                   <FaFacebook className="w-4 h-4" />

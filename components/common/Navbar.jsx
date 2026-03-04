@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from "next/link";
-import WebsiteLogo from "../shared/WebsiteLogo";
+import WebsiteLogo from '@/components/Shared/WebsiteLogo'
 import CategorySidebar from "../Home/CategorySidebar";
 import AuthModal from "../authentication/AuthModal";
 

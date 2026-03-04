@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import ProductInfoTabs from './ProductInfoTabs';
-import { FaChevronLeft, FaChevronRight, FaStar, FaStarHalfAlt, FaRegStar, FaShareAlt, FaFacebook, FaTwitter, FaWhatsapp, FaCopy } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaStar, FaStarHalfAlt, FaRegStar, FaShareAlt, FaFacebook, FaTwitter, FaWhatsapp, FaCopy, FaTruck, FaShieldAlt, FaClock } from 'react-icons/fa';
 import AddToCartSection from '@/components/cart/AddToCartSection';
 import RelatedProducts from './RelatedProducts';
 
@@ -133,49 +133,6 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
             </div>
           </div>
 
-          {/* Category, Tags & Share */}
-          <div className="flex flex-col gap-2 text-sm border-t pt-3">
-            {category && (
-              <div className="flex items-center gap-2">
-                <span className="text-gray-500 font-medium w-20 flex-shrink-0">Category:</span>
-                <span className="text-gray-800 font-semibold">{category}</span>
-              </div>
-            )}
-            {tags.length > 0 && (
-              <div className="flex items-start gap-2">
-                <span className="text-gray-500 font-medium w-20 flex-shrink-0 mt-0.5">Tags:</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {tags.map(tag => (
-                    <span key={tag} className="bg-gray-100 text-gray-700 px-2.5 py-0.5 rounded-full text-xs font-medium border border-gray-200">
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-gray-500 font-medium w-20 flex-shrink-0">Share:</span>
-              <div className="flex items-center gap-2">
-                <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer"
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 transition">
-                  <FaFacebook className="w-4 h-4" />
-                </a>
-                <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(title)}`} target="_blank" rel="noopener noreferrer"
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-sky-500 text-white hover:bg-sky-600 transition">
-                  <FaTwitter className="w-4 h-4" />
-                </a>
-                <a href={`https://wa.me/?text=${encodeURIComponent(title + ' ' + shareUrl)}`} target="_blank" rel="noopener noreferrer"
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-green-500 text-white hover:bg-green-600 transition">
-                  <FaWhatsapp className="w-4 h-4" />
-                </a>
-                <button onClick={handleCopy}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 transition" title="Copy link">
-                  <FaCopy className="w-3.5 h-3.5" />
-                </button>
-                {copied && <span className="text-xs text-green-600 font-medium">Copied!</span>}
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* ── RIGHT: product info ── */}
@@ -227,7 +184,70 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
             <AddToCartSection product={product} />
           </div>
 
-          {/* 7. Trust badges */}
+          {/* 7. Shipping & checkout info */}
+          <div className="flex flex-col gap-2 border border-dashed border-gray-300 rounded-xl p-3 bg-gray-50 text-sm">
+            <div className="flex items-center gap-2 text-green-700 font-semibold">
+              <FaTruck className="w-4 h-4 flex-shrink-0" />
+              <span>Free shipping on all orders over <span className="font-bold">1000 BDT</span>.</span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-600">
+              <FaClock className="w-4 h-4 flex-shrink-0 text-orange-500" />
+              <span>Delivers in: <span className="font-semibold text-gray-800">3–5 working days</span> &mdash;{' '}
+                <a href="/pages/shipping-policy" className="text-blue-600 hover:underline text-xs">Shipping &amp; Policy</a>
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-600">
+              <FaShieldAlt className="w-4 h-4 flex-shrink-0 text-green-600" />
+              <span className="font-semibold text-gray-800">Guaranteed safe &amp; secure checkout</span>
+            </div>
+           
+          </div>
+
+          {/* 8. Category, Tags & Share */}
+          <div className="flex flex-col gap-2 text-sm border-t pt-3">
+            {category && (
+              <div className="flex items-center gap-2">
+                <span className="text-gray-500 font-medium w-20 flex-shrink-0">Category:</span>
+                <span className="text-gray-800 font-semibold">{category}</span>
+              </div>
+            )}
+            {tags.length > 0 && (
+              <div className="flex items-start gap-2">
+                <span className="text-gray-500 font-medium w-20 flex-shrink-0 mt-0.5">Tags:</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {tags.map(tag => (
+                    <span key={tag} className="bg-gray-100 text-gray-700 px-2.5 py-0.5 rounded-full text-xs font-medium border border-gray-200">
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-gray-500 font-medium w-20 flex-shrink-0">Share:</span>
+              <div className="flex items-center gap-2">
+                <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer"
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 transition">
+                  <FaFacebook className="w-4 h-4" />
+                </a>
+                <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(title)}`} target="_blank" rel="noopener noreferrer"
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-sky-500 text-white hover:bg-sky-600 transition">
+                  <FaTwitter className="w-4 h-4" />
+                </a>
+                <a href={`https://wa.me/?text=${encodeURIComponent(title + ' ' + shareUrl)}`} target="_blank" rel="noopener noreferrer"
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-green-500 text-white hover:bg-green-600 transition">
+                  <FaWhatsapp className="w-4 h-4" />
+                </a>
+                <button onClick={handleCopy}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 transition" title="Copy link">
+                  <FaCopy className="w-3.5 h-3.5" />
+                </button>
+                {copied && <span className="text-xs text-green-600 font-medium">Copied!</span>}
+              </div>
+            </div>
+          </div>
+
+          {/* 9. Trust badges */}
           <div className="mt-2 grid grid-cols-3 gap-3 border-t pt-4">
             {TRUST_BADGES.map(b => (
               <div key={b.alt} className="flex flex-col items-center gap-1.5 text-center">

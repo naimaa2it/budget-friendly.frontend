@@ -6,7 +6,6 @@ import ProductFilters from '@/components/product/ProductFilters';
 import Link from 'next/link';
 import { useUser } from '@/components/context/UserContext';
 import { useCategories } from '@/components/context/CategoryContext';
-import { FaTrash } from 'react-icons/fa';
 import Image from 'next/image';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -130,14 +129,8 @@ export default function CategoryPageClient({ slug }) {
     });
   }, [products, activeFilters]);
 
-  const bestSellFiltered = useMemo(() => bestSelling.filter(p => {
-    const { priceRange, brands, minRating } = activeFilters;
-    const pr = p.price ?? 0;
-    if (pr < priceRange[0] || pr > priceRange[1]) return false;
-    if (brands.size > 0 && (!p.department || !brands.has(p.department))) return false;
-    if (minRating !== null && (p.averageRating || 0) < minRating) return false;
-    return true;
-  }), [bestSelling, activeFilters]);
+  // best selling list should remain static and not be filtered by sidebar
+  const bestSellFiltered = useMemo(() => bestSelling, [bestSelling]);
 
   const { user } = useUser();
 

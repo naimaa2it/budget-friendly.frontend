@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import ProductCard from './ProductCard';
-import CategoryFilters from './CategoryFilters';
+import ProductFilters from './ProductFilters';
 import Link from 'next/link';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -73,9 +73,9 @@ export default function TagPageClient({ slug }) {
   };
 
   const [products, setProducts] = useState([]);
-  const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
+  const [activeFilters, setActiveFilters] = useState({ priceRange: [0, 0], subIds: new Set(), brands: new Set(), ratings: new Set() });
 
   useEffect(() => {
     if (!slug) return;
@@ -91,33 +91,29 @@ export default function TagPageClient({ slug }) {
           price: p.price || (p.variants && p.variants[0]?.price) || 0,
         }));
         setProducts(items);
-        setFiltered(items);
       } catch (err) {
         console.error(err);
         setProducts([]);
-        setFiltered([]);
       } finally {
         setLoading(false);
       }
     })();
   }, [slug, config.badge]);
 
-  const stats = useMemo(() => {
-    const prices = products.map(p => p.price || 0);
-    const min = prices.length ? Math.min(...prices) : 0;
-    const max = prices.length ? Math.max(...prices) : 10000;
-    return { minPrice: min, maxPrice: max, total: products.length };
-  }, [products]);
-
-  const applyFilters = ({ minPrice, maxPrice, reset }) => {
-    if (reset) { setFiltered(products); setShowAll(false); return; }
-    const result = products.filter(p => {
-      const pr = p.price || 0;
-      return pr >= (minPrice ?? 0) && pr <= (maxPrice ?? Infinity);
+  // live filtering via useMemo
+  const filtered = useMemo(() => {
+    const { priceRange, brands, ratings } = activeFilters;
+    return products.filter(p => {
+      const pr = p.price ?? p.variants?.[0]?.price ?? 0;
+      if (pr < priceRange[0] || pr > priceRange[1]) return false;
+      if (brands.size > 0 && (!p.department || !brands.has(p.department))) return false;
+      if (ratings.size > 0) {
+        const r = Math.floor(p.averageRating || 0);
+        if (![...ratings].some(min => r >= min)) return false;
+      }
+      return true;
     });
-    setFiltered(result);
-    setShowAll(false);
-  };
+  }, [products, activeFilters]);
 
   const displayed = showAll ? filtered : filtered.slice(0, 20);
 
@@ -200,10 +196,10 @@ export default function TagPageClient({ slug }) {
           <div className="grid grid-cols-12 gap-6">
             {/* Filters */}
             <div className="col-span-12 lg:col-span-3">
-              <CategoryFilters
-                stats={stats}
+              <ProductFilters
+                products={products}
                 subcategories={[]}
-                onApply={applyFilters}
+                onChange={f => { setActiveFilters(f); setShowAll(false); }}
               />
             </div>
 

@@ -3,7 +3,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from "next/link";
 import WebsiteLogo from '@/components/ui/WebsiteLogo'
-import CategorySidebar from '@/components/home/CategorySidebar';
 import AuthModal from '@/components/auth/AuthModal';
 
 // Simple profile menu that uses UserContext so UI updates immediately on auth changes
@@ -11,6 +10,7 @@ import { useUser } from '@/components/context/UserContext';
 import { useCart } from '@/components/context/CartContext';
 import { useRouter } from 'next/navigation';
 import SearchBox from '@/components/ui/SearchBox';
+import CategorySidebar from '../home/CategorySidebar';
 
 function ProfileMenu() {
   const { user, setUser, refreshUser } = useUser();

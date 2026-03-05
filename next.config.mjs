@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+import path from 'path';
+
 const nextConfig = {
   // output:'export',
   images: {
@@ -11,6 +13,18 @@ const nextConfig = {
       'lh3.googleusercontent.com',
     ],
   },
+
+  // add a webpack alias so '@' always resolves correctly
+  webpack(config) {
+    config.resolve.alias = config.resolve.alias || {};
+    config.resolve.alias['@'] = path.resolve(__dirname);
+    return config;
+  },
+
+  // Turbopack is enabled by default in Next 16; we still need to provide an
+  // explicit placeholder since we are customizing webpack above.
+  turbopack: {},
+
   /* other config options here */
 };
 

@@ -8,7 +8,22 @@ import { useCart } from '@/components/context/CartContext';
 import { useUser } from '@/components/context/UserContext';
 import AuthModal from '@/components/auth/AuthModal';
 
-export default function ProductCard({ product, imageWidth = 300, imageHeight = 200, imageQuality = 100, showActionsOnHover = true, showDiscount = true, maxTags = 2 }) {
+import Skeleton from '@/components/ui/Skeleton';
+
+export default function ProductCard({ product, imageWidth = 300, imageHeight = 200, imageQuality = 100, showActionsOnHover = true, showDiscount = true, maxTags = 2, loading = false }) {
+  if (loading || !product) {
+    // simple skeleton card placeholder
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden flex flex-col h-full">
+        <Skeleton className="w-full h-[200px]" />
+        <div className="p-3 flex flex-col grow">
+          <Skeleton className="h-4 mb-2 w-3/4" />
+          <Skeleton className="h-4 mb-2 w-full" />
+          <Skeleton className="h-6 w-1/2 mt-auto" />
+        </div>
+      </div>
+    );
+  }
   const router = useRouter();
   const price = product.price || (product.variants && product.variants[0]?.price) || 0;
   const compareAt = product.compareAtPrice || (product.variants && product.variants[0]?.compareAtPrice) || null;

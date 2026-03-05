@@ -202,7 +202,9 @@ export default function CategoryPageClient({ slug }) {
         </div>
 
         {loading ? (
-          <div className="py-24 text-center text-gray-500">Loading products...</div>
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {Array(5).fill(0).map((_,i) => <ProductCard key={i} loading={true} />)}
+          </div>
         ) : bestSelling.length === 0 ? (
           <div className="py-24 text-center text-gray-500">No best-selling products available.</div>
         ) : (
@@ -239,7 +241,11 @@ export default function CategoryPageClient({ slug }) {
         </div>
         {/* Products occupy 8/12 columns */}
         <div className="col-span-12 lg:col-span-9">
-          {!loading && filtered.length > 0 && (
+          {loading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {Array(8).fill(0).map((_,i) => <ProductCard key={i} loading={true} />)}
+            </div>
+          ) : filtered.length > 0 && (
             <>
               <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {(showAll ? filtered : filtered.slice(0, 5)).map(p => (
@@ -249,7 +255,7 @@ export default function CategoryPageClient({ slug }) {
             </>
           )}
 
-          {filtered.length > 5 && (
+          {!loading && filtered.length > 5 && (
             <div className="mt-6 flex justify-center">
               <button className="px-4 py-2 bg-white border rounded-md" onClick={() => setShowAll(s => !s)}>{showAll ? 'Show less' : `Show all (${filtered.length})`}</button>
             </div>

@@ -703,7 +703,7 @@ export default function ProductEdit({ productId }) {
 
           {/* Pricing Tab */}
           <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Pricing & Inventory</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6"></h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Price */}
@@ -721,7 +721,7 @@ export default function ProductEdit({ productId }) {
 
                 {/* Compare at Price */}
                 <div>
-                  <label className={labelClass}>Offer Price (Optional)</label>
+                  <label className={labelClass}>Previous Price (Optional)</label>
                   <input
                     type="number"
                     value={product.compareAtPrice ?? ''}

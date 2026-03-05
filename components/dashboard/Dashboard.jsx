@@ -1,20 +1,16 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/components/context/UserContext';
 
 export default function Dashboard() {
-  const { user, refreshUser } = useUser();
+  const { user, loading, refreshUser } = useUser();
   const router = useRouter();
 
-  useEffect(() => {
-    if (!user) refreshUser();
-  }, []);
-
-  // while user is loading, show placeholder
-  if (!user) return (
-    <div className="max-w-3xl mx-auto mt-12 p-6 bg-white rounded shadow text-center">Loading user…</div>
+  // show spinner while the auth check is in-flight
+  if (loading) return (
+    <div className="max-w-3xl mx-auto mt-12 p-6 bg-white rounded shadow text-center text-gray-500">Checking authentication…</div>
   );
 
   if (!['admin', 'moderator'].includes(user.role)) {

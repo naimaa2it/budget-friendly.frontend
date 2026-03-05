@@ -52,7 +52,7 @@ export default function Sidebar({ mobileOpen, onClose }) {
         }`}
       >
         <div className="p-4 border-b flex items-center justify-between">
-          <Link href="/dashabord" className="text-lg font-semibold text-pink-600">YourHaat Dashboard</Link>
+          <Link href="/dashabord" className="text-lg font-semibold text-pink-600">Budget Friendly Dashboard</Link>
           {/* close button visible only on mobile */}
           <button className="md:hidden p-2" onClick={onClose} aria-label="Close menu">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

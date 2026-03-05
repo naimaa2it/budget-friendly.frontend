@@ -13,7 +13,7 @@ export default function Footer() {
             <div className="mb-3">
               <WebsiteLogo />
             </div>
-            <p className="text-sm text-[#202020] max-w-[260px]">YourHaat brings you curated beauty and skincare products with fast shipping and reliable customer service.</p>
+            <p className="text-sm text-[#202020] max-w-[260px]">Budget Friendly brings you curated beauty and skincare products with fast shipping and reliable customer service.</p>
 
             <div className="flex items-center gap-3 mt-4">
               <a href="#" aria-label="Facebook" className="text-[#202020] hover:text-[#ac0ad1]">
@@ -106,7 +106,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-8 border-t border-black/6 pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-[#202020]">
-          <p>© {new Date().getFullYear()} YourHaat. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Budget Friendly. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <Link href="/privacy" className="hover:text-[#ac0ad1]">Privacy</Link>
             <Link href="/terms" className="hover:text-[#ac0ad1]">Terms</Link>

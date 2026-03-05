@@ -1,9 +1,9 @@
-export const metadata = { title: 'FAQ – YourHaat' };
+export const metadata = { title: 'FAQ – Budget Friendly' };
 
 const faqs = [
   { q: 'How do I track my order?', a: 'Once your order ships, you will receive a tracking link by email. You can also check your order status in your account dashboard.' },
   { q: 'Can I change or cancel my order?', a: 'Orders can be changed or cancelled within 1 hour of placement. After that, the order enters processing and cannot be modified.' },
-  { q: 'Are the products authentic?', a: 'Yes. YourHaat only sources products from authorised distributors and verified suppliers.' },
+  { q: 'Are the products authentic?', a: 'Yes. Budget Friendly only sources products from authorised distributors and verified suppliers.' },
   { q: 'What payment methods are accepted?', a: 'We accept Visa, Mastercard, Bkash, Nagad, and cash on delivery.' },
   { q: 'Do you ship outside Bangladesh?', a: 'Currently we only ship within Bangladesh. International shipping is planned for the future.' },
 ];

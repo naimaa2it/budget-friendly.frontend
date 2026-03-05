@@ -1,4 +1,4 @@
-export const metadata = { title: 'Returns & Refunds – YourHaat' };
+export const metadata = { title: 'Returns & Refunds – Budget Friendly' };
 
 export default function ReturnsPage() {
   return (

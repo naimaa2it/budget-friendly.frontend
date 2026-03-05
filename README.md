@@ -1,4 +1,4 @@
-YourHaat frontend — Admin auth and dashboard
+Budget Friendly frontend — Admin auth and dashboard
 
 This project uses Firebase on the frontend for authentication (email/password + Google for normal users) and your backend for server-side sessions (JWT cookie). Below are instructions for the admin/moderator flow that uses email/password and a server-side secret.
 

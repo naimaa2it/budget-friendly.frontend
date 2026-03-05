@@ -10,7 +10,7 @@ export async function generateMetadata({ params }) {
     'trending': 'Trending Now',
   };
   const label = labels[slug] || slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-  return { title: `${label} — YourHaat` };
+  return { title: `${label} — Budget Friendly` };
 }
 
 export default async function TagPage({ params }) {

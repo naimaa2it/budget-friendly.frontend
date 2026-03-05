@@ -1,4 +1,4 @@
-export const metadata = { title: 'Shipping Policy – YourHaat' };
+export const metadata = { title: 'Shipping Policy – Budget Friendly' };
 
 export default function ShippingPage() {
   return (

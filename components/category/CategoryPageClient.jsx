@@ -16,6 +16,7 @@ export default function CategoryPageClient({ slug }) {
   const [category, setCategory] = useState(null);
   const [parentCategory, setParentCategory] = useState(null);
   const [subcategories, setSubcategories] = useState([]);
+  const [immediateChildren, setImmediateChildren] = useState([]);
   const [descendantMap, setDescendantMap] = useState(new Map());
   const [isSubcategoryPage, setIsSubcategoryPage] = useState(false);
   const [products, setProducts] = useState([]);
@@ -43,6 +44,10 @@ export default function CategoryPageClient({ slug }) {
         }
 
         setCategory(match);
+
+        // Get immediate children for round shape display
+        const immediateChildrenList = getSubcategories(match._id);
+        setImmediateChildren(immediateChildrenList);
 
         // Build flat descendant list with depth for filter sidebar
         const collectAllDescendants = (catId, depth = 0) => {
@@ -176,10 +181,10 @@ export default function CategoryPageClient({ slug }) {
         <p className="text-gray-600 mt-2">{category?.description || `Products for ${category?.name || slug}.`}</p>
       </div>
 
-      {/* Subcategory circles */}
-      {!isSubcategoryPage && subcategories.length > 0 && (
+      {/* Subcategory circles - show at any level that has children */}
+      {immediateChildren.length > 0 && (
         <div className="flex gap-6 flex-wrap justify-center items-center mb-8">
-          {subcategories.map((sub) => {
+          {immediateChildren.map((sub) => {
             // prefer explicit slug from backend; fallback to name-based slug
             const sslug = sub.slug || (sub.name || '').toLowerCase().replace(/\s+/g, '-');
             return (

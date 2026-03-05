@@ -109,14 +109,14 @@ export default function CartSidebar() {
                     {itemSaved > 0 && (
                       <div className="text-green-600 text-xs whitespace-nowrap">
                         Saved <span className='text-red-600'>
-                           ৳{itemSaved}
+                           ৳{itemSaved.toFixed(2)}
                           </span>
                       </div>
                     )}
                   </div>
                 </div>
                 <div className="text-right text-sm">
-                  <div>৳{price * quantity}</div>
+                  <div>৳{(price * quantity).toFixed(2)}</div>
                   {/* perhaps show original total if different? */}
                 </div>
               </div>
@@ -132,7 +132,7 @@ export default function CartSidebar() {
           </div>
           {saved > 0 && (
             <div className="text-green-600 text-sm mb-2">
-              You are saving ৳{saved} on this order
+              You are saving ৳{saved.toFixed(2)} on this order
             </div>
           )}
           <div className="flex gap-2">

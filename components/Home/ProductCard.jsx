@@ -155,7 +155,13 @@ export default function ProductCard({ product, imageWidth = 300, imageHeight = 2
           </div>
         </div>
 
-        <button className="w-full bg-red-600 text-white py-2 rounded-md font-medium hover:bg-red-700 transition mt-auto ">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            addToCart(product, 1);
+          }}
+          className="w-full bg-red-600 text-white py-2 rounded-md font-medium hover:bg-red-700 transition mt-auto"
+        >
           Add to Cart
         </button>
       </div>

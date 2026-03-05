@@ -10,6 +10,7 @@ import AuthModal from "../authentication/AuthModal";
 import { useUser } from '@/components/context/UserContext';
 import { useCart } from '@/components/context/CartContext';
 import { useRouter } from 'next/navigation';
+import SearchBox from './SearchBox';
 
 function ProfileMenu() {
   const { user, setUser, refreshUser } = useUser();
@@ -225,14 +226,9 @@ export default function Navbar() {
             <WebsiteLogo />
           </div>
 
-        {/* navigation links removed - keeping search centered */}
+        {/* Desktop search */}
         <div className="flex-1 flex justify-center">
-          <form className="hidden md:flex w-full max-w-[400px] flex items-center" role="search" onSubmit={(e) => e.preventDefault()} aria-label="Search form">
-            <div className="relative w-full">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[#ff0707] pointer-events-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input className="pl-9 px-3 py-1 rounded-full border border-black/10 w-full outline-none placeholder:text-[14px] placeholder:text-gray-500" type="search" placeholder="Find your favorite product..." aria-label="Search" />
-            </div>
-          </form>
+          <SearchBox className="hidden md:block w-full max-w-[420px]" />
         </div>
 
         <div className="flex items-center gap-0 md:gap-1">
@@ -322,32 +318,20 @@ export default function Navbar() {
       {/* mobile search overlay */}
       {mobileSearchOpen && (
         <div ref={mobileSearchRef} className="absolute top-full left-0 w-full bg-white p-2 z-50 shadow-md">
-          <form
-            className="flex items-center"
-            role="search"
-            onSubmit={(e) => {
-              e.preventDefault();
-              setMobileSearchOpen(false);
-            }}
-          >
-            <div className="relative w-full">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[#fc0707] pointer-events-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input
-                className="pl-9 px-3 py-1 rounded-full border border-black/10 w-full outline-none placeholder:text-[12px] placeholder:text-gray-500"
-                type="search"
-                placeholder="Find your favorite product..."
-                aria-label="Search"
-                autoFocus
-              />
-            </div>
+          <div className="flex items-center gap-2">
+            <SearchBox
+              className="flex-1"
+              onClose={() => setMobileSearchOpen(false)}
+              autoFocus
+            />
             <button
               type="button"
-              className="ml-2 p-2 text-[#202020] hover:text-[#ac0ad1]"
+              className="p-2 text-[#202020] hover:text-[#ac0ad1] flex-shrink-0"
               onClick={() => setMobileSearchOpen(false)}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
-          </form>
+          </div>
         </div>
       )}
 

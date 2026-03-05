@@ -20,6 +20,8 @@ const workSans = Work_Sans({
 });
 
 import LayoutWrapper from '@/components/LayoutWrapper';
+import ScrollToTop from "@/components/common/ScrollToTop";
+import FloatingWhatsApp from "@/components/common/FloatingWhatsApp";
 
 export const metadata = {
   title: "Create Next App",
@@ -34,9 +36,11 @@ export default function RootLayout({ children }) {
         <UserProvider>
           <CartProvider>
             <CategoryProvider>
+              <ScrollToTop/>
               <LayoutWrapper>
                 {children}
               </LayoutWrapper>
+              <FloatingWhatsApp/>
               {/* global UI overlays */}
               <CartToast />
               <CartSidebar />

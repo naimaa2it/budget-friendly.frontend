@@ -75,7 +75,7 @@ export default function TagPageClient({ slug }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
-  const [activeFilters, setActiveFilters] = useState({ priceRange: [0, 0], subIds: new Set(), brands: new Set(), ratings: new Set() });
+  const [activeFilters, setActiveFilters] = useState({ priceRange: [0, 0], expandedSubIds: new Set(), brands: new Set(), minRating: null });
 
   useEffect(() => {
     if (!slug) return;
@@ -102,15 +102,12 @@ export default function TagPageClient({ slug }) {
 
   // live filtering via useMemo
   const filtered = useMemo(() => {
-    const { priceRange, brands, ratings } = activeFilters;
+    const { priceRange, brands, minRating } = activeFilters;
     return products.filter(p => {
       const pr = p.price ?? p.variants?.[0]?.price ?? 0;
       if (pr < priceRange[0] || pr > priceRange[1]) return false;
       if (brands.size > 0 && (!p.department || !brands.has(p.department))) return false;
-      if (ratings.size > 0) {
-        const r = Math.floor(p.averageRating || 0);
-        if (![...ratings].some(min => r >= min)) return false;
-      }
+      if (minRating !== null && (p.averageRating || 0) < minRating) return false;
       return true;
     });
   }, [products, activeFilters]);

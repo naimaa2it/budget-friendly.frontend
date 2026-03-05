@@ -16,12 +16,13 @@ export default function CategoryPageClient({ slug }) {
   const [category, setCategory] = useState(null);
   const [parentCategory, setParentCategory] = useState(null);
   const [subcategories, setSubcategories] = useState([]);
+  const [descendantMap, setDescendantMap] = useState(new Map());
   const [isSubcategoryPage, setIsSubcategoryPage] = useState(false);
   const [products, setProducts] = useState([]);
   const [bestSelling, setBestSelling] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
-  const [activeFilters, setActiveFilters] = useState({ priceRange: [0, 0], subIds: new Set(), brands: new Set(), ratings: new Set() });
+  const [activeFilters, setActiveFilters] = useState({ priceRange: [0, 0], expandedSubIds: new Set(), brands: new Set(), minRating: null });
 
   // fetch products using category from context
   useEffect(() => {
@@ -42,8 +43,35 @@ export default function CategoryPageClient({ slug }) {
         }
 
         setCategory(match);
-        const subs = getSubcategories(match._id);
-        setSubcategories(subs);
+
+        // Build flat descendant list with depth for filter sidebar
+        const collectAllDescendants = (catId, depth = 0) => {
+          const results = [];
+          const children = getSubcategories(catId);
+          children.forEach(child => {
+            results.push({ _id: child._id, name: child.name, depth });
+            results.push(...collectAllDescendants(child._id, depth + 1));
+          });
+          return results;
+        };
+        setSubcategories(collectAllDescendants(match._id));
+
+        // Build descendant map: id → Set<all descendant ids + self>
+        const buildDescendantMap = (rootId) => {
+          const map = new Map();
+          const processNode = (nodeId) => {
+            const children = getSubcategories(nodeId);
+            const nodeSet = new Set([String(nodeId)]);
+            children.forEach(child => {
+              processNode(child._id);
+              (map.get(String(child._id)) || new Set([String(child._id)])).forEach(id => nodeSet.add(id));
+            });
+            map.set(String(nodeId), nodeSet);
+          };
+          processNode(rootId);
+          return map;
+        };
+        setDescendantMap(buildDescendantMap(match._id));
         
         // determine if this category has a parent
         setIsSubcategoryPage(Boolean(match.parent));
@@ -86,29 +114,23 @@ export default function CategoryPageClient({ slug }) {
 
   // live filtering via useMemo — no Apply button needed
   const filtered = useMemo(() => {
-    const { priceRange, subIds, brands, ratings } = activeFilters;
+    const { priceRange, expandedSubIds, brands, minRating } = activeFilters;
     return products.filter(p => {
       const pr = p.price ?? p.variants?.[0]?.price ?? 0;
       if (pr < priceRange[0] || pr > priceRange[1]) return false;
-      if (subIds.size > 0 && !subIds.has(String(p.categoryId))) return false;
+      if (expandedSubIds.size > 0 && !expandedSubIds.has(String(p.categoryId))) return false;
       if (brands.size > 0 && (!p.department || !brands.has(p.department))) return false;
-      if (ratings.size > 0) {
-        const r = Math.floor(p.averageRating || 0);
-        if (![...ratings].some(min => r >= min)) return false;
-      }
+      if (minRating !== null && (p.averageRating || 0) < minRating) return false;
       return true;
     });
   }, [products, activeFilters]);
 
   const bestSellFiltered = useMemo(() => bestSelling.filter(p => {
-    const { priceRange, brands, ratings } = activeFilters;
+    const { priceRange, brands, minRating } = activeFilters;
     const pr = p.price ?? 0;
     if (pr < priceRange[0] || pr > priceRange[1]) return false;
     if (brands.size > 0 && (!p.department || !brands.has(p.department))) return false;
-    if (ratings.size > 0) {
-      const r = Math.floor(p.averageRating || 0);
-      if (![...ratings].some(min => r >= min)) return false;
-    }
+    if (minRating !== null && (p.averageRating || 0) < minRating) return false;
     return true;
   }), [bestSelling, activeFilters]);
 
@@ -213,6 +235,7 @@ export default function CategoryPageClient({ slug }) {
           <ProductFilters
             products={products}
             subcategories={subcategories}
+            descendantMap={descendantMap}
             onChange={f => { setActiveFilters(f); setShowAll(false); }}
           />
         </div>

@@ -17,16 +17,16 @@ export default function SearchResultsClient() {
   const [total, setTotal] = useState(0);
   const [activeFilters, setActiveFilters] = useState({
     priceRange: [0, 0],
-    subIds: new Set(),
+    expandedSubIds: new Set(),
     brands: new Set(),
-    ratings: new Set(),
+    minRating: null,
   });
 
   // fetch whenever query changes
   useEffect(() => {
     if (!query.trim()) { setAllProducts([]); setTotal(0); return; }
     setLoading(true);
-    setActiveFilters({ priceRange: [0, 0], subIds: new Set(), brands: new Set(), ratings: new Set() });
+    setActiveFilters({ priceRange: [0, 0], expandedSubIds: new Set(), brands: new Set(), minRating: null });
     (async () => {
       try {
         const res = await fetch(`${API}/api/products?q=${encodeURIComponent(query.trim())}&limit=100`);
@@ -45,16 +45,13 @@ export default function SearchResultsClient() {
 
   // live filtered list — reacts instantly to any filter change
   const filtered = useMemo(() => {
-    const { priceRange, subIds, brands, ratings } = activeFilters;
+    const { priceRange, expandedSubIds, brands, minRating } = activeFilters;
     return allProducts.filter(p => {
       const price = p.price ?? p.variants?.[0]?.price ?? 0;
       if (price < priceRange[0] || price > priceRange[1]) return false;
-      if (subIds.size > 0 && !subIds.has(String(p.categoryId))) return false;
+      if (expandedSubIds.size > 0 && !expandedSubIds.has(String(p.categoryId))) return false;
       if (brands.size > 0 && (!p.department || !brands.has(p.department))) return false;
-      if (ratings.size > 0) {
-        const r = Math.floor(p.averageRating || 0);
-        if (![...ratings].some(min => r >= min)) return false;
-      }
+      if (minRating !== null && (p.averageRating || 0) < minRating) return false;
       return true;
     });
   }, [allProducts, activeFilters]);

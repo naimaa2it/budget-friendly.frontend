@@ -191,7 +191,7 @@ export default function CategoryPageClient({ slug }) {
                 product={p}
                 imageWidth={360}
                 imageHeight={160}
-                showDiscount={false}
+                showDiscount={true}
                 maxTags={2}
                 showActionsOnHover={true}
               />

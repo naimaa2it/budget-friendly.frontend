@@ -205,30 +205,51 @@ export default function ProductFilters({
         </Section>
       )}
 
-      {/* ── Rating (radio — single minimum rating) ──────────────────── */}
+      {/* ── Rating (interactive star picker) ────────────────────────── */}
       <Section id="rating" title="Rating">
-        <div className="space-y-2 mt-1">
-          {[5, 4, 3, 2, 1].map(stars => {
-            const active = minRating === stars;
-            return (
+        <div className="mt-2">
+          <div
+            className="flex items-center gap-1"
+            onMouseLeave={() => setHoverRating(0)}
+          >
+            {[1, 2, 3, 4, 5].map(star => {
+              const filled = star <= (hoverRating || minRating || 0);
+              return (
+                <button
+                  key={star}
+                  type="button"
+                  onMouseEnter={() => setHoverRating(star)}
+                  onClick={() => setMinRating(minRating === star ? null : star)}
+                  className="p-0.5 focus:outline-none"
+                  aria-label={`${star} stars`}
+                >
+                  <svg
+                    className={`w-7 h-7 transition-colors ${filled ? 'text-yellow-400' : 'text-gray-200'}`}
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                </button>
+              );
+            })}
+          </div>
+          {minRating ? (
+            <p className="text-xs text-gray-500 mt-1">
+              {minRating} star{minRating > 1 ? 's' : ''} &amp; up
               <button
-                key={stars}
                 type="button"
-                onClick={() => setMinRating(active ? null : stars)}
-                className="w-full flex items-center gap-2.5 group"
+                onClick={() => setMinRating(null)}
+                className="ml-2 text-red-500 hover:text-red-700 font-medium"
               >
-                {/* radio circle */}
-                <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors
-                  ${active ? 'border-red-500 bg-red-500' : 'border-gray-300 group-hover:border-red-400'}`}>
-                  {active && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
-                </span>
-                <StarRow count={stars} active={active} />
-                {stars < 5 && (
-                  <span className="text-xs text-gray-400 ml-0.5">& up</span>
-                )}
+                ✕ clear
               </button>
-            );
-          })}
+            </p>
+          ) : hoverRating ? (
+            <p className="text-xs text-gray-400 mt-1">{hoverRating} star{hoverRating > 1 ? 's' : ''} &amp; up</p>
+          ) : (
+            <p className="text-xs text-gray-400 mt-1">Select minimum rating</p>
+          )}
         </div>
       </Section>
 

@@ -89,7 +89,7 @@ export default function ProductCard({ product, imageWidth = 300, imageHeight = 2
           {/* Discount badge — top left */}
           <div>
             {discountPct && (
-              <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm leading-none">
+              <span className="bg-gradient-to-r from-rose-500 to-red-600 text-white text-[10px] font-bold px-1 py-0.5 rounded-sm leading-none">
                 -{discountPct}%
               </span>
             )}

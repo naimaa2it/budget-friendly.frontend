@@ -33,9 +33,10 @@ export default function Footer() {
             <h3 className="text-sm font-medium text-[#202020] mb-3">Quick links</h3>
             <ul className="space-y-2 text-sm text-[#202020]">
               <li><Link href="/" className="hover:text-[#ac0ad1]">Home</Link></li>
-              <li><Link href="/category/skincare" className="hover:text-[#ac0ad1]">SkinCare</Link></li>
-              <li><Link href="/category/cosmetics" className="hover:text-[#ac0ad1]">Cosmetics</Link></li>
-              <li><Link href="/about" className="hover:text-[#ac0ad1]">About Us</Link></li>
+              <li><Link href="/category/electronics" className="hover:text-[#ac0ad1]">Electronics</Link></li>
+              <li><Link href="/category/gents" className="hover:text-[#ac0ad1]">Gents</Link></li>
+              <li><Link href="/category/ladies" className="hover:text-[#ac0ad1]">Ladies</Link></li>
+              
             </ul>
           </div>
 
@@ -43,10 +44,10 @@ export default function Footer() {
           <div>
             <h3 className="text-sm font-medium text-[#202020] mb-3">Customer service</h3>
             <ul className="space-y-2 text-sm text-[#202020]">
-              <li><Link href="/shipping" className="hover:text-[#ac0ad1]">Shipping</Link></li>
-              <li><Link href="/returns" className="hover:text-[#ac0ad1]">Returns</Link></li>
+              <li><Link href="/shipping" className="hover:text-[#ac0ad1]">Shipping & returns</Link></li>
               <li><Link href="/faq" className="hover:text-[#ac0ad1]">FAQ</Link></li>
               <li><Link href="/contact" className="hover:text-[#ac0ad1]">Contact us</Link></li>
+              <li><Link href="/about" className="hover:text-[#ac0ad1]">About Us</Link></li>
             </ul>
           </div>
 

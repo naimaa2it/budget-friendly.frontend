@@ -207,40 +207,38 @@ export default function PopularPicks() {
                     className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
                   />
                   
-                  {/* Overlay: discount LEFT, badges RIGHT — hidden on hover */}
-                  <div className="absolute inset-x-0 top-0 flex items-start justify-between p-1.5 pointer-events-none group-hover:opacity-0 transition-opacity duration-200">
-                    {/* Discount badge — top left */}
-                    <div>
-                      {product.discount && (
-                        <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm leading-none">
-                          -{product.discount}%
-                        </span>
-                      )}
+                  {/* Discount badge — top left (always visible) */}
+                  {product.discount && (
+                    <div className="absolute top-1.5 left-1.5 z-10 pointer-events-none">
+                      <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm leading-none">
+                        -{product.discount}%
+                      </span>
                     </div>
-                    {/* Badge tags — top right, stacked */}
-                    {(() => {
-                      const BADGE_PRIORITY = ['hot','best_seller','new_arrival','trending','limited','popular_pics','deals_of_the_day'];
-                      const BADGE_MAP = {
-                        best_seller:      { label: 'Best Seller', cls: 'bg-yellow-400 text-yellow-900' },
-                        hot:              { label: 'Hot',         cls: 'bg-red-500 text-white' },
-                        new_arrival:      { label: 'New',         cls: 'bg-blue-500 text-white' },
-                        trending:         { label: 'Trending',    cls: 'bg-purple-500 text-white' },
-                        limited:          { label: 'Limited',     cls: 'bg-orange-500 text-white' },
-                        popular_pics:     { label: 'Popular',     cls: 'bg-pink-500 text-white' },
-                        deals_of_the_day: { label: 'Deal',        cls: 'bg-emerald-500 text-white' },
-                      };
-                      const visible = BADGE_PRIORITY.filter(b => (product.badges || []).includes(b)).slice(0, 2);
-                      return visible.length > 0 ? (
-                        <div className="flex flex-col items-end gap-0.5">
-                          {visible.map(b => (
-                            <span key={b} className={`${BADGE_MAP[b].cls} text-[9px] font-bold px-1.5 py-0.5 rounded-sm leading-none`}>
-                              {BADGE_MAP[b].label}
-                            </span>
-                          ))}
-                        </div>
-                      ) : null;
-                    })()}
-                  </div>
+                  )}
+
+                  {/* Badge tags — top right, hidden on hover */}
+                  {(() => {
+                    const BADGE_PRIORITY = ['hot','best_seller','new_arrival','trending','limited','popular_pics','deals_of_the_day'];
+                    const BADGE_MAP = {
+                      best_seller:      { label: 'Best Seller', cls: 'bg-yellow-400 text-yellow-900' },
+                      hot:              { label: 'Hot',         cls: 'bg-red-500 text-white' },
+                      new_arrival:      { label: 'New',         cls: 'bg-blue-500 text-white' },
+                      trending:         { label: 'Trending',    cls: 'bg-purple-500 text-white' },
+                      limited:          { label: 'Limited',     cls: 'bg-orange-500 text-white' },
+                      popular_pics:     { label: 'Popular',     cls: 'bg-pink-500 text-white' },
+                      deals_of_the_day: { label: 'Deal',        cls: 'bg-emerald-500 text-white' },
+                    };
+                    const visible = BADGE_PRIORITY.filter(b => (product.badges || []).includes(b)).slice(0, 2);
+                    return visible.length > 0 ? (
+                      <div className="absolute top-1.5 right-1.5 flex flex-col items-end gap-0.5 pointer-events-none group-hover:opacity-0 transition-opacity duration-200">
+                        {visible.map(b => (
+                          <span key={b} className={`${BADGE_MAP[b].cls} text-[9px] font-bold px-1.5 py-0.5 rounded-sm leading-none`}>
+                            {BADGE_MAP[b].label}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null;
+                  })()}
 
                   {/* Hover Icons */}
                   <div className="absolute top-3 right-3 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">

@@ -7,6 +7,7 @@ import { FaEye, FaShoppingCart, FaHeart } from 'react-icons/fa';
 import { useCart } from '@/components/context/CartContext';
 import { useUser } from '@/components/context/UserContext';
 import AuthModal from '@/components/auth/AuthModal';
+import Skeleton from '@/components/ui/Skeleton';
 
 export default function PopularPicks() {
   const router = useRouter();
@@ -20,10 +21,12 @@ export default function PopularPicks() {
   const slideContainerRef = useRef(null);
 
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // fetch popular picks from backend
   useEffect(() => {
     const fetchPopular = async () => {
+      setLoading(true);
       try {
         const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
         const resp = await fetch(`${API}/api/products?badge=popular_pics&limit=50`);
@@ -51,6 +54,8 @@ export default function PopularPicks() {
         setProducts(items);
       } catch (err) {
         console.error('failed to fetch popular picks', err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchPopular();
@@ -190,7 +195,13 @@ export default function PopularPicks() {
             onClick={nextSlide}
             onMouseEnter={nextSlide}
           >
-            {visibleProducts.map((product) => (
+            {loading ? (
+              Array(3).fill(0).map((_, i) => (
+                <div key={i} className="bg-white rounded-lg border border-gray-200 overflow-hidden group hover:shadow-xl transition-all duration-300 cursor-pointer h-64">
+                  <Skeleton className="w-full h-full" />
+                </div>
+              ))
+            ) : visibleProducts.map((product) => (
               <div 
                 key={product.id} 
                 onClick={() => router.push(`/product/${product.id}`)}

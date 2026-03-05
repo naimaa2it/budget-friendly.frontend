@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import ProductCard from './ProductCard';
-import CategoryFilters from './CategoryFilters';
+import ProductFilters from './ProductFilters';
 import Link from 'next/link';
 import { useUser } from '@/components/context/UserContext';
 import { useCategories } from '@/components/context/CategoryContext';
@@ -18,10 +18,10 @@ export default function CategoryPageClient({ slug }) {
   const [subcategories, setSubcategories] = useState([]);
   const [isSubcategoryPage, setIsSubcategoryPage] = useState(false);
   const [products, setProducts] = useState([]);
-  const [filtered, setFiltered] = useState([]);
   const [bestSelling, setBestSelling] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
+  const [activeFilters, setActiveFilters] = useState({ priceRange: [0, 0], subIds: new Set(), brands: new Set(), ratings: new Set() });
 
   // fetch products using category from context
   useEffect(() => {
@@ -36,7 +36,6 @@ export default function CategoryPageClient({ slug }) {
           setCategory({ name: slug, description: '' });
           setSubcategories([]);
           setProducts([]);
-          setFiltered([]);
           setIsSubcategoryPage(false);
           setLoading(false);
           return;
@@ -72,7 +71,6 @@ export default function CategoryPageClient({ slug }) {
           price: p.price || (p.variants && p.variants[0]?.price) || 0,
         }));
         setProducts(items);
-        setFiltered(items);
         
         // determine best-selling subset
         const best = items.filter(p => Array.isArray(p.badges) && p.badges.includes('best_seller'));
@@ -80,35 +78,39 @@ export default function CategoryPageClient({ slug }) {
       } catch (err) {
         console.error(err);
         setProducts([]);
-        setFiltered([]);
       } finally {
         setLoading(false);
       }
     })();
   }, [slug, getCategoryBySlug, categoriesMap, getSubcategories]);
 
-  const stats = useMemo(() => {
-    const prices = products.map(p => p.price || 0);
-    const min = prices.length ? Math.min(...prices) : 0;
-    const max = prices.length ? Math.max(...prices) : 1000;
-    return { minPrice: min, maxPrice: max, total: products.length };
-  }, [products]);
-
-  const applyFilters = ({ minPrice, maxPrice, subIds, reset }) => {
-    console.log('applying filters', { minPrice, maxPrice, subIds, reset, total: products.length });
-    if (reset) { setFiltered(products); setShowAll(false); return; }
-    const result = products.filter(p => {
-      const pr = p.price || 0;
-      if (pr < (minPrice ?? 0) || pr > (maxPrice ?? Infinity)) return false;
-      if (subIds && subIds.length) {
-        return subIds.includes(String(p.categoryId));
+  // live filtering via useMemo — no Apply button needed
+  const filtered = useMemo(() => {
+    const { priceRange, subIds, brands, ratings } = activeFilters;
+    return products.filter(p => {
+      const pr = p.price ?? p.variants?.[0]?.price ?? 0;
+      if (pr < priceRange[0] || pr > priceRange[1]) return false;
+      if (subIds.size > 0 && !subIds.has(String(p.categoryId))) return false;
+      if (brands.size > 0 && (!p.department || !brands.has(p.department))) return false;
+      if (ratings.size > 0) {
+        const r = Math.floor(p.averageRating || 0);
+        if (![...ratings].some(min => r >= min)) return false;
       }
       return true;
     });
-    console.log('filtered count', result.length);
-    setFiltered(result);
-    setShowAll(false);
-  };
+  }, [products, activeFilters]);
+
+  const bestSellFiltered = useMemo(() => bestSelling.filter(p => {
+    const { priceRange, brands, ratings } = activeFilters;
+    const pr = p.price ?? 0;
+    if (pr < priceRange[0] || pr > priceRange[1]) return false;
+    if (brands.size > 0 && (!p.department || !brands.has(p.department))) return false;
+    if (ratings.size > 0) {
+      const r = Math.floor(p.averageRating || 0);
+      if (![...ratings].some(min => r >= min)) return false;
+    }
+    return true;
+  }), [bestSelling, activeFilters]);
 
   const { user } = useUser();
 
@@ -119,7 +121,7 @@ export default function CategoryPageClient({ slug }) {
       const body = await r.json();
       if (!r.ok) return alert(body.error || 'Delete failed');
       setProducts(prev => prev.filter(x => x._id !== id));
-      setFiltered(prev => prev.filter(x => x._id !== id));
+      setBestSelling(prev => prev.filter(x => x._id !== id));
     } catch (err) {
       console.error(err);
       alert('Delete failed');
@@ -185,7 +187,7 @@ export default function CategoryPageClient({ slug }) {
           <div className="py-24 text-center text-gray-500">No best-selling products available.</div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {bestSelling.slice(0, 5).map(p => (
+            {bestSellFiltered.slice(0, 5).map(p => (
               <ProductCard
                 key={p._id}
                 product={p}
@@ -208,7 +210,11 @@ export default function CategoryPageClient({ slug }) {
       <div className="grid grid-cols-12 gap-4">
         {/* Filters occupy 4/12 columns */}
         <div className="col-span-12 lg:col-span-3">
-          <CategoryFilters stats={stats} subcategories={subcategories} onApply={applyFilters} />
+          <ProductFilters
+            products={products}
+            subcategories={subcategories}
+            onChange={f => { setActiveFilters(f); setShowAll(false); }}
+          />
         </div>
         {/* Products occupy 8/12 columns */}
         <div className="col-span-12 lg:col-span-9">

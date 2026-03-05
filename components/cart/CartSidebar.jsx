@@ -4,9 +4,9 @@ import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useCart } from '@/components/context/CartContext';
-import QuantitySelector from './QuantitySelector';
+import QuantitySelector from '@/components/ui/QuantitySelector';
 import { FaTimes, FaShoppingBag, FaTrash } from 'react-icons/fa';
-import EmptyAnimation from '@/components/Shared/EmptyAnimation';
+import EmptyAnimation from '@/components/ui/EmptyAnimation';
 
 export default function CartSidebar() {
   const router = useRouter();

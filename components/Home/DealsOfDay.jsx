@@ -6,7 +6,7 @@ import { FaHeart, FaShuffle, FaChevronUp, FaChevronDown } from 'react-icons/fa6'
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/components/context/CartContext';
 import { useUser } from '@/components/context/UserContext';
-import AuthModal from '../authentication/AuthModal';
+import AuthModal from '@/components/auth/AuthModal';
 
 export default function DealsOfDay() {
   const [selectedImage, setSelectedImage] = useState(0);

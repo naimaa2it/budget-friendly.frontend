@@ -1,6 +1,6 @@
 "use client";
 
-import CustomerEditor from '@/components/dashbaord/Customer/CustomerEditor';
+import CustomerEditor from '@/components/dashboard/Customer/CustomerEditor';
 import React, { useEffect, useState } from 'react';
 
 export default function Page({ params }) {

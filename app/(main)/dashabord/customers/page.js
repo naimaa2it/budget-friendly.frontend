@@ -1,5 +1,5 @@
 
-import CustomersList from '@/components/dashbaord/Customer/CustomersList';
+import CustomersList from '@/components/dashboard/Customer/CustomersList';
 import React from 'react';
 
 export default function CustomersPage(){

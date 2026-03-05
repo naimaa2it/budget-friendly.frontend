@@ -1,5 +1,5 @@
 import React from 'react';
-import ProductDetails from '@/components/Home/ProductDetails';
+import ProductDetails from '@/components/product/ProductDetails';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 

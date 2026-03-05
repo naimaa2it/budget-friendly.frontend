@@ -3,11 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/components/context/CartContext';
-import QuantitySelector from '@/components/cart/QuantitySelector';
-import ProductCard from '@/components/Home/ProductCard';
+import QuantitySelector from '@/components/ui/QuantitySelector';
+import ProductCard from '@/components/product/ProductCard';
 import Image from 'next/image';
 import { FaTrash } from 'react-icons/fa';
-import EmptyState from '@/components/common/EmptyState';
+import EmptyState from '@/components/ui/EmptyState';
 
 export default function CartPage() {
   const router = useRouter();

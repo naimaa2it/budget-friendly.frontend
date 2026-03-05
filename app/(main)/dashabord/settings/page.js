@@ -1,4 +1,4 @@
-import SettingsForm from '@/components/dashbaord/Setting/SettingsForm';
+import SettingsForm from '@/components/dashboard/Setting/SettingsForm';
 import React from 'react';
 
 

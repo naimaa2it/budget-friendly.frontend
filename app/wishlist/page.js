@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@/components/context/UserContext';
 import { useRouter } from 'next/navigation';
-import AuthModal from '@/components/authentication/AuthModal';
+import AuthModal from '@/components/auth/AuthModal';
 import WishlistPage from '@/components/cart/WishlistPage';
 
 export default function Wishlist() {

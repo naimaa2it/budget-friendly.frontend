@@ -1,5 +1,5 @@
 import React from 'react';
-import BlogCreate from '@/components/dashbaord/Blog/BlogCreate';
+import BlogCreate from '@/components/dashboard/Blog/BlogCreate';
 
 export default function NewBlogPage() {
   return (

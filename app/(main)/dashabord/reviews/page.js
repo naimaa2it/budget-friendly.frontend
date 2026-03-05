@@ -1,4 +1,4 @@
-import ReviewsList from '@/components/dashbaord/Product/ReviewsList';
+import ReviewsList from '@/components/dashboard/Product/ReviewsList';
 import React from 'react';
 
 export const metadata = { title: 'Reviews — Dashboard' };

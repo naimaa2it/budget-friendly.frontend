@@ -1,15 +1,15 @@
 import { Work_Sans } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/common/Navbar";
-import MegaMenuNavbar from "@/components/common/MegaMenuNavbar";
-import Footer from "@/components/common/Footer";
+import Navbar from "@/components/layout/Navbar";
+import MegaMenuNavbar from "@/components/layout/MegaMenuNavbar";
+import Footer from "@/components/layout/Footer";
 import { UserProvider } from '@/components/context/UserContext';
 import { CartProvider } from '@/components/context/CartContext';
 import { CategoryProvider } from '@/components/context/CategoryContext';
 import CartToast from '@/components/cart/CartToast';
 import CartSidebar from '@/components/cart/CartSidebar';
 import CartFloating from '@/components/cart/CartFloating';
-import ToastProvider from '@/components/common/ToastProvider';
+import ToastProvider from '@/components/ui/ToastProvider';
 
 
 
@@ -19,9 +19,9 @@ const workSans = Work_Sans({
   weight: ["100","200","300", "400", "500", "600", "700", "800"],
 });
 
-import LayoutWrapper from '@/components/LayoutWrapper';
-import ScrollToTop from "@/components/common/ScrollToTop";
-import FloatingWhatsApp from "@/components/common/FloatingWhatsApp";
+import LayoutWrapper from '@/components/layout/LayoutWrapper';
+import ScrollToTop from "@/components/ui/ScrollToTop";
+import FloatingWhatsApp from "@/components/ui/FloatingWhatsApp";
 
 export const metadata = {
   title: "Create Next App",

@@ -1,4 +1,4 @@
-import TagPageClient from '@/components/Home/TagPageClient';
+import TagPageClient from '@/components/category/TagPageClient';
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;

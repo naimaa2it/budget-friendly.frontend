@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useCart } from '@/components/context/CartContext';
 import { useUser } from '@/components/context/UserContext';
-import AuthModal from '@/components/authentication/AuthModal';
+import AuthModal from '@/components/auth/AuthModal';
 import Image from 'next/image';
 import { FaChevronDown } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';

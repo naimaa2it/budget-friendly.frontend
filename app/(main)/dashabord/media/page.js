@@ -1,4 +1,4 @@
-import MediaLibrary from '@/components/dashbaord/MediaLibrary';
+import MediaLibrary from '@/components/dashboard/MediaLibrary';
 
 export default function MediaPage() {
   return <MediaLibrary />;

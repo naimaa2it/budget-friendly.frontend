@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { FaEye, FaShoppingCart, FaHeart } from 'react-icons/fa';
 import { useCart } from '@/components/context/CartContext';
 import { useUser } from '@/components/context/UserContext';
-import AuthModal from '../authentication/AuthModal';
+import AuthModal from '@/components/auth/AuthModal';
 
 export default function PopularPicks() {
   const router = useRouter();

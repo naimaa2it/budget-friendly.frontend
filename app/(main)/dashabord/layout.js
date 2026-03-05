@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Sidebar from '@/components/dashbaord/Sidebar';
+import Sidebar from '@/components/dashboard/Sidebar';
 import { useUser } from '@/components/context/UserContext';
 
 export default function DashboardLayout({ children }) {

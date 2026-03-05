@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import ProductCard from './ProductCard';
+import ProductCard from '@/components/product/ProductCard';
 
 // Returns how many cards fit at the current viewport width
 function useVisibleCount() {

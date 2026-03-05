@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import CategoryCreate from '@/components/dashbaord/Category/CategoryCreate';
-import CategoryEdit from '@/components/dashbaord/Category/CategoryEdit';
+import CategoryCreate from '@/components/dashboard/Category/CategoryCreate';
+import CategoryEdit from '@/components/dashboard/Category/CategoryEdit';
 
 export default function Page({ params }) {
   const [id, setId] = useState(null);

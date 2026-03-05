@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/components/context/CartContext';
 import Image from 'next/image';
 import { FaTrash } from 'react-icons/fa';
-import ProductCard from '@/components/Home/ProductCard';
-import EmptyState from '@/components/common/EmptyState';
+import ProductCard from '@/components/product/ProductCard';
+import EmptyState from '@/components/ui/EmptyState';
 
 export default function WishlistPage({ embedded = false }) {
   const router = useRouter();

@@ -3,8 +3,8 @@
 // `/dashabord/blog/new` is served by a dedicated static page (app/.../blog/new/page.js)
 // so this dynamic renderer only ever sees real post IDs.
 import React, { useEffect, useState } from 'react';
-import BlogCreate from '@/components/dashbaord/Blog/BlogCreate';
-import BlogEdit from '@/components/dashbaord/Blog/BlogEdit';
+import BlogCreate from '@/components/dashboard/Blog/BlogCreate';
+import BlogEdit from '@/components/dashboard/Blog/BlogEdit';
 
 export default function Page({ params }) {
   const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';

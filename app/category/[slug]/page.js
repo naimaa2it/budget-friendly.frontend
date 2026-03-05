@@ -1,4 +1,4 @@
-import CategoryPageClient from '@/components/Home/CategoryPageClient';
+import CategoryPageClient from '@/components/category/CategoryPageClient';
 
 // Server component that renders a client category page
 export default async function CategoryPage({ params }) {

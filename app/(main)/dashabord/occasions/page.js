@@ -1,4 +1,4 @@
-import OccasionsList from '@/components/dashbaord/Occasions/OccasionsList';
+import OccasionsList from '@/components/dashboard/Occasions/OccasionsList';
 
 export const metadata = { title: 'Occasion Sections | Dashboard' };
 

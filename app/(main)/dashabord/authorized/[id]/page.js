@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import AdminEditor from '@/components/dashbaord/Admin/AdminEditor';
+import AdminEditor from '@/components/dashboard/Admin/AdminEditor';
 
 export default function Page({ params }) {
   const [id, setId] = useState(null);

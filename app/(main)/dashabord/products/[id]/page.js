@@ -1,7 +1,7 @@
 "use client";
 
-import ProductCreate from '@/components/dashbaord/Product/ProductCreate';
-import ProductEdit from '@/components/dashbaord/Product/ProductEdit';
+import ProductCreate from '@/components/dashboard/Product/ProductCreate';
+import ProductEdit from '@/components/dashboard/Product/ProductEdit';
 import { useEffect, useState } from 'react';
 
 export default function Page({ params }) {

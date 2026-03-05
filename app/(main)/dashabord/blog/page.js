@@ -1,5 +1,5 @@
 import React from 'react';
-import BlogList from '@/components/dashbaord/Blog/BlogList';
+import BlogList from '@/components/dashboard/Blog/BlogList';
 
 export default function BlogAdminPage(){
   return (

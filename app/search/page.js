@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import SearchResultsClient from '@/components/Home/SearchResultsClient';
+import SearchResultsClient from '@/components/category/SearchResultsClient';
 
 export const metadata = {
   title: 'Search Results',

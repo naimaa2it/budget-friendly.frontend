@@ -2,6 +2,10 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 
+// Stable empty defaults — avoids new object references on every render
+const EMPTY_SUBCATEGORIES = [];
+const EMPTY_DESCENDANT_MAP = new Map();
+
 /**
  * Universal filter sidebar.
  *
@@ -12,7 +16,12 @@ import React, { useState, useEffect, useMemo } from 'react';
  *  onChange        – called immediately on every change with:
  *                    { priceRange:[min,max], expandedSubIds:Set, brands:Set, minRating:number|null }
  */
-export default function ProductFilters({ products = [], subcategories = [], descendantMap = new Map(), onChange }) {
+export default function ProductFilters({
+  products = [],
+  subcategories = EMPTY_SUBCATEGORIES,
+  descendantMap = EMPTY_DESCENDANT_MAP,
+  onChange,
+}) {
   // ── derive min/max + brand options from products ───────────────────
   const { absMin, absMax, brandOptions } = useMemo(() => {
     const prices = products.map(p => p.price ?? p.variants?.[0]?.price ?? 0).filter(v => v > 0);

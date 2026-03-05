@@ -33,8 +33,8 @@ export default function Footer() {
             <h3 className="text-sm font-medium text-[#202020] mb-3">Quick links</h3>
             <ul className="space-y-2 text-sm text-[#202020]">
               <li><Link href="/" className="hover:text-[#ac0ad1]">Home</Link></li>
-              <li><Link href="/skincare" className="hover:text-[#ac0ad1]">SkinCare</Link></li>
-              <li><Link href="/cosmetics" className="hover:text-[#ac0ad1]">Cosmetics</Link></li>
+              <li><Link href="/category/skincare" className="hover:text-[#ac0ad1]">SkinCare</Link></li>
+              <li><Link href="/category/cosmetics" className="hover:text-[#ac0ad1]">Cosmetics</Link></li>
               <li><Link href="/about" className="hover:text-[#ac0ad1]">About Us</Link></li>
             </ul>
           </div>

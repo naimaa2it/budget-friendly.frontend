@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+// __dirname is not available in ES-module (.mjs) files — compute it manually
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const nextConfig = {
   // output:'export',
@@ -14,18 +18,22 @@ const nextConfig = {
     ],
   },
 
-  // add a webpack alias so '@' always resolves correctly
+  // Webpack alias (fallback for non-Turbopack builds)
   webpack(config) {
     config.resolve.alias = config.resolve.alias || {};
-    config.resolve.alias['@'] = path.resolve(__dirname);
+    config.resolve.alias['@'] = __dirname;
     return config;
   },
 
-  // Turbopack is enabled by default in Next 16; we still need to provide an
-  // explicit placeholder since we are customizing webpack above.
-  turbopack: {},
-
-  /* other config options here */
+  // Turbopack alias (Next.js 15/16 default bundler)
+  turbopack: {
+    resolveAlias: {
+      '@/components': path.join(__dirname, 'components'),
+      '@/app': path.join(__dirname, 'app'),
+      '@/lib': path.join(__dirname, 'lib'),
+      '@/public': path.join(__dirname, 'public'),
+    },
+  },
 };
 
 export default nextConfig;

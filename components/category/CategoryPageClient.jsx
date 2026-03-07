@@ -195,7 +195,8 @@ export default function CategoryPageClient({ slug }) {
   }; 
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Breadcrumb & header */}
       <div className="text-sm text-gray-500 mb-4">
         <Link href="/" className="hover:underline">Home</Link>
@@ -271,9 +272,13 @@ export default function CategoryPageClient({ slug }) {
           </div>
         )}
       </div>
+    </div>
 
-      {/* product/filter grid below best-selling */}
-      <div className="grid grid-cols-12 gap-4 pt-12">
+    {/* wide background across viewport */}
+    <div className='bg-[#FFF5ED] w-full'>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* product/filter grid below best-selling */}
+        <div className="grid grid-cols-12 gap-4 pt-12 ">
         {/* Filters occupy 4/12 columns */}
         <div className="col-span-12 lg:col-span-3">
           <ProductFilters
@@ -311,6 +316,9 @@ export default function CategoryPageClient({ slug }) {
           )}
         </div>
       </div>
-    </div>
+    </div> 
+    </div> 
+
+  </>
   );
 }

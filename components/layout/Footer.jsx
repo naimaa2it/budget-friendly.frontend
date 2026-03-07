@@ -1,7 +1,9 @@
 "use client"
 import React, { useState } from 'react'
+import toast from 'react-hot-toast'
 import Link from 'next/link'
 import WebsiteLogo from '@/components/ui/WebsiteLogo'
+import AuthModal from '@/components/auth/AuthModal'
 import { useUser } from '@/components/context/UserContext'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -9,49 +11,66 @@ const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 export default function Footer() {
   const { user } = useUser();
   const [email, setEmail] = useState('');
-  const [toast, setToast] = useState(null); // { type: 'success'|'error'|'warn', msg }
+  const [localToast, setLocalToast] = useState(null); // { type: 'success'|'error'|'warn', msg }
   const [subscribed, setSubscribed] = useState(false);
+  const [toggling, setToggling] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const showToast = (type, msg) => {
-    setToast({ type, msg });
-    setTimeout(() => setToast(null), 3500);
+    setLocalToast({ type, msg });
+    setTimeout(() => setLocalToast(null), 3500);
   };
 
   // update subscribed state when user loads/changes
   React.useEffect(() => {
     if (user?.newsletterSubscribed) {
       setSubscribed(true);
+    } else {
+      setSubscribed(false);
     }
   }, [user]);
 
-  const handleSubscribe = async (e) => {
+  const handleToggleSubscription = async (e) => {
     e.preventDefault();
-    if (subscribed) return; // already handled
     if (!user) {
-      showToast('warn', 'Please log in to subscribe to our newsletter.');
+      // show interactive toast with login button
+      toast(
+        (t) => (
+          <span className="flex items-center gap-2">
+            Please login first to manage newsletter subscription.{' '}
+            <button
+              onClick={() => { toast.dismiss(t.id); setShowAuthModal(true); }}
+              className="font-semibold text-pink-600 underline hover:text-pink-800"
+            >
+              Login
+            </button>
+          </span>
+        ),
+        { icon: '🔒' }
+      );
       return;
     }
-    if (!email.trim()) {
-      showToast('error', 'Please enter a valid email address.');
-      return;
-    }
+    setToggling(true);
     try {
-      const formData = new FormData();
-      formData.append('newsletterSubscribed', 'true');
-      const resp = await fetch(`${API}/api/user/profile`, {
-        method: 'PUT',
+      const endpoint = subscribed ? '/api/user/unsubscribe' : '/api/user/subscribe';
+      const resp = await fetch(`${API}${endpoint}`, {
+        method: 'POST',
         credentials: 'include',
-        body: formData,
       });
-      const text = await resp.text();
-      let data = {};
-      try { data = JSON.parse(text); } catch { /* non-JSON */ }
-      if (!resp.ok) throw new Error(data.error || `Server error (${resp.status})`);
-      showToast('success', 'You are now subscribed! 🎉');
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'Server error');
+      if (subscribed) {
+        showToast('success', 'You have unsubscribed😥');
+        setSubscribed(false);
+      } else {
+        showToast('success', 'You are now subscribed! 🎉');
+        setSubscribed(true);
+      }
       setEmail('');
-      setSubscribed(true);
     } catch (err) {
-      showToast('error', err.message || 'Subscription failed. Try again.');
+      showToast('error', err.message || 'Request failed.');
+    } finally {
+      setToggling(false);
     }
   };
   return (
@@ -105,7 +124,7 @@ export default function Footer() {
         <div>
             <h3 className="text-sm font-medium text-[#202020] mb-3">Join our newsletter</h3>
             <p className="text-sm text-[#202020] mb-3">Get updates on new products and offers. Unsubscribe anytime.</p>
-            <form onSubmit={handleSubscribe} className="w-full">
+            <form onSubmit={handleToggleSubscription} className="w-full">
               <label htmlFor="newsletter" className="sr-only">Email address</label>
               <div className="relative">
                 <input
@@ -116,18 +135,20 @@ export default function Footer() {
                   onChange={e => setEmail(e.target.value)}
                   className="w-full px-4 py-2 pr-24 rounded-full border border-black/10 outline-none text-sm focus:ring-2 focus:ring-[#ac0ad1]"
                   aria-label="Email address"
+                  disabled={subscribed || toggling}
+                  style={{ opacity: subscribed ? 0.6 : 1 }}
                 />
                 <button
                   type="submit"
-                  aria-label={subscribed ? 'Subscribed' : 'Subscribe'}
-                  disabled={subscribed}
+                  aria-label={subscribed ? 'Unsubscribe' : 'Subscribe'}
+                  disabled={toggling}
                   className={`absolute right-1 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-full text-xs text-white transition ${
                     subscribed
-                      ? 'bg-gray-400 cursor-default'
+                      ? 'bg-gray-400 hover:bg-gray-400'
                       : 'bg-rose-600 hover:bg-rose-700'
                   }`}
                 >
-                  {subscribed ? 'Subscribed' : 'Subscribe'}
+                  {toggling ? (subscribed ? 'Unsubscribing...' : 'Subscribing...') : subscribed ? 'Unsubscribe' : 'Subscribe'}
                 </button>
               </div>
             </form>
@@ -187,12 +208,18 @@ export default function Footer() {
     </footer>
 
     {/* Subscribe toast */}
-    {toast && (
+
+    <AuthModal
+      isOpen={showAuthModal}
+      onClose={() => setShowAuthModal(false)}
+    />
+
+    {localToast && (
       <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-full text-sm font-medium shadow-lg text-white transition-all ${
-        toast.type === 'success' ? 'bg-green-600' :
-        toast.type === 'warn'    ? 'bg-amber-500' : 'bg-red-600'
+        localToast.type === 'success' ? 'bg-green-600' :
+        localToast.type === 'warn'    ? 'bg-amber-500' : 'bg-red-600'
       }`}>
-        {toast.msg}
+        {localToast.msg}
       </div>
     )}
   </>

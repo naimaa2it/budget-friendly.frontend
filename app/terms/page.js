@@ -1,10 +1,15 @@
+import PolicySidebar from '@/components/Policy/Sidebar';
+
 export const metadata = { title: 'Terms & Conditions – Budget Friendly' };
 
 export default function TermsPage() {
   return (
-    <main className="max-w-3xl mx-auto px-4 py-16">
+    <main className="max-w-7xl mx-auto px-4 py-16 grid grid-cols-1 md:grid-cols-4 gap-8">
+      <aside className="md:col-span-1">
+        <PolicySidebar />
+      </aside>
+      <div className="md:col-span-3 space-y-6 text-gray-600 text-sm leading-relaxed">
       <h1 className="text-3xl font-bold mb-6">Terms & Conditions</h1>
-      <div className="space-y-6 text-gray-600 text-sm leading-relaxed">
         <p>By using Budget Friendly you agree to these terms. Please read them carefully.</p>
         <section>
           <h2 className="text-base font-semibold text-gray-800 mb-1">Use of the Site</h2>

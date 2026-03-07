@@ -1,3 +1,5 @@
+import PolicySidebar from '@/components/Policy/Sidebar';
+
 export const metadata = { title: 'FAQ – Budget Friendly' };
 
 const faqs = [
@@ -10,15 +12,20 @@ const faqs = [
 
 export default function FaqPage() {
   return (
-    <main className="max-w-3xl mx-auto px-4 py-16">
-      <h1 className="text-3xl font-bold mb-8">Frequently Asked Questions</h1>
-      <div className="space-y-6">
-        {faqs.map((item, i) => (
-          <div key={i} className="border-b border-gray-100 pb-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-1">{item.q}</h2>
-            <p className="text-gray-600">{item.a}</p>
-          </div>
-        ))}
+    <main className="max-w-7xl mx-auto px-4 py-16 grid grid-cols-1 md:grid-cols-4 gap-8">
+      <aside className="md:col-span-1">
+        <PolicySidebar />
+      </aside>
+      <div className="md:col-span-3">
+        <h1 className="text-3xl font-bold mb-8">Frequently Asked Questions</h1>
+        <div className="space-y-6">
+          {faqs.map((item, i) => (
+            <div key={i} className="border-b border-gray-100 pb-6">
+              <h2 className="text-lg font-semibold text-gray-800 mb-1">{item.q}</h2>
+              <p className="text-gray-600">{item.a}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </main>
   );

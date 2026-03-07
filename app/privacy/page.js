@@ -1,10 +1,15 @@
+import PolicySidebar from '@/components/Policy/Sidebar';
+
 export const metadata = { title: 'Privacy Policy – Budget Friendly' };
 
 export default function PrivacyPage() {
   return (
-    <main className="max-w-3xl mx-auto px-4 py-16">
+    <main className="max-w-7xl mx-auto px-4 py-16 grid grid-cols-1 md:grid-cols-4 gap-8">
+      <aside className="md:col-span-1">
+        <PolicySidebar />
+      </aside>
+      <div className="md:col-span-3 space-y-6 text-gray-600 text-sm leading-relaxed">
       <h1 className="text-3xl font-bold mb-6">Privacy Policy</h1>
-      <div className="space-y-6 text-gray-600 text-sm leading-relaxed">
         <p>Budget Friendly ("we", "us") is committed to protecting your personal information. This policy explains what data we collect, how we use it, and your rights.</p>
         <section>
           <h2 className="text-base font-semibold text-gray-800 mb-1">Data We Collect</h2>

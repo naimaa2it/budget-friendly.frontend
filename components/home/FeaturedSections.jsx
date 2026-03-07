@@ -145,7 +145,7 @@ export default function FeaturedSections() {
             {sec.viewAllLink && sec.viewAllLink !== '/' && (
               <a
                 href={sec.viewAllLink}
-                className="text-sm text-blue-600 font-semibold hover:underline whitespace-nowrap"
+                className="text-md  text-blue-600 font-semibold hover:underline whitespace-nowrap"
               >
                 View All →
               </a>

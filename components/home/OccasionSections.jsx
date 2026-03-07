@@ -99,9 +99,9 @@ function OccasionSlider({ section }) {
             >
               <Link href={card.link || '#'} className="group block h-full">
                 {/* Fixed-height card */}
-                <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow flex flex-col h-full">
+                <div className="border border-gray-200 rounded-xl overflow-hidden bg-[#FFF5ED] shadow-sm hover:shadow-md transition-shadow flex flex-col h-full">
                   {/* Image — fixed height */}
-                  <div className="w-full h-40 bg-gray-100 overflow-hidden flex-shrink-0">
+                  <div className="w-full h-40 bg-[#FFF5ED] overflow-hidden flex-shrink-0">
                     {card.image?.url ? (
                       <img
                         src={card.image.url}
@@ -170,9 +170,9 @@ export default function OccasionSections() {
             {section.viewAllLink && section.viewAllLink !== '/' && (
               <Link
                 href={section.viewAllLink}
-                className="text-sm px-4 py-1.5 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors whitespace-nowrap"
+                className="text-md  text-blue-600 font-semibold hover:underline whitespace-nowrap"
               >
-                View All
+                View All →
               </Link>
             )}
           </div>

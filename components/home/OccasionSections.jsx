@@ -64,7 +64,7 @@ function OccasionSlider({ section }) {
         <button
           onClick={prev}
           aria-label="Previous"
-          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-10 w-9 h-9 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-blue-600 transition-colors"
+          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-10 w-9 h-9 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:border hover:border-red-600 transition-colors"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -77,7 +77,7 @@ function OccasionSlider({ section }) {
         <button
           onClick={next}
           aria-label="Next"
-          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-10 w-9 h-9 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-blue-600 transition-colors"
+          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-10 w-9 h-9 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:border hover:border-red-600 transition-colors"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -121,7 +121,7 @@ function OccasionSlider({ section }) {
                   </div>
 
                   {/* Label bar */}
-                  <div className="bg-blue-600 text-white text-xs sm:text-sm font-semibold text-center py-2 px-2 truncate group-hover:bg-blue-700 transition-colors flex-shrink-0">
+                  <div className="bg-[#FFE3CC] text-red-600 text-xs sm:text-sm font-semibold text-center py-2 px-2 truncate group-hover:bg-[#fed0ab] transition-colors flex-shrink-0">
                     {card.label || '\u00A0'}
                   </div>
                 </div>
@@ -170,7 +170,7 @@ export default function OccasionSections() {
             {section.viewAllLink && section.viewAllLink !== '/' && (
               <Link
                 href={section.viewAllLink}
-                className="text-md  text-blue-600 font-semibold hover:underline whitespace-nowrap"
+                className="text-md  text-rose-500 font-semibold hover:underline whitespace-nowrap"
               >
                 View All →
               </Link>

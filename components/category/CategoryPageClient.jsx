@@ -273,7 +273,7 @@ export default function CategoryPageClient({ slug }) {
       </div>
 
       {/* product/filter grid below best-selling */}
-      <div className="grid grid-cols-12 gap-4">
+      <div className="grid grid-cols-12 gap-4 pt-12">
         {/* Filters occupy 4/12 columns */}
         <div className="col-span-12 lg:col-span-3">
           <ProductFilters
@@ -291,7 +291,7 @@ export default function CategoryPageClient({ slug }) {
             </div>
           ) : filtered.length > 0 && (
             <>
-                      <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center justify-between mb-3">
                 <h2 className="text-3xl font-semibold mt-0 mb-3">All Products</h2>
                 <SortDropdown value={sortOption} onChange={setSortOption} />
               </div>

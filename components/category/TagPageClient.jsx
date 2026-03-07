@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import ProductCard from '@/components/product/ProductCard';
 import ProductFilters from '@/components/product/ProductFilters';
+import SortDropdown from '@/components/product/SortDropdown';
 import Link from 'next/link';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -75,10 +76,15 @@ export default function TagPageClient({ slug }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
+  const [sortOption, setSortOption] = useState('position');
   const [activeFilters, setActiveFilters] = useState({ priceRange: [0, 0], expandedSubIds: new Set(), brands: new Set(), minRating: null });
 
   useEffect(() => {
     if (!slug) return;
+    // reset UI state when slug changes
+    setSortOption('position');
+    setShowAll(false);
+    setActiveFilters({ priceRange: [0, 0], expandedSubIds: new Set(), brands: new Set(), minRating: null });
     setLoading(true);
     (async () => {
       try {
@@ -112,7 +118,44 @@ export default function TagPageClient({ slug }) {
     });
   }, [products, activeFilters]);
 
-  const displayed = showAll ? filtered : filtered.slice(0, 20);
+  const hasExpress = (p) => {
+    return (
+      (Array.isArray(p.tags) && (p.tags.includes('express') || p.tags.includes('express_delivery')))
+      || p.express || p.expressDelivery
+    );
+  };
+
+  const sorted = useMemo(() => {
+    let list = [...filtered];
+    switch (sortOption) {
+      case 'newest':
+        list.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        break;
+      case 'oldest':
+        list.sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+        break;
+      case 'nameAsc':
+        list.sort((a, b) => (a.title || a.name || '').localeCompare(b.title || b.name || ''));
+        break;
+      case 'nameDesc':
+        list.sort((a, b) => (b.title || b.name || '').localeCompare(a.title || a.name || ''));
+        break;
+      case 'priceHigh':
+        list.sort((a, b) => (b.price || 0) - (a.price || 0));
+        break;
+      case 'priceLow':
+        list.sort((a, b) => (a.price || 0) - (b.price || 0));
+        break;
+      case 'expressDelivery':
+        list.sort((a, b) => (hasExpress(b) ? -1 : 1) - (hasExpress(a) ? -1 : 1));
+        break;
+      default:
+        break;
+    }
+    return list;
+  }, [filtered, sortOption]);
+
+  const displayed = showAll ? sorted : sorted.slice(0, 20);
 
   return (
     <div>
@@ -205,8 +248,8 @@ export default function TagPageClient({ slug }) {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-gray-800">
                   {config.icon} {config.label}
-                  
                 </h2>
+                <SortDropdown value={sortOption} onChange={setSortOption} />
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -221,7 +264,7 @@ export default function TagPageClient({ slug }) {
                     onClick={() => setShowAll(s => !s)}
                     className="px-6 py-2.5 bg-white border border-gray-300 rounded-full text-sm font-medium hover:bg-gray-50 transition"
                   >
-                    {showAll ? 'Show less' : `Show all ${filtered.length} products`}
+                    {showAll ? 'Show less' : `Show all ${sorted.length} products`}
                   </button>
                 </div>
               )}

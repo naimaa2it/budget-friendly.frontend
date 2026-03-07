@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ProductCard from '@/components/product/ProductCard';
 import ProductFilters from '@/components/product/ProductFilters';
+import SortDropdown from '@/components/product/SortDropdown';
 import Link from 'next/link';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -15,6 +16,7 @@ export default function SearchResultsClient() {
   const [allProducts, setAllProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
+  const [sortOption, setSortOption] = useState('position');
   const [activeFilters, setActiveFilters] = useState({
     priceRange: [0, 0],
     expandedSubIds: new Set(),
@@ -25,8 +27,10 @@ export default function SearchResultsClient() {
   // fetch whenever query changes
   useEffect(() => {
     if (!query.trim()) { setAllProducts([]); setTotal(0); return; }
-    setLoading(true);
+    // reset the sorting & filters when user submits a new query
+    setSortOption('position');
     setActiveFilters({ priceRange: [0, 0], expandedSubIds: new Set(), brands: new Set(), minRating: null });
+    setLoading(true);
     (async () => {
       try {
         const res = await fetch(`${API}/api/products?q=${encodeURIComponent(query.trim())}&limit=100`);
@@ -55,6 +59,43 @@ export default function SearchResultsClient() {
       return true;
     });
   }, [allProducts, activeFilters]);
+
+  const hasExpress = (p) => {
+    return (
+      (Array.isArray(p.tags) && (p.tags.includes('express') || p.tags.includes('express_delivery')))
+      || p.express || p.expressDelivery
+    );
+  };
+
+  const sorted = useMemo(() => {
+    let list = [...filtered];
+    switch (sortOption) {
+      case 'newest':
+        list.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        break;
+      case 'oldest':
+        list.sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+        break;
+      case 'nameAsc':
+        list.sort((a, b) => (a.title || a.name || '').localeCompare(b.title || b.name || ''));
+        break;
+      case 'nameDesc':
+        list.sort((a, b) => (b.title || b.name || '').localeCompare(a.title || a.name || ''));
+        break;
+      case 'priceHigh':
+        list.sort((a, b) => (b.price || 0) - (a.price || 0));
+        break;
+      case 'priceLow':
+        list.sort((a, b) => (a.price || 0) - (b.price || 0));
+        break;
+      case 'expressDelivery':
+        list.sort((a, b) => (hasExpress(b) ? -1 : 1) - (hasExpress(a) ? -1 : 1));
+        break;
+      default:
+        break;
+    }
+    return list;
+  }, [filtered, sortOption]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -94,16 +135,19 @@ export default function SearchResultsClient() {
 
           {/* Products */}
           <div className="flex-1 min-w-0">
-            <p className="text-sm text-gray-500 mb-4">
-              Showing <span className="font-semibold text-gray-800">{filtered.length}</span> of{' '}
-              <span className="font-semibold text-gray-800">{total}</span> products
-            </p>
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm text-gray-500">
+                Showing <span className="font-semibold text-gray-800">{filtered.length}</span> of{' '}
+                <span className="font-semibold text-gray-800">{total}</span> products
+              </p>
+              <SortDropdown value={sortOption} onChange={setSortOption} />
+            </div>
 
             {filtered.length === 0 ? (
               <p className="text-center text-gray-500 py-24">No products match the current filters.</p>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-                {filtered.map(p => (
+                {sorted.map(p => (
                   <ProductCard key={p._id} product={p} showDiscount={true} maxTags={2} />
                 ))}
               </div>

@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import ProductCard from '@/components/product/ProductCard';
 import ProductFilters from '@/components/product/ProductFilters';
+import SortDropdown from '@/components/product/SortDropdown';
 import Link from 'next/link';
 import { useUser } from '@/components/context/UserContext';
 import { useCategories } from '@/components/context/CategoryContext';
@@ -22,11 +23,16 @@ export default function CategoryPageClient({ slug }) {
   const [bestSelling, setBestSelling] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
+  const [sortOption, setSortOption] = useState('position');
   const [activeFilters, setActiveFilters] = useState({ priceRange: [0, 0], expandedSubIds: new Set(), brands: new Set(), minRating: null });
 
   // fetch products using category from context
   useEffect(() => {
     if (!slug) return;
+    // when navigating to a new category reset sorting and filters/shows
+    setSortOption('position');
+    setShowAll(false);
+    setActiveFilters({ priceRange: [0, 0], expandedSubIds: new Set(), brands: new Set(), minRating: null });
     setLoading(true);
     (async () => {
       try {
@@ -129,6 +135,46 @@ export default function CategoryPageClient({ slug }) {
     });
   }, [products, activeFilters]);
 
+  // sorting is applied on the filtered list so that parent components remain
+  // oblivious; `position` simply returns original order.
+  const hasExpress = (p) => {
+    return (
+      (Array.isArray(p.tags) && (p.tags.includes('express') || p.tags.includes('express_delivery')))
+      || p.express || p.expressDelivery
+    );
+  };
+
+  const sorted = useMemo(() => {
+    let arr = [...filtered];
+    switch (sortOption) {
+      case 'newest':
+        arr.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        break;
+      case 'oldest':
+        arr.sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+        break;
+      case 'nameAsc':
+        arr.sort((a, b) => (a.title || a.name || '').localeCompare(b.title || b.name || ''));
+        break;
+      case 'nameDesc':
+        arr.sort((a, b) => (b.title || b.name || '').localeCompare(a.title || a.name || ''));
+        break;
+      case 'priceHigh':
+        arr.sort((a, b) => (b.price || 0) - (a.price || 0));
+        break;
+      case 'priceLow':
+        arr.sort((a, b) => (a.price || 0) - (b.price || 0));
+        break;
+      case 'expressDelivery':
+        arr.sort((a, b) => (hasExpress(b) ? -1 : 1) - (hasExpress(a) ? -1 : 1));
+        break;
+      // default and position both fall through to original order
+      default:
+        break;
+    }
+    return arr;
+  }, [filtered, sortOption]);
+
   // best selling list should remain static and not be filtered by sidebar
   const bestSellFiltered = useMemo(() => bestSelling, [bestSelling]);
 
@@ -226,12 +272,8 @@ export default function CategoryPageClient({ slug }) {
         )}
       </div>
 
-      {/* all-products heading spans full width */}
-      {!loading && filtered.length > 0 && (
-        <h2 className="text-3xl font-semibold mt-12 mb-3">All Products</h2>
-      )}
       {/* product/filter grid below best-selling */}
-      <div className="grid grid-cols-12 gap-4 ">
+      <div className="grid grid-cols-12 gap-4">
         {/* Filters occupy 4/12 columns */}
         <div className="col-span-12 lg:col-span-3">
           <ProductFilters
@@ -249,8 +291,13 @@ export default function CategoryPageClient({ slug }) {
             </div>
           ) : filtered.length > 0 && (
             <>
+                      <div className="flex items-center justify-between mb-4">
+                <h2 className="text-3xl font-semibold mt-0 mb-3">All Products</h2>
+                <SortDropdown value={sortOption} onChange={setSortOption} />
+              </div>
+
               <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {(showAll ? filtered : filtered.slice(0, 5)).map(p => (
+                {(showAll ? sorted : sorted.slice(0, 5)).map(p => (
                   <ProductCard key={p._id} product={p} showDiscount={true} maxTags={2} />
                 ))}
               </div>
@@ -259,7 +306,7 @@ export default function CategoryPageClient({ slug }) {
 
           {!loading && filtered.length > 5 && (
             <div className="mt-6 flex justify-center">
-              <button className="px-4 py-2 bg-white border rounded-md" onClick={() => setShowAll(s => !s)}>{showAll ? 'Show less' : `Show all (${filtered.length})`}</button>
+              <button className="px-4 py-2 bg-white border rounded-md" onClick={() => setShowAll(s => !s)}>{showAll ? 'Show less' : `Show all (${sorted.length})`}</button>
             </div>
           )}
         </div>

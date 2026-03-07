@@ -138,7 +138,7 @@ function OccasionSlider({ section }) {
             <button
               key={i}
               onClick={() => setCurrent(i)}
-              className={`w-1.5 h-1.5 rounded-full transition-all ${i === current ? 'bg-blue-600 w-4' : 'bg-gray-300'}`}
+              className={`w-1.5 h-1.5 rounded-full transition-all ${i === current ? 'bg-[#fd9d4f] w-4' : 'bg-gray-300'}`}
             />
           ))}
         </div>

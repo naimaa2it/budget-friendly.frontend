@@ -78,7 +78,7 @@ export default function ProductCard({ product, imageWidth = 300, imageHeight = 2
     <> 
     <div 
       onClick={handleCardClick} 
-      className="bg-white rounded-lg border border-gray-200 overflow-hidden group hover:shadow-xl transition-all duration-300 flex flex-col cursor-pointer h-full"
+      className="bg-white border border-[#F1E4D8] rounded-xl shadow-sm group hover:shadow-xl transition-all duration-300 flex flex-col cursor-pointer h-full"
     >
       <div
         className="relative bg-gray-50 px-2 flex items-center justify-center overflow-hidden"
@@ -161,7 +161,7 @@ export default function ProductCard({ product, imageWidth = 300, imageHeight = 2
         <p className="text-sm text-gray-600 mb-1 line-clamp-1">{product.title || product.category}</p>
         <h3 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-2">{product.description || product.title}</h3>
 
-        <div className="mb-2">
+        <div className="mb-1">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-lg font-bold text-red-600">৳{price?.toLocaleString()}</span>
             {compareAt && compareAt > price && (

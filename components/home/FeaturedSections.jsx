@@ -63,7 +63,7 @@ function FeaturedSlider({ products }) {
       {maxIndex > 0 && (
         <button
           onClick={() => go(-1)}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white shadow-md rounded-full flex items-center justify-center text-gray-600 hover:bg-blue-600 hover:text-white transition -translate-x-4"
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white shadow-md rounded-full flex items-center justify-center text-gray-600 hover:bg-rose-600 hover:text-white transition -translate-x-4"
           aria-label="Previous"
         >
           ‹
@@ -97,7 +97,7 @@ function FeaturedSlider({ products }) {
       {maxIndex > 0 && (
         <button
           onClick={() => go(1)}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white shadow-md rounded-full flex items-center justify-center text-gray-600 hover:bg-blue-600 hover:text-white transition translate-x-4"
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white shadow-md rounded-full flex items-center justify-center text-gray-600 hover:bg-rose-600 hover:text-white transition translate-x-4"
           aria-label="Next"
         >
           ›
@@ -111,7 +111,7 @@ function FeaturedSlider({ products }) {
             <button
               key={i}
               onClick={() => { setCurrentIndex(i); startAuto(); }}
-              className={`w-2 h-2 rounded-full transition-all ${i === currentIndex ? 'bg-blue-600 w-4' : 'bg-gray-300'}`}
+              className={`w-2 h-2 rounded-full transition-all ${i === currentIndex ? 'bg-rose-600 w-4' : 'bg-gray-300'}`}
             />
           ))}
         </div>
@@ -136,16 +136,16 @@ export default function FeaturedSections() {
   if (!loaded || sections.length === 0) return null;
 
   return (
-    <section className="w-full py-6 space-y-10">
+    <section className="w-full py-6 space-y-10 bg-[#FFF5ED]">
       {sections.map(sec => (
         <div key={sec._id} className="max-w-screen-xl mx-auto px-4">
           {/* Section header */}
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg md:text-xl font-bold text-gray-800">{sec.title}</h2>
+            <h2 className="text-lg md:text-3xl font-bold text-gray-800">{sec.title}</h2>
             {sec.viewAllLink && sec.viewAllLink !== '/' && (
               <a
                 href={sec.viewAllLink}
-                className="text-md  text-blue-600 font-semibold hover:underline whitespace-nowrap"
+                className="text-md  text-rose-500 font-semibold hover:underline whitespace-nowrap"
               >
                 View All →
               </a>

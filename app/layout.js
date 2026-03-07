@@ -22,6 +22,7 @@ const workSans = Work_Sans({
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import ScrollToTop from "@/components/ui/ScrollToTop";
 import FloatingWhatsApp from "@/components/ui/FloatingWhatsApp";
+import PopupBanner from "@/components/ui/PopupBanner";
 
 export const metadata = {
   title: "Create Next App",
@@ -46,6 +47,7 @@ export default function RootLayout({ children }) {
               <CartSidebar />
               <CartFloating />
               <ToastProvider />
+              <PopupBanner />
             </CategoryProvider>
           </CartProvider>
         </UserProvider>

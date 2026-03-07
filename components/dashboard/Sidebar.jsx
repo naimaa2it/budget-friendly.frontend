@@ -16,6 +16,7 @@ const nav = [
   { key: 'occasions', label: 'Occasions', href: '/dashabord/occasions', icon: 'M12 2l2 7h7l-5.5 4 2 7L12 16l-5.5 4 2-7L3 9h7z' },
   { key: 'featured', label: 'Featured Sections', href: '/dashabord/featured', icon: 'M3 3h7v7H3V3z M13 3h8v4h-8V3z M13 10h8v4h-8v-4z M13 17h8v4h-8v-4z M3 13h7v8H3v-8z' },
   { key: 'banners', label: 'Banners', href: '/dashabord/banners', icon: 'M4 5h16v10H4z M8 18h8' },
+  { key: 'popup', label: 'Popup Banner', href: '/dashabord/popup', icon: 'M5 3h14a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z M9 9h6M9 13h4' },
   { key: 'blog', label: 'Blog / Content', href: '/dashabord/blog', icon: 'M4 7h16M4 11h16M8 15h8' },
   { key: 'media', label: 'Media', href: '/dashabord/media', icon: 'M4 5h16v14H4z M8 9l2 2 3-3 5 5' },
   { key: 'discounts', label: 'Discounts', href: '/dashabord/discounts', icon: 'M12 2l4 4-8 8-4-4 8-8z' },

@@ -199,7 +199,7 @@ export default function PopularPicks() {
           >
             {loading ? (
               Array(3).fill(0).map((_, i) => (
-                <div key={i} className="bg-[#FFFCF9] rounded-lg border border-gray-200 overflow-hidden group hover:shadow-xl transition-all duration-300 cursor-pointer h-64">
+                <div key={i} className="bg-white border border-[#F1E4D8] rounded-xl shadow-sm overflow-hidden group hover:shadow-xl transition-all duration-300 cursor-pointer h-64">
                   <Skeleton className="w-full h-full" />
                 </div>
               ))
@@ -207,10 +207,10 @@ export default function PopularPicks() {
               <div 
                 key={product.id} 
                 onClick={() => router.push(`/product/${product.id}`)}
-                className="bg-[#FFFCF9] rounded-lg border border-gray-200 overflow-hidden group hover:shadow-xl transition-all duration-300 cursor-pointer"
+                className="bg-white border border-[#F1E4D8] rounded-xl shadow-sm overflow-hidden group hover:shadow-xl transition-all duration-300 cursor-pointer"
               >
                 {/* Product Image Container */}
-                <div className="relative bg-gray-50 p-6 h-54 flex items-center justify-center overflow-hidden">
+                <div className="relative bg-white  rounded-xl p-6 h-54 flex items-center justify-center overflow-hidden">
                   <Image
                     src={encodeURI(product.image)}
                     alt={product.subtitle}

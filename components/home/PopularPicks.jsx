@@ -130,8 +130,10 @@ export default function PopularPicks() {
   }
 
   return (
+    <>
+    <section className="w-full bg-[#FFF5ED] ">
     <div 
-      className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+      className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 "
       onMouseEnter={stopAutoSlide}
       onMouseLeave={startAutoSlide}
     >
@@ -197,7 +199,7 @@ export default function PopularPicks() {
           >
             {loading ? (
               Array(3).fill(0).map((_, i) => (
-                <div key={i} className="bg-white rounded-lg border border-gray-200 overflow-hidden group hover:shadow-xl transition-all duration-300 cursor-pointer h-64">
+                <div key={i} className="bg-[#FFFCF9] rounded-lg border border-gray-200 overflow-hidden group hover:shadow-xl transition-all duration-300 cursor-pointer h-64">
                   <Skeleton className="w-full h-full" />
                 </div>
               ))
@@ -205,7 +207,7 @@ export default function PopularPicks() {
               <div 
                 key={product.id} 
                 onClick={() => router.push(`/product/${product.id}`)}
-                className="bg-white rounded-lg border border-gray-200 overflow-hidden group hover:shadow-xl transition-all duration-300 cursor-pointer"
+                className="bg-[#FFFCF9] rounded-lg border border-gray-200 overflow-hidden group hover:shadow-xl transition-all duration-300 cursor-pointer"
               >
                 {/* Product Image Container */}
                 <div className="relative bg-gray-50 p-6 h-54 flex items-center justify-center overflow-hidden">
@@ -349,5 +351,7 @@ export default function PopularPicks() {
     
     <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
+    </section>
+    </>
   );
 }

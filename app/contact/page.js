@@ -9,9 +9,27 @@ export default function ContactPage() {
         <PolicySidebar />
       </aside>
       <div className="md:col-span-3">
+        <ContactContent />
+      </div>
+    </main>
+  );
+}
+
+// client subcomponent for interactivity
+
+'use client';
+import React from 'react';
+
+function ContactContent() {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+  };
+
+  return (
+    <>
       <h1 className="text-3xl font-bold mb-6">Contact Us</h1>
       <p className="text-gray-600 mb-8">Have a question or need help? Fill in the form below and we will get back to you within 24 hours.</p>
-      <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+      <form className="space-y-5" onSubmit={handleSubmit}>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
           <input type="text" className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ac0ad1]" placeholder="Your name" />
@@ -30,7 +48,6 @@ export default function ContactPage() {
         <p>📧 support@yourhaat.com</p>
         <p>📞 +880 1XXXXXXXXX</p>
       </div>
-      </div>
-    </main>
+    </>
   );
 }

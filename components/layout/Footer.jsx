@@ -10,14 +10,23 @@ export default function Footer() {
   const { user } = useUser();
   const [email, setEmail] = useState('');
   const [toast, setToast] = useState(null); // { type: 'success'|'error'|'warn', msg }
+  const [subscribed, setSubscribed] = useState(false);
 
   const showToast = (type, msg) => {
     setToast({ type, msg });
     setTimeout(() => setToast(null), 3500);
   };
 
+  // update subscribed state when user loads/changes
+  React.useEffect(() => {
+    if (user?.newsletterSubscribed) {
+      setSubscribed(true);
+    }
+  }, [user]);
+
   const handleSubscribe = async (e) => {
     e.preventDefault();
+    if (subscribed) return; // already handled
     if (!user) {
       showToast('warn', 'Please log in to subscribe to our newsletter.');
       return;
@@ -27,7 +36,6 @@ export default function Footer() {
       return;
     }
     try {
-      // Use the existing profile endpoint to persist newsletterSubscribed flag
       const formData = new FormData();
       formData.append('newsletterSubscribed', 'true');
       const resp = await fetch(`${API}/api/user/profile`, {
@@ -41,6 +49,7 @@ export default function Footer() {
       if (!resp.ok) throw new Error(data.error || `Server error (${resp.status})`);
       showToast('success', 'You are now subscribed! 🎉');
       setEmail('');
+      setSubscribed(true);
     } catch (err) {
       showToast('error', err.message || 'Subscription failed. Try again.');
     }
@@ -110,10 +119,15 @@ export default function Footer() {
                 />
                 <button
                   type="submit"
-                  aria-label="Subscribe"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-full bg-rose-600 text-white text-xs hover:bg-rose-700"
+                  aria-label={subscribed ? 'Subscribed' : 'Subscribe'}
+                  disabled={subscribed}
+                  className={`absolute right-1 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-full text-xs text-white transition ${
+                    subscribed
+                      ? 'bg-gray-400 cursor-default'
+                      : 'bg-rose-600 hover:bg-rose-700'
+                  }`}
                 >
-                  Subscribe
+                  {subscribed ? 'Subscribed' : 'Subscribe'}
                 </button>
               </div>
             </form>

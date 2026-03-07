@@ -56,11 +56,11 @@ export default function PolicySidebar() {
   ];
 
   return (
-    <nav className="space-y-4">
+    <nav className="space-y-4 bg-[#FFF5ED] p-4 rounded-lg">
       {items.map(i => {
         const active = pathname === i.href;
         return (
-          <Link key={i.key} href={i.href} className={`flex items-center gap-3 p-2 rounded-lg text-sm font-medium transition ${active ? 'bg-gray-200 text-gray-900' : 'text-gray-700 hover:bg-gray-100'}`}>
+          <Link key={i.key} href={i.href} className={`flex items-center gap-3 p-2 rounded-lg text-sm font-medium transition ${active ? 'bg-rose-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}>
             {i.icon}
             <span>{i.label}</span>
           </Link>

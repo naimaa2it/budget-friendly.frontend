@@ -162,9 +162,9 @@ export default function CartPage() {
             </div>
             <button
               onClick={handleCheckout}
-              className="bg-[#1a1a2e] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#16162a] transition text-lg"
+              className="bg-rose-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-rose-700 transition text-lg"
             >
-              Proceed To Checkout
+              Proceed To Checkout 
             </button>
           </div>
         </div>

@@ -27,14 +27,18 @@ export default function Footer() {
       return;
     }
     try {
-      const resp = await fetch(`${API}/api/user/subscribe`, {
-        method: 'POST',
+      // Use the existing profile endpoint to persist newsletterSubscribed flag
+      const formData = new FormData();
+      formData.append('newsletterSubscribed', 'true');
+      const resp = await fetch(`${API}/api/user/profile`, {
+        method: 'PUT',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim() }),
+        body: formData,
       });
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error || 'Failed');
+      const text = await resp.text();
+      let data = {};
+      try { data = JSON.parse(text); } catch { /* non-JSON */ }
+      if (!resp.ok) throw new Error(data.error || `Server error (${resp.status})`);
       showToast('success', 'You are now subscribed! 🎉');
       setEmail('');
     } catch (err) {

@@ -222,6 +222,7 @@ export default function PopupManager() {
       {/* Media picker modal */}
       {showPicker && (
         <MediaPicker
+          open={showPicker}
           onSelect={handlePickerSelect}
           onClose={() => setShowPicker(false)}
         />

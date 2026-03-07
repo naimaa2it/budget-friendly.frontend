@@ -53,24 +53,25 @@ export default function PopupBanner() {
 
   const inner = (
     <div
-      className={`relative rounded-2xl overflow-hidden shadow-2xl max-w-md w-full mx-4 transition-all duration-300 ${
+      className={`relative rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 ${
         exiting ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
       }`}
+      style={{ width: '90vw', maxWidth: '680px' }}
       onClick={e => e.stopPropagation()}
     >
       {/* Close button */}
       <button
         onClick={handleClose}
         aria-label="Close popup"
-        className="absolute top-3 right-3 z-10 bg-white/80 hover:bg-white rounded-full w-8 h-8 flex items-center justify-center shadow transition"
+        className="absolute top-3 right-3 z-10 bg-white/80 hover:bg-white rounded-full w-9 h-9 flex items-center justify-center shadow transition"
       >
-        <svg className="w-4 h-4 text-gray-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <svg className="w-5 h-5 text-gray-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
           <path d="M18 6L6 18M6 6l12 12" />
         </svg>
       </button>
 
       {/* Image */}
-      <div className="relative w-full" style={{ aspectRatio: '4/3' }}>
+      <div className="relative w-full" style={{ aspectRatio: '3/2' }}>
         <Image
           src={popup.image.url}
           alt="Promotion"
@@ -84,13 +85,13 @@ export default function PopupBanner() {
 
   return (
     <div
-      className={`fixed inset-0 z-9999 flex items-center justify-center bg-black/50 transition-opacity duration-300 ${
+      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 transition-opacity duration-300 ${
         exiting ? 'opacity-0' : 'opacity-100'
       }`}
       onClick={handleClose}
     >
       {popup.link && popup.link !== '/' ? (
-        <Link href={popup.link} onClick={handleClose}>
+        <Link href={popup.link} onClick={handleClose} className="block" style={{ width: '90vw', maxWidth: '680px' }}>
           {inner}
         </Link>
       ) : (

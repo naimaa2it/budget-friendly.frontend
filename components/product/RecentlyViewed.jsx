@@ -51,13 +51,13 @@ export default function RecentlyViewed({ currentProductId }) {
   return (
     <section className="max-w-6xl mx-auto px-4 mt-12 mb-4">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-base font-bold text-gray-900 tracking-tight">Recently Viewed</h2>
+        <h2 className="text-lg md:text-2xl font-bold text-gray-900 tracking-tight">Recently Viewed</h2>
         <button
           onClick={() => {
             localStorage.removeItem(STORAGE_KEY);
             setItems([]);
           }}
-          className="text-xs text-gray-400 hover:text-gray-600 underline transition"
+          className="text-xs text-gray-600 hover:text-red-600 underline transition"
         >
           Clear history
         </button>

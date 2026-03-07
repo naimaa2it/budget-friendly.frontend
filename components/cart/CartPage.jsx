@@ -149,7 +149,7 @@ export default function CartPage() {
         </div>
 
         {/* Cart Summary */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
+        <div className="bg-[#FFF5ED] rounded-lg shadow p-6 mb-6 -mt-6">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-2xl font-bold mb-2">Cart Total</h2>
@@ -171,8 +171,8 @@ export default function CartPage() {
 
         {/* Recommended Products */}
         {recommendedProducts.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-6">Picked For You</h2>
+          <div className="my-8 ">
+            <h2 className="text-3xl font-bold mb-2">Picked For You</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {recommendedProducts.slice(0, 10).map((product) => (
                 <ProductCard

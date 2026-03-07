@@ -146,7 +146,7 @@ export default function DealsOfDay() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Main Product Section - Left Side */}
         <div className="lg:col-span-9">
-          <div className="border-2 border-red-500 rounded-lg p-4 bg-gradient-to-br from-pink-50 to-white h-full">
+          <div className="border-2 border-red-500 rounded-lg p-4 bg-gradient-to-br from-white to-[#FFF5ED] h-full">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Product Image Section */}
               <div>

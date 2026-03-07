@@ -51,7 +51,7 @@ const Banner = () => {
   const slide = slides[current] || slides[0];
 
   return (
-    <div className="relative flex flex-col md:flex-row md:items-start w-full bg-[#FAFAF7]">
+    <div className="relative flex flex-col md:flex-row md:items-start w-full bg-[#FFF5ED]">
       {/* Sidebar (desktop only) */}
       <div className="hidden md:block md:w-[240px] min-w-[200px] overflow-visible z-10 relative h-fit">
         <CategorySidebar />

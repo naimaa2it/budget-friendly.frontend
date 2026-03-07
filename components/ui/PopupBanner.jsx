@@ -51,25 +51,12 @@ export default function PopupBanner() {
 
   if (!visible || !popup) return null;
 
-  const inner = (
+  const imageBox = (
     <div
       className={`relative rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 ${
         exiting ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
       }`}
-      style={{ width: '90vw', maxWidth: '680px' }}
-      onClick={e => e.stopPropagation()}
     >
-      {/* Close button */}
-      <button
-        onClick={handleClose}
-        aria-label="Close popup"
-        className="absolute top-3 right-3 z-10 bg-white/80 hover:bg-white rounded-full w-9 h-9 flex items-center justify-center shadow transition"
-      >
-        <svg className="w-5 h-5 text-gray-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <path d="M18 6L6 18M6 6l12 12" />
-        </svg>
-      </button>
-
       {/* Image */}
       <div className="relative w-full" style={{ aspectRatio: '3/2' }}>
         <Image
@@ -90,13 +77,31 @@ export default function PopupBanner() {
       }`}
       onClick={handleClose}
     >
-      {popup.link && popup.link !== '/' ? (
-        <Link href={popup.link} onClick={handleClose} className="block" style={{ width: '90vw', maxWidth: '680px' }}>
-          {inner}
-        </Link>
-      ) : (
-        inner
-      )}
+      {/* wrapper: stops overlay-click, holds close button outside the Link */}
+      <div
+        className="relative"
+        style={{ width: '90vw', maxWidth: '680px' }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Close button lives here — outside the Link — so it never navigates */}
+        <button
+          onClick={handleClose}
+          aria-label="Close popup"
+          className="absolute -top-4 -right-4 z-10 bg-white hover:bg-red-50 rounded-full w-9 h-9 flex items-center justify-center shadow-lg transition"
+        >
+          <svg className="w-5 h-5 text-gray-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+
+        {popup.link && popup.link !== '/' ? (
+          <Link href={popup.link} className="block">
+            {imageBox}
+          </Link>
+        ) : (
+          imageBox
+        )}
+      </div>
     </div>
   );
 }

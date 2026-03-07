@@ -1,10 +1,48 @@
 "use client"
-import React from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import WebsiteLogo from '@/components/ui/WebsiteLogo'
+import { useUser } from '@/components/context/UserContext'
+
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export default function Footer() {
+  const { user } = useUser();
+  const [email, setEmail] = useState('');
+  const [toast, setToast] = useState(null); // { type: 'success'|'error'|'warn', msg }
+
+  const showToast = (type, msg) => {
+    setToast({ type, msg });
+    setTimeout(() => setToast(null), 3500);
+  };
+
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    if (!user) {
+      showToast('warn', 'Please log in to subscribe to our newsletter.');
+      return;
+    }
+    if (!email.trim()) {
+      showToast('error', 'Please enter a valid email address.');
+      return;
+    }
+    try {
+      const resp = await fetch(`${API}/api/user/subscribe`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'Failed');
+      showToast('success', 'You are now subscribed! 🎉');
+      setEmail('');
+    } catch (err) {
+      showToast('error', err.message || 'Subscription failed. Try again.');
+    }
+  };
   return (
+    <>
     <footer role="contentinfo" className="bg-[#FFF5ED] border-t border-black/6">
       <div className="max-w-[1200px] mx-auto px-4 py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
@@ -51,15 +89,28 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Newsletter */}
-          <div>
+        <div>
             <h3 className="text-sm font-medium text-[#202020] mb-3">Join our newsletter</h3>
             <p className="text-sm text-[#202020] mb-3">Get updates on new products and offers. Unsubscribe anytime.</p>
-            <form onSubmit={(e) => e.preventDefault()} className="w-full">
+            <form onSubmit={handleSubscribe} className="w-full">
               <label htmlFor="newsletter" className="sr-only">Email address</label>
               <div className="relative">
-                <input id="newsletter" type="email" placeholder="Your email" className="w-full px-4 py-2 pr-24 rounded-full border border-black/10 outline-none text-sm focus:ring-2 focus:ring-[#ac0ad1]" aria-label="Email address" />
-                <button type="submit" aria-label="Subscribe" className="absolute right-1 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-full bg-rose-600 text-white text-xs  hover:bg-rose-700">Subscribe</button>
+                <input
+                  id="newsletter"
+                  type="email"
+                  placeholder="Your email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  className="w-full px-4 py-2 pr-24 rounded-full border border-black/10 outline-none text-sm focus:ring-2 focus:ring-[#ac0ad1]"
+                  aria-label="Email address"
+                />
+                <button
+                  type="submit"
+                  aria-label="Subscribe"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-full bg-rose-600 text-white text-xs hover:bg-rose-700"
+                >
+                  Subscribe
+                </button>
               </div>
             </form>
 
@@ -116,5 +167,16 @@ export default function Footer() {
         </div>
       </div>
     </footer>
+
+    {/* Subscribe toast */}
+    {toast && (
+      <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-full text-sm font-medium shadow-lg text-white transition-all ${
+        toast.type === 'success' ? 'bg-green-600' :
+        toast.type === 'warn'    ? 'bg-amber-500' : 'bg-red-600'
+      }`}>
+        {toast.msg}
+      </div>
+    )}
+  </>
   )
 }

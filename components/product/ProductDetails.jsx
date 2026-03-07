@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import ProductInfoTabs from '@/components/product/ProductInfoTabs';
 import { FaChevronLeft, FaChevronRight, FaStar, FaStarHalfAlt, FaRegStar, FaFacebook, FaTwitter, FaWhatsapp, FaCopy, FaTruck, FaClock, FaTimes, FaGift, FaCommentDots, FaPencilAlt } from 'react-icons/fa';
 import AddToCartSection from '@/components/product/AddToCartSection';
@@ -47,6 +48,7 @@ function StockBadge({ inventory, availability }) {
 }
 
 export default function ProductDetails({ product, relatedProducts = [] }) {
+  const router = useRouter();
   const images = (product?.images || []).map(i => i.url);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [copied, setCopied] = useState(false);
@@ -121,6 +123,13 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
 
   return (
     <div key={product?._id || product?.id} className="max-w-6xl mx-auto py-6 px-4">
+      {/* Back button */}
+      <button
+        onClick={() => router.back()}
+        className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-4 transition"
+      >
+        <FaChevronLeft className="w-3 h-3" /> Back
+      </button>
 
       {/* ── Main product section ── */}
       <div className="flex flex-col lg:flex-row gap-6">

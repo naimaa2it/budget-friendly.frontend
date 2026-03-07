@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import ProductCard from '@/components/product/ProductCard';
 import ProductFilters from '@/components/product/ProductFilters';
 import SortDropdown from '@/components/product/SortDropdown';
@@ -10,6 +11,7 @@ import Link from 'next/link';
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export default function SearchResultsClient() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const query = searchParams.get('q') || '';
 
@@ -99,6 +101,13 @@ export default function SearchResultsClient() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Back button */}
+      <button
+        onClick={() => router.back()}
+        className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-2 transition"
+      >
+        <span className="text-xs">‹</span> Back
+      </button>
       {/* Breadcrumb */}
       <div className="text-sm text-gray-500 mb-4">
         <Link href="/" className="hover:underline">Home</Link>

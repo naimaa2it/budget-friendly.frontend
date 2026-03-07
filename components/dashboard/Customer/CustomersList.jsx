@@ -62,6 +62,7 @@ export default function CustomersList() {
                 <th className="py-2">Name</th>
                 <th className="py-2">Email</th>
                 <th className="py-2">Provider</th>
+                <th className="py-2">Subscribed</th>
                 <th className="py-2">Created</th>
                 <th className="py-2">Actions</th>
               </tr>
@@ -72,6 +73,12 @@ export default function CustomersList() {
                   <td className="py-3">{u.name || '-'}</td>
                   <td className="py-3">{u.email}</td>
                   <td className="py-3">{u.provider || '-'}</td>
+                  <td className="py-3">
+                    {u.newsletterSubscribed
+                      ? <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">✓ Subscribed</span>
+                      : <span className="inline-flex items-center gap-1 text-xs font-semibold text-gray-400 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded-full">Not subscribed</span>
+                    }
+                  </td>
                   <td className="py-3">{new Date(u.createdAt).toLocaleString()}</td>
                   <td className="py-3">
                     <div className="flex gap-2">
@@ -81,7 +88,7 @@ export default function CustomersList() {
                   </td>
                 </tr>
               ))}
-              {items.length === 0 && <tr><td colSpan={5} className="text-center py-8 text-gray-500">No customers found</td></tr>}
+              {items.length === 0 && <tr><td colSpan={6} className="text-center py-8 text-gray-500">No customers found</td></tr>}
             </tbody>
           </table>
         </div>

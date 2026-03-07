@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import ProductCard from '@/components/product/ProductCard';
 import ProductFilters from '@/components/product/ProductFilters';
 import SortDropdown from '@/components/product/SortDropdown';
@@ -62,6 +63,7 @@ const TAG_CONFIG = {
 };
 
 export default function TagPageClient({ slug }) {
+  const router = useRouter();
   const config = TAG_CONFIG[slug] || {
     label: slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
     badge: slug.replace(/-/g, '_'),
@@ -159,6 +161,15 @@ export default function TagPageClient({ slug }) {
 
   return (
     <div>
+      {/* Back button */}
+      <div className="max-w-7xl mx-auto px-4 pt-4">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition"
+        >
+          <span className="text-xs">‹</span> Back
+        </button>
+      </div>
       {/* ── Hero Banner ── */}
       <div className={`relative bg-gradient-to-r ${config.gradient} overflow-hidden`}>
         {/* Subtle dot pattern overlay */}

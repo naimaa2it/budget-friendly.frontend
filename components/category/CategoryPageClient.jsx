@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import ProductCard from '@/components/product/ProductCard';
 import ProductFilters from '@/components/product/ProductFilters';
 import SortDropdown from '@/components/product/SortDropdown';
@@ -12,6 +13,7 @@ import Image from 'next/image';
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export default function CategoryPageClient({ slug }) {
+  const router = useRouter();
   const { getCategoryBySlug, categoriesMap, getSubcategories } = useCategories();
   const [category, setCategory] = useState(null);
   const [parentCategory, setParentCategory] = useState(null);
@@ -197,6 +199,13 @@ export default function CategoryPageClient({ slug }) {
   return (
     <>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Back button */}
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-4 transition"
+        >
+          <span className="text-xs">‹</span> Back
+        </button>
       {/* Breadcrumb & header */}
       <div className="text-sm text-gray-500 mb-4">
         <Link href="/" className="hover:underline">Home</Link>

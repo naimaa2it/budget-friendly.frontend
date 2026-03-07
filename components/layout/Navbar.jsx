@@ -236,7 +236,7 @@ export default function Navbar() {
           <button
             ref={searchIconRef}
             onClick={() => setMobileSearchOpen(true)}
-            className="p-2 text-[#202020] hover:text-[#ac0ad1] md:hidden "
+            className="p-2 text-[#202020] hover:text-rose-600 md:hidden "
             aria-label="Search"
             title="Search"
           >
@@ -251,11 +251,11 @@ export default function Navbar() {
                 router.push('/user/wishlist');
               }
             }}
-            className="relative p-2 text-[#202020] hover:text-[#ac0ad1] group"
+            className="relative p-2 text-[#202020] hover:text-rose-600 group"
             aria-label="Wishlist"
             title="Wishlist"
           >
-            <svg className="stroke-current transition-colors duration-200 group-hover:stroke-[#ac0ad1]" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 0 0-7.1 7.1L12 21l8.8-9.3a5 5 0 0 0 0-7.1z"/></svg>
+            <svg className="stroke-current transition-colors duration-200 group-hover:stroke-rose-600" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 0 0-7.1 7.1L12 21l8.8-9.3a5 5 0 0 0 0-7.1z"/></svg>
             {getWishlistCount() > 0 && (
               <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
                 {getWishlistCount()}
@@ -265,11 +265,11 @@ export default function Navbar() {
 
           <button
             onClick={toggleSidebar}
-            className="relative p-2 text-[#202020] hover:text-[#ac0ad1] group"
+            className="relative p-2 text-[#202020] hover:text-rose-600 group"
             aria-label="Cart"
             title="Cart"
           >
-            <svg className="stroke-current transition-colors duration-200 group-hover:stroke-[#ac0ad1]" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="20" r="1"/><circle cx="20" cy="20" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            <svg className="stroke-current transition-colors duration-200 group-hover:stroke-rose-600" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="20" r="1"/><circle cx="20" cy="20" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
             {getCartCount() > 0 && (
               <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
                 {getCartCount()}

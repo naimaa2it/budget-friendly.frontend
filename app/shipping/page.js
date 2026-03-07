@@ -1,4 +1,5 @@
 import PolicySidebar from '@/components/Policy/Sidebar';
+import ShippingAccordion from '@/components/Policy/ShippingAccordion';
 
 export const metadata = { title: 'Shipping Policy – Budget Friendly' };
 

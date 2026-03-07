@@ -115,6 +115,7 @@ export default function Footer() {
             <h3 className="text-sm font-medium text-[#202020] mb-3">Customer service</h3>
             <ul className="space-y-2 text-sm text-[#202020]">
               <li><Link href="/shipping" className="hover:text-red-600">Shipping & returns</Link></li>
+              <li><Link href="/returns" className="hover:text-red-600">Return policy</Link></li>
               <li><Link href="/faq" className="hover:text-red-600">FAQ</Link></li>
               <li><Link href="/contact" className="hover:text-red-600">Contact us</Link></li>
               <li><Link href="/about" className="hover:text-red-600">About Us</Link></li>

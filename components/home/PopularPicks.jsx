@@ -78,19 +78,19 @@ export default function PopularPicks() {
     }
   };
 
-  const goToSlide = (index) => {
+  const goToSlide = (index, manual = false) => {
     setCurrentSlide(index);
-    startAutoSlide();
+    if (!manual) startAutoSlide();
   };
 
-  const nextSlide = () => {
+  const nextSlide = (manual = false) => {
     setCurrentSlide((prev) => (prev + 1) % totalSlides);
-    startAutoSlide();
+    if (!manual) startAutoSlide();
   };
 
-  const prevSlide = () => {
+  const prevSlide = (manual = false) => {
     setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
-    startAutoSlide();
+    if (!manual) startAutoSlide();
   };
 
   useEffect(() => {
@@ -174,7 +174,7 @@ export default function PopularPicks() {
         <div className="flex-1">
           {/* Navigation Buttons */}
           <button
-            onClick={prevSlide}
+            onClick={() => prevSlide(true)}
             className="absolute -left-4 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow"
           >
             <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -183,7 +183,7 @@ export default function PopularPicks() {
           </button>
 
           <button
-            onClick={nextSlide}
+            onClick={() => nextSlide(true)}
             className="absolute -right-4 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow"
           >
             <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -194,8 +194,6 @@ export default function PopularPicks() {
           <div 
             ref={slideContainerRef}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 transition-all duration-500 ease-in-out"
-            onClick={nextSlide}
-            onMouseEnter={nextSlide}
           >
             {loading ? (
               Array(3).fill(0).map((_, i) => (

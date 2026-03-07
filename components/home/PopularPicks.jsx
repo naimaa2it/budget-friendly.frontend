@@ -22,6 +22,7 @@ export default function PopularPicks() {
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hoveredId, setHoveredId] = useState(null); // for image swap on hover/click
 
   // fetch popular picks from backend
   useEffect(() => {
@@ -47,7 +48,8 @@ export default function PopularPicks() {
           discount: p.compareAtPrice && p.price && p.compareAtPrice > p.price
             ? Math.round((p.compareAtPrice - p.price) / p.compareAtPrice * 100)
             : null,
-          image: (p.images && p.images[0] && p.images[0].url) || '/assets/placeholder.svg',
+          image: (p.Images && p.Images[0] && p.Images[0].url) || (p.images && p.images[0] && p.images[0].url) || '/assets/placeholder.svg',
+          secondImage: (p.images && p.images[1] && p.images[1].url) || null,
           rating: p.averageRating || 0,
           reviews: `(${p.reviewCount || 0})`,
         }));
@@ -205,12 +207,19 @@ export default function PopularPicks() {
               <div 
                 key={product.id} 
                 onClick={() => router.push(`/product/${product.id}`)}
+                onMouseEnter={() => setHoveredId(product.id)}
+                onMouseLeave={() => setHoveredId(null)}
+                onMouseDown={() => setHoveredId(product.id)}
                 className="bg-white border border-[#F1E4D8] rounded-xl shadow-sm overflow-hidden group hover:shadow-xl transition-all duration-300 cursor-pointer"
               >
                 {/* Product Image Container */}
                 <div className="relative bg-white  rounded-xl p-6 h-54 flex items-center justify-center overflow-hidden">
                   <Image
-                    src={encodeURI(product.image)}
+                    src={encodeURI(
+                      hoveredId === product.id && product.secondImage
+                        ? product.secondImage
+                        : product.image
+                    )}
                     alt={product.subtitle}
                     width={300}
                     height={300}

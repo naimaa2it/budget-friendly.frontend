@@ -166,7 +166,7 @@ export default function OccasionSections() {
         <div key={section._id}>
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg md:text-xl font-bold text-gray-900">{section.title}</h2>
+            <h2 className="text-lg md:text-3xl font-bold text-gray-900">{section.title}</h2>
             {section.viewAllLink && section.viewAllLink !== '/' && (
               <Link
                 href={section.viewAllLink}

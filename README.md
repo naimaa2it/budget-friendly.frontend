@@ -40,7 +40,7 @@ Next steps / suggestions
 - (Recommended) Verify Firebase ID tokens on the backend for stronger trust between Firebase and your server.
 - Add server-side routes to manage admin-only actions (user management, settings) and protect them by role.
 
-
+kdajhskfhfkjdh
 ### UI enhancements
 
 A new `EmptyState` component was added in `components/common/EmptyState.jsx` to consolidate empty‑page layouts (cart, wishlist, etc.).

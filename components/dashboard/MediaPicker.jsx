@@ -54,9 +54,13 @@ export default function MediaPicker({ open, onSelect, onClose }) {
     if (!open) return;
     fetch(`${API}/api/admin/media/folders`, { credentials: 'include' })
       .then(r => r.json())
-      .then(b => setFolders(b.folders || []))
-      .catch(() => {});
-  }, [open, API]);
+      .then(b => {
+        const list = b.folders || [];
+        if (!list.includes(ROOT_FOLDER)) list.unshift(ROOT_FOLDER);
+        setFolders(list);
+      })
+      .catch(() => setFolders([ROOT_FOLDER]));
+  }, [open, API]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // reload when folder or q changes
   useEffect(() => {
@@ -74,7 +78,7 @@ export default function MediaPicker({ open, onSelect, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4">
+    <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
 
         {/* Header */}

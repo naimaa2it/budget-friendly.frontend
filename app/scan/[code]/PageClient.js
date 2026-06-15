@@ -6,7 +6,6 @@ import Link from 'next/link';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
-
 function DiscountBadge({ price, compareAtPrice }) {
   if (!compareAtPrice || compareAtPrice <= price) return null;
   const pct = Math.round(((compareAtPrice - price) / compareAtPrice) * 100);

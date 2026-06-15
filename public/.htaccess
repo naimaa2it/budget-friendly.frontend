@@ -5,16 +5,41 @@ DirectoryIndex index.html
   RewriteEngine On
   RewriteBase /
 
-  # Allow direct access to existing files (JS, CSS, images, etc.)
+  # Serve existing files and directories directly (JS, CSS, images, etc.)
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
 
-  # Serve .html if the file exists without extension
-  RewriteCond %{REQUEST_FILENAME}.html -f
-  RewriteRule ^(.+?)/?$ $1.html [L]
+  # ── Public dynamic routes ──────────────────────────────────────────────
+  # New products, blogs, categories added after build are served via
+  # the __placeholder__ shell; useParams() reads the real ID from the URL
+  # and the client component fetches live data from the API.
 
-  # Fallback: serve index.html for all other routes (client-side routing)
+  RewriteRule ^product/([^/]+)/?$ /product/__placeholder__/index.html [L]
+  RewriteRule ^blog/([^/]+)/?$ /blog/__placeholder__/index.html [L]
+  RewriteRule ^category/([^/]+)/?$ /category/__placeholder__/index.html [L]
+  RewriteRule ^barcode/([^/]+)/?$ /barcode/__placeholder__/index.html [L]
+  RewriteRule ^scan/([^/]+)/?$ /scan/__placeholder__/index.html [L]
+  RewriteRule ^tag/([^/]+)/?$ /tag/best-seller/index.html [L]
+
+  # ── Dashboard dynamic routes ───────────────────────────────────────────
+  # Sub-routes first (more specific before less specific)
+  RewriteRule ^dashboard/orders/([^/]+)/invoice/?$ /dashboard/orders/__placeholder__/invoice/index.html [L]
+  RewriteRule ^dashboard/orders/([^/]+)/slip/?$ /dashboard/orders/__placeholder__/slip/index.html [L]
+  RewriteRule ^dashboard/orders/([^/]+)/?$ /dashboard/orders/__placeholder__/index.html [L]
+  RewriteRule ^dashboard/products/([^/]+)/?$ /dashboard/products/__placeholder__/index.html [L]
+  RewriteRule ^dashboard/blog/([^/]+)/?$ /dashboard/blog/__placeholder__/index.html [L]
+  RewriteRule ^dashboard/categories/([^/]+)/?$ /dashboard/categories/__placeholder__/index.html [L]
+  RewriteRule ^dashboard/customers/([^/]+)/profile/?$ /dashboard/customers/__placeholder__/profile/index.html [L]
+  RewriteRule ^dashboard/customers/([^/]+)/?$ /dashboard/customers/__placeholder__/index.html [L]
+  RewriteRule ^dashboard/authorized/([^/]+)/profile/?$ /dashboard/authorized/__placeholder__/profile/index.html [L]
+  RewriteRule ^dashboard/authorized/([^/]+)/?$ /dashboard/authorized/__placeholder__/index.html [L]
+  RewriteRule ^dashboard/customer-tags/([^/]+)/?$ /dashboard/customer-tags/__placeholder__/index.html [L]
+
+  # ── User dynamic routes ────────────────────────────────────────────────
+  RewriteRule ^user/orders/([^/]+)/invoice/?$ /user/orders/__placeholder__/invoice/index.html [L]
+
+  # Fallback for any remaining unknown routes
   RewriteRule ^ index.html [L]
 </IfModule>
 

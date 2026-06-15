@@ -135,6 +135,31 @@ export default function SettingsForm() {
               setSettings((s) => ({ ...s, storeEmail: e.target.value }))
             }
             className="w-full border px-3 py-2 rounded"
+            placeholder="info@example.com"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium">Contact phone</label>
+          <input
+            value={settings.storePhone || ""}
+            onChange={(e) =>
+              setSettings((s) => ({ ...s, storePhone: e.target.value }))
+            }
+            className="w-full border px-3 py-2 rounded"
+            placeholder="+880 1700-000000"
+          />
+        </div>
+
+        <div className="sm:col-span-2">
+          <label className="block text-sm font-medium">Store address</label>
+          <input
+            value={settings.storeAddress || ""}
+            onChange={(e) =>
+              setSettings((s) => ({ ...s, storeAddress: e.target.value }))
+            }
+            className="w-full border px-3 py-2 rounded"
+            placeholder="123 Main St, Dhaka, Bangladesh"
           />
         </div>
 

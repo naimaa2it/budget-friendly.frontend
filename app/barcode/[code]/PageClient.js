@@ -5,8 +5,6 @@ import { useParams, useRouter } from 'next/navigation';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
-export function generateStaticParams() { return []; }
-
 export default function BarcodeLookupPage() {
   const { code } = useParams();
   const router = useRouter();

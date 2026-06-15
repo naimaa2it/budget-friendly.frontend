@@ -5,9 +5,8 @@ import { fileURLToPath } from "url";
 // __dirname is not available in ES-module (.mjs) files — compute it manually
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-
 const nextConfig = {
-  output: 'export',
+  // output: 'export',
   trailingSlash: true,
   // headers() is not supported with output: "export" — set these via .htaccess on cPanel instead.
   // async headers() {

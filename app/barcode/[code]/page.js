@@ -1,7 +1,9 @@
-import BarcodeLookupClient from './_client';
+import BarcodeLookupPage from './PageClient';
 
-export function generateStaticParams() { return []; }
+export function generateStaticParams() {
+  return [{ code: '__placeholder__' }];
+}
 
-export default function Page(props) {
-  return <BarcodeLookupClient {...props} />;
+export default function Page() {
+  return <BarcodeLookupPage />;
 }

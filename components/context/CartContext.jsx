@@ -1,18 +1,25 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import UserContext from '@/components/context/UserContext';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
+import UserContext from "@/components/context/UserContext";
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 const CartContext = createContext(null);
 
 // Storage keys
-const CART_STORAGE_KEY = 'yourHaat_cart';
-const WISHLIST_STORAGE_KEY = 'yourHaat_wishlist';
+const CART_STORAGE_KEY = "SmartBuy BD_cart";
+const WISHLIST_STORAGE_KEY = "SmartBuy BD_wishlist";
 
 const getStorageItem = (key, defaultValue = null) => {
-  if (typeof window === 'undefined') return defaultValue;
+  if (typeof window === "undefined") return defaultValue;
   try {
     const item = localStorage.getItem(key);
     return item ? JSON.parse(item) : defaultValue;
@@ -22,7 +29,7 @@ const getStorageItem = (key, defaultValue = null) => {
 };
 
 const setStorageItem = (key, value) => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch {}
@@ -30,7 +37,7 @@ const setStorageItem = (key, value) => {
 
 // Unique cart key: productId + selected color + selected size
 export const makeCartKey = (productId, color, size) =>
-  `${productId}__${color || ''}__${size || ''}`;
+  `${productId}__${color || ""}__${size || ""}`;
 
 // Item shape stored in localStorage — includes the product object so cart
 // survives page reload without needing a batch API call.
@@ -41,7 +48,11 @@ const toSlimItem = (item) => ({
   selectedColor: item.selectedColor || null,
   selectedSize: item.selectedSize || null,
   selectedVariant: item.selectedVariant || null,
-  variantId: item.selectedVariant?._id || item.selectedVariant?.id || item.variantId || null,
+  variantId:
+    item.selectedVariant?._id ||
+    item.selectedVariant?.id ||
+    item.variantId ||
+    null,
   cartKey: item.cartKey,
 });
 
@@ -50,14 +61,18 @@ export const getItemPrice = (item) => {
   const hasSelectedOption = !!(item.selectedColor || item.selectedSize);
   const variantPrice = hasSelectedOption ? item.selectedVariant?.price : null;
   const basePrice = item.product?.price ?? 0;
-  return (variantPrice != null && variantPrice > 0) ? variantPrice : basePrice;
+  return variantPrice != null && variantPrice > 0 ? variantPrice : basePrice;
 };
 
 export const getItemCompareAtPrice = (item) => {
   const hasSelectedOption = !!(item.selectedColor || item.selectedSize);
-  const variantCompareAt = hasSelectedOption ? item.selectedVariant?.compareAtPrice : null;
+  const variantCompareAt = hasSelectedOption
+    ? item.selectedVariant?.compareAtPrice
+    : null;
   const baseCompareAt = item.product?.compareAtPrice ?? null;
-  return variantCompareAt != null && variantCompareAt > 0 ? variantCompareAt : baseCompareAt;
+  return variantCompareAt != null && variantCompareAt > 0
+    ? variantCompareAt
+    : baseCompareAt;
 };
 
 export const CartProvider = ({ children }) => {
@@ -87,18 +102,24 @@ export const CartProvider = ({ children }) => {
     }
 
     // Support old format (full product objects) by detecting the shape
-    const hasFullProducts = slimItems.some(item => item.product && typeof item.product === 'object');
+    const hasFullProducts = slimItems.some(
+      (item) => item.product && typeof item.product === "object",
+    );
     if (hasFullProducts) {
       // Migrate old format: keep full objects but save slim format going forward
       const normalized = slimItems.map((item) => {
         if (item.cartKey) return item;
-        const id = item.product?._id || item.product?.id || 'unknown';
+        const id = item.product?._id || item.product?.id || "unknown";
         return {
           ...item,
           selectedColor: item.selectedColor || null,
           selectedSize: item.selectedSize || null,
           selectedVariant: item.selectedVariant || null,
-          cartKey: makeCartKey(id, item.selectedColor || null, item.selectedSize || null),
+          cartKey: makeCartKey(
+            id,
+            item.selectedColor || null,
+            item.selectedSize || null,
+          ),
         };
       });
       setCartItems(normalized);
@@ -107,27 +128,39 @@ export const CartProvider = ({ children }) => {
     }
 
     // New slim format: fetch fresh product data from batch endpoint
-    const ids = [...new Set(slimItems.map(i => i.productId).filter(Boolean))];
+    const ids = [...new Set(slimItems.map((i) => i.productId).filter(Boolean))];
     const controller = new AbortController();
-    fetch(`${API}/api/products/batch?ids=${ids.join(',')}`, { signal: controller.signal })
-      .then(r => r.ok ? r.json() : { products: [] })
+    fetch(`${API}/api/products/batch?ids=${ids.join(",")}`, {
+      signal: controller.signal,
+    })
+      .then((r) => (r.ok ? r.json() : { products: [] }))
       .then(({ products = [] }) => {
-        const productMap = Object.fromEntries(products.map(p => [p._id, p]));
-        const hydrated = slimItems.map(slim => {
-          const product = productMap[slim.productId];
-          if (!product) return null;
-          const selectedVariant = slim.variantId
-            ? (product.variants || []).find(v => v._id === slim.variantId) || null
-            : null;
-          return {
-            product,
-            quantity: slim.quantity,
-            selectedColor: slim.selectedColor,
-            selectedSize: slim.selectedSize,
-            selectedVariant,
-            cartKey: slim.cartKey || makeCartKey(slim.productId, slim.selectedColor, slim.selectedSize),
-          };
-        }).filter(Boolean);
+        const productMap = Object.fromEntries(products.map((p) => [p._id, p]));
+        const hydrated = slimItems
+          .map((slim) => {
+            const product = productMap[slim.productId];
+            if (!product) return null;
+            const selectedVariant = slim.variantId
+              ? (product.variants || []).find(
+                  (v) => v._id === slim.variantId,
+                ) || null
+              : null;
+            return {
+              product,
+              quantity: slim.quantity,
+              selectedColor: slim.selectedColor,
+              selectedSize: slim.selectedSize,
+              selectedVariant,
+              cartKey:
+                slim.cartKey ||
+                makeCartKey(
+                  slim.productId,
+                  slim.selectedColor,
+                  slim.selectedSize,
+                ),
+            };
+          })
+          .filter(Boolean);
         setCartItems(hydrated);
       })
       .catch(() => {})
@@ -160,9 +193,9 @@ export const CartProvider = ({ children }) => {
     clearTimeout(cartSyncTimer.current);
     cartSyncTimer.current = setTimeout(() => {
       fetch(`${API}/api/user/cart`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ items: cartItems.map(toSlimItem) }),
       }).catch(() => {});
     }, 1500);
@@ -175,41 +208,59 @@ export const CartProvider = ({ children }) => {
     clearTimeout(wishlistSyncTimer.current);
     wishlistSyncTimer.current = setTimeout(() => {
       fetch(`${API}/api/user/wishlist`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ items: wishlistItems }),
       }).catch(() => {});
     }, 1500);
     return () => clearTimeout(wishlistSyncTimer.current);
   }, [wishlistItems, user?._id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const addToCart = useCallback((product, qty = 1, opts = {}) => {
-    const { selectedColor = null, selectedSize = null, selectedVariant = null, silent = false } = opts;
-    const id = getId(product);
-    const cartKey = makeCartKey(id, selectedColor, selectedSize);
-    setCartItems((prev) => {
-      const existing = prev.find((i) => i.cartKey === cartKey);
-      if (existing) {
-        return prev.map((i) =>
-          i.cartKey === cartKey ? { ...i, quantity: i.quantity + qty } : i
-        );
+  const addToCart = useCallback(
+    (product, qty = 1, opts = {}) => {
+      const {
+        selectedColor = null,
+        selectedSize = null,
+        selectedVariant = null,
+        silent = false,
+      } = opts;
+      const id = getId(product);
+      const cartKey = makeCartKey(id, selectedColor, selectedSize);
+      setCartItems((prev) => {
+        const existing = prev.find((i) => i.cartKey === cartKey);
+        if (existing) {
+          return prev.map((i) =>
+            i.cartKey === cartKey ? { ...i, quantity: i.quantity + qty } : i,
+          );
+        }
+        return [
+          ...prev,
+          {
+            product,
+            quantity: qty,
+            selectedColor,
+            selectedSize,
+            selectedVariant,
+            cartKey,
+          },
+        ];
+      });
+      if (!silent) {
+        const fbtItems = Array.isArray(product.frequentlyBoughtTogether)
+          ? product.frequentlyBoughtTogether.filter((p) => p && (p._id || p.id))
+          : [];
+        setFbtModalData({ product, qty, fbtItems });
       }
-      return [...prev, { product, quantity: qty, selectedColor, selectedSize, selectedVariant, cartKey }];
-    });
-    if (!silent) {
-      const fbtItems = Array.isArray(product.frequentlyBoughtTogether)
-        ? product.frequentlyBoughtTogether.filter(p => p && (p._id || p.id))
-        : [];
-      setFbtModalData({ product, qty, fbtItems });
-    }
-  }, [getId]);
+    },
+    [getId],
+  );
 
   const updateQty = useCallback((cartKey, qty) => {
     setCartItems((prev) =>
       prev
         .map((i) => (i.cartKey === cartKey ? { ...i, quantity: qty } : i))
-        .filter((i) => i.quantity > 0)
+        .filter((i) => i.quantity > 0),
     );
   }, []);
 
@@ -217,40 +268,63 @@ export const CartProvider = ({ children }) => {
     setCartItems((prev) => prev.filter((i) => i.cartKey !== cartKey));
   }, []);
 
-  const updateCartVariant = useCallback((oldCartKey, newColor, newSize, newVariant, newQty = null) => {
-    setCartItems((prev) => {
-      const existing = prev.find((i) => i.cartKey === oldCartKey);
-      if (!existing) return prev;
-      const updatedQty = newQty ?? existing.quantity;
-      const newCartKey = makeCartKey(getId(existing.product), newColor, newSize);
-      if (newCartKey === oldCartKey) {
+  const updateCartVariant = useCallback(
+    (oldCartKey, newColor, newSize, newVariant, newQty = null) => {
+      setCartItems((prev) => {
+        const existing = prev.find((i) => i.cartKey === oldCartKey);
+        if (!existing) return prev;
+        const updatedQty = newQty ?? existing.quantity;
+        const newCartKey = makeCartKey(
+          getId(existing.product),
+          newColor,
+          newSize,
+        );
+        if (newCartKey === oldCartKey) {
+          return prev.map((i) =>
+            i.cartKey === oldCartKey
+              ? {
+                  ...i,
+                  selectedColor: newColor,
+                  selectedSize: newSize,
+                  selectedVariant: newVariant,
+                  quantity: updatedQty,
+                }
+              : i,
+          );
+        }
+        const dup = prev.find((i) => i.cartKey === newCartKey);
+        if (dup) {
+          return prev
+            .filter((i) => i.cartKey !== oldCartKey && i.cartKey !== newCartKey)
+            .concat({ ...dup, quantity: dup.quantity + updatedQty });
+        }
         return prev.map((i) =>
           i.cartKey === oldCartKey
-            ? { ...i, selectedColor: newColor, selectedSize: newSize, selectedVariant: newVariant, quantity: updatedQty }
-            : i
+            ? {
+                ...i,
+                selectedColor: newColor,
+                selectedSize: newSize,
+                selectedVariant: newVariant,
+                cartKey: newCartKey,
+                quantity: updatedQty,
+              }
+            : i,
         );
-      }
-      const dup = prev.find((i) => i.cartKey === newCartKey);
-      if (dup) {
-        return prev
-          .filter((i) => i.cartKey !== oldCartKey && i.cartKey !== newCartKey)
-          .concat({ ...dup, quantity: dup.quantity + updatedQty });
-      }
-      return prev.map((i) =>
-        i.cartKey === oldCartKey
-          ? { ...i, selectedColor: newColor, selectedSize: newSize, selectedVariant: newVariant, cartKey: newCartKey, quantity: updatedQty }
-          : i
-      );
-    });
-  }, [getId]);
+      });
+    },
+    [getId],
+  );
 
-  const addToWishlist = useCallback((product) => {
-    const id = getId(product);
-    setWishlistItems((prev) => {
-      if (prev.includes(id)) return prev;
-      return [...prev, id];
-    });
-  }, [getId]);
+  const addToWishlist = useCallback(
+    (product) => {
+      const id = getId(product);
+      setWishlistItems((prev) => {
+        if (prev.includes(id)) return prev;
+        return [...prev, id];
+      });
+    },
+    [getId],
+  );
 
   const removeFromWishlist = useCallback((productId) => {
     setWishlistItems((prev) => prev.filter((id) => id !== productId));
@@ -264,27 +338,43 @@ export const CartProvider = ({ children }) => {
     setWishlistItems([]);
   }, []);
 
-  const getCartCount = useCallback(() =>
-    cartItems.reduce((sum, i) => sum + i.quantity, 0),
-    [cartItems]
+  const getCartCount = useCallback(
+    () => cartItems.reduce((sum, i) => sum + i.quantity, 0),
+    [cartItems],
   );
 
-  const getWishlistCount = useCallback(() =>
-    wishlistItems.length,
-    [wishlistItems]
+  const getWishlistCount = useCallback(
+    () => wishlistItems.length,
+    [wishlistItems],
   );
 
   const toggleSidebar = useCallback(() => setSidebarOpen((v) => !v), []);
 
   return (
-    <CartContext.Provider value={{
-      cartItems, wishlistItems, isSidebarOpen, toastData, setToastData,
-      fbtModalData, setFbtModalData, cartHydrated,
-      addToCart, updateQty, removeFromCart, updateCartVariant,
-      addToWishlist, removeFromWishlist, clearCart, clearWishlist,
-      getCartCount, getWishlistCount, toggleSidebar,
-      isInitialized: cartHydrated,
-    }}>
+    <CartContext.Provider
+      value={{
+        cartItems,
+        wishlistItems,
+        isSidebarOpen,
+        toastData,
+        setToastData,
+        fbtModalData,
+        setFbtModalData,
+        cartHydrated,
+        addToCart,
+        updateQty,
+        removeFromCart,
+        updateCartVariant,
+        addToWishlist,
+        removeFromWishlist,
+        clearCart,
+        clearWishlist,
+        getCartCount,
+        getWishlistCount,
+        toggleSidebar,
+        isInitialized: cartHydrated,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );
@@ -293,7 +383,7 @@ export const CartProvider = ({ children }) => {
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {
-    throw new Error('useCart must be used within a CartProvider');
+    throw new Error("useCart must be used within a CartProvider");
   }
   return context;
 };

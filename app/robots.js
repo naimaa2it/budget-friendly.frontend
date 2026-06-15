@@ -1,25 +1,25 @@
-export const dynamic = 'force-static';
+export const dynamic = "force-static";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://yourhaat.com';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://SmartBuy BD.com";
 
 export default function robots() {
   return {
     rules: [
       {
-        userAgent: '*',
-        allow: '/',
+        userAgent: "*",
+        allow: "/",
         disallow: [
-          '/dashboard/',
-          '/user/',
-          '/cart',
-          '/checkout/',
-          '/wishlist',
-          '/track-order',
-          '/api/',
-          '/barcode/',
-          '/scan/',
-          '/auth/',
-          '/profile',
+          "/dashboard/",
+          "/user/",
+          "/cart",
+          "/checkout/",
+          "/wishlist",
+          "/track-order",
+          "/api/",
+          "/barcode/",
+          "/scan/",
+          "/auth/",
+          "/profile",
         ],
       },
     ],

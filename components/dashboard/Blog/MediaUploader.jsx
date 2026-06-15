@@ -1,34 +1,34 @@
 "use client";
 
-import React, { useState } from 'react';
-import BlogMediaLibrary from './BlogMediaLibrary';
+import React, { useState } from "react";
+import BlogMediaLibrary from "./BlogMediaLibrary";
 
-export default function MediaUploader({ 
-  onUploadComplete, 
-  folder = 'yourhaat/blog/images',
-  accept = 'image/*,video/*',
+export default function MediaUploader({
+  onUploadComplete,
+  folder = "SmartBuy BD/blog/images",
+  accept = "image/*,video/*",
   multiple = true,
-  label = 'Upload Media',
+  label = "Upload Media",
   currentMedia = [],
   showMediaLibrary = true,
   allowUrlPaste = false,
-  urlPlaceholder = 'Paste video link (YouTube, Facebook, MP4, etc.)'
+  urlPlaceholder = "Paste video link (YouTube, Facebook, MP4, etc.)",
 }) {
-  const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
   const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState('');
+  const [uploadProgress, setUploadProgress] = useState("");
   const [showLibrary, setShowLibrary] = useState(false);
-  const [urlInput, setUrlInput] = useState('');
+  const [urlInput, setUrlInput] = useState("");
 
   const normalizeUrl = (raw) => {
-    const trimmed = String(raw || '').trim();
-    if (!trimmed) return '';
+    const trimmed = String(raw || "").trim();
+    if (!trimmed) return "";
     if (/^https?:\/\//i.test(trimmed)) return trimmed;
     return `https://${trimmed}`;
   };
 
   const isDirectVideoUrl = (url) => {
-    return /\.(mp4|webm|ogg|mov|m4v)(\?|#|$)/i.test(String(url || ''));
+    return /\.(mp4|webm|ogg|mov|m4v)(\?|#|$)/i.test(String(url || ""));
   };
 
   const handleFileChange = async (e) => {
@@ -41,37 +41,37 @@ export default function MediaUploader({
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       setUploadProgress(`Uploading ${i + 1} of ${files.length}...`);
-      
+
       try {
         const fd = new FormData();
-        fd.append('file', file);
-        fd.append('folder', folder);
+        fd.append("file", file);
+        fd.append("folder", folder);
 
         const r = await fetch(`${API}/api/admin/upload`, {
-          method: 'POST',
+          method: "POST",
           body: fd,
-          credentials: 'include'
+          credentials: "include",
         });
 
         const b = await r.json();
-        if (!r.ok) throw new Error(b.error || 'Upload failed');
-        
+        if (!r.ok) throw new Error(b.error || "Upload failed");
+
         uploadedAssets.push(b.asset);
       } catch (err) {
-        console.error('Upload error:', err);
+        console.error("Upload error:", err);
         alert(`Failed to upload ${file.name}: ${err.message}`);
       }
     }
 
     setUploading(false);
-    setUploadProgress('');
-    
+    setUploadProgress("");
+
     if (uploadedAssets.length > 0) {
       onUploadComplete(uploadedAssets);
     }
 
     // Reset input
-    e.target.value = '';
+    e.target.value = "";
   };
 
   const handleLibrarySelect = (item) => {
@@ -82,7 +82,7 @@ export default function MediaUploader({
       width: item.width,
       height: item.height,
       format: item.format,
-      resourceType: item.resource_type || item.resourceType || 'image'
+      resourceType: item.resource_type || item.resourceType || "image",
     };
 
     if (multiple) {
@@ -90,7 +90,7 @@ export default function MediaUploader({
     } else {
       onUploadComplete([asset]);
     }
-    
+
     setShowLibrary(false);
   };
 
@@ -107,14 +107,14 @@ export default function MediaUploader({
       // Validate URL format before adding it to media.
       new URL(normalized);
     } catch {
-      alert('Please enter a valid video URL');
+      alert("Please enter a valid video URL");
       return;
     }
 
     const asset = {
       url: normalized,
-      resourceType: 'video',
-      format: 'link'
+      resourceType: "video",
+      format: "link",
     };
 
     if (multiple) {
@@ -123,7 +123,7 @@ export default function MediaUploader({
       onUploadComplete([asset]);
     }
 
-    setUrlInput('');
+    setUrlInput("");
   };
 
   return (
@@ -140,7 +140,7 @@ export default function MediaUploader({
             className="hidden"
           />
         </label>
-        
+
         {showMediaLibrary && (
           <button
             type="button"
@@ -174,11 +174,14 @@ export default function MediaUploader({
       {currentMedia && currentMedia.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {currentMedia.map((asset, idx) => (
-            <div key={idx} className="relative group border rounded overflow-hidden bg-gray-50">
-              {asset.resourceType === 'video' ? (
+            <div
+              key={idx}
+              className="relative group border rounded overflow-hidden bg-gray-50"
+            >
+              {asset.resourceType === "video" ? (
                 isDirectVideoUrl(asset.url) ? (
-                  <video 
-                    src={asset.url} 
+                  <video
+                    src={asset.url}
                     className="w-full h-32 object-cover"
                     controls
                   />
@@ -188,9 +191,9 @@ export default function MediaUploader({
                   </div>
                 )
               ) : (
-                <img 
-                  src={asset.url} 
-                  alt="" 
+                <img
+                  src={asset.url}
+                  alt=""
                   className="w-full h-32 object-cover"
                 />
               )}
@@ -201,7 +204,8 @@ export default function MediaUploader({
                 ×
               </button>
               <div className="p-1 text-xs text-gray-600 truncate">
-                {asset.resourceType === 'video' ? '🎥' : '🖼️'} {asset.format || 'media'}
+                {asset.resourceType === "video" ? "🎥" : "🖼️"}{" "}
+                {asset.format || "media"}
               </div>
             </div>
           ))}
@@ -213,7 +217,9 @@ export default function MediaUploader({
         <div className="fixed inset-0 bg-black/40 bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg w-full max-w-6xl max-h-[90vh] overflow-hidden">
             <div className="p-4 border-b flex justify-between items-center">
-              <h2 className="text-lg font-semibold">Select from Media Library</h2>
+              <h2 className="text-lg font-semibold">
+                Select from Media Library
+              </h2>
               <button
                 onClick={() => setShowLibrary(false)}
                 className="text-gray-400 hover:text-gray-600 text-2xl"

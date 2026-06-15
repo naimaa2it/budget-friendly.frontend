@@ -6,7 +6,7 @@ import Link from "next/link";
 import { FaStar } from "react-icons/fa";
 import { HiMiniArrowsUpDown } from "react-icons/hi2";
 
-const STORAGE_KEY = "yourHaat_recentlyViewed";
+const STORAGE_KEY = "SmartBuy BD_recentlyViewed";
 const MAX_ITEMS = 30;
 
 /**

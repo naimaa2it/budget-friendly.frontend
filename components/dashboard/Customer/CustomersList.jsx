@@ -84,8 +84,9 @@ export default function CustomersList() {
           <div>
             <h2 className="text-xl font-bold text-gray-900">Customers</h2>
             <p className="text-sm text-gray-500 mt-0.5">
-              Search by name, email, or mobile. List shows yourHaat stats — open profile for
-              lifetime courier fraud check (Pathao/Steadfast/RedX).
+              Search by name, email, or mobile. List shows SmartBuy BD stats —
+              open profile for lifetime courier fraud check
+              (Pathao/Steadfast/RedX).
             </p>
           </div>
           <input
@@ -97,7 +98,9 @@ export default function CustomersList() {
         </div>
 
         {loading ? (
-          <div className="text-center py-12 text-gray-400">Loading customers…</div>
+          <div className="text-center py-12 text-gray-400">
+            Loading customers…
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
@@ -120,16 +123,26 @@ export default function CustomersList() {
                   return (
                     <tr key={u._id} className="hover:bg-rose-50/30">
                       <td className="px-3 py-3">
-                        <p className="font-medium text-gray-800">{u.name || "—"}</p>
+                        <p className="font-medium text-gray-800">
+                          {u.name || "—"}
+                        </p>
                         <p className="text-xs text-gray-400">{u.email}</p>
                       </td>
                       <td className="px-3 py-3 font-mono text-gray-700">
                         {u.mobile || "—"}
                       </td>
-                      <td className="px-3 py-3 font-semibold">{s?.totalOrders ?? 0}</td>
-                      <td className="px-3 py-3 text-green-700">{s?.delivered ?? 0}</td>
-                      <td className="px-3 py-3 text-gray-600">{s?.cancelled ?? 0}</td>
-                      <td className="px-3 py-3 text-orange-600">{s?.returned ?? 0}</td>
+                      <td className="px-3 py-3 font-semibold">
+                        {s?.totalOrders ?? 0}
+                      </td>
+                      <td className="px-3 py-3 text-green-700">
+                        {s?.delivered ?? 0}
+                      </td>
+                      <td className="px-3 py-3 text-gray-600">
+                        {s?.cancelled ?? 0}
+                      </td>
+                      <td className="px-3 py-3 text-orange-600">
+                        {s?.returned ?? 0}
+                      </td>
                       <td className="px-3 py-3">
                         <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
                           {s?.deliverySuccessRate ?? 0}%

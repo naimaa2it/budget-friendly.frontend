@@ -1,66 +1,81 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import toast from 'react-hot-toast';
-import { useUser } from '@/components/context/UserContext';
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import toast from "react-hot-toast";
+import { useUser } from "@/components/context/UserContext";
 
-export default function BlogMediaLibrary({ onSelect = null, showSelection = true }) {
-  const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+export default function BlogMediaLibrary({
+  onSelect = null,
+  showSelection = true,
+}) {
+  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
   const { user } = useUser();
 
-  const [items, setItems]               = useState([]);
-  const [folders, setFolders]           = useState([]);
-  const [folder, setFolder]             = useState('yourhaat/blog'); // Default to blog folder
-  const [q, setQ]                       = useState('');
-  const [nextCursor, setNextCursor]     = useState(null);
-  const [loading, setLoading]           = useState(false);
-  const [selected, setSelected]         = useState(new Set());
-  const [deleting, setDeleting]         = useState(false);
-  const [hoverId, setHoverId]           = useState(null);
-  const [previewItem, setPreviewItem]   = useState(null);
+  const [items, setItems] = useState([]);
+  const [folders, setFolders] = useState([]);
+  const [folder, setFolder] = useState("SmartBuy BD/blog"); // Default to blog folder
+  const [q, setQ] = useState("");
+  const [nextCursor, setNextCursor] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [selected, setSelected] = useState(new Set());
+  const [deleting, setDeleting] = useState(false);
+  const [hoverId, setHoverId] = useState(null);
+  const [previewItem, setPreviewItem] = useState(null);
 
   const qTimer = useRef(null);
 
-  const getItemUrl = (item) => item?.secure_url || item?.url || '';
-  const getItemType = (item) => item?.resource_type || item?.resourceType || 'image';
+  const getItemUrl = (item) => item?.secure_url || item?.url || "";
+  const getItemType = (item) =>
+    item?.resource_type || item?.resourceType || "image";
 
   const loadFolders = useCallback(async () => {
     try {
-      const r = await fetch(`${API}/api/admin/media/folders`, { credentials: 'include' });
+      const r = await fetch(`${API}/api/admin/media/folders`, {
+        credentials: "include",
+      });
       const b = await r.json();
       const allFolders = b.folders || [];
       // Filter to show blog-related folders
-      const blogFolders = allFolders.filter(f => f.includes('blog'));
-      setFolders(['yourhaat/blog', ...blogFolders]);
+      const blogFolders = allFolders.filter((f) => f.includes("blog"));
+      setFolders(["SmartBuy BD/blog", ...blogFolders]);
     } catch (e) {
       console.error(e);
     }
   }, [API]);
 
-  const loadImages = useCallback(async (reset = true) => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      if (folder) params.set('folder', folder);
-      if (q)      params.set('q', q);
-      if (!reset && nextCursor) params.set('next_cursor', nextCursor);
+  const loadImages = useCallback(
+    async (reset = true) => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (folder) params.set("folder", folder);
+        if (q) params.set("q", q);
+        if (!reset && nextCursor) params.set("next_cursor", nextCursor);
 
-      const r = await fetch(`${API}/api/admin/media?${params}`, { credentials: 'include' });
-      const b = await r.json();
-      const fresh = b.items || [];
-      setItems(prev => reset ? fresh : [...prev, ...fresh]);
-      setNextCursor(b.next_cursor || null);
-      if (reset) setSelected(new Set());
-    } catch (e) {
-      console.error(e);
-      toast.error('Failed to load images');
-    } finally {
-      setLoading(false);
-    }
-  }, [API, folder, q, nextCursor]);
+        const r = await fetch(`${API}/api/admin/media?${params}`, {
+          credentials: "include",
+        });
+        const b = await r.json();
+        const fresh = b.items || [];
+        setItems((prev) => (reset ? fresh : [...prev, ...fresh]));
+        setNextCursor(b.next_cursor || null);
+        if (reset) setSelected(new Set());
+      } catch (e) {
+        console.error(e);
+        toast.error("Failed to load images");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [API, folder, q, nextCursor],
+  );
 
-  useEffect(() => { loadFolders(); }, [loadFolders]);
-  useEffect(() => { loadImages(); }, [loadImages]);
+  useEffect(() => {
+    loadFolders();
+  }, [loadFolders]);
+  useEffect(() => {
+    loadImages();
+  }, [loadImages]);
 
   const handleQChange = (val) => {
     setQ(val);
@@ -69,7 +84,7 @@ export default function BlogMediaLibrary({ onSelect = null, showSelection = true
   };
 
   const toggleSelected = (id) => {
-    setSelected(prev => {
+    setSelected((prev) => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
@@ -84,17 +99,17 @@ export default function BlogMediaLibrary({ onSelect = null, showSelection = true
     try {
       const body = JSON.stringify({ public_ids: [...selected] });
       const resp = await fetch(`${API}/api/admin/media`, {
-        method: 'DELETE',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body
+        method: "DELETE",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body,
       });
-      if (!resp.ok) throw new Error('Delete failed');
+      if (!resp.ok) throw new Error("Delete failed");
       toast.success(`Deleted ${selected.size} item(s)`);
       loadImages(true);
     } catch (e) {
       console.error(e);
-      toast.error('Delete failed');
+      toast.error("Delete failed");
     } finally {
       setDeleting(false);
     }
@@ -119,8 +134,10 @@ export default function BlogMediaLibrary({ onSelect = null, showSelection = true
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
           >
             <option value="">All folders</option>
-            {folders.map(f => (
-              <option key={f} value={f}>{f}</option>
+            {folders.map((f) => (
+              <option key={f} value={f}>
+                {f}
+              </option>
             ))}
           </select>
         </div>
@@ -139,25 +156,27 @@ export default function BlogMediaLibrary({ onSelect = null, showSelection = true
             disabled={deleting}
             className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 whitespace-nowrap"
           >
-            {deleting ? 'Deleting...' : `Delete (${selected.size})`}
+            {deleting ? "Deleting..." : `Delete (${selected.size})`}
           </button>
         )}
       </div>
 
       {/* Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
-        {items.map(item => (
+        {items.map((item) => (
           <div
             key={item.public_id}
             className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer group border-2 transition-all ${
-              selected.has(item.public_id) ? 'border-indigo-500' : 'border-transparent'
-            } ${onSelect ? 'hover:border-green-400' : 'hover:border-indigo-400'}`}
+              selected.has(item.public_id)
+                ? "border-indigo-500"
+                : "border-transparent"
+            } ${onSelect ? "hover:border-green-400" : "hover:border-indigo-400"}`}
             onMouseEnter={() => setHoverId(item.public_id)}
             onMouseLeave={() => setHoverId(null)}
             onClick={() => handleSelect(item)}
           >
             {/* Media Preview */}
-            {getItemType(item) === 'video' ? (
+            {getItemType(item) === "video" ? (
               <video
                 src={getItemUrl(item)}
                 className="w-full h-full object-cover"
@@ -172,11 +191,9 @@ export default function BlogMediaLibrary({ onSelect = null, showSelection = true
                 loading="lazy"
               />
             )}
-            
-            
-            
+
             {/* Selection Indicator */}
-            {(showSelection && selected.has(item.public_id)) && (
+            {showSelection && selected.has(item.public_id) && (
               <div className="absolute top-2 right-2 w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm">
                 ✓
               </div>
@@ -192,7 +209,7 @@ export default function BlogMediaLibrary({ onSelect = null, showSelection = true
             )}
 
             {/* Type Badge */}
-            {getItemType(item) === 'video' && (
+            {getItemType(item) === "video" && (
               <div className="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
                 VIDEO
               </div>
@@ -201,8 +218,12 @@ export default function BlogMediaLibrary({ onSelect = null, showSelection = true
             {/* File Info Tooltip */}
             {hoverId === item.public_id && (
               <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white text-xs p-2">
-                <div className="truncate">{item.public_id.split('/').pop()}</div>
-                <div>{Math.round(item.bytes / 1024)}KB • {item.width}×{item.height}</div>
+                <div className="truncate">
+                  {item.public_id.split("/").pop()}
+                </div>
+                <div>
+                  {Math.round(item.bytes / 1024)}KB • {item.width}×{item.height}
+                </div>
               </div>
             )}
           </div>
@@ -217,7 +238,7 @@ export default function BlogMediaLibrary({ onSelect = null, showSelection = true
             disabled={loading}
             className="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50"
           >
-            {loading ? 'Loading...' : 'Load More'}
+            {loading ? "Loading..." : "Load More"}
           </button>
         </div>
       )}
@@ -241,10 +262,18 @@ export default function BlogMediaLibrary({ onSelect = null, showSelection = true
             >
               ✕
             </button>
-            {getItemType(previewItem) === 'video' ? (
-              <video src={getItemUrl(previewItem)} controls className="max-w-full max-h-full" />
+            {getItemType(previewItem) === "video" ? (
+              <video
+                src={getItemUrl(previewItem)}
+                controls
+                className="max-w-full max-h-full"
+              />
             ) : (
-              <img src={getItemUrl(previewItem)} alt="" className="max-w-full max-h-full object-contain" />
+              <img
+                src={getItemUrl(previewItem)}
+                alt=""
+                className="max-w-full max-h-full object-contain"
+              />
             )}
           </div>
         </div>

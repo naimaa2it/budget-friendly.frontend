@@ -140,30 +140,6 @@ export default function SettingsForm() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium">Contact phone</label>
-          <input
-            value={settings.storePhone || ""}
-            onChange={(e) =>
-              setSettings((s) => ({ ...s, storePhone: e.target.value }))
-            }
-            className="w-full border px-3 py-2 rounded"
-            placeholder="+880 1700-000000"
-          />
-        </div>
-
-        <div className="sm:col-span-2">
-          <label className="block text-sm font-medium">Store address</label>
-          <input
-            value={settings.storeAddress || ""}
-            onChange={(e) =>
-              setSettings((s) => ({ ...s, storeAddress: e.target.value }))
-            }
-            className="w-full border px-3 py-2 rounded"
-            placeholder="123 Main St, Dhaka, Bangladesh"
-          />
-        </div>
-
-        <div>
           <label className="block text-sm font-medium">Cloudinary folder</label>
           <input
             value={settings.cloudinaryFolder || ""}
@@ -234,6 +210,82 @@ export default function SettingsForm() {
                 "Upload/change/delete logo here. Changes apply to the website immediately."}
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* Footer contact info */}
+      <h2 className="text-lg font-semibold mt-8 mb-4">Footer contact info</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium">Phone</label>
+          <input
+            value={settings.footerInfo?.phone || ""}
+            onChange={(e) =>
+              setSettings((s) => ({ ...s, footerInfo: { ...s.footerInfo, phone: e.target.value } }))
+            }
+            className="w-full border px-3 py-2 rounded"
+            placeholder="+880 1700-000000"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium">Email</label>
+          <input
+            value={settings.footerInfo?.email || ""}
+            onChange={(e) =>
+              setSettings((s) => ({ ...s, footerInfo: { ...s.footerInfo, email: e.target.value } }))
+            }
+            className="w-full border px-3 py-2 rounded"
+            placeholder="info@example.com"
+          />
+        </div>
+        <div className="sm:col-span-2">
+          <label className="block text-sm font-medium">Address</label>
+          <input
+            value={settings.footerInfo?.address || ""}
+            onChange={(e) =>
+              setSettings((s) => ({ ...s, footerInfo: { ...s.footerInfo, address: e.target.value } }))
+            }
+            className="w-full border px-3 py-2 rounded"
+            placeholder="123 Main St, Dhaka, Bangladesh"
+          />
+        </div>
+      </div>
+
+      {/* Contact page info */}
+      <h2 className="text-lg font-semibold mt-8 mb-4">Contact page info</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium">Phone</label>
+          <input
+            value={settings.contactInfo?.phone || ""}
+            onChange={(e) =>
+              setSettings((s) => ({ ...s, contactInfo: { ...s.contactInfo, phone: e.target.value } }))
+            }
+            className="w-full border px-3 py-2 rounded"
+            placeholder="+880 1700-000000"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium">Email</label>
+          <input
+            value={settings.contactInfo?.email || ""}
+            onChange={(e) =>
+              setSettings((s) => ({ ...s, contactInfo: { ...s.contactInfo, email: e.target.value } }))
+            }
+            className="w-full border px-3 py-2 rounded"
+            placeholder="support@example.com"
+          />
+        </div>
+        <div className="sm:col-span-2">
+          <label className="block text-sm font-medium">Address</label>
+          <input
+            value={settings.contactInfo?.address || ""}
+            onChange={(e) =>
+              setSettings((s) => ({ ...s, contactInfo: { ...s.contactInfo, address: e.target.value } }))
+            }
+            className="w-full border px-3 py-2 rounded"
+            placeholder="123 Main St, Dhaka, Bangladesh"
+          />
         </div>
       </div>
 

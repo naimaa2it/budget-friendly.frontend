@@ -4,10 +4,20 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-const StoreSettingsContext = createContext({ storeName: "", logoUrl: "", storeEmail: "", storePhone: "", storeAddress: "" });
+const StoreSettingsContext = createContext({
+  storeName: "",
+  logoUrl: "",
+  footerInfo: { phone: "", email: "", address: "" },
+  contactInfo: { phone: "", email: "", address: "" },
+});
 
 export function StoreSettingsProvider({ children }) {
-  const [settings, setSettings] = useState({ storeName: "", logoUrl: "", storeEmail: "", storePhone: "", storeAddress: "" });
+  const [settings, setSettings] = useState({
+    storeName: "",
+    logoUrl: "",
+    footerInfo: { phone: "", email: "", address: "" },
+    contactInfo: { phone: "", email: "", address: "" },
+  });
 
   useEffect(() => {
     fetch(`${API}/api/admin/top-banner`)
@@ -16,9 +26,8 @@ export function StoreSettingsProvider({ children }) {
         setSettings({
           storeName: d.storeName || "",
           logoUrl: d.websiteLogo?.url || "",
-          storeEmail: d.storeEmail || "",
-          storePhone: d.storePhone || "",
-          storeAddress: d.storeAddress || "",
+          footerInfo: d.footerInfo || { phone: "", email: "", address: "" },
+          contactInfo: d.contactInfo || { phone: "", email: "", address: "" },
         })
       )
       .catch(() => {});

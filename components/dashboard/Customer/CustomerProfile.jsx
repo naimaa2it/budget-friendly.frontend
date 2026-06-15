@@ -151,8 +151,8 @@ export default function CustomerProfile({ userId }) {
   }
   if (!data) return null;
 
-  const { user, yourhaat, stats, percentages, courierBreakdown, risk, orders } = data;
-  const site = yourhaat || {
+  const { user, SmartBuy BD, stats, percentages, courierBreakdown, risk, orders } = data;
+  const site = SmartBuy BD || {
     stats,
     percentages,
     courierBreakdown,
@@ -223,7 +223,7 @@ export default function CustomerProfile({ userId }) {
       <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
         <div className="px-5 py-4 border-b flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h2 className="text-base font-semibold text-gray-800">yourHaat Order History</h2>
+            <h2 className="text-base font-semibold text-gray-800">SmartBuy BD Order History</h2>
             {user.mobile && (
               <p className="text-xs text-gray-500 mt-0.5">
                 Phone <span className="font-mono font-semibold text-gray-700">{user.mobile}</span> দিয়ে বা এই account থেকে করা সব orders
@@ -307,14 +307,14 @@ export default function CustomerProfile({ userId }) {
 
       <section className="space-y-4 pt-2 border-t border-gray-100">
         <div>
-          <h2 className="text-lg font-bold text-gray-900">yourHaat orders only</h2>
+          <h2 className="text-lg font-bold text-gray-900">SmartBuy BD orders only</h2>
           <p className="text-sm text-gray-500">
             শুধু এই সাইটে করা অর্ডারের history ও risk score।
           </p>
         </div>
 
         <RiskCard
-          title="yourHaat risk score"
+          title="SmartBuy BD risk score"
           risk={site.risk}
           percentages={site.percentages}
         />
@@ -357,7 +357,7 @@ export default function CustomerProfile({ userId }) {
         <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b">
             <h3 className="text-base font-semibold text-gray-800">
-              Courier-wise (yourHaat)
+              Courier-wise (SmartBuy BD)
             </h3>
           </div>
           {courierRows.length === 0 ? (

@@ -155,7 +155,7 @@ export default function OrderPrintView({
     .filter(Boolean)
     .join(", ");
   const isSlip = variant === "slip";
-  const storeName = settings?.storeName || "YourHaat";
+  const storeName = settings?.storeName || "SmartBuy BD";
   const storeEmail = settings?.storeEmail || "";
   const logoUrl = settings?.websiteLogo?.url || "/mainLogo.png";
 

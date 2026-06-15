@@ -7,7 +7,7 @@ import { useUser } from "@/components/context/UserContext";
 import { useStoreSettings } from "@/components/context/StoreSettingsContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-const STORAGE_KEY = "yourhaat-dashboard-sidebar-collapsed";
+const STORAGE_KEY = "SmartBuy BD-dashboard-sidebar-collapsed";
 
 const SECTION_ICONS = {
   overview: "M3 12h18M3 6h18M3 18h18",

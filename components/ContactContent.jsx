@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useStoreSettings } from '@/components/context/StoreSettingsContext';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export default function ContactContent() {
+  const { contactInfo } = useStoreSettings();
   const [form, setForm] = useState({ name: '', email: '', message: '' });
   const [status, setStatus] = useState(null); // 'loading' | 'success' | 'error'
   const [errorMsg, setErrorMsg] = useState('');
@@ -94,10 +96,28 @@ export default function ContactContent() {
         </form>
       )}
 
-      <div className="mt-10 text-sm text-gray-600 space-y-1">
-        <p>📧 support@smartproductbuy.com</p>
-        <p>📞 +880 1XXXXXXXXX</p>
-      </div>
+      {(contactInfo?.phone || contactInfo?.email || contactInfo?.address) && (
+        <div className="mt-10 text-sm text-gray-600 space-y-1.5">
+          {contactInfo.phone && (
+            <p className="flex items-center gap-2">
+              <span>📞</span>
+              <a href={`tel:${contactInfo.phone}`} className="hover:text-rose-600">{contactInfo.phone}</a>
+            </p>
+          )}
+          {contactInfo.email && (
+            <p className="flex items-center gap-2">
+              <span>📧</span>
+              <a href={`mailto:${contactInfo.email}`} className="hover:text-rose-600">{contactInfo.email}</a>
+            </p>
+          )}
+          {contactInfo.address && (
+            <p className="flex items-start gap-2">
+              <span>📍</span>
+              <span>{contactInfo.address}</span>
+            </p>
+          )}
+        </div>
+      )}
     </>
   );
 }

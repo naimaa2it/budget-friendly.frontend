@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #000000;
+
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-work-sans);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #ffffff;
+    --foreground: #000000;
+  }
+}
+
+html {
+  /* clip horizontal overflow without creating a scroll container (preserves sticky) */
+  overflow-x: clip;
+  /* Firefox */
+  scrollbar-width: none;
+  /* IE 10+ */
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar in category sidebar list */
+.category-list-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.promo-strip-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.promo-strip-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-work-sans), "Work Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+
+/* NOTE: layout and component-specific styles should use Tailwind utility classes inline. */
+
+/* ensure hyperlinks in rich content are highlighted blue and underlined */
+.prose a {
+  color: #0142ce;
+  text-decoration: underline;
+}
+
+/* open links inserted via editor in a new tab by default */

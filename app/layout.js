@@ -1,0 +1,148 @@
+import { Work_Sans } from "next/font/google";
+import "./globals.css";
+import { UserProvider } from '@/components/context/UserContext';
+import { CartProvider } from '@/components/context/CartContext';
+import { CategoryProvider } from '@/components/context/CategoryContext';
+import { LanguageProvider } from '@/components/context/LanguageContext';
+import CartToast from '@/components/cart/CartToast';
+import CartSidebar from '@/components/cart/CartSidebar';
+import CartFloating from '@/components/cart/CartFloating';
+import ToastProvider from '@/components/ui/ToastProvider';
+import FrequentlyBoughtTogetherModal from '@/components/cart/FrequentlyBoughtTogetherModal';
+import LayoutWrapper from '@/components/layout/LayoutWrapper';
+import ScrollToTop from "@/components/ui/ScrollToTop";
+import FloatingWhatsApp from "@/components/ui/FloatingWhatsApp";
+import PopupBanner from "@/components/ui/PopupBanner";
+import { getStoreName } from "@/lib/storeMeta";
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://yourhaat.com';
+
+const workSans = Work_Sans({
+  variable: "--font-work-sans",
+  subsets: ["latin"],
+  weight: ["100","200","300", "400", "500", "600", "700", "800"],
+});
+
+export async function generateMetadata() {
+  const storeName = await getStoreName();
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: {
+      default: `${storeName} — Online Shopping Bangladesh`,
+      template: `%s | ${storeName}`,
+    },
+    description: "Bangladesh's trusted online shop for skincare, cosmetics, electronics, and personal care. Authentic brands, best prices, fast delivery.",
+    keywords: ['online shopping Bangladesh', 'skincare Bangladesh', 'cosmetics online BD', storeName, 'beauty products Bangladesh', 'electronics Bangladesh'],
+    authors: [{ name: storeName, url: SITE_URL }],
+    creator: storeName,
+    publisher: storeName,
+    formatDetection: { email: false, address: false, telephone: false },
+    alternates: { canonical: SITE_URL },
+    openGraph: {
+      type: 'website',
+      locale: 'bn_BD',
+      url: SITE_URL,
+      siteName: storeName,
+      title: `${storeName} — Online Shopping Bangladesh`,
+      description: `Bangladesh's trusted online shop for skincare, cosmetics, and electronics. Fast delivery, authentic products.`,
+      images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: `${storeName} — Online Shopping Bangladesh` }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${storeName} — Online Shopping Bangladesh`,
+      description: `Bangladesh's trusted online shop. Skincare, cosmetics, electronics — best prices, fast delivery.`,
+      images: ['/og-image.jpg'],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+    verification: {
+      google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION || undefined,
+    },
+  };
+}
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#ef4444',
+};
+
+import Script from 'next/script';
+
+export default async function RootLayout({ children }) {
+  const storeName = await getStoreName();
+
+  const organizationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: storeName,
+    url: SITE_URL,
+    logo: `${SITE_URL}/logo.png`,
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer support',
+      areaServed: 'BD',
+      availableLanguage: ['English', 'Bengali'],
+    },
+  };
+
+  const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: storeName,
+    url: SITE_URL,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: { '@type': 'EntryPoint', urlTemplate: `${SITE_URL}/search?q={search_term_string}` },
+      'query-input': 'required name=search_term_string',
+    },
+  };
+
+  return (
+    <html lang="en">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+        />
+        {/* Microsoft Clarity — uncomment and set NEXT_PUBLIC_CLARITY_ID */}
+        {/* <Script id="ms-clarity" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/${process.env.NEXT_PUBLIC_CLARITY_ID}";y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script");` }} /> */}
+      </head>
+      <body className={`${workSans.variable} antialiased`}>
+        <LanguageProvider>
+        <UserProvider>
+          <CartProvider>
+            <CategoryProvider>
+              <ScrollToTop/>
+              <LayoutWrapper>
+                {children}
+              </LayoutWrapper>
+              <FloatingWhatsApp/>
+              {/* global UI overlays */}
+              <CartToast />
+              <CartSidebar />
+              <CartFloating />
+              <ToastProvider />
+              <PopupBanner />
+              <FrequentlyBoughtTogetherModal />
+            </CategoryProvider>
+          </CartProvider>
+        </UserProvider>
+        </LanguageProvider>
+      </body>
+    </html>
+  );
+}

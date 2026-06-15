@@ -8,7 +8,9 @@ const SCAN_GAP_MS = 100;
 const LOOKUP_PATH = "/dashboard/barcodes/lookup";
 
 function normalizeCode(value) {
-  return String(value || "").trim().replace(/\s+/g, "");
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, "");
 }
 
 function isEditableTarget(target) {

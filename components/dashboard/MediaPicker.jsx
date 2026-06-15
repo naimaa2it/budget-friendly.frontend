@@ -18,9 +18,11 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 export default function MediaPicker({ open, onSelect, onClose }) {
   const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
+  const ROOT_FOLDER = process.env.NEXT_PUBLIC_CLOUDINARY_FOLDER || 'SmartBuyBD';
+
   const [items, setItems]           = useState([]);
   const [folders, setFolders]       = useState([]);
-  const [folder, setFolder]         = useState('');
+  const [folder, setFolder]         = useState(ROOT_FOLDER);
   const [q, setQ]                   = useState('');
   const [nextCursor, setNextCursor] = useState(null);
   const [loading, setLoading]       = useState(false);

@@ -4,30 +4,37 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { useUser } from '@/components/context/UserContext';
 
+const ROOT_FOLDER = process.env.NEXT_PUBLIC_CLOUDINARY_FOLDER || 'SmartBuyBD';
+
 export default function MediaLibrary() {
   const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
   const { user } = useUser();
 
   const [items, setItems]               = useState([]);
   const [folders, setFolders]           = useState([]);
-  const [folder, setFolder]             = useState('');
+  const [folder, setFolder]             = useState(ROOT_FOLDER);
   const [q, setQ]                       = useState('');
   const [nextCursor, setNextCursor]     = useState(null);
   const [loading, setLoading]           = useState(false);
+  const [uploading, setUploading]       = useState(false);
   const [selected, setSelected]         = useState(new Set());
   const [deleting, setDeleting]         = useState(false);
   const [hoverId, setHoverId]           = useState(null);
   const [previewItem, setPreviewItem]   = useState(null);
 
   const qTimer = useRef(null);
+  const fileInputRef = useRef(null);
 
   const loadFolders = useCallback(async () => {
     try {
       const r = await fetch(`${API}/api/admin/media/folders`, { credentials: 'include' });
       const b = await r.json();
-      setFolders(b.folders || []);
+      const list = b.folders || [];
+      if (!list.includes(ROOT_FOLDER)) list.unshift(ROOT_FOLDER);
+      setFolders(list);
     } catch (e) {
       console.error(e);
+      setFolders([ROOT_FOLDER]);
     }
   }, [API]);
 
@@ -55,12 +62,36 @@ export default function MediaLibrary() {
 
   useEffect(() => { loadFolders(); }, [loadFolders]);
 
-  // debounced reload when filters change
   useEffect(() => {
     clearTimeout(qTimer.current);
     qTimer.current = setTimeout(() => loadImages(true), 300);
     return () => clearTimeout(qTimer.current);
   }, [folder, q]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleUpload = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    setUploading(true);
+    const uploadFolder = folder || ROOT_FOLDER;
+    let successCount = 0;
+    for (const file of files) {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('folder', uploadFolder);
+      try {
+        const r = await fetch(`${API}/api/admin/upload`, { method: 'POST', body: fd, credentials: 'include' });
+        const b = await r.json();
+        if (!r.ok) throw new Error(b.error || 'Upload failed');
+        successCount++;
+      } catch (err) {
+        toast.error(`Failed: ${file.name} — ${err.message}`);
+      }
+    }
+    if (successCount > 0) toast.success(`${successCount} file(s) uploaded`);
+    e.target.value = '';
+    setUploading(false);
+    loadImages(true);
+  };
 
   const toggleSelect = (id) => {
     setSelected(prev => {
@@ -105,7 +136,7 @@ export default function MediaLibrary() {
         method: 'DELETE',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ public_ids: [item.public_id] }),
+        body: JSON.stringify({ public_ids: [item.public_id], resource_type: item.resource_type }),
       });
       if (!r.ok) throw new Error();
       toast.success('Image deleted');
@@ -124,22 +155,54 @@ export default function MediaLibrary() {
   };
 
   return (
-          <div className="p-6 min-h-screen bg-gray-50">
+    <div className="p-6 min-h-screen bg-gray-50">
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Media Library</h1>
           <p className="text-sm text-gray-500 mt-0.5">Browse and manage all uploaded images and videos.</p>
         </div>
-        {selected.size > 0 && (
+        <div className="flex items-center gap-2">
+          {selected.size > 0 && (
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 disabled:opacity-50"
+            >
+              🗑 Delete {selected.size} selected
+            </button>
+          )}
           <button
-            onClick={handleDelete}
-            disabled={deleting}
-            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 disabled:opacity-50"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 disabled:opacity-50"
           >
-            🗑 Delete {selected.size} selected
+            {uploading ? (
+              <>
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Uploading…
+              </>
+            ) : (
+              <>↑ Upload</>
+            )}
           </button>
-        )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,video/*"
+            multiple
+            hidden
+            onChange={handleUpload}
+          />
+        </div>
+      </div>
+
+      {/* Folder badge */}
+      <div className="mb-4 flex items-center gap-2 text-xs text-gray-500">
+        <span>Uploading to:</span>
+        <span className="bg-blue-50 text-blue-700 border border-blue-200 rounded-full px-2.5 py-0.5 font-medium">
+          📁 {folder || ROOT_FOLDER}
+        </span>
       </div>
 
       {/* Filters */}
@@ -233,14 +296,12 @@ export default function MediaLibrary() {
                 {/* Hover overlay */}
                 {(isHov || isSel) && (
                   <div className="absolute inset-0 bg-black/40 flex flex-col justify-between p-2">
-                    {/* Checkmark */}
                     <div className="flex justify-between items-start">
                       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-bold ${
                         isSel ? 'bg-blue-500 border-blue-500 text-white' : 'border-white'
                       }`}>
                         {isSel && '✓'}
                       </div>
-                      {/* Action buttons */}
                       <div className="flex gap-1">
                         <button
                           title="Preview"
@@ -259,7 +320,6 @@ export default function MediaLibrary() {
                         >✕</button>
                       </div>
                     </div>
-                    {/* filename */}
                     <p className="text-white text-[10px] leading-tight truncate">
                       {item.public_id.split('/').pop()}
                     </p>
@@ -287,7 +347,7 @@ export default function MediaLibrary() {
       {/* Preview Modal */}
       {previewItem && (
         <div
-          className="fixed inset-0 z-[9999] bg-black/70 flex items-center justify-center p-4"
+          className="fixed inset-0 z-9999 bg-black/70 flex items-center justify-center p-4"
           onClick={() => setPreviewItem(null)}
         >
           <div
@@ -299,10 +359,10 @@ export default function MediaLibrary() {
               <button onClick={() => setPreviewItem(null)}
                 className="text-gray-400 hover:text-gray-700 text-2xl leading-none ml-2">×</button>
             </div>
-            
+
             {previewItem.resource_type === 'video' ? (
-              <video 
-                src={previewItem.url} 
+              <video
+                src={previewItem.url}
                 controls
                 className="w-full max-h-[60vh] object-contain bg-gray-100"
               />

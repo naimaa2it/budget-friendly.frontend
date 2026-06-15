@@ -5,7 +5,7 @@ import BlogMediaLibrary from "./BlogMediaLibrary";
 
 export default function MediaUploader({
   onUploadComplete,
-  folder = "SmartBuy BD/blog/images",
+  folder = "SmartBuyBD/blog/images",
   accept = "image/*,video/*",
   multiple = true,
   label = "Upload Media",

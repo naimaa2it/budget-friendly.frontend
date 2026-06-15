@@ -13,7 +13,7 @@ export default function BlogMediaLibrary({
 
   const [items, setItems] = useState([]);
   const [folders, setFolders] = useState([]);
-  const [folder, setFolder] = useState("SmartBuy BD/blog"); // Default to blog folder
+  const [folder, setFolder] = useState("SmartBuyBD/blog"); // Default to blog folder
   const [q, setQ] = useState("");
   const [nextCursor, setNextCursor] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -37,7 +37,7 @@ export default function BlogMediaLibrary({
       const allFolders = b.folders || [];
       // Filter to show blog-related folders
       const blogFolders = allFolders.filter((f) => f.includes("blog"));
-      setFolders(["SmartBuy BD/blog", ...blogFolders]);
+      setFolders(["SmartBuyBD/blog", ...blogFolders]);
     } catch (e) {
       console.error(e);
     }

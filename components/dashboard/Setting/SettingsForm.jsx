@@ -214,78 +214,90 @@ export default function SettingsForm() {
       </div>
 
       {/* Footer contact info */}
-      <h2 className="text-lg font-semibold mt-8 mb-4">Footer contact info</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium">Phone</label>
-          <input
-            value={settings.footerInfo?.phone || ""}
-            onChange={(e) =>
-              setSettings((s) => ({ ...s, footerInfo: { ...s.footerInfo, phone: e.target.value } }))
-            }
-            className="w-full border px-3 py-2 rounded"
-            placeholder="+880 1700-000000"
-          />
+      <div className="mt-8 border-t pt-6">
+        <div className="flex items-center gap-2 mb-1">
+          <h2 className="text-lg font-semibold">Footer — Phone, Email & Address</h2>
+          <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded">Website footer এ দেখাবে</span>
         </div>
-        <div>
-          <label className="block text-sm font-medium">Email</label>
-          <input
-            value={settings.footerInfo?.email || ""}
-            onChange={(e) =>
-              setSettings((s) => ({ ...s, footerInfo: { ...s.footerInfo, email: e.target.value } }))
-            }
-            className="w-full border px-3 py-2 rounded"
-            placeholder="info@example.com"
-          />
-        </div>
-        <div className="sm:col-span-2">
-          <label className="block text-sm font-medium">Address</label>
-          <input
-            value={settings.footerInfo?.address || ""}
-            onChange={(e) =>
-              setSettings((s) => ({ ...s, footerInfo: { ...s.footerInfo, address: e.target.value } }))
-            }
-            className="w-full border px-3 py-2 rounded"
-            placeholder="123 Main St, Dhaka, Bangladesh"
-          />
+        <p className="text-xs text-gray-400 mb-4">Website-এর একদম নিচে footer section এ এই তথ্য দেখাবে।</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium">ফোন নম্বর (Footer)</label>
+            <input
+              value={settings.footerInfo?.phone || ""}
+              onChange={(e) =>
+                setSettings((s) => ({ ...s, footerInfo: { ...s.footerInfo, phone: e.target.value } }))
+              }
+              className="w-full border px-3 py-2 rounded"
+              placeholder="+880 1700-000000"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium">ইমেইল (Footer)</label>
+            <input
+              value={settings.footerInfo?.email || ""}
+              onChange={(e) =>
+                setSettings((s) => ({ ...s, footerInfo: { ...s.footerInfo, email: e.target.value } }))
+              }
+              className="w-full border px-3 py-2 rounded"
+              placeholder="info@example.com"
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="block text-sm font-medium">ঠিকানা (Footer)</label>
+            <input
+              value={settings.footerInfo?.address || ""}
+              onChange={(e) =>
+                setSettings((s) => ({ ...s, footerInfo: { ...s.footerInfo, address: e.target.value } }))
+              }
+              className="w-full border px-3 py-2 rounded"
+              placeholder="Mirpur, Dhaka-1216, Bangladesh"
+            />
+          </div>
         </div>
       </div>
 
       {/* Contact page info */}
-      <h2 className="text-lg font-semibold mt-8 mb-4">Contact page info</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium">Phone</label>
-          <input
-            value={settings.contactInfo?.phone || ""}
-            onChange={(e) =>
-              setSettings((s) => ({ ...s, contactInfo: { ...s.contactInfo, phone: e.target.value } }))
-            }
-            className="w-full border px-3 py-2 rounded"
-            placeholder="+880 1700-000000"
-          />
+      <div className="mt-8 border-t pt-6">
+        <div className="flex items-center gap-2 mb-1">
+          <h2 className="text-lg font-semibold">Contact Page — Phone, Email & Address</h2>
+          <span className="text-xs bg-blue-50 text-blue-500 px-2 py-0.5 rounded">/contact page এ দেখাবে</span>
         </div>
-        <div>
-          <label className="block text-sm font-medium">Email</label>
-          <input
-            value={settings.contactInfo?.email || ""}
-            onChange={(e) =>
-              setSettings((s) => ({ ...s, contactInfo: { ...s.contactInfo, email: e.target.value } }))
-            }
-            className="w-full border px-3 py-2 rounded"
-            placeholder="support@example.com"
-          />
-        </div>
-        <div className="sm:col-span-2">
-          <label className="block text-sm font-medium">Address</label>
-          <input
-            value={settings.contactInfo?.address || ""}
-            onChange={(e) =>
-              setSettings((s) => ({ ...s, contactInfo: { ...s.contactInfo, address: e.target.value } }))
-            }
-            className="w-full border px-3 py-2 rounded"
-            placeholder="123 Main St, Dhaka, Bangladesh"
-          />
+        <p className="text-xs text-gray-400 mb-4">Website-এর &quot;Contact Us&quot; পেজে এই তথ্য দেখাবে।</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium">ফোন নম্বর (Contact Page)</label>
+            <input
+              value={settings.contactInfo?.phone || ""}
+              onChange={(e) =>
+                setSettings((s) => ({ ...s, contactInfo: { ...s.contactInfo, phone: e.target.value } }))
+              }
+              className="w-full border px-3 py-2 rounded"
+              placeholder="+880 1700-000000"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium">ইমেইল (Contact Page)</label>
+            <input
+              value={settings.contactInfo?.email || ""}
+              onChange={(e) =>
+                setSettings((s) => ({ ...s, contactInfo: { ...s.contactInfo, email: e.target.value } }))
+              }
+              className="w-full border px-3 py-2 rounded"
+              placeholder="support@example.com"
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="block text-sm font-medium">ঠিকানা (Contact Page)</label>
+            <input
+              value={settings.contactInfo?.address || ""}
+              onChange={(e) =>
+                setSettings((s) => ({ ...s, contactInfo: { ...s.contactInfo, address: e.target.value } }))
+              }
+              className="w-full border px-3 py-2 rounded"
+              placeholder="Mirpur, Dhaka-1216, Bangladesh"
+            />
+          </div>
         </div>
       </div>
 

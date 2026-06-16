@@ -1,18 +1,11 @@
 "use client";
 
 import OrderDetails from "@/components/dashboard/Order/OrderDetails";
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { useUrlParam } from "@/hooks/useUrlParam";
 
-export default function Page({ params }) {
-  const [id, setId] = useState(null);
-
-  useEffect(() => {
-    const resolveParams = async () => {
-      const resolvedParams = params instanceof Promise ? await params : params;
-      setId(resolvedParams?.id || null);
-    };
-    resolveParams();
-  }, [params]);
+export default function Page() {
+  const id = useUrlParam();
 
   if (!id) return <div className="p-6">Loading...</div>;
 

@@ -12,8 +12,10 @@ DirectoryIndex index.html
 
   # ── Public dynamic routes ──────────────────────────────────────────────
   # New products, blogs, categories added after build are served via
-  # the __placeholder__ shell; useParams() reads the real ID from the URL
-  # and the client component fetches live data from the API.
+  # the __placeholder__ shell; the client component reads the real ID from
+  # the URL via useUrlParam() (usePathname()-based — useParams() reflects
+  # the build-time placeholder, not the real URL) and fetches live data
+  # from the API.
 
   RewriteRule ^product/([^/]+)/?$ /product/__placeholder__/index.html [L]
   RewriteRule ^blog/([^/]+)/?$ /blog/__placeholder__/index.html [L]
@@ -21,6 +23,7 @@ DirectoryIndex index.html
   RewriteRule ^barcode/([^/]+)/?$ /barcode/__placeholder__/index.html [L]
   RewriteRule ^scan/([^/]+)/?$ /scan/__placeholder__/index.html [L]
   RewriteRule ^tag/([^/]+)/?$ /tag/best-seller/index.html [L]
+  RewriteRule ^cart/shared/([^/]+)/?$ /cart/shared/__placeholder__/index.html [L]
 
   # ── Dashboard dynamic routes ───────────────────────────────────────────
   # Sub-routes first (more specific before less specific)

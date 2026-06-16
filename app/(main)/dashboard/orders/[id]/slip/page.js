@@ -1,8 +1,7 @@
-import OrderPrintView from "@/components/dashboard/Order/OrderPrintView";
+import OrderSlipPageClient from "./PageClient";
 
 export function generateStaticParams() { return [{ id: '__placeholder__' }]; }
 
-export default async function OrderSlipPage({ params }) {
-  const { id } = await params;
-  return <OrderPrintView orderId={id} variant="slip" />;
+export default function OrderSlipPage() {
+  return <OrderSlipPageClient />;
 }

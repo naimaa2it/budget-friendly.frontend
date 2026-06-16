@@ -1,12 +1,12 @@
 "use client";
 
-import { use } from "react";
 import OrderPrintView from "@/components/dashboard/Order/OrderPrintView";
+import { useUrlParam } from "@/hooks/useUrlParam";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-export default function UserOrderInvoicePage({ params }) {
-  const { id } = use(params);
+export default function UserOrderInvoicePage() {
+  const id = useUrlParam(1); // .../user/orders/<id>/invoice
   return (
     <OrderPrintView
       orderId={id}

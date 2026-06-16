@@ -1,21 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import AdminEditor from '@/components/dashboard/Admin/AdminEditor';
 import { useUser } from '@/components/context/UserContext';
+import { useUrlParam } from '@/hooks/useUrlParam';
 
-export default function Page({ params }) {
+export default function Page() {
   const { user } = useUser();
-  const [id, setId] = useState(null);
-
-  useEffect(() => {
-    const resolveParams = async () => {
-      const resolvedParams = params instanceof Promise ? await params : params;
-      const adminId = resolvedParams?.id || 'new';
-      setId(adminId);
-    };
-    resolveParams();
-  }, [params]);
+  const id = useUrlParam();
 
   if (user && user.role !== 'admin') {
     return (
@@ -26,7 +18,7 @@ export default function Page({ params }) {
     );
   }
 
-  if (id === null) return <div className="p-6">Loading...</div>;
+  if (!id) return <div className="p-6">Loading...</div>;
 
   return (
     <div>

@@ -1,9 +1,9 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useUrlParam } from '@/hooks/useUrlParam';
 import BlogDetailClient from '@/components/blog/BlogDetailClient';
 
 export default function BlogPageClient() {
-  const { slug } = useParams();
+  const slug = useUrlParam();
   return <BlogDetailClient slug={slug} />;
 }

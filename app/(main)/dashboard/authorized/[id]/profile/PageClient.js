@@ -1,13 +1,12 @@
 "use client";
 
 import { useUser } from "@/components/context/UserContext";
-import { useParams } from "next/navigation";
+import { useUrlParam } from "@/hooks/useUrlParam";
 import AuthorizedFollowUpProfile from "@/components/dashboard/Admin/AuthorizedFollowUpProfile";
 
 export default function AuthorizedProfilePage() {
   const { user } = useUser();
-  const params = useParams();
-  const adminId = params?.id;
+  const adminId = useUrlParam(1); // .../authorized/<id>/profile
 
   if (user && user.role !== "admin") {
     return (

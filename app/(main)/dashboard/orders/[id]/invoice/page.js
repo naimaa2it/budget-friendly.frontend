@@ -1,8 +1,7 @@
-import OrderPrintView from "@/components/dashboard/Order/OrderPrintView";
+import OrderInvoicePageClient from "./PageClient";
 
 export function generateStaticParams() { return [{ id: '__placeholder__' }]; }
 
-export default async function OrderInvoicePage({ params }) {
-  const { id } = await params;
-  return <OrderPrintView orderId={id} variant="invoice" />;
+export default function OrderInvoicePage() {
+  return <OrderInvoicePageClient />;
 }

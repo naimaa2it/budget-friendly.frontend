@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useUrlParam } from "@/hooks/useUrlParam";
 import Link from "next/link";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -17,7 +17,7 @@ function DiscountBadge({ price, compareAtPrice }) {
 }
 
 export default function ScanPage() {
-  const { code } = useParams();
+  const code = useUrlParam();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);

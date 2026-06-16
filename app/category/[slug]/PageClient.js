@@ -1,9 +1,9 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useUrlParam } from '@/hooks/useUrlParam';
 import CategoryPageClient from '@/components/category/CategoryPageClient';
 
 export default function CategoryPageWrapper() {
-  const { slug } = useParams();
+  const slug = useUrlParam();
   return <CategoryPageClient slug={slug} />;
 }

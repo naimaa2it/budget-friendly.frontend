@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useUrlParam } from '@/hooks/useUrlParam';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export default function BarcodeLookupPage() {
-  const { code } = useParams();
+  const code = useUrlParam();
   const router = useRouter();
   const [notFound, setNotFound] = useState(false);
 

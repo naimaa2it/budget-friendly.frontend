@@ -1,20 +1,20 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useUrlParam } from '@/hooks/useUrlParam';
 import { useEffect, useState } from 'react';
 import ProductDetails from '@/components/product/ProductDetails';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export default function ProductPageClient() {
-  const { id } = useParams();
+  const id = useUrlParam();
   const [product, setProduct] = useState(null);
   const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    if (!id || id === '__placeholder__') {
+    if (!id) {
       setLoading(false);
       return;
     }

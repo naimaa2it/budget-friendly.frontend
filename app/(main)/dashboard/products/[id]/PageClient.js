@@ -2,23 +2,12 @@
 
 import ProductCreate from '@/components/dashboard/Product/ProductCreate';
 import ProductEdit from '@/components/dashboard/Product/ProductEdit';
-import { useEffect, useState } from 'react';
+import { useUrlParam } from '@/hooks/useUrlParam';
 
-export default function Page({ params }) {
-  const [id, setId] = useState(null);
+export default function Page() {
+  const id = useUrlParam();
 
-  useEffect(() => {
-    const resolveParams = async () => {
-      const resolvedParams = params instanceof Promise ? await params : params;
-      const productId = resolvedParams?.id || 'new';
-      console.log('Products [id] page - Resolved ID:', productId);
-      setId(productId);
-    };
-
-    resolveParams();
-  }, [params]);
-
-  if (id === null) {
+  if (!id) {
     return <div className="p-6 text-center">Loading...</div>;
   }
 

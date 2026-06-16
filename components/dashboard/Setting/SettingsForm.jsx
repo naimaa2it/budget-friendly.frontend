@@ -301,6 +301,60 @@ export default function SettingsForm() {
         </div>
       </div>
 
+      {/* Social Media Links */}
+      <div className="mt-8 border-t pt-6">
+        <div className="flex items-center gap-2 mb-1">
+          <h2 className="text-lg font-semibold">Social Media Links</h2>
+          <span className="text-xs bg-purple-50 text-purple-500 px-2 py-0.5 rounded">Footer এ দেখাবে</span>
+        </div>
+        <p className="text-xs text-gray-400 mb-4">যে platform এ toggle ON করবেন এবং link দেবেন, সেটি footer এ দেখাবে।</p>
+        <div className="space-y-3">
+          {[
+            { key: 'facebook',  label: 'Facebook',  color: '#1877F2', placeholder: 'https://facebook.com/yourpage' },
+            { key: 'instagram', label: 'Instagram', color: '#E1306C', placeholder: 'https://instagram.com/yourprofile' },
+            { key: 'twitter',   label: 'Twitter / X', color: '#000000', placeholder: 'https://twitter.com/yourhandle' },
+            { key: 'tiktok',   label: 'TikTok',    color: '#010101', placeholder: 'https://tiktok.com/@yourprofile' },
+            { key: 'youtube',  label: 'YouTube',   color: '#FF0000', placeholder: 'https://youtube.com/@yourchannel' },
+          ].map(({ key, label, color, placeholder }) => {
+            const link = settings.socialLinks?.[key] || {};
+            return (
+              <div key={key} className="flex items-center gap-3 p-3 border rounded-lg bg-gray-50">
+                <span className="w-5 h-5 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                <span className="text-sm font-medium w-24 shrink-0">{label}</span>
+                <input
+                  type="url"
+                  value={link.url || ''}
+                  onChange={(e) => setSettings((s) => ({
+                    ...s,
+                    socialLinks: {
+                      ...(s.socialLinks || {}),
+                      [key]: { ...(s.socialLinks?.[key] || {}), url: e.target.value },
+                    },
+                  }))}
+                  className="flex-1 border px-3 py-1.5 rounded text-sm"
+                  placeholder={placeholder}
+                />
+                <label className="flex items-center gap-1.5 text-sm cursor-pointer shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={link.enabled !== false}
+                    onChange={(e) => setSettings((s) => ({
+                      ...s,
+                      socialLinks: {
+                        ...(s.socialLinks || {}),
+                        [key]: { ...(s.socialLinks?.[key] || {}), enabled: e.target.checked },
+                      },
+                    }))}
+                    className="w-4 h-4 accent-indigo-600"
+                  />
+                  Show
+                </label>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="mt-6 flex gap-3">
         {user?.role === "admin" ? (
           <button

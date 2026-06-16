@@ -9,6 +9,7 @@ const StoreSettingsContext = createContext({
   logoUrl: "",
   footerInfo: { phone: "", email: "", address: "" },
   contactInfo: { phone: "", email: "", address: "" },
+  socialLinks: {},
 });
 
 export function StoreSettingsProvider({ children }) {
@@ -17,6 +18,7 @@ export function StoreSettingsProvider({ children }) {
     logoUrl: "",
     footerInfo: { phone: "", email: "", address: "" },
     contactInfo: { phone: "", email: "", address: "" },
+    socialLinks: {},
   });
 
   useEffect(() => {
@@ -28,6 +30,7 @@ export function StoreSettingsProvider({ children }) {
           logoUrl: d.websiteLogo?.url || "",
           footerInfo: d.footerInfo || { phone: "", email: "", address: "" },
           contactInfo: d.contactInfo || { phone: "", email: "", address: "" },
+          socialLinks: d.socialLinks || {},
         })
       )
       .catch(() => {});

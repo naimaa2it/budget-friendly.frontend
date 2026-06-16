@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useCart } from '@/components/context/CartContext';
-import Image from 'next/image';
-import { FaTrash } from 'react-icons/fa';
-import ProductCard from '@/components/product/ProductCard';
-import EmptyState from '@/components/ui/EmptyState';
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useCart } from "@/components/context/CartContext";
+import Image from "next/image";
+import { FaTrash } from "react-icons/fa";
+import ProductCard from "@/components/product/ProductCard";
+import EmptyState from "@/components/ui/EmptyState";
 
 export default function WishlistPage({ embedded = false }) {
   const router = useRouter();
@@ -23,14 +23,14 @@ export default function WishlistPage({ embedded = false }) {
       }
       setLoading(true);
       try {
-        const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+        const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
         const proms = wishlistItems.map(async (id) => {
           try {
             const resp = await fetch(`${API}/api/products/${id}`);
             const json = await resp.json();
             return json.product || null;
           } catch (err) {
-            console.error('Failed to load wishlist product', id, err);
+            console.error("Failed to load wishlist product", id, err);
             return null;
           }
         });
@@ -47,7 +47,13 @@ export default function WishlistPage({ embedded = false }) {
 
   if (loading) {
     return (
-      <div className={embedded ? "flex items-center justify-center py-8" : "min-h-screen flex items-center justify-center"}>
+      <div
+        className={
+          embedded
+            ? "flex items-center justify-center py-8"
+            : "min-h-screen flex items-center justify-center"
+        }
+      >
         <p>Loading wishlist...</p>
       </div>
     );
@@ -59,7 +65,7 @@ export default function WishlistPage({ embedded = false }) {
         title="Your wishlist is empty"
         description="Browse products and tap the heart icon to save them here."
         buttonText="Continue Shopping"
-        onButtonClick={() => router.push('/')}
+        onButtonClick={() => router.push("/")}
         className={embedded ? "py-8" : ""}
       />
     );
@@ -67,10 +73,14 @@ export default function WishlistPage({ embedded = false }) {
 
   const content = (
     <>
-      {!embedded && <div className="max-w-7xl mx-auto px-4">
-        <h1 className="text-2xl font-bold mb-6">My Wishlist</h1>
-      </div>}
-      <div className={embedded ? "px-1 md:px-4" : "max-w-7xl mx-auto px-3 md:px-4"}>
+      {!embedded && (
+        <div className="max-w-7xl mx-auto px-4">
+          <h1 className="text-2xl font-bold mb-6">My Wishlist</h1>
+        </div>
+      )}
+      <div
+        className={embedded ? "px-1 md:px-4" : "max-w-7xl mx-auto px-3 md:px-4"}
+      >
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-6">
           {products.map((product) => (
             <div key={getId(product)} className="relative">
@@ -82,7 +92,7 @@ export default function WishlistPage({ embedded = false }) {
               />
               <button
                 onClick={() => removeFromWishlist(getId(product))}
-                className="absolute top-2 right-2 text-red-600 hover:text-red-800 bg-white rounded-full p-1 shadow"
+                className="absolute top-10 left-2 text-red-600 hover:text-red-800 bg-white rounded-full p-1 shadow"
                 title="Remove from wishlist"
               >
                 <FaTrash />

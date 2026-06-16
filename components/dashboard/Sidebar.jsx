@@ -9,6 +9,16 @@ import { useStoreSettings } from "@/components/context/StoreSettingsContext";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 const STORAGE_KEY = "SmartBuy BD-dashboard-sidebar-collapsed";
 
+// Mirrors backend lib/permissions.js: admins always have full access, and a
+// moderator with no permissions assigned keeps full access too — assigning
+// permissions is an opt-in restriction, not an opt-in grant.
+function hasPermission(user, key) {
+  if (!user) return false;
+  if (user.role === "admin") return true;
+  if (!Array.isArray(user.permissions) || user.permissions.length === 0) return true;
+  return user.permissions.includes(key);
+}
+
 const SECTION_ICONS = {
   overview: "M3 12h18M3 6h18M3 18h18",
   catalog: "M4 7h16v13H4z M7 3h10v4H7z",
@@ -37,6 +47,7 @@ const SECTIONS = [
     key: "catalog",
     label: "Catalog",
     icon: SECTION_ICONS.catalog,
+    permissionKey: "catalog",
     matchPrefixes: [
       "/dashboard/products",
       "/dashboard/product-variants",

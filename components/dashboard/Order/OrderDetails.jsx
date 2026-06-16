@@ -41,6 +41,25 @@ function fmt(date) {
   });
 }
 
+function describeDevice(ua) {
+  if (!ua) return "Unknown";
+  let os = "Unknown OS";
+  if (/windows/i.test(ua)) os = "Windows";
+  else if (/iphone|ipad|ipod/i.test(ua)) os = "iOS";
+  else if (/android/i.test(ua)) os = "Android";
+  else if (/macintosh|mac os/i.test(ua)) os = "Mac";
+  else if (/linux/i.test(ua)) os = "Linux";
+
+  let browser = "Unknown Browser";
+  if (/edg\//i.test(ua)) browser = "Edge";
+  else if (/opr\/|opera/i.test(ua)) browser = "Opera";
+  else if (/chrome\//i.test(ua)) browser = "Chrome";
+  else if (/firefox\//i.test(ua)) browser = "Firefox";
+  else if (/safari\//i.test(ua)) browser = "Safari";
+
+  return `${browser} on ${os}`;
+}
+
 export default function OrderDetails({ orderId }) {
   const router = useRouter();
   const [order, setOrder] = useState(null);
@@ -296,6 +315,10 @@ export default function OrderDetails({ orderId }) {
             {fmt(order.createdAt)} · {itemCount} Item
             {itemCount !== 1 ? "s" : ""} · Courier:{" "}
             <span className="capitalize">{courierName}</span>
+          </p>
+          <p className="text-sm text-gray-500 mt-1">
+            Device: {describeDevice(order.userAgent)} · IP Address:{" "}
+            {order.clientIp || "Unknown"}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">

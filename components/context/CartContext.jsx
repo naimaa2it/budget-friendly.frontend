@@ -78,9 +78,11 @@ export const getItemCompareAtPrice = (item) => {
 export const CartProvider = ({ children }) => {
   const { user } = useContext(UserContext);
   const [cartItems, setCartItems] = useState([]);
-  const [wishlistItems, setWishlistItems] = useState(() =>
-    getStorageItem(WISHLIST_STORAGE_KEY, []),
-  );
+  // Starts empty (matches server-rendered HTML) and loads from localStorage
+  // after mount — reading it synchronously here would mismatch the server's
+  // render (no window) and trigger a hydration error on first paint.
+  const [wishlistItems, setWishlistItems] = useState([]);
+  const [wishlistHydrated, setWishlistHydrated] = useState(false);
   const [cartHydrated, setCartHydrated] = useState(false);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [toastData, setToastData] = useState(null);
@@ -181,10 +183,18 @@ export const CartProvider = ({ children }) => {
     setStorageItem(CART_STORAGE_KEY, cartItems.map(toSlimItem));
   }, [cartItems, cartHydrated]);
 
-  // Save wishlist to localStorage whenever it changes
+  // Load wishlist from localStorage after mount (avoids SSR/client mismatch)
   useEffect(() => {
+    setWishlistItems(getStorageItem(WISHLIST_STORAGE_KEY, []));
+    setWishlistHydrated(true);
+  }, []);
+
+  // Save wishlist to localStorage whenever it changes (skip until loaded,
+  // so we don't clobber storage with [] before the load effect above runs)
+  useEffect(() => {
+    if (!wishlistHydrated) return;
     setStorageItem(WISHLIST_STORAGE_KEY, wishlistItems);
-  }, [wishlistItems]);
+  }, [wishlistItems, wishlistHydrated]);
 
   // Sync cart to server (debounced, only when logged in).
   // Send slim items — full product objects are reconstructed server-side.

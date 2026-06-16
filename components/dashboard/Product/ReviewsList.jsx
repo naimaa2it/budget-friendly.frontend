@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useUser } from "@/components/context/UserContext";
 import { useSearchParams } from "next/navigation";
 
@@ -382,9 +383,31 @@ export default function ReviewsList() {
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-700 leading-relaxed">
-                    {row.body}
-                  </p>
+                  <>
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      {row.body}
+                    </p>
+                    {row.images?.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {row.images.map((imgUrl, i) => (
+                          <a
+                            key={i}
+                            href={imgUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 hover:opacity-90 transition"
+                          >
+                            <Image
+                              src={imgUrl}
+                              alt={`review-photo-${i + 1}`}
+                              fill
+                              className="object-cover"
+                            />
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             );

@@ -3,7 +3,14 @@
 import Image from "next/image";
 import React from "react";
 import { useRouter } from "next/navigation";
-import { FaEye, FaShoppingCart, FaHeart, FaBell, FaStar, FaBalanceScale } from "react-icons/fa";
+import {
+  FaEye,
+  FaShoppingCart,
+  FaHeart,
+  FaBell,
+  FaStar,
+  FaBalanceScale,
+} from "react-icons/fa";
 import { useCart } from "@/components/context/CartContext";
 import { useUser } from "@/components/context/UserContext";
 import AuthModal from "@/components/auth/AuthModal";
@@ -235,7 +242,11 @@ export default function ProductCard({
                   ? "bg-indigo-600 text-white"
                   : "bg-white hover:bg-indigo-600 hover:text-white"
               }`}
-              title={isInCompare(product._id) ? "Remove from compare" : "Add to compare"}
+              title={
+                isInCompare(product._id)
+                  ? "Remove from compare"
+                  : "Compare Product"
+              }
             >
               <FaBalanceScale className="w-4 h-4" />
             </button>

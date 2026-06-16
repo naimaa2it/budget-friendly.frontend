@@ -211,6 +211,54 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
     }
   }, [product?._id]);
 
+  // Inject Product JSON-LD schema for SEO
+  useEffect(() => {
+    if (!product) return;
+    const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://smartbuy-bd.com";
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: product.title,
+      description: typeof product.description === "string"
+        ? product.description
+        : Array.isArray(product.description)
+          ? product.description.map((b) => typeof b === "string" ? b : b?.text || "").join(" ")
+          : "",
+      image: (product.images || []).map((i) => i.url).filter(Boolean),
+      sku: product.sku || undefined,
+      brand: product.department ? { "@type": "Brand", name: product.department } : undefined,
+      offers: {
+        "@type": "Offer",
+        url: `${SITE_URL}/product/${product._id}`,
+        priceCurrency: "BDT",
+        price: product.price,
+        availability: product.availability === "out_of_stock"
+          ? "https://schema.org/OutOfStock"
+          : "https://schema.org/InStock",
+        seller: { "@type": "Organization", name: "SmartBuy BD" },
+      },
+      ...(product.averageRating > 0 && product.reviewCount > 0
+        ? {
+            aggregateRating: {
+              "@type": "AggregateRating",
+              ratingValue: product.averageRating.toFixed(1),
+              reviewCount: product.reviewCount,
+              bestRating: 5,
+              worstRating: 1,
+            },
+          }
+        : {}),
+    };
+    const existing = document.getElementById("product-jsonld");
+    if (existing) existing.remove();
+    const script = document.createElement("script");
+    script.id = "product-jsonld";
+    script.type = "application/ld+json";
+    script.textContent = JSON.stringify(schema);
+    document.head.appendChild(script);
+    return () => { script.remove(); };
+  }, [product]);
+
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
   const handleCopy = () => {
     navigator.clipboard?.writeText(shareUrl).then(() => {

@@ -6,17 +6,37 @@ import { useCart, getItemPrice, getItemCompareAtPrice } from '@/components/conte
 import QuantitySelector from '@/components/ui/QuantitySelector';
 import ProductCard from '@/components/product/ProductCard';
 import Image from 'next/image';
-import { FaTrash, FaPencilAlt, FaPlus } from 'react-icons/fa';
+import { FaTrash, FaPencilAlt, FaPlus, FaShareAlt } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 import EmptyState from '@/components/ui/EmptyState';
 import VariantEditModal, { getVariantColors, getVariantSizes } from '@/components/cart/VariantEditModal';
 import WaitlistModal from '@/components/cart/WaitlistModal';
 
 export default function CartPage() {
   const router = useRouter();
-  const { cartItems, cartHydrated, updateQty, removeFromCart, updateCartVariant } = useCart();
+  const { cartItems, cartHydrated, updateQty, removeFromCart, updateCartVariant, shareCart } = useCart();
   const [editItem, setEditItem] = useState(null);
   const [editMode, setEditMode] = useState('edit'); // 'edit' or 'add'
   const [waitlistProduct, setWaitlistProduct] = useState(null);
+  const [sharing, setSharing] = useState(false);
+
+  const handleShare = async () => {
+    if (sharing) return;
+    setSharing(true);
+    try {
+      const url = await shareCart();
+      if (navigator.share) {
+        await navigator.share({ title: 'My SmartBuy BD Cart', url });
+      } else {
+        await navigator.clipboard?.writeText(url);
+        toast.success('Cart link copied to clipboard!');
+      }
+    } catch (err) {
+      if (err?.name !== 'AbortError') toast.error('Could not share cart. Try again.');
+    } finally {
+      setSharing(false);
+    }
+  };
 
   const [recommendedProducts, setRecommendedProducts] = useState([]);
   const [recLoading, setRecLoading] = useState(true);
@@ -258,12 +278,22 @@ export default function CartPage() {
                 <p className="text-sm font-semibold text-green-700 mt-2">🚚This item ships free!!</p>
               )}
             </div>
-            <button
-              onClick={handleCheckout}
-              className="w-full md:w-auto bg-rose-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-rose-700 transition text-base md:text-lg"
-            >
-              Proceed To Checkout 
-            </button>
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <button
+                onClick={handleShare}
+                disabled={sharing}
+                className="flex items-center justify-center gap-2 border border-gray-300 text-gray-700 px-4 py-3 rounded-lg font-medium hover:bg-gray-50 transition disabled:opacity-50"
+                title="Share this cart"
+              >
+                <FaShareAlt className="w-4 h-4" /> Share Cart
+              </button>
+              <button
+                onClick={handleCheckout}
+                className="flex-1 md:flex-none bg-rose-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-rose-700 transition text-base md:text-lg"
+              >
+                Proceed To Checkout
+              </button>
+            </div>
           </div>
         </div>
 

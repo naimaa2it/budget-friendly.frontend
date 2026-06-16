@@ -10,6 +10,7 @@ import { useLanguage } from "@/components/context/LanguageContext";
 import WishlistPage from "@/components/cart/WishlistPage";
 import AddressManager from "@/components/user/AddressManager";
 import UserRewardsSection from "@/components/user/UserRewardsSection";
+import UserLoyaltySection from "@/components/user/UserLoyaltySection";
 import OrderTrackingTimeline from "@/components/order/OrderTrackingTimeline";
 import { COUPONS, isNewUser } from "@/lib/coupons";
 
@@ -1324,6 +1325,27 @@ export default function UserSectionPage() {
                   <span>{t('profile.my_rewards')}</span>
                 </button>
                 <button
+                  onClick={() => handleSectionClick("loyalty")}
+                  className={`w-full text-left px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors ${
+                    section === "loyalty"
+                      ? "bg-gray-100 border-l-4 border-red-600"
+                      : ""
+                  }`}
+                >
+                  <svg
+                    className="w-5 h-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M8 21h8M12 17v4M6.5 3h11l-1 6.5a5 5 0 0 1-9 0L6.5 3z" />
+                    <path d="M6.5 5H3.5a1 1 0 0 0-1 1.2l.6 2.4A3 3 0 0 0 6 11" />
+                    <path d="M17.5 5h3a1 1 0 0 1 1 1.2l-.6 2.4A3 3 0 0 1 18 11" />
+                  </svg>
+                  <span>Loyalty Tier</span>
+                </button>
+                <button
                   onClick={() => handleSectionClick("coupons")}
                   className={`w-full text-left px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors ${
                     section === "coupons"
@@ -1587,6 +1609,10 @@ export default function UserSectionPage() {
 
             {section === "rewards" && (
               <UserRewardsSection />
+            )}
+
+            {section === "loyalty" && (
+              <UserLoyaltySection />
             )}
 
             {section === "coupons" && (

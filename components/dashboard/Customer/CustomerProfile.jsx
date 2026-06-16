@@ -104,27 +104,25 @@ export default function CustomerProfile({ userId }) {
   const [lifetimeLoading, setLifetimeLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const fetchLifetime = useCallback(
-    async (phone, refresh = false) => {
-      if (!phone) return;
-      setLifetimeLoading(true);
-      try {
-        const params = refresh ? "?refresh=1" : "";
-        const r = await fetch(
-          `${API}/api/admin/phones/${encodeURIComponent(phone)}/lifetime-stats${params}`,
-          { credentials: "include" },
-        );
-        const body = await r.json();
-        if (r.ok) setLifetime(body);
-        else setLifetime({ error: body.error || "Failed to load lifetime stats" });
-      } catch {
-        setLifetime({ error: "Failed to load lifetime stats" });
-      } finally {
-        setLifetimeLoading(false);
-      }
-    },
-    [],
-  );
+  const fetchLifetime = useCallback(async (phone, refresh = false) => {
+    if (!phone) return;
+    setLifetimeLoading(true);
+    try {
+      const params = refresh ? "?refresh=1" : "";
+      const r = await fetch(
+        `${API}/api/admin/phones/${encodeURIComponent(phone)}/lifetime-stats${params}`,
+        { credentials: "include" },
+      );
+      const body = await r.json();
+      if (r.ok) setLifetime(body);
+      else
+        setLifetime({ error: body.error || "Failed to load lifetime stats" });
+    } catch {
+      setLifetime({ error: "Failed to load lifetime stats" });
+    } finally {
+      setLifetimeLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (!userId) return;
@@ -144,15 +142,25 @@ export default function CustomerProfile({ userId }) {
   }, [userId, fetchLifetime]);
 
   if (loading) {
-    return <div className="text-center py-16 text-gray-400">Loading profile…</div>;
+    return (
+      <div className="text-center py-16 text-gray-400">Loading profile…</div>
+    );
   }
   if (error) {
     return <div className="text-center py-16 text-red-500">{error}</div>;
   }
   if (!data) return null;
 
-  const { user, SmartBuy BD, stats, percentages, courierBreakdown, risk, orders } = data;
-  const site = SmartBuy BD || {
+  const {
+    user,
+    SmartBuyBD,
+    stats,
+    percentages,
+    courierBreakdown,
+    risk,
+    orders,
+  } = data;
+  const site = SmartBuyBD || {
     stats,
     percentages,
     courierBreakdown,
@@ -223,10 +231,16 @@ export default function CustomerProfile({ userId }) {
       <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
         <div className="px-5 py-4 border-b flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h2 className="text-base font-semibold text-gray-800">SmartBuy BD Order History</h2>
+            <h2 className="text-base font-semibold text-gray-800">
+              SmartBuy BD Order History
+            </h2>
             {user.mobile && (
               <p className="text-xs text-gray-500 mt-0.5">
-                Phone <span className="font-mono font-semibold text-gray-700">{user.mobile}</span> দিয়ে বা এই account থেকে করা সব orders
+                Phone{" "}
+                <span className="font-mono font-semibold text-gray-700">
+                  {user.mobile}
+                </span>{" "}
+                দিয়ে বা এই account থেকে করা সব orders
               </p>
             )}
           </div>
@@ -235,7 +249,9 @@ export default function CustomerProfile({ userId }) {
           </span>
         </div>
         {orders.length === 0 ? (
-          <p className="text-center py-10 text-gray-400 text-sm">No orders found.</p>
+          <p className="text-center py-10 text-gray-400 text-sm">
+            No orders found.
+          </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
@@ -257,9 +273,9 @@ export default function CustomerProfile({ userId }) {
                   const phoneMismatch =
                     user.mobile &&
                     billPhone !== "—" &&
-                    !billPhone.replace(/\D/g, "").endsWith(
-                      user.mobile.replace(/\D/g, "").slice(-10),
-                    );
+                    !billPhone
+                      .replace(/\D/g, "")
+                      .endsWith(user.mobile.replace(/\D/g, "").slice(-10));
                   return (
                     <tr key={order._id} className="hover:bg-rose-50/30">
                       <td className="px-4 py-3">
@@ -277,7 +293,11 @@ export default function CustomerProfile({ userId }) {
                       <td className="px-4 py-3">
                         <span
                           className={`font-mono text-xs ${phoneMismatch ? "text-amber-600 font-semibold" : "text-gray-600"}`}
-                          title={phoneMismatch ? "Profile mobile-এর সাথে মিলছে না" : undefined}
+                          title={
+                            phoneMismatch
+                              ? "Profile mobile-এর সাথে মিলছে না"
+                              : undefined
+                          }
                         >
                           {billPhone}
                           {phoneMismatch && " ⚠"}
@@ -307,7 +327,9 @@ export default function CustomerProfile({ userId }) {
 
       <section className="space-y-4 pt-2 border-t border-gray-100">
         <div>
-          <h2 className="text-lg font-bold text-gray-900">SmartBuy BD orders only</h2>
+          <h2 className="text-lg font-bold text-gray-900">
+            SmartBuy BD orders only
+          </h2>
           <p className="text-sm text-gray-500">
             শুধু এই সাইটে করা অর্ডারের history ও risk score।
           </p>
@@ -321,14 +343,26 @@ export default function CustomerProfile({ userId }) {
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
           <StatCard label="Total Orders" value={site.stats.totalOrders} />
-          <StatCard label="Delivered" value={site.stats.delivered} color="text-green-600" />
-          <StatCard label="Cancelled" value={site.stats.cancelled} color="text-gray-600" />
+          <StatCard
+            label="Delivered"
+            value={site.stats.delivered}
+            color="text-green-600"
+          />
+          <StatCard
+            label="Cancelled"
+            value={site.stats.cancelled}
+            color="text-gray-600"
+          />
           <StatCard
             label="Returned / Failed"
             value={site.stats.returned}
             color="text-orange-600"
           />
-          <StatCard label="Rejected" value={site.stats.rejected} color="text-red-600" />
+          <StatCard
+            label="Rejected"
+            value={site.stats.rejected}
+            color="text-red-600"
+          />
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -361,7 +395,9 @@ export default function CustomerProfile({ userId }) {
             </h3>
           </div>
           {courierRows.length === 0 ? (
-            <p className="text-center py-10 text-gray-400 text-sm">No courier data yet.</p>
+            <p className="text-center py-10 text-gray-400 text-sm">
+              No courier data yet.
+            </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
@@ -383,10 +419,18 @@ export default function CustomerProfile({ userId }) {
                         {formatCourierName(courier)}
                       </td>
                       <td className="px-4 py-3 font-semibold">{row.total}</td>
-                      <td className="px-4 py-3 text-blue-700">{row.accepted}</td>
-                      <td className="px-4 py-3 text-green-700">{row.delivered}</td>
-                      <td className="px-4 py-3 text-gray-600">{row.cancelled}</td>
-                      <td className="px-4 py-3 text-orange-600">{row.returned}</td>
+                      <td className="px-4 py-3 text-blue-700">
+                        {row.accepted}
+                      </td>
+                      <td className="px-4 py-3 text-green-700">
+                        {row.delivered}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">
+                        {row.cancelled}
+                      </td>
+                      <td className="px-4 py-3 text-orange-600">
+                        {row.returned}
+                      </td>
                       <td className="px-4 py-3 text-red-600">{row.rejected}</td>
                     </tr>
                   ))}
@@ -396,7 +440,6 @@ export default function CustomerProfile({ userId }) {
           )}
         </div>
       </section>
-
     </div>
   );
 }

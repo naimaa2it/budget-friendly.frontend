@@ -350,6 +350,26 @@ export const CartProvider = ({ children }) => {
 
   const toggleSidebar = useCallback(() => setSidebarOpen((v) => !v), []);
 
+  // Snapshots the current cart server-side and returns a shareable URL —
+  // resolved live (price/stock) when opened, not frozen at share time.
+  const shareCart = useCallback(async () => {
+    const items = cartItems.map((i) => ({
+      productId: getId(i.product),
+      quantity: i.quantity,
+      color: i.selectedColor || null,
+      size: i.selectedSize || null,
+    }));
+    const res = await fetch(`${API}/api/cart/share`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ items }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Failed to share cart");
+    return `${window.location.origin}/cart/shared/${data.token}`;
+  }, [cartItems, getId]);
+
   return (
     <CartContext.Provider
       value={{
@@ -372,6 +392,7 @@ export const CartProvider = ({ children }) => {
         getCartCount,
         getWishlistCount,
         toggleSidebar,
+        shareCart,
         isInitialized: cartHydrated,
       }}
     >

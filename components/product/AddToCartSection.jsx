@@ -5,7 +5,7 @@ import QuantitySelector from '@/components/ui/QuantitySelector';
 import WishlistButton from '@/components/product/WishlistButton';
 import { useCart } from '@/components/context/CartContext';
 import { resolveVariantPrice, resolveVariant, getVariantColors, getVariantSizes } from '@/components/cart/VariantEditModal';
-import { FaBell } from 'react-icons/fa';
+import { FaBell, FaClock } from 'react-icons/fa';
 
 const STORAGE_KEY = (id) => `waitlist_joined_${id}`;
 
@@ -22,7 +22,8 @@ export default function AddToCartSection({ product, selectedColor = null, select
   });
   const [notifyError, setNotifyError] = useState('');
 
-  const isOutOfStock = product.availability === 'out_of_stock' || (product.inventory != null && product.inventory === 0);
+  const isPreorder = product.availability === 'pre_order';
+  const isOutOfStock = !isPreorder && (product.availability === 'out_of_stock' || (product.inventory != null && product.inventory === 0));
 
   const handleNotify = async (e) => {
     e.preventDefault();
@@ -66,7 +67,27 @@ export default function AddToCartSection({ product, selectedColor = null, select
 
   return (
     <div className="flex flex-col gap-4">
-      {isOutOfStock ? (
+      {isPreorder ? (
+        <>
+          <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-2.5 rounded-lg text-sm font-medium w-fit">
+            <FaClock className="w-3.5 h-3.5" />
+            Pre-order now — ships as soon as stock arrives
+          </div>
+          <div className="flex items-center gap-4 flex-wrap">
+            <WishlistButton product={product} />
+            <QuantitySelector quantity={qty} onChange={setQty} />
+            <button
+              onClick={handleAdd}
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition"
+            >
+              Pre-order now
+            </button>
+            {qty > 1 && (
+              <span className="text-sm text-gray-700">৳{(effectivePrice * qty).toFixed(2)}</span>
+            )}
+          </div>
+        </>
+      ) : isOutOfStock ? (
         <>
           <div className="flex items-center gap-4 flex-wrap">
             <WishlistButton product={product} />

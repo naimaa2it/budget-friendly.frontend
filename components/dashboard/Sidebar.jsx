@@ -48,6 +48,7 @@ const SECTIONS = [
       "/dashboard/rewards",
       "/dashboard/waitlist",
       "/dashboard/inventory",
+      "/dashboard/preorders",
     ],
     items: [
       {
@@ -122,6 +123,12 @@ const SECTIONS = [
         label: "All Q/A",
         href: "/dashboard/questions/",
         icon: "M4 6h16v2H4z M4 12h10v2H4z M4 18h16v2H4z",
+      },
+      {
+        key: "all-preorders",
+        label: "All Pre-orders",
+        href: "/dashboard/preorders",
+        icon: "M12 8v4l3 3 M12 2a10 10 0 100 20 10 10 0 000-20z",
       },
     ],
   },

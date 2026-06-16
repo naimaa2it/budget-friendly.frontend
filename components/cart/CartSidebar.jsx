@@ -9,7 +9,8 @@ import {
   getItemCompareAtPrice,
 } from "@/components/context/CartContext";
 import QuantitySelector from "@/components/ui/QuantitySelector";
-import { FaTimes, FaShoppingBag, FaTrash, FaPencilAlt } from "react-icons/fa";
+import { FaTimes, FaShoppingBag, FaTrash, FaPencilAlt, FaShareAlt } from "react-icons/fa";
+import toast from "react-hot-toast";
 import EmptyAnimation from "@/components/ui/EmptyAnimation";
 import VariantEditModal, {
   getVariantColors,
@@ -26,11 +27,31 @@ export default function CartSidebar() {
     updateQty,
     removeFromCart,
     updateCartVariant,
+    shareCart,
   } = useCart();
 
   const [editItem, setEditItem] = useState(null);
   const [editMode, setEditMode] = useState("edit");
   const [waitlistProduct, setWaitlistProduct] = useState(null);
+  const [sharing, setSharing] = useState(false);
+
+  const handleShare = async () => {
+    if (sharing) return;
+    setSharing(true);
+    try {
+      const url = await shareCart();
+      if (navigator.share) {
+        await navigator.share({ title: "My SmartBuy BD Cart", url });
+      } else {
+        await navigator.clipboard?.writeText(url);
+        toast.success("Cart link copied to clipboard!");
+      }
+    } catch (err) {
+      if (err?.name !== "AbortError") toast.error("Could not share cart. Try again.");
+    } finally {
+      setSharing(false);
+    }
+  };
 
   // lock body scroll when sidebar is open
   React.useEffect(() => {
@@ -72,9 +93,21 @@ export default function CartSidebar() {
               My Cart Item(s): {cartItems.length}
             </h2>
           </div>
-          <button onClick={toggleSidebar} className="p-1">
-            <FaTimes />
-          </button>
+          <div className="flex items-center gap-3">
+            {cartItems.length > 0 && (
+              <button
+                onClick={handleShare}
+                disabled={sharing}
+                title="Share cart"
+                className="p-1 hover:text-gray-300 disabled:opacity-50"
+              >
+                <FaShareAlt className="w-4 h-4" />
+              </button>
+            )}
+            <button onClick={toggleSidebar} className="p-1">
+              <FaTimes />
+            </button>
+          </div>
         </div>
         <div className="p-4 grow overflow-y-auto">
           {cartItems.length === 0 && <EmptyAnimation />}

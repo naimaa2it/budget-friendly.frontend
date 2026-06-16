@@ -183,6 +183,11 @@ export default function ProductCard({
             </div>
             {/* Tags — top right, stacked */}
             <div className="flex flex-col items-end gap-0.5">
+              {product.availability === "pre_order" && (
+                <span className="bg-blue-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-sm leading-none">
+                  Pre-Order
+                </span>
+              )}
               {visibleTags.map((b) => (
                 <span
                   key={b}

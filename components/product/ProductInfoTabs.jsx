@@ -1,8 +1,10 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useUser } from "@/components/context/UserContext";
 import toast from "react-hot-toast";
 import AuthModal from "@/components/auth/AuthModal";
+import Image from "next/image";
+import { FaCamera, FaTimes } from "react-icons/fa";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -63,16 +65,16 @@ export default function ProductInfoTabs({ product }) {
   // default display name from logged-in user
   const defaultName = user ? user.name || user.email?.split("@")[0] || "" : "";
 
+  const imageInputRef = useRef(null);
+
   // Reviews state
   const [reviews, setReviews] = useState(product?.reviews || []);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
-  const [reviewForm, setReviewForm] = useState({
-    name: "",
-    rating: 0,
-    body: "",
-  });
+  const [reviewForm, setReviewForm] = useState({ name: "", rating: 0, body: "" });
+  const [reviewImages, setReviewImages] = useState([]);
+  const [reviewImageUploading, setReviewImageUploading] = useState(false);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewError, setReviewError] = useState("");
   const [reviewDone, setReviewDone] = useState(false);
@@ -93,6 +95,30 @@ export default function ProductInfoTabs({ product }) {
       ...prev,
       [qIdx]: { ...prev[qIdx], ...patch },
     }));
+
+  const handleReviewImageUpload = async (files) => {
+    if (!files || files.length === 0) return;
+    const remaining = 4 - reviewImages.length;
+    if (remaining <= 0) return toast.error("Max 4 images allowed");
+    const selected = Array.from(files).slice(0, remaining);
+    setReviewImageUploading(true);
+    try {
+      const formData = new FormData();
+      selected.forEach((f) => formData.append("images", f));
+      const res = await fetch(`${API}/api/products/review-images/upload`, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      setReviewImages((prev) => [...prev, ...data.urls].slice(0, 4));
+    } catch (err) {
+      toast.error(err.message || "Image upload failed");
+    } finally {
+      setReviewImageUploading(false);
+    }
+  };
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
@@ -115,12 +141,14 @@ export default function ProductInfoTabs({ product }) {
           authorName: reviewForm.name || defaultName,
           rating: reviewForm.rating,
           body: reviewForm.body,
+          images: reviewImages,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to submit");
       setReviews(data.reviews || []);
       setReviewForm({ name: "", rating: 0, body: "" });
+      setReviewImages([]);
       setEditingIndex(null);
       setShowReviewForm(false);
       setReviewDone(true);
@@ -138,6 +166,7 @@ export default function ProductInfoTabs({ product }) {
       rating: r.rating || 0,
       body: r.body || "",
     });
+    setReviewImages(r.images || []);
     setEditingIndex(idx);
     setReviewDone(false);
     setReviewError("");
@@ -651,16 +680,60 @@ export default function ProductInfoTabs({ product }) {
                         <textarea
                           value={reviewForm.body}
                           onChange={(e) =>
-                            setReviewForm((f) => ({
-                              ...f,
-                              body: e.target.value,
-                            }))
+                            setReviewForm((f) => ({ ...f, body: e.target.value }))
                           }
                           className="block w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white"
                           rows={4}
                           placeholder="Share your experience with this product…"
                         />
                       </div>
+
+                      {/* Photo upload */}
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">
+                          Add Photos (optional, max 4)
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          {reviewImages.map((url, i) => (
+                            <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200">
+                              <Image src={url} alt={`review-img-${i}`} fill className="object-cover" />
+                              <button
+                                type="button"
+                                onClick={() => setReviewImages((prev) => prev.filter((_, idx) => idx !== i))}
+                                className="absolute top-0.5 right-0.5 w-4 h-4 bg-black/60 rounded-full flex items-center justify-center hover:bg-red-600 transition"
+                              >
+                                <FaTimes className="w-2 h-2 text-white" />
+                              </button>
+                            </div>
+                          ))}
+                          {reviewImages.length < 4 && (
+                            <button
+                              type="button"
+                              onClick={() => imageInputRef.current?.click()}
+                              disabled={reviewImageUploading}
+                              className="w-16 h-16 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-1 hover:border-gray-500 transition text-gray-400 hover:text-gray-600 disabled:opacity-50"
+                            >
+                              {reviewImageUploading ? (
+                                <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                              ) : (
+                                <>
+                                  <FaCamera className="w-4 h-4" />
+                                  <span className="text-[9px]">Add</span>
+                                </>
+                              )}
+                            </button>
+                          )}
+                          <input
+                            ref={imageInputRef}
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            onChange={(e) => handleReviewImageUpload(e.target.files)}
+                          />
+                        </div>
+                      </div>
+
                       {reviewError && (
                         <p className="text-red-500 text-xs">{reviewError}</p>
                       )}
@@ -758,6 +831,17 @@ export default function ProductInfoTabs({ product }) {
                           <p className="text-sm text-gray-600 leading-relaxed">
                             {r.body || r.comment}
                           </p>
+                          {/* Review images */}
+                          {r.images?.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {r.images.map((imgUrl, imgIdx) => (
+                                <a key={imgIdx} href={imgUrl} target="_blank" rel="noopener noreferrer"
+                                  className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 hover:opacity-90 transition">
+                                  <Image src={imgUrl} alt={`review-photo-${imgIdx + 1}`} fill className="object-cover" />
+                                </a>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </li>
                     );

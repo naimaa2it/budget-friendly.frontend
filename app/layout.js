@@ -14,8 +14,10 @@ import ScrollToTop from "@/components/ui/ScrollToTop";
 import FloatingWhatsApp from "@/components/ui/FloatingWhatsApp";
 import PopupBanner from "@/components/ui/PopupBanner";
 import { getStoreName } from "@/lib/storeMeta";
+import { CompareProvider } from "@/components/context/CompareContext";
+import CompareBar from "@/components/product/CompareBar";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://SmartBuy BD.com";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://smartbuy-bd.com";
 
 const workSans = Work_Sans({
   variable: "--font-work-sans",
@@ -146,16 +148,19 @@ export default async function RootLayout({ children }) {
           <UserProvider>
             <CartProvider>
               <CategoryProvider>
-                <ScrollToTop />
-                <LayoutWrapper>{children}</LayoutWrapper>
-                <FloatingWhatsApp />
-                {/* global UI overlays */}
-                <CartToast />
-                <CartSidebar />
-                <CartFloating />
-                <ToastProvider />
-                <PopupBanner />
-                <FrequentlyBoughtTogetherModal />
+                <CompareProvider>
+                  <ScrollToTop />
+                  <LayoutWrapper>{children}</LayoutWrapper>
+                  <FloatingWhatsApp />
+                  {/* global UI overlays */}
+                  <CartToast />
+                  <CartSidebar />
+                  <CartFloating />
+                  <ToastProvider />
+                  <PopupBanner />
+                  <FrequentlyBoughtTogetherModal />
+                  <CompareBar />
+                </CompareProvider>
               </CategoryProvider>
             </CartProvider>
           </UserProvider>

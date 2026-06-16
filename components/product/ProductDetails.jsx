@@ -176,7 +176,21 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
   const [zoomOpen, setZoomOpen] = useState(false);
   const [openPolicy, setOpenPolicy] = useState(null);
   const [isDesktop, setIsDesktop] = useState(false);
+  // touch swipe state for zoom modal
+  const touchStartX = React.useRef(null);
   const currentImage = images[currentIndex] || "/assets/placeholder.svg";
+
+  // keyboard navigation in zoom modal
+  useEffect(() => {
+    if (!zoomOpen || images.length <= 1) return;
+    const handler = (e) => {
+      if (e.key === "ArrowLeft") setCurrentIndex((i) => (i - 1 + images.length) % images.length);
+      if (e.key === "ArrowRight") setCurrentIndex((i) => (i + 1) % images.length);
+      if (e.key === "Escape") setZoomOpen(false);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [zoomOpen, images.length]);
 
   useEffect(() => {
     const updateViewport = () => setIsDesktop(window.innerWidth >= 1024);
@@ -1079,8 +1093,18 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
       {/* ── Image Zoom Modal ── */}
       {zoomOpen && (
         <div
-          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4"
           onClick={() => setZoomOpen(false)}
+          onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+          onTouchEnd={(e) => {
+            if (touchStartX.current === null || images.length <= 1) return;
+            const diff = e.changedTouches[0].clientX - touchStartX.current;
+            if (Math.abs(diff) > 50) {
+              if (diff < 0) setCurrentIndex((i) => (i + 1) % images.length);
+              else setCurrentIndex((i) => (i - 1 + images.length) % images.length);
+            }
+            touchStartX.current = null;
+          }}
         >
           <div
             className="relative max-w-4xl max-h-[90vh] w-full h-full flex items-center justify-center"
@@ -1089,20 +1113,23 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
             {/* Close button */}
             <button
               onClick={() => setZoomOpen(false)}
-              className="absolute top-2 right-2 z-10 w-8 h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center shadow-md transition"
+              className="absolute top-2 right-2 z-10 w-9 h-9 rounded-full bg-white/90 hover:bg-white flex items-center justify-center shadow-md transition"
             >
               <FaTimes className="w-3.5 h-3.5 text-gray-700" />
             </button>
 
+            {/* Image counter */}
+            {images.length > 1 && (
+              <div className="absolute top-2 left-2 z-10 bg-black/50 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                {currentIndex + 1} / {images.length}
+              </div>
+            )}
+
             {/* Prev / Next */}
             {images.length > 1 && (
               <button
-                onClick={() =>
-                  setCurrentIndex(
-                    (i) => (i - 1 + images.length) % images.length,
-                  )
-                }
-                className="absolute left-2 z-10 p-2 bg-white/90 rounded-full shadow-md hover:bg-white transition"
+                onClick={() => setCurrentIndex((i) => (i - 1 + images.length) % images.length)}
+                className="absolute left-2 z-10 p-2.5 bg-white/90 rounded-full shadow-md hover:bg-white hover:scale-110 transition-all"
               >
                 <FaChevronLeft className="w-4 h-4 text-gray-700" />
               </button>
@@ -1110,7 +1137,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
             {images.length > 1 && (
               <button
                 onClick={() => setCurrentIndex((i) => (i + 1) % images.length)}
-                className="absolute right-2 z-10 p-2 bg-white/90 rounded-full shadow-md hover:bg-white transition"
+                className="absolute right-2 z-10 p-2.5 bg-white/90 rounded-full shadow-md hover:bg-white hover:scale-110 transition-all"
               >
                 <FaChevronRight className="w-4 h-4 text-gray-700" />
               </button>
@@ -1118,13 +1145,8 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
 
             {/* Zoomed image */}
             <div
-              className="bg-white rounded-xl overflow-hidden flex items-center justify-center"
-              style={{
-                maxWidth: "700px",
-                maxHeight: "80vh",
-                width: "100%",
-                height: "100%",
-              }}
+              className="bg-white rounded-2xl overflow-hidden flex items-center justify-center shadow-2xl"
+              style={{ maxWidth: "720px", maxHeight: "80vh", width: "100%", height: "100%" }}
             >
               <Image
                 src={encodeURI(currentImage)}
@@ -1135,24 +1157,31 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
               />
             </div>
 
+            {/* Keyboard hint */}
+            {images.length > 1 && (
+              <p className="absolute bottom-16 left-1/2 -translate-x-1/2 text-white/40 text-[10px] whitespace-nowrap hidden md:block">
+                ← → keys to navigate · ESC to close
+              </p>
+            )}
+
             {/* Thumbnail strip */}
             {images.length > 1 && (
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 overflow-x-auto max-w-[90vw] pb-1">
                 {images.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => setCurrentIndex(idx)}
-                    className={`w-10 h-10 rounded border-2 overflow-hidden bg-white transition ${
+                    className={`w-12 h-12 shrink-0 rounded-lg border-2 overflow-hidden bg-white transition-all ${
                       currentIndex === idx
-                        ? "border-white"
-                        : "border-white/30 hover:border-white/70"
+                        ? "border-white scale-110 shadow-lg"
+                        : "border-white/30 hover:border-white/70 opacity-70 hover:opacity-100"
                     }`}
                   >
                     <Image
                       src={encodeURI(img)}
                       alt={`thumb-${idx}`}
-                      width={40}
-                      height={40}
+                      width={48}
+                      height={48}
                       className="w-full h-full object-contain"
                     />
                   </button>

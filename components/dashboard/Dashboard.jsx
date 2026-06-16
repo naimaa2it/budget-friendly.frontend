@@ -8,12 +8,15 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
+  Line,
+  LineChart,
   Pie,
   PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
+  Legend,
 } from 'recharts';
 import { useUser } from '@/components/context/UserContext';
 
@@ -138,6 +141,9 @@ export default function Dashboard() {
   const recentOrders = dashboard?.recentOrders || [];
   const topSellingProducts = dashboard?.topSellingProducts || [];
   const hourlyRevenue = dashboard?.hourlyRevenue || [];
+  const monthlyRevenue = dashboard?.monthlyRevenue || [];
+  const paymentBreakdown = dashboard?.paymentBreakdown || [];
+  const customerStats = dashboard?.customerStats || {};
   const stock = dashboard?.stock || {};
   const actionCenter = dashboard?.actionCenter || {};
 
@@ -419,6 +425,102 @@ export default function Dashboard() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+            </div>
+          </div>
+
+          {/* Monthly Revenue Trend */}
+          {monthlyRevenue.length > 0 && (
+            <div className="bg-white rounded-xl border p-5">
+              <h2 className="text-base font-semibold mb-4">Monthly Revenue Trend (12 Months)</h2>
+              <div className="h-72 rounded-lg border bg-gray-50 p-3">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={monthlyRevenue}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 11 }} />
+                    <Tooltip formatter={(value, name) => name === 'revenue' ? money(value) : Number(value).toLocaleString('en-BD')} />
+                    <Legend />
+                    <Line type="monotone" dataKey="revenue" name="Revenue" stroke="#6366f1" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                    <Line type="monotone" dataKey="orders" name="Orders" stroke="#f97316" strokeWidth={2} dot={{ r: 3 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+
+          {/* Customer Stats + Payment Breakdown */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            {/* Customer Stats */}
+            <div className="bg-white rounded-xl border p-5">
+              <h2 className="text-base font-semibold mb-4">Customer Insights (Last 30 Days)</h2>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="rounded-lg border p-4 bg-blue-50">
+                  <p className="text-xs text-blue-700 uppercase tracking-wide">New Customers</p>
+                  <p className="text-2xl font-bold text-blue-800 mt-1">{customerStats.newLast30Days ?? 0}</p>
+                  <p className="text-xs text-blue-500 mt-0.5">Registered last 30 days</p>
+                </div>
+                <div className="rounded-lg border p-4 bg-purple-50">
+                  <p className="text-xs text-purple-700 uppercase tracking-wide">Returning</p>
+                  <p className="text-2xl font-bold text-purple-800 mt-1">{customerStats.returningCustomers ?? 0}</p>
+                  <p className="text-xs text-purple-500 mt-0.5">Placed 2+ orders</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between rounded border p-3 bg-gray-50 text-sm">
+                  <span className="text-gray-600">Total Orders Delivered</span>
+                  <span className="font-semibold">{orderFlow.delivered ?? 0}</span>
+                </div>
+                <div className="flex justify-between rounded border p-3 bg-gray-50 text-sm">
+                  <span className="text-gray-600">Cancellation Rate</span>
+                  <span className="font-semibold text-red-600">
+                    {orderFlow.created > 0
+                      ? `${((((orderFlow.cancelled || 0) + (orderFlow.failed || 0)) / orderFlow.created) * 100).toFixed(1)}%`
+                      : '0%'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Payment Method Breakdown */}
+            <div className="bg-white rounded-xl border p-5">
+              <h2 className="text-base font-semibold mb-4">Payment Methods (Last 30 Days)</h2>
+              {paymentBreakdown.length > 0 ? (
+                <>
+                  <div className="h-48 rounded-lg border bg-gray-50 p-3 mb-4">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={paymentBreakdown} dataKey="revenue" nameKey="method" innerRadius={40} outerRadius={70} paddingAngle={2}>
+                          {paymentBreakdown.map((_, idx) => {
+                            const colors = ['#6366f1','#22c55e','#f97316','#ec4899','#14b8a6','#f59e0b'];
+                            return <Cell key={idx} fill={colors[idx % colors.length]} />;
+                          })}
+                        </Pie>
+                        <Tooltip formatter={(v) => money(v)} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="space-y-2">
+                    {paymentBreakdown.map((p, idx) => {
+                      const colors = ['bg-indigo-500','bg-green-500','bg-orange-500','bg-pink-500','bg-teal-500','bg-amber-500'];
+                      const labels = { cod: 'Cash on Delivery', online: 'Online (SSLCommerz)', bkash: 'bKash', nagad: 'Nagad', rocket: 'Rocket' };
+                      return (
+                        <div key={p.method} className="flex items-center justify-between text-sm rounded border p-2.5">
+                          <div className="flex items-center gap-2">
+                            <span className={`w-2.5 h-2.5 rounded-full ${colors[idx % colors.length]}`} />
+                            <span className="text-gray-700 capitalize">{labels[p.method] || p.method}</span>
+                          </div>
+                          <div className="text-right">
+                            <span className="font-semibold text-gray-900">{money(p.revenue)}</span>
+                            <span className="text-xs text-gray-400 ml-2">({p.count} orders)</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-gray-500">No payment data for last 30 days.</p>
+              )}
             </div>
           </div>
 

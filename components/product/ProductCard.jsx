@@ -3,13 +3,14 @@
 import Image from "next/image";
 import React from "react";
 import { useRouter } from "next/navigation";
-import { FaEye, FaShoppingCart, FaHeart, FaBell, FaStar } from "react-icons/fa";
+import { FaEye, FaShoppingCart, FaHeart, FaBell, FaStar, FaBalanceScale } from "react-icons/fa";
 import { useCart } from "@/components/context/CartContext";
 import { useUser } from "@/components/context/UserContext";
 import AuthModal from "@/components/auth/AuthModal";
 import WaitlistModal from "@/components/cart/WaitlistModal";
 import { getVariantColors } from "@/components/cart/VariantEditModal";
 import { getDisplayPrice } from "@/lib/pricing";
+import { useCompare } from "@/components/context/CompareContext";
 
 import Skeleton from "@/components/ui/Skeleton";
 
@@ -26,6 +27,7 @@ export default function ProductCard({
   const router = useRouter();
   const { addToCart, addToWishlist } = useCart();
   const { user } = useUser();
+  const { addToCompare, removeFromCompare, isInCompare } = useCompare();
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
   const [hovered, setHovered] = React.useState(false);
   const [showAuthModal, setShowAuthModal] = React.useState(false);
@@ -221,6 +223,21 @@ export default function ProductCard({
               title="Add to wishlist"
             >
               <FaHeart className="w-4 h-4" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (isInCompare(product._id)) removeFromCompare(product._id);
+                else addToCompare(product);
+              }}
+              className={`w-9 h-9 rounded-full flex items-center justify-center shadow-md transition-colors ${
+                isInCompare(product._id)
+                  ? "bg-indigo-600 text-white"
+                  : "bg-white hover:bg-indigo-600 hover:text-white"
+              }`}
+              title={isInCompare(product._id) ? "Remove from compare" : "Add to compare"}
+            >
+              <FaBalanceScale className="w-4 h-4" />
             </button>
           </div>
         </div>

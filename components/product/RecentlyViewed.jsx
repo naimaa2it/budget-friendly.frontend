@@ -1,23 +1,18 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { FaStar } from "react-icons/fa";
-import { HiMiniArrowsUpDown } from "react-icons/hi2";
+import { FaStar, FaChevronLeft, FaChevronRight, FaShoppingCart } from "react-icons/fa";
+import { useCart } from "@/components/context/CartContext";
 
 const STORAGE_KEY = "SmartBuy BD_recentlyViewed";
 const MAX_ITEMS = 30;
 
-/**
- * Save the current product to recently-viewed list in localStorage.
- * Call this once per product page mount.
- */
 export function saveRecentlyViewed(product) {
   if (typeof window === "undefined" || !product?._id) return;
   try {
     const existing = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-    // Remove duplicate entry (if revisited)
     const filtered = existing.filter((p) => p._id !== product._id);
     const entry = {
       _id: product._id,
@@ -28,91 +23,91 @@ export function saveRecentlyViewed(product) {
       averageRating: product.averageRating || 0,
       reviewCount: product.reviewCount || 0,
       image: product.images?.[0]?.url || null,
+      availability: product.availability,
     };
     const updated = [entry, ...filtered].slice(0, MAX_ITEMS);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   } catch (_) {}
 }
 
-export default function RecentlyViewed({
-  currentProductId,
-  mobilePerRow = 3,
-  desktopPerRow = 6,
-  rows = 2,
-}) {
+export default function RecentlyViewed({ currentProductId }) {
   const [items, setItems] = useState([]);
-  const [isDesktop, setIsDesktop] = useState(false);
-  const [showAll, setShowAll] = useState(false);
-
-  useEffect(() => {
-    const updateViewport = () => setIsDesktop(window.innerWidth >= 1024);
-    updateViewport();
-    window.addEventListener("resize", updateViewport);
-    return () => window.removeEventListener("resize", updateViewport);
-  }, []);
+  const scrollRef = useRef(null);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     try {
       const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-      // Exclude the current product
       setItems(stored.filter((p) => p._id !== currentProductId));
     } catch (_) {
       setItems([]);
     }
   }, [currentProductId]);
 
-  const perRow = isDesktop ? desktopPerRow : mobilePerRow;
-  const visibleItems = showAll
-    ? items.slice(0, perRow * 2)
-    : items.slice(0, perRow);
+  const scrollBy = (dir) => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: dir * 220, behavior: "smooth" });
+    }
+  };
 
   if (items.length === 0) return null;
 
   return (
     <section className="max-w-7xl mx-auto px-4 mt-12 mb-4">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg md:text-2xl font-bold text-gray-900 tracking-tight">
+        <h2 className="text-lg md:text-xl font-bold text-gray-900 tracking-tight">
           Recently Viewed
         </h2>
-        <button
-          onClick={() => {
-            localStorage.removeItem(STORAGE_KEY);
-            setItems([]);
-          }}
-          className="text-xs text-gray-600 hover:text-red-600 underline transition"
-        >
-          Clear history
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => scrollBy(-1)}
+            className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition"
+          >
+            <FaChevronLeft className="w-3 h-3 text-gray-600" />
+          </button>
+          <button
+            onClick={() => scrollBy(1)}
+            className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition"
+          >
+            <FaChevronRight className="w-3 h-3 text-gray-600" />
+          </button>
+          <button
+            onClick={() => { localStorage.removeItem(STORAGE_KEY); setItems([]); }}
+            className="text-xs text-gray-400 hover:text-red-500 transition ml-1"
+          >
+            Clear
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
-        {visibleItems.map((item) => {
-          const href = item.slug
-            ? `/product/${item._id}`
-            : `/product/${item._id}`;
+      {/* Horizontal scroll container */}
+      <div
+        ref={scrollRef}
+        className="flex gap-3 overflow-x-auto pb-2 scroll-smooth"
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+      >
+        {items.map((item) => {
+          const href = `/product/${item._id}`;
           const discount =
             item.compareAtPrice && item.compareAtPrice > item.price
-              ? Math.round(
-                  ((item.compareAtPrice - item.price) / item.compareAtPrice) *
-                    100,
-                )
+              ? Math.round(((item.compareAtPrice - item.price) / item.compareAtPrice) * 100)
               : null;
+          const isOutOfStock = item.availability === "out_of_stock";
 
           return (
-            <Link
+            <div
               key={item._id}
-              href={href}
-              className="group bg-white border border-orange-200 rounded-lg overflow-hidden hover:shadow-md hover:border-gray-300 transition-all duration-200 flex flex-col"
+              className="group shrink-0 w-40 md:w-44 bg-white border border-orange-100 rounded-xl overflow-hidden hover:shadow-md hover:border-orange-300 transition-all duration-200 flex flex-col"
             >
               {/* Image */}
-              <div className="relative bg-gray-50 aspect-square overflow-hidden">
+              <Link href={href} className="relative bg-gray-50 aspect-square overflow-hidden block">
                 {item.image ? (
                   <Image
                     src={encodeURI(item.image)}
                     alt={item.title}
                     fill
                     className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
-                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
+                    sizes="176px"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">
@@ -120,19 +115,21 @@ export default function RecentlyViewed({
                   </div>
                 )}
                 {discount && (
-                  <span className="absolute top-1.5 left-1.5 bg-gradient-to-r from-red-400 to-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+                  <span className="absolute top-1.5 left-1.5 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
                     -{discount}%
                   </span>
                 )}
-              </div>
+              </Link>
 
               {/* Info */}
               <div className="p-2 flex flex-col gap-0.5 flex-1">
-                <p className="text-[11px] font-medium text-gray-800 line-clamp-2 leading-snug">
+                <Link
+                  href={href}
+                  className="text-[11px] font-medium text-gray-800 line-clamp-2 leading-snug hover:text-red-600 transition"
+                >
                   {item.title}
-                </p>
+                </Link>
 
-                {/* Stars */}
                 {item.averageRating > 0 && (
                   <div className="flex items-center gap-0.5 mt-0.5">
                     {[1, 2, 3, 4, 5].map((s) => (
@@ -142,15 +139,12 @@ export default function RecentlyViewed({
                       />
                     ))}
                     {item.reviewCount > 0 && (
-                      <span className="text-[9px] text-gray-400 ml-0.5">
-                        ({item.reviewCount})
-                      </span>
+                      <span className="text-[9px] text-gray-400 ml-0.5">({item.reviewCount})</span>
                     )}
                   </div>
                 )}
 
-                {/* Price */}
-                <div className="flex items-center gap-1.5 flex-wrap mt-auto pt-1">
+                <div className="flex items-center gap-1 flex-wrap mt-auto pt-1">
                   <span className="text-xs font-bold text-gray-900">
                     ৳{item.price?.toLocaleString()}
                   </span>
@@ -160,26 +154,26 @@ export default function RecentlyViewed({
                     </span>
                   )}
                 </div>
+
+                {/* Quick add button */}
+                {!isOutOfStock ? (
+                  <button
+                    onClick={() => addToCart(item, 1)}
+                    className="mt-1.5 w-full flex items-center justify-center gap-1.5 bg-gray-900 hover:bg-red-600 text-white text-[10px] font-semibold py-1.5 rounded-lg transition-colors"
+                  >
+                    <FaShoppingCart className="w-2.5 h-2.5" />
+                    Add to Cart
+                  </button>
+                ) : (
+                  <span className="mt-1.5 block text-center text-[10px] text-red-500 font-medium py-1.5">
+                    Out of Stock
+                  </span>
+                )}
               </div>
-            </Link>
+            </div>
           );
         })}
       </div>
-
-      {items.length > perRow && (
-        <div className="mt-2 flex justify-center">
-          <button
-            type="button"
-            onClick={() => setShowAll((s) => !s)}
-            className="px-4 py-1  text-sm hover:bg-gray-50 transition flex items-center gap-1"
-          >
-            {showAll ? "Show Less" : "Show More"}
-            <span className="text-red-500">
-              <HiMiniArrowsUpDown />
-            </span>
-          </button>
-        </div>
-      )}
     </section>
   );
 }

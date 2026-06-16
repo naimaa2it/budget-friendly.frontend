@@ -126,14 +126,32 @@ export default function OrderPrintView({
 
   useEffect(() => {
     const orderUrl = orderApiUrl || `${API}/api/admin/orders/${orderId}`;
+    const fetchSettings = () =>
+      fetch(`${API}/api/admin/settings`, { credentials: "include" })
+        .then((r) => r.json())
+        .then((d) => d.settings || null)
+        .catch(() => null)
+        .then(async (s) => {
+          if (s?.storeName || s?.websiteLogo?.url) return s;
+          // Fall back to public top-banner API (works for non-admin users too)
+          try {
+            const r = await fetch(`${API}/api/admin/top-banner`);
+            const d = await r.json();
+            return {
+              storeName: d.storeName || "",
+              websiteLogo: d.websiteLogo || {},
+              storeEmail: "",
+            };
+          } catch {
+            return s;
+          }
+        });
+
     Promise.all([
       fetch(orderUrl, { credentials: "include" })
         .then((r) => r.json())
         .then((d) => d.order ?? d),
-      fetch(`${API}/api/admin/settings`, { credentials: "include" })
-        .then((r) => r.json())
-        .then((d) => d.settings || null)
-        .catch(() => null),
+      fetchSettings(),
     ])
       .then(([orderData, settingsData]) => {
         setOrder(orderData);

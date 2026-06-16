@@ -445,7 +445,7 @@ export default function Sidebar({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, refreshUser } = useUser();
-  const { storeName } = useStoreSettings();
+  const { storeName, logoUrl } = useStoreSettings();
 
   const [openSections, setOpenSections] = useState({
     overview: false,
@@ -619,9 +619,18 @@ export default function Sidebar({
             href="/"
             className={`flex items-center gap-3 ${collapsed ? "mx-auto" : ""}`}
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-linear-to-br from-pink-500 to-rose-500 text-sm font-bold text-white shadow-sm">
-              YH
-            </span>
+            {logoUrl ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={logoUrl}
+                alt={storeName || "Store"}
+                className="h-10 w-10 rounded-xl object-contain bg-white border border-gray-100 p-0.5 shrink-0"
+              />
+            ) : (
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-pink-500 to-rose-500 text-sm font-bold text-white shadow-sm">
+                {storeName ? storeName.replace(/\s+/g, "").slice(0, 2).toUpperCase() : "SB"}
+              </span>
+            )}
             {!collapsed && (
               <span className="leading-tight">
                 <span className="block text-base font-semibold text-gray-900">

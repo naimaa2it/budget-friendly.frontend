@@ -58,14 +58,7 @@ export async function generateMetadata() {
       title: `${storeName} — Gadgets & Electronics Online Shop in Bangladesh`,
       description:
         "Bangladesh's trusted online shop for gadgets and electronics. Fast delivery, authentic products, best prices.",
-      images: [
-        {
-          url: "/mainLogo.png",
-          width: 457,
-          height: 174,
-          alt: `${storeName} — Gadgets & Electronics Online Shop`,
-        },
-      ],
+      images: [`${SITE_URL}/mainLogo.png`],
     },
     twitter: {
       card: "summary_large_image",

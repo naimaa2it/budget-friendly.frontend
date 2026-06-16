@@ -285,7 +285,7 @@ export default function BlogDetailClient({ slug }) {
       </div>
 
       {/* Article */}
-      <article className="max-w-5xl mx-auto px-2 md:px-4 lg:px-6 py-2 sm:py-4 md:py-8">
+      <article className="max-w-7xl mx-auto px-2 md:px-4 lg:px-6 py-2 sm:py-4 md:py-8">
         {/* Enhanced Header */}
         <header className="mb-1">
           <div className="text-center mb-2">

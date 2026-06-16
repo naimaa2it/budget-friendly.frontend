@@ -1,19 +1,3 @@
-যা যোগ করলে সাইট Professional হবে
-আমি priority অনুযায়ী ভাগ করছি:
-
-HIGH PRIORITY (অবশ্যই দরকার)
-Feature কেন দরকার
-Product Image Zoom & Gallery Customer experience critical
-Compare Products Popular/প্রতিযোগী সব সাইটে আছে
-Recently Viewed Products Conversion বাড়ায়
-Size Chart Modal Clothing/accessories-এ must
-Review with Images Trust বাড়ায়, schema আছে কিন্তু UI নেই
-Password Reset Flow Backend আছে কিন্তু frontend নেই
-Email Verification Security & trust
-Advanced Dashboard Analytics Revenue by product, customer LTV, cohort
-Bulk CSV/Excel Product Upload Admin productivity
-SEO: sitemap.xml + robots.txt Google ranking
-Open Graph / Schema Markup Social sharing & SEO
 MEDIUM PRIORITY (professional look-এর জন্য)
 Feature কেন দরকার
 Live Chat (Tawk.to/Crisp) Customer support

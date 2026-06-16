@@ -36,9 +36,18 @@ function StarRating({ value, onChange }) {
   );
 }
 
+const REVIEW_EDIT_WINDOW_MS = 10 * 60 * 1000;
+
 export default function ProductInfoTabs({ product }) {
   const [activeTab, setActiveTab] = useState("description");
   const { user } = useUser();
+  const [now, setNow] = useState(() => Date.now());
+
+  // tick every 15s so the review "Edit" button auto-hides once the 10-min window passes
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 15000);
+    return () => clearInterval(id);
+  }, []);
 
   // listen for external open-review requests
   useEffect(() => {
@@ -801,7 +810,10 @@ export default function ProductInfoTabs({ product }) {
                               )}
                             </div>
                             {user &&
-                              r.user?.toString() === user._id?.toString() && (
+                              r.user?.toString() === user._id?.toString() &&
+                              r.createdAt &&
+                              now - new Date(r.createdAt).getTime() <
+                                REVIEW_EDIT_WINDOW_MS && (
                                 <button
                                   onClick={() => handleReviewEdit(i)}
                                   className="text-xs text-gray-400 hover:text-gray-700 border border-gray-200 rounded-md px-2.5 py-0.5 transition flex-shrink-0"

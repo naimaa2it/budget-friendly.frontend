@@ -128,25 +128,27 @@ export default function ProductCard({
         className="bg-white border border-[#F1E4D8] rounded-xl shadow-sm group hover:shadow-xl transition-all duration-300 flex flex-col cursor-pointer h-full"
       >
         <div
-          className="relative bg-gray-50 px-2 flex items-center justify-center overflow-hidden"
+          className="relative bg-gray-50"
           style={{ height: imageHeight }}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
         >
-          <Image
-            src={image}
-            alt={product.title || product.slug}
-            width={imageWidth}
-            height={imageHeight}
-            quality={imageQuality}
-            loading="lazy"
-            decoding="async"
-            onError={(e) => {
-              e.currentTarget.onerror = null;
-              e.currentTarget.src = "/assets/placeholder.svg";
-            }}
-            className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300 cursor-pointer"
-          />
+          <div className="absolute inset-0 px-2 flex items-center justify-center overflow-hidden">
+            <Image
+              src={image}
+              alt={product.title || product.slug}
+              width={imageWidth}
+              height={imageHeight}
+              quality={imageQuality}
+              loading="lazy"
+              decoding="async"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = "/assets/placeholder.svg";
+              }}
+              className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300 cursor-pointer"
+            />
+          </div>
 
           {/* Image indicators - only show if more than 1 image */}
           {images.length > 1 && (
@@ -193,7 +195,7 @@ export default function ProductCard({
           </div>
 
           <div
-            className={`absolute top-2 right-2 flex flex-col gap-1.5 transition-opacity duration-300 ${showActionsOnHover ? "opacity-0 group-hover:opacity-100" : "opacity-100"}`}
+            className={`absolute top-2 right-2 z-30 flex flex-col gap-1.5 transition-opacity duration-300 ${showActionsOnHover ? "opacity-0 group-hover:opacity-100" : "opacity-100"}`}
           >
             <button
               onClick={(e) => {

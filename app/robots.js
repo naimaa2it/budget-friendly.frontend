@@ -1,6 +1,7 @@
 export const dynamic = "force-static";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://smartbuy-bd.com";
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://smartproductbuy.com";
 
 export default function robots() {
   return {
@@ -9,16 +10,16 @@ export default function robots() {
         userAgent: "*",
         allow: "/",
         disallow: [
-          "/dashboard/",
-          "/user/",
+          "/dashboard",
+          "/user",
           "/cart",
-          "/checkout/",
+          "/checkout",
           "/wishlist",
           "/track-order",
           "/api/",
-          "/barcode/",
-          "/scan/",
-          "/auth/",
+          "/barcode",
+          "/scan",
+          "/auth",
           "/profile",
         ],
       },

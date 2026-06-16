@@ -1,19 +1,20 @@
 import Home from "@/components/home/Home";
 import { getStoreName } from "@/lib/storeMeta";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://SmartBuy BD.com";
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://smartproductbuy.com";
 
 export async function generateMetadata() {
   const storeName = await getStoreName();
   return {
-    title: `${storeName} — Online Shopping Bangladesh | Skincare, Cosmetics & Electronics`,
+    title: `${storeName} — Gadgets & Electronics Online Shop in Bangladesh`,
     description:
-      "Shop skincare, cosmetics, electronics, and personal care products in Bangladesh. Authentic brands, best prices, free shipping on orders over ৳999. Fast delivery across Bangladesh.",
+      "Shop the latest gadgets, electronics, and smart accessories in Bangladesh. Authentic brands, best prices, free shipping on orders over ৳999. Fast delivery nationwide.",
     alternates: { canonical: SITE_URL },
     openGraph: {
-      title: `${storeName} — Online Shopping Bangladesh`,
+      title: `${storeName} — Gadgets & Electronics Online Shop in Bangladesh`,
       description:
-        "Authentic skincare, cosmetics, electronics & more. Free shipping on ৳999+. Fast delivery across Bangladesh.",
+        "Authentic gadgets, electronics & smart accessories. Free shipping on ৳999+. Fast delivery across Bangladesh.",
       url: SITE_URL,
       type: "website",
     },

@@ -7,6 +7,7 @@ export async function generateMetadata() {
   return {
     title,
     description: `Complete your order securely on ${storeName}.`,
+    robots: { index: false, follow: false, nocache: true },
   };
 }
 

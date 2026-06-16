@@ -6,7 +6,7 @@ export async function generateMetadata() {
   const [title, storeName] = await Promise.all([siteTitle('Search Products'), getStoreName()]);
   return {
     title,
-    description: `Search for skincare, cosmetics, electronics, and beauty products at ${storeName} Bangladesh.`,
+    description: `Search for gadgets, electronics, and accessories at ${storeName} Bangladesh.`,
     robots: { index: false, follow: true },
   };
 }

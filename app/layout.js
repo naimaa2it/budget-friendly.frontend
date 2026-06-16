@@ -17,7 +17,8 @@ import { getStoreName } from "@/lib/storeMeta";
 import { CompareProvider } from "@/components/context/CompareContext";
 import CompareBar from "@/components/product/CompareBar";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://smartbuy-bd.com";
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://smartproductbuy.com";
 
 const workSans = Work_Sans({
   variable: "--font-work-sans",
@@ -30,18 +31,19 @@ export async function generateMetadata() {
   return {
     metadataBase: new URL(SITE_URL),
     title: {
-      default: `${storeName} — Online Shopping Bangladesh`,
+      default: `${storeName} — Gadgets & Electronics Online Shop in Bangladesh`,
       template: `%s | ${storeName}`,
     },
     description:
-      "Bangladesh's trusted online shop for skincare, cosmetics, electronics, and personal care. Authentic brands, best prices, fast delivery.",
+      "Shop the latest gadgets and electronics in Bangladesh — smartphones, accessories, smart devices, and more. Authentic products, best prices, fast nationwide delivery.",
     keywords: [
-      "online shopping Bangladesh",
-      "skincare Bangladesh",
-      "cosmetics online BD",
+      "gadgets Bangladesh",
+      "electronics online BD",
+      "buy gadgets online Bangladesh",
       storeName,
-      "beauty products Bangladesh",
-      "electronics Bangladesh",
+      "smart devices Bangladesh",
+      "mobile accessories BD",
+      "tech gadgets shop Bangladesh",
     ],
     authors: [{ name: storeName, url: SITE_URL }],
     creator: storeName,
@@ -53,22 +55,24 @@ export async function generateMetadata() {
       locale: "bn_BD",
       url: SITE_URL,
       siteName: storeName,
-      title: `${storeName} — Online Shopping Bangladesh`,
-      description: `Bangladesh's trusted online shop for skincare, cosmetics, and electronics. Fast delivery, authentic products.`,
+      title: `${storeName} — Gadgets & Electronics Online Shop in Bangladesh`,
+      description:
+        "Bangladesh's trusted online shop for gadgets and electronics. Fast delivery, authentic products, best prices.",
       images: [
         {
-          url: "/og-image.jpg",
-          width: 1200,
-          height: 630,
-          alt: `${storeName} — Online Shopping Bangladesh`,
+          url: "/mainLogo.png",
+          width: 457,
+          height: 174,
+          alt: `${storeName} — Gadgets & Electronics Online Shop`,
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${storeName} — Online Shopping Bangladesh`,
-      description: `Bangladesh's trusted online shop. Skincare, cosmetics, electronics — best prices, fast delivery.`,
-      images: ["/og-image.jpg"],
+      title: `${storeName} — Gadgets & Electronics Online Shop in Bangladesh`,
+      description:
+        "Bangladesh's trusted online shop for gadgets and electronics — best prices, fast delivery.",
+      images: ["/mainLogo.png"],
     },
     robots: {
       index: true,
@@ -103,7 +107,7 @@ export default async function RootLayout({ children }) {
     "@type": "Organization",
     name: storeName,
     url: SITE_URL,
-    logo: `${SITE_URL}/logo.png`,
+    logo: `${SITE_URL}/mainLogo.png`,
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer support",

@@ -214,7 +214,8 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
   // Inject Product JSON-LD schema for SEO
   useEffect(() => {
     if (!product) return;
-    const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://smartbuy-bd.com";
+    const SITE_URL =
+      process.env.NEXT_PUBLIC_SITE_URL || "https://smartproductbuy.com";
     const schema = {
       "@context": "https://schema.org",
       "@type": "Product",
@@ -257,6 +258,43 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
     script.textContent = JSON.stringify(schema);
     document.head.appendChild(script);
     return () => { script.remove(); };
+  }, [product]);
+
+  // Update document title, meta description, and canonical link client-side —
+  // the static export can't know the product at build time, so the shell HTML
+  // ships generic placeholders that we replace once the real data loads.
+  useEffect(() => {
+    if (!product) return;
+    const prevTitle = document.title;
+    document.title = `${product.title} | SmartBuy BD`;
+
+    const descContent =
+      typeof product.description === "string"
+        ? product.description.slice(0, 160)
+        : `Buy ${product.title} at SmartBuy BD. Best price, fast delivery across Bangladesh.`;
+    let metaDesc = document.querySelector('meta[name="description"]');
+    const prevDesc = metaDesc?.getAttribute("content");
+    if (!metaDesc) {
+      metaDesc = document.createElement("meta");
+      metaDesc.setAttribute("name", "description");
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.setAttribute("content", descContent);
+
+    const SITE_URL =
+      process.env.NEXT_PUBLIC_SITE_URL || "https://smartproductbuy.com";
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.setAttribute("rel", "canonical");
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute("href", `${SITE_URL}/product/${product._id}`);
+
+    return () => {
+      document.title = prevTitle;
+      if (metaDesc && prevDesc !== undefined) metaDesc.setAttribute("content", prevDesc || "");
+    };
   }, [product]);
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";

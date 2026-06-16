@@ -175,6 +175,62 @@ export default function CategoryPageClient({ slug }) {
     })();
   }, [slug, getCategoryBySlug, categoriesMap, getSubcategories]);
 
+  // Update document title, meta description, canonical link, and inject
+  // BreadcrumbList JSON-LD client-side — the static export ships a generic
+  // placeholder shell, so we patch in the real category values once loaded.
+  useEffect(() => {
+    if (!category?.name) return;
+    const prevTitle = document.title;
+    document.title = `${category.name} | SmartBuy BD`;
+
+    const descContent =
+      category.description ||
+      `Browse ${category.name} at SmartBuy BD — gadgets and electronics with best prices and fast delivery across Bangladesh.`;
+    let metaDesc = document.querySelector('meta[name="description"]');
+    const prevDesc = metaDesc?.getAttribute('content');
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.setAttribute('name', 'description');
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.setAttribute('content', descContent);
+
+    const SITE_URL =
+      process.env.NEXT_PUBLIC_SITE_URL || 'https://smartproductbuy.com';
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute('href', `${SITE_URL}/category/${slug}`);
+
+    const breadcrumbSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
+        ...(parentCategory
+          ? [{ '@type': 'ListItem', position: 2, name: parentCategory.name, item: `${SITE_URL}/category/${parentCategory.slug || (parentCategory.name || '').toLowerCase().replace(/\s+/g, '-')}` }]
+          : []),
+        { '@type': 'ListItem', position: parentCategory ? 3 : 2, name: category.name, item: `${SITE_URL}/category/${slug}` },
+      ],
+    };
+    const existing = document.getElementById('category-jsonld');
+    if (existing) existing.remove();
+    const script = document.createElement('script');
+    script.id = 'category-jsonld';
+    script.type = 'application/ld+json';
+    script.textContent = JSON.stringify(breadcrumbSchema);
+    document.head.appendChild(script);
+
+    return () => {
+      document.title = prevTitle;
+      if (metaDesc && prevDesc !== undefined) metaDesc.setAttribute('content', prevDesc || '');
+      script.remove();
+    };
+  }, [category, parentCategory, slug]);
+
   useEffect(() => {
     if (!categoryIdsParam) return;
 

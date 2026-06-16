@@ -5,7 +5,7 @@ import { siteTitle } from '@/lib/storeMeta';
 export async function generateMetadata() {
   return {
     title: await siteTitle('Blog'),
-    description: 'Read our latest articles on beauty tips, skincare guides, product reviews, and more.',
+    description: 'Read our latest articles on gadget guides, tech tips, product reviews, and more.',
   };
 }
 

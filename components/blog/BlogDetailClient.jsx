@@ -82,7 +82,7 @@ const getEmbedUrl = (rawUrl) => {
 };
 
 export default function BlogDetailClient({ slug }) {
-  const { storeName } = useStoreSettings();
+  const { storeName, logoUrl } = useStoreSettings();
   const [blog, setBlog] = useState(null);
   const [relatedBlogs, setRelatedBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -146,6 +146,64 @@ export default function BlogDetailClient({ slug }) {
 
     fetchBlog();
   }, [slug]);
+
+  // Update document title, meta description, canonical link, and inject
+  // BlogPosting JSON-LD client-side — the static export ships a generic
+  // placeholder shell, so we patch in the real values once data loads.
+  useEffect(() => {
+    if (!blog) return;
+    const prevTitle = document.title;
+    document.title = `${blog.title} | SmartBuy BD`;
+
+    const descContent =
+      blog.excerpt || truncateText(blog.content?.replace(/<[^>]*>/g, ""), 160) ||
+      `Read ${blog.title} on the SmartBuy BD blog.`;
+    let metaDesc = document.querySelector('meta[name="description"]');
+    const prevDesc = metaDesc?.getAttribute("content");
+    if (!metaDesc) {
+      metaDesc = document.createElement("meta");
+      metaDesc.setAttribute("name", "description");
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.setAttribute("content", descContent);
+
+    const SITE_URL =
+      process.env.NEXT_PUBLIC_SITE_URL || "https://smartproductbuy.com";
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.setAttribute("rel", "canonical");
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute("href", `${SITE_URL}/blog/${slug}`);
+
+    const imageUrl = getImageUrl(blog.featuredImage, blog.thumbnail);
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      headline: blog.title,
+      description: descContent,
+      image: imageUrl ? [imageUrl] : undefined,
+      datePublished: blog.publishedAt || blog.publishDate || blog.createdAt,
+      dateModified: blog.updatedAt || blog.publishedAt || blog.createdAt,
+      author: { "@type": "Organization", name: "SmartBuy BD" },
+      publisher: { "@type": "Organization", name: "SmartBuy BD" },
+      mainEntityOfPage: `${SITE_URL}/blog/${slug}`,
+    };
+    const existing = document.getElementById("blog-jsonld");
+    if (existing) existing.remove();
+    const script = document.createElement("script");
+    script.id = "blog-jsonld";
+    script.type = "application/ld+json";
+    script.textContent = JSON.stringify(schema);
+    document.head.appendChild(script);
+
+    return () => {
+      document.title = prevTitle;
+      if (metaDesc && prevDesc !== undefined) metaDesc.setAttribute("content", prevDesc || "");
+      script.remove();
+    };
+  }, [blog, slug]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -298,11 +356,20 @@ export default function BlogDetailClient({ slug }) {
             {/* Enhanced Author & Meta Info */}
             <div className="flex flex-col sm:flex-row flex-wrap justify-center sm:justify-between items-center gap-3 sm:gap-6 text-gray-600 mb-2 px-2 sm:px-4 md:px-0">
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-full bg-gradient-to-r from-orange-400 to-pink-400 flex items-center justify-center shadow-lg">
-                  <span className="text-white font-bold text-xs sm:text-sm">
-                    B
-                  </span>
-                </div>
+                {logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={logoUrl}
+                    alt={storeName || "Store"}
+                    className="w-10 sm:w-12 h-10 sm:h-12 rounded-full object-contain bg-white border border-gray-200 shadow-lg p-1"
+                  />
+                ) : (
+                  <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-full bg-gradient-to-r from-orange-400 to-pink-400 flex items-center justify-center shadow-lg">
+                    <span className="text-white font-bold text-xs sm:text-sm">
+                      {storeName ? storeName.charAt(0).toUpperCase() : "B"}
+                    </span>
+                  </div>
+                )}
                 <div className="text-left">
                   <div className="font-semibold text-gray-900 text-xs sm:text-sm">
                     {storeName || "Store"}

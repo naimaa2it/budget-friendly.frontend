@@ -1,7 +1,8 @@
 import TagPageClient from "@/components/category/TagPageClient";
 import { getStoreName } from "@/lib/storeMeta";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://SmartBuy BD.com";
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://smartproductbuy.com";
 
 const TAG_LABELS = {
   "best-seller": "Best Sellers",
@@ -32,7 +33,7 @@ export async function generateMetadata({ params }) {
   const label =
     TAG_LABELS[slug] ||
     slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-  const description = `Browse ${label} at ${storeName} — Bangladesh's trusted beauty & skincare shop. Best prices, fast delivery.`;
+  const description = `Browse ${label} at ${storeName} — Bangladesh's trusted gadgets & electronics shop. Best prices, fast delivery.`;
   const canonical = `${SITE_URL}/tag/${slug}`;
 
   return {

@@ -6,7 +6,7 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const nextConfig = {
-  // output: "export",
+  output: "export",
   trailingSlash: true,
   // headers() is not supported with output: "export" — set these via .htaccess on cPanel instead.
   // async headers() {

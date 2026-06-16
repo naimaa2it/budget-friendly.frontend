@@ -160,7 +160,7 @@ export default function AdminLogin() {
         <ul className="list-disc list-inside space-y-1">
           <li>Admin accounts are stored in a separate <strong>Admin collection</strong> (not mixed with regular users)</li>
           <li>Passwords are hashed with bcrypt (12 rounds)</li>
-          <li>Account locks after 5 failed login attempts (30-minute lockout)</li>
+          <li>Account locks after 20 failed login attempts (30-minute lockout)</li>
           <li>Login attempts and IP addresses are logged</li>
           <li>Server validates the admin secret code on each login</li>
         </ul>

@@ -1,20 +1,3 @@
-MEDIUM PRIORITY (professional look-এর জন্য)
-Feature কেন দরকার
-Live Chat (Tawk.to/Crisp) Customer support
-Product Bundle / Gift Set Upselling
-Pre-order System Schema আছে, logic নেই
-Gift Cards Revenue stream
-Cart Share Link Viral/marketing
-Customer Messaging Center Admin থেকে customer-কে message
-SMS Notification BD-তে email চেয়ে SMS বেশি effective
-Push Notifications Re-engagement
-Referral Program Growth hacking
-Stock Alerts Email Waitlist আছে, email নেই
-Affiliate Program Marketing channel
-Loyalty Tiers (Silver/Gold/Platinum) Retention
-Product Q&A (Public) FAQ আছে কিন্তু public UI নেই
-Sticky Add to Cart Button Mobile UX
-Flash Sale Countdown Timer Urgency/conversion
 DASHBOARD IMPROVEMENTS
 Feature Details
 Real-time Sales Chart Today/Week/Month revenue live

@@ -4,12 +4,23 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/components/context/UserContext';
 
+// Mirrors backend lib/permissions.js — kept in sync manually since the
+// backend module is ESM-only and not importable from the Next.js frontend.
+const PERMISSION_KEYS = ['catalog', 'orders', 'customers', 'content', 'addons'];
+const PERMISSION_LABELS = {
+  catalog: 'Catalog (Products, Variants, Discounts, Barcodes, Rewards, Waitlist…)',
+  orders: 'Orders (incl. Returns, Abandoned Carts, Wishlist)',
+  customers: 'Customers & Customer Tags',
+  content: 'Marketing & Content (Banners, Popups, Blog, Media…)',
+  addons: 'Addons (Pixels, Analytics…)',
+};
+
 export default function AdminEditor({ adminId }) {
   const router = useRouter();
   const { user, refreshUser } = useUser();
   const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
-  const [admin, setAdmin] = useState({ name: '', email: '', role: 'moderator', isActive: true });
+  const [admin, setAdmin] = useState({ name: '', email: '', role: 'moderator', isActive: true, permissions: [] });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [password, setPassword] = useState('');
@@ -21,7 +32,7 @@ export default function AdminEditor({ adminId }) {
     setLoading(true);
     fetch(`${API}/api/admin/admins/${adminId}`, { credentials: 'include' })
       .then(r => r.json())
-      .then(b => { if (b.admin) setAdmin(b.admin); })
+      .then(b => { if (b.admin) setAdmin({ permissions: [], ...b.admin }); })
       .catch(err => console.error(err))
       .finally(() => setLoading(false));
   }, [adminId, API]);
@@ -32,7 +43,9 @@ export default function AdminEditor({ adminId }) {
     try {
       const method = (adminId && adminId !== 'new') ? 'PUT' : 'POST';
       const url = (method === 'POST') ? `${API}/api/admin/admins` : `${API}/api/admin/admins/${adminId}`;
-      const body = method === 'POST' ? { ...admin, password } : { name: admin.name, email: admin.email, role: admin.role, isActive: admin.isActive, newPassword: password || undefined };
+      const body = method === 'POST'
+        ? { ...admin, password }
+        : { name: admin.name, email: admin.email, role: admin.role, isActive: admin.isActive, permissions: admin.permissions, newPassword: password || undefined };
       const resp = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(body) });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error || 'Save failed');
@@ -79,6 +92,32 @@ export default function AdminEditor({ adminId }) {
               </select>
             </div>
           </div>
+
+          {admin.role === 'moderator' && (
+            <div>
+              <label className="block text-sm font-medium">Section access</label>
+              <p className="text-xs text-gray-500 mb-2">Leave all unchecked to give this moderator full access. Check one or more to restrict them to only those sections.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {PERMISSION_KEYS.map((key) => (
+                  <label key={key} className="flex items-start gap-2 text-sm border rounded px-3 py-2">
+                    <input
+                      type="checkbox"
+                      className="mt-0.5"
+                      checked={(admin.permissions || []).includes(key)}
+                      onChange={(e) => setAdmin((a) => {
+                        const current = a.permissions || [];
+                        const permissions = e.target.checked
+                          ? [...current, key]
+                          : current.filter((k) => k !== key);
+                        return { ...a, permissions };
+                      })}
+                    />
+                    <span>{PERMISSION_LABELS[key]}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium">Set new password (leave blank to keep current)</label>

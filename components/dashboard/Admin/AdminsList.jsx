@@ -3,6 +3,20 @@
 import React, { useEffect, useState } from 'react';
 import { useUser } from '@/components/context/UserContext';
 
+const PERMISSION_LABELS = {
+  catalog: 'Catalog',
+  orders: 'Orders',
+  customers: 'Customers',
+  content: 'Content',
+  addons: 'Addons',
+};
+
+function permissionSummary(a) {
+  if (a.role === 'admin') return 'Full access';
+  if (!Array.isArray(a.permissions) || a.permissions.length === 0) return 'Full access';
+  return a.permissions.map((key) => PERMISSION_LABELS[key] || key).join(', ');
+}
+
 export default function AdminsList() {
   const { user, refreshUser } = useUser();
   const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -79,6 +93,7 @@ export default function AdminsList() {
               <th className="py-2">Name</th>
               <th className="py-2">Email</th>
               <th className="py-2">Role</th>
+              <th className="py-2">Access</th>
               <th className="py-2">Status</th>
               <th className="py-2">Actions</th>
             </tr>
@@ -89,6 +104,7 @@ export default function AdminsList() {
                 <td className="py-3">{a.name}</td>
                 <td className="py-3">{a.email}</td>
                 <td className="py-3">{a.role}</td>
+                <td className="py-3 text-gray-600">{permissionSummary(a)}</td>
                 <td className="py-3">{a.isActive ? <span className="text-green-600">Active</span> : <span className="text-red-600">Disabled</span>}</td>
                 <td className="py-3">
                   <div className="flex gap-2">
@@ -102,7 +118,7 @@ export default function AdminsList() {
                 </td>
               </tr>
             ))}
-            {items.length === 0 && <tr><td colSpan={5} className="text-center py-8 text-gray-500">No admin accounts found</td></tr>}
+            {items.length === 0 && <tr><td colSpan={6} className="text-center py-8 text-gray-500">No admin accounts found</td></tr>}
           </tbody>
         </table>
         </div>

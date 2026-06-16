@@ -973,6 +973,121 @@ function OrdersSection({ API }) {
 }
 
 
+function MyReviewsSection({ API }) {
+  const [reviews, setReviews] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const r = await fetch(`${API}/api/products/my-reviews`, {
+          credentials: "include",
+        });
+        const d = await r.json();
+        setReviews(d.reviews || []);
+      } catch {
+        /* ignore */
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchReviews();
+  }, []);
+
+  const fmtDate = (d) =>
+    new Date(d).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+
+  if (loading)
+    return (
+      <div className="bg-white rounded-lg shadow p-10 flex justify-center">
+        <svg
+          className="animate-spin w-8 h-8 text-red-500"
+          viewBox="0 0 24 24"
+          fill="none"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          />
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v8H4z"
+          />
+        </svg>
+      </div>
+    );
+
+  return (
+    <div className="bg-white rounded-lg shadow p-4 md:p-6">
+      <h2 className="text-xl md:text-2xl font-semibold mb-4">My Reviews</h2>
+      {reviews.length === 0 ? (
+        <p className="text-gray-600">No reviews yet.</p>
+      ) : (
+        <div className="space-y-4">
+          {reviews.map((rev) => (
+            <Link
+              key={`${rev.productId}-${rev.reviewIndex}`}
+              href={`/product/${rev.productSlug || rev.productId}`}
+              className="flex gap-3 p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition"
+            >
+              {rev.productImage ? (
+                <Image
+                  src={rev.productImage}
+                  alt={rev.productTitle}
+                  width={56}
+                  height={56}
+                  className="w-14 h-14 rounded-lg object-cover shrink-0 border border-gray-100"
+                />
+              ) : (
+                <div className="w-14 h-14 rounded-lg bg-gray-100 shrink-0" />
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  {rev.productTitle}
+                </p>
+                <div className="flex items-center gap-1 mt-0.5">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <svg
+                      key={star}
+                      className={`w-4 h-4 ${star <= rev.rating ? "text-yellow-400" : "text-gray-200"}`}
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                  <span className="text-xs text-gray-400 ml-1">
+                    {fmtDate(rev.createdAt)}
+                  </span>
+                </div>
+                {rev.title && (
+                  <p className="text-sm font-semibold text-gray-800 mt-1">
+                    {rev.title}
+                  </p>
+                )}
+                {rev.body && (
+                  <p className="text-sm text-gray-600 mt-0.5 line-clamp-2">
+                    {rev.body}
+                  </p>
+                )}
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function UserSectionPage() {
   const { user, setUser, refreshUser } = useUser();
   const { t } = useLanguage();
@@ -1599,12 +1714,9 @@ export default function UserSectionPage() {
             )}
 
             {section === "reviews" && (
-              <div className="bg-white rounded-lg shadow p-4 md:p-6">
-                <h2 className="text-xl md:text-2xl font-semibold mb-4">
-                  My Reviews
-                </h2>
-                <p className="text-gray-600">No reviews yet.</p>
-              </div>
+              <MyReviewsSection
+                API={process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}
+              />
             )}
 
             {section === "rewards" && (

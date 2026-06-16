@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/components/context/UserContext";
-import { FaBell, FaStar, FaQuestionCircle } from "react-icons/fa";
+import { FaBell, FaStar, FaQuestionCircle, FaClone } from "react-icons/fa";
 
 export default function ProductsList() {
   const { user, refreshUser } = useUser();
@@ -19,6 +19,7 @@ export default function ProductsList() {
   const [selectedMain, setSelectedMain] = useState(null);
   const [selectedSub, setSelectedSub] = useState(null);
   const [selectedChild, setSelectedChild] = useState(null);
+  const [duplicatingId, setDuplicatingId] = useState(null);
 
   // helper to collect all descendant ids in tree node
   const collectIds = (node) => {
@@ -94,6 +95,26 @@ export default function ProductsList() {
       fetchItems();
     } catch (err) {
       alert(err.message || "Failed");
+    }
+  };
+
+  const handleDuplicate = async (id) => {
+    setDuplicatingId(id);
+    try {
+      const resp = await fetch(`${API}/api/admin/products/${id}/duplicate`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const body = await resp.json();
+      if (!resp.ok) throw new Error(body.error || "Duplicate failed");
+      await fetchItems();
+      if (body.product?._id) {
+        router.push(`/dashboard/products/${body.product._id}`);
+      }
+    } catch (err) {
+      alert(err.message || "Failed to duplicate product");
+    } finally {
+      setDuplicatingId(null);
     }
   };
 
@@ -259,6 +280,15 @@ export default function ProductsList() {
                       >
                         Edit
                       </Link>
+                      <button
+                        title="Duplicate this product"
+                        onClick={() => handleDuplicate(p._id)}
+                        disabled={duplicatingId === p._id}
+                        className="px-2 py-1 border rounded text-xs text-gray-600 hover:text-pink-600 disabled:opacity-50"
+                      >
+                        <FaClone className="inline-block mr-1" />
+                        {duplicatingId === p._id ? "Duplicating…" : "Duplicate"}
+                      </button>
                       {user?.role === "admin" && (
                         <button
                           className="px-2 py-1 border rounded text-xs text-white bg-red-600 hover:bg-red-700"

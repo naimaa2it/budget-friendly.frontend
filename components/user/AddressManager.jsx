@@ -22,8 +22,15 @@ export default function AddressManager() {
   const [locationData, setLocationData] = useState({});
   const [cities, setCities] = useState([]);
   const [zones, setZones] = useState([]);
+  const [orderAddresses, setOrderAddresses] = useState([]);
+  const [savingOrderAddr, setSavingOrderAddr] = useState(null);
 
   const API = process.env.NEXT_PUBLIC_API_URL || '';
+
+  const addressKey = (a) =>
+    [a.fullName ?? a.name, a.phone, a.email, a.city, a.zone, a.address]
+      .map((v) => String(v || '').trim().toLowerCase())
+      .join('|');
 
   const loadAddresses = async () => {
     try {
@@ -53,10 +60,12 @@ export default function AddressManager() {
     // run once on mount - do not refer to outer helpers so lint is happy
     const init = async () => {
       const base = process.env.NEXT_PUBLIC_API_URL || '';
+      let savedAddresses = [];
       try {
         const res = await fetch(`${base}/api/user/addresses`, { credentials: 'include' });
         const json = await res.json();
-        setAddresses(json.addresses || []);
+        savedAddresses = json.addresses || [];
+        setAddresses(savedAddresses);
       } catch (err) {
         console.error('failed to load addresses', err);
       }
@@ -71,10 +80,64 @@ export default function AddressManager() {
         console.error('Failed to load location data', err);
       }
 
+      // Surface addresses used on past orders that aren't saved yet, so the
+      // user can find/re-save an address they checked out with previously.
+      try {
+        const resp = await fetch(`${base}/api/orders/my`, { credentials: 'include' });
+        const json = await resp.json();
+        const seen = new Set(savedAddresses.map(addressKey));
+        const fromOrders = [];
+        (json.orders || []).forEach((order) => {
+          const billing = order.billingDetails || {};
+          if (!billing.address || !billing.city) return;
+          const fullAddress = [billing.address, billing.area].filter(Boolean).join(', ');
+          const candidate = {
+            fullName: billing.name || '',
+            email: billing.email || '',
+            phone: billing.phone || '',
+            city: billing.city || '',
+            zone: billing.zone || '',
+            address: fullAddress,
+            type: 'Home',
+          };
+          const key = addressKey(candidate);
+          if (seen.has(key)) return;
+          seen.add(key);
+          fromOrders.push(candidate);
+        });
+        setOrderAddresses(fromOrders.slice(0, 6));
+      } catch (err) {
+        console.error('Failed to load addresses from previous orders', err);
+      }
+
       setLoading(false);
     };
     init();
   }, []);
+
+  const saveOrderAddress = async (addr, idx) => {
+    setSavingOrderAddr(idx);
+    try {
+      const res = await fetch(`${API}/api/user/addresses`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(addr),
+      });
+      const json = await res.json();
+      if (json.ok) {
+        setOrderAddresses((prev) => prev.filter((_, i) => i !== idx));
+        loadAddresses();
+      } else {
+        alert(json.error || 'Failed to save address');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to save address');
+    } finally {
+      setSavingOrderAddr(null);
+    }
+  };
 
   useEffect(() => {
     if (formData.city && locationData[formData.city]) {
@@ -287,6 +350,31 @@ export default function AddressManager() {
         </div>
       )}
       {loading && <p>Loading...</p>}
+
+      {!loading && orderAddresses.length > 0 && (
+        <div className="mb-6">
+          <p className="text-sm font-medium text-gray-700 mb-2">
+            Addresses from your previous orders
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {orderAddresses.map((addr, idx) => (
+              <div key={idx} className="p-3 border border-dashed border-gray-300 rounded-lg bg-gray-50">
+                <p className="font-semibold text-sm">{addr.fullName || 'Unnamed'}</p>
+                <p className="text-sm">{addr.phone}</p>
+                <p className="text-sm">{addr.address}, {addr.zone}, {addr.city}</p>
+                <button
+                  onClick={() => saveOrderAddress(addr, idx)}
+                  disabled={savingOrderAddr === idx}
+                  className="mt-2 text-sm text-indigo-600 underline disabled:opacity-50"
+                >
+                  {savingOrderAddr === idx ? 'Saving...' : 'Save to my addresses'}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {!loading && addresses.length === 0 && <p className="text-gray-600">No addresses saved yet.</p>}
       {!loading && addresses.length > 0 && (
         <>

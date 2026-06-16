@@ -147,6 +147,7 @@ const SECTIONS = [
     key: "orders",
     label: "Orders",
     icon: SECTION_ICONS.commerce,
+    permissionKey: "orders",
     matchPrefixes: [
       "/dashboard/orders",
       "/dashboard/orders/follow-up",
@@ -265,6 +266,7 @@ const SECTIONS = [
     key: "customers",
     label: "Customers",
     icon: SECTION_ICONS.commerce,
+    permissionKey: "customers",
     matchPrefixes: ["/dashboard/customers", "/dashboard/customer-tags"],
     items: [
       {
@@ -285,6 +287,7 @@ const SECTIONS = [
     key: "content",
     label: "Marketing & Content",
     icon: SECTION_ICONS.content,
+    permissionKey: "content",
     matchPrefixes: [
       "/dashboard/occasions",
       "/dashboard/promo-strip",
@@ -351,6 +354,7 @@ const SECTIONS = [
     key: "addons",
     label: "Addons",
     icon: "M12 2a10 10 0 100 20A10 10 0 0012 2zm0 4v4m0 4h.01M8 10h8",
+    permissionKey: "addons",
     matchPrefixes: ["/dashboard/addons"],
     items: [
       {
@@ -551,6 +555,10 @@ export default function Sidebar({
   };
 
   const renderSection = (section) => {
+    if (section.permissionKey && !hasPermission(user, section.permissionKey)) {
+      return null;
+    }
+
     const visibleItems = section.items.filter(
       (item) => !item.adminOnly || user?.role === "admin",
     );

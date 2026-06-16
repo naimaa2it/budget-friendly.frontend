@@ -3,6 +3,7 @@
 import React, { useEffect, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/dashboard/Sidebar";
+import NotificationBell from "@/components/dashboard/NotificationBell";
 import { useUser } from "@/components/context/UserContext";
 import { useGlobalBarcodeScan } from "@/hooks/useGlobalBarcodeScan";
 
@@ -141,8 +142,8 @@ export default function DashboardLayout({ children }) {
                 <span>Back</span>
               </button>
             </div>
-            <div>
-              {/* breadcrumb / page-title slot (keeps layout stable) */}
+            <div className="flex items-center gap-2">
+              <NotificationBell />
             </div>
           </div>
           {children}

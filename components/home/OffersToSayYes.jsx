@@ -152,7 +152,7 @@ export default function OffersToSayYes() {
   if (offers.length === 0) return null;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-2 md:px-4 lg:px-6 py-8">
+    <div className="w-full max-w-7xl mx-auto px-3 md:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">

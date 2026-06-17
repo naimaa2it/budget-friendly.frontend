@@ -30,7 +30,7 @@ export default function CartFloating() {
   return (
     <>
       {/* Mobile: floating cart icon above WhatsApp */}
-      <span className="md:hidden fixed z-50" style={{ bottom: 102, right: 16 }}>
+      <span className="md:hidden fixed z-50" style={{ bottom: 60, right: 16 }}>
         {/* ping ring — always active like a map marker */}
         <span className="absolute inset-0 rounded-full bg-[#f32424] opacity-40 animate-ping" />
         <button

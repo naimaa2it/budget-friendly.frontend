@@ -11,7 +11,7 @@ import ToastProvider from "@/components/ui/ToastProvider";
 import FrequentlyBoughtTogetherModal from "@/components/cart/FrequentlyBoughtTogetherModal";
 import LayoutWrapper from "@/components/layout/LayoutWrapper";
 import ScrollToTop from "@/components/ui/ScrollToTop";
-import FloatingWhatsApp from "@/components/ui/FloatingWhatsApp";
+// import FloatingWhatsApp from "@/components/ui/FloatingWhatsApp";
 import PopupBanner from "@/components/ui/PopupBanner";
 import { getStoreName } from "@/lib/storeMeta";
 import { CompareProvider } from "@/components/context/CompareContext";
@@ -148,7 +148,7 @@ export default async function RootLayout({ children }) {
                 <CompareProvider>
                   <ScrollToTop />
                   <LayoutWrapper>{children}</LayoutWrapper>
-                  <FloatingWhatsApp />
+                  {/* <FloatingWhatsApp /> */}
                   {/* global UI overlays */}
                   <CartToast />
                   <CartSidebar />

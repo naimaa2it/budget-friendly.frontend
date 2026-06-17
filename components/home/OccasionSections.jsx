@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
+import { useLanguage } from "@/components/context/LanguageContext";
 
 // How many cards visible per breakpoint (used for step calculation)
 const VISIBLE = { default: 2, sm: 3, md: 4, lg: 5 };
@@ -181,6 +182,7 @@ function OccasionSlider({ section }) {
 
 export default function OccasionSections() {
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const { t } = useLanguage();
   const [sections, setSections] = useState([]);
 
   useEffect(() => {
@@ -206,7 +208,7 @@ export default function OccasionSections() {
                 href={section.viewAllLink}
                 className="text-md  text-rose-500 font-semibold hover:underline whitespace-nowrap"
               >
-                View All →
+                {t("home.view_all")}
               </Link>
             )}
           </div>

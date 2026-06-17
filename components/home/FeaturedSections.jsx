@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import ProductCard from "@/components/product/ProductCard";
+import { useLanguage } from "@/components/context/LanguageContext";
 
 // Returns how many cards fit at the current viewport width
 function useVisibleCount() {
@@ -125,6 +126,7 @@ function FeaturedSlider({ products }) {
 
 export default function FeaturedSections() {
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const { t } = useLanguage();
   const [sections, setSections] = useState([]);
   const [loaded, setLoaded] = useState(false);
 
@@ -156,7 +158,7 @@ export default function FeaturedSections() {
                 href={sec.viewAllLink}
                 className="text-md  text-rose-500 font-semibold hover:underline whitespace-nowrap"
               >
-                View All →
+                {t("home.view_all")}
               </a>
             )}
           </div>

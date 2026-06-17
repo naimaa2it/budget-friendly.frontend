@@ -11,11 +11,13 @@ import Skeleton from '@/components/ui/Skeleton';
 import WaitlistModal from '@/components/cart/WaitlistModal';
 import Link from 'next/link';
 import { getDisplayPrice } from '@/lib/pricing';
+import { useLanguage } from '@/components/context/LanguageContext';
 
 export default function PopularPicks() {
   const router = useRouter();
   const { addToCart, addToWishlist } = useCart();
   const { user } = useUser();
+  const { t } = useLanguage();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [pendingWishlist, setPendingWishlist] = useState(null);
   const [waitlistProduct, setWaitlistProduct] = useState(null);
@@ -196,14 +198,14 @@ export default function PopularPicks() {
         <div className="flex items-center gap-3">
           <div className="w-3 h-3 bg-red-600 rounded-full"></div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            <span className="font-bold">TODAY&apos;S</span> <span className="font-normal">POPULAR PICKS</span>
+            {t("home.popular_picks")}
           </h1>
         </div>
         <Link
           href="/tag/popular-pics"
           className="text-md text-rose-500 font-semibold hover:underline whitespace-nowrap"
         >
-          View All →
+          {t("home.view_all")}
         </Link>
       </div>
 
@@ -393,7 +395,7 @@ export default function PopularPicks() {
                     )}
                   </div>
                   {product.freeShipping && (
-                    <p className="text-sm font-semibold text-green-700">🚚 Free Shipping</p>
+                    <p className="text-sm font-semibold text-green-700">{t("home.free_shipping")}</p>
                   )}
 
                   {/* Rating and Reviews */}
@@ -408,14 +410,14 @@ export default function PopularPicks() {
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
                       </svg>
-                      <span className="font-medium">In Stock</span>
+                      <span className="font-medium">{t("product.in_stock")}</span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2 text-red-600 text-sm mb-3">
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"/>
                       </svg>
-                      <span className="font-medium">Out of Stock</span>
+                      <span className="font-medium">{t("home.out_of_stock")}</span>
                     </div>
                   )}
 
@@ -423,7 +425,7 @@ export default function PopularPicks() {
                   {product.status === 'Stock Out' ? (
                     <div className="absolute bottom-4 left-4 right-4 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <button disabled className="flex-none bg-gray-100 text-red-500 py-2 px-2 rounded-md text-xs font-medium cursor-not-allowed whitespace-nowrap">
-                        Out of Stock
+                        {t("home.out_of_stock")}
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); setWaitlistProduct(product); }}
@@ -437,7 +439,7 @@ export default function PopularPicks() {
                       onClick={(e) => { e.stopPropagation(); addToCart(product, 1); }}
                       className="absolute bottom-4 left-4 right-4 bg-red-600 text-white py-2 rounded-md font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-red-700"
                     >
-                      Add to Cart
+                      {t("home.add_to_cart")}
                     </button>
                   )}
                 </div>

@@ -18,7 +18,7 @@ import WaitlistModal from "@/components/cart/WaitlistModal";
 import { getVariantColors } from "@/components/cart/VariantEditModal";
 import { getDisplayPrice } from "@/lib/pricing";
 import { useCompare } from "@/components/context/CompareContext";
-
+import { useLanguage } from "@/components/context/LanguageContext";
 import Skeleton from "@/components/ui/Skeleton";
 
 export default function ProductCard({
@@ -35,6 +35,7 @@ export default function ProductCard({
   const { addToCart, addToWishlist } = useCart();
   const { user } = useUser();
   const { addToCompare, removeFromCompare, isInCompare } = useCompare();
+  const { t } = useLanguage();
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
   const [hovered, setHovered] = React.useState(false);
   const [showAuthModal, setShowAuthModal] = React.useState(false);
@@ -287,7 +288,7 @@ export default function ProductCard({
             </div>
             {product.freeShipping && (
               <p className="text-xs font-semibold text-green-700 mt-0.5">
-                🚚 Free Shipping
+                {t("home.free_shipping")}
               </p>
             )}
             {/* Color swatches - extracted from variants */}
@@ -327,7 +328,7 @@ export default function ProductCard({
                 disabled
                 className="bg-gray-100 text-red-500 py-2 px-2 rounded-md text-[10px] font-medium cursor-not-allowed whitespace-nowrap"
               >
-                Out of Stock
+                {t("home.out_of_stock")}
               </button>
               <button
                 onClick={(e) => {
@@ -348,7 +349,7 @@ export default function ProductCard({
               }}
               className="w-full bg-red-600 text-white py-2 rounded-md font-medium hover:bg-red-700 transition mt-auto"
             >
-              Add to Cart
+              {t("home.add_to_cart")}
             </button>
           )}
         </div>

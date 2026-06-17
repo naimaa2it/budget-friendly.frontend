@@ -7,6 +7,7 @@ import { GiRopeCoil, GiPeanut, GiWoodPile } from "react-icons/gi";
 import { FaArrowRight, FaTrash } from "react-icons/fa";
 import { useUser } from "@/components/context/UserContext";
 import { useCategories } from "@/components/context/CategoryContext";
+import { useLanguage } from "@/components/context/LanguageContext";
 import Image from "next/image";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -42,6 +43,7 @@ const categoryAssets = {
 export default function ShopByCategory() {
   const { categories: rawCategories, loading } = useCategories();
   const { user } = useUser();
+  const { t } = useLanguage();
   const scrollContainerRef = useRef(null);
   const [page, setPage] = useState(0);
 
@@ -97,7 +99,7 @@ export default function ShopByCategory() {
     <div className="max-w-7xl mx-auto px-3 sm:px-4 mt-6 mb-6">
       <div className="max-w-6xl mx-auto flex justify-between items-center mt-2 mb-4 px-6 ">
         <h1 className="text-xl md:text-3xl font-bold text-gray-900 text-center mt-4">
-          <span className="border-b-2 border-red-500">Category</span>
+          <span className="border-b-2 border-red-500">{t("home.category")}</span>
         </h1>
         <div className="flex gap-2 mt-4">
           <button
@@ -147,11 +149,11 @@ export default function ShopByCategory() {
         {/* unified paginated layout */}
         {loading ? (
           <div className="text-gray-500 py-8 w-full text-center">
-            Loading categories...
+            {t("home.loading_categories")}
           </div>
         ) : rendered.length === 0 ? (
           <div className="text-gray-500 py-8 w-full text-center">
-            No categories available
+            {t("home.no_categories")}
           </div>
         ) : (
           <div className="grid  mb-4 grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-6">

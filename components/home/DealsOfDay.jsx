@@ -15,6 +15,7 @@ import { useUser } from "@/components/context/UserContext";
 import AuthModal from "@/components/auth/AuthModal";
 import WaitlistModal from "@/components/cart/WaitlistModal";
 import { getDisplayPrice } from "@/lib/pricing";
+import { useLanguage } from "@/components/context/LanguageContext";
 
 export default function DealsOfDay() {
   const [selectedImage, setSelectedImage] = useState(0);
@@ -35,6 +36,7 @@ export default function DealsOfDay() {
   const router = useRouter();
   const { addToCart, addToWishlist } = useCart();
   const { user } = useUser();
+  const { t } = useLanguage();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [pendingWishlist, setPendingWishlist] = useState(null);
   const [waitlistProduct, setWaitlistProduct] = useState(null);
@@ -175,7 +177,7 @@ export default function DealsOfDay() {
 
   if (loading) {
     return (
-      <div className="py-24 text-center text-gray-500">Loading deal...</div>
+      <div className="py-24 text-center text-gray-500">{t("home.loading_deal")}</div>
     );
   }
 
@@ -189,8 +191,7 @@ export default function DealsOfDay() {
       <div className="flex items-center gap-3 mb-6">
         <div className="w-3 h-3 bg-red-600 rounded-full shrink-0"></div>
         <h1 className="text-xl md:text-3xl font-bold text-gray-900">
-          <span className="font-bold">DEAL OF</span>{" "}
-          <span className="font-normal">THE DAY</span>
+          {t("home.deal_of_day")}
         </h1>
       </div>
 
@@ -338,7 +339,7 @@ export default function DealsOfDay() {
                         disabled
                         className="flex-none bg-gray-100 text-red-500 py-3 px-4 rounded-lg text-sm font-medium cursor-not-allowed whitespace-nowrap"
                       >
-                        Out of Stock
+                        {t("home.out_of_stock")}
                       </button>
                       <button
                         onClick={() => setWaitlistProduct(mainProduct)}

@@ -6,6 +6,7 @@ import WebsiteLogo from "@/components/ui/WebsiteLogo";
 import AuthModal from "@/components/auth/AuthModal";
 import { useUser } from "@/components/context/UserContext";
 import { useStoreSettings } from "@/components/context/StoreSettingsContext";
+import { useLanguage } from "@/components/context/LanguageContext";
 import Image from "next/image";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -13,6 +14,7 @@ const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 export default function Footer() {
   const { user, refreshUser } = useUser();
   const { storeName, footerInfo, socialLinks } = useStoreSettings();
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [localToast, setLocalToast] = useState(null); // { type: 'success'|'error'|'warn', msg }
   const [subscribed, setSubscribed] = useState(false);
@@ -39,17 +41,17 @@ export default function Footer() {
     if (!user) {
       // show interactive toast with login button
       toast(
-        (t) => (
+        (toastObj) => (
           <span className="flex items-center gap-2">
-            Please login first to manage newsletter subscription.{" "}
+            {t("footer.login_to_subscribe")}{" "}
             <button
               onClick={() => {
-                toast.dismiss(t.id);
+                toast.dismiss(toastObj.id);
                 setShowAuthModal(true);
               }}
               className="font-semibold text-pink-600 underline hover:text-pink-800"
             >
-              Login
+              {t("auth.login")}
             </button>
           </span>
         ),
@@ -112,8 +114,7 @@ export default function Footer() {
                 <WebsiteLogo />
               </div>
               <p className="text-sm text-[#202020] md:max-w-[260px]">
-                {storeName || "Our Store"} brings you curated products with fast
-                shipping and reliable customer service.
+                {storeName || "Our Store"} {t("footer.store_desc")}
               </p>
 
               {/* Contact info */}
@@ -315,11 +316,10 @@ export default function Footer() {
             {/* Newsletter — order-2 on mobile (after brand), order-last on desktop */}
             <div className="order-2 md:order-last">
               <h3 className="text-md font-semibold text-[#202020] mb-3">
-                Join our newsletter
+                {t("footer.newsletter_title")}
               </h3>
               <p className="text-sm text-[#202020] mb-3">
-                ✨ Get the latest product updates, exclusive offers, and special
-                discounts before anyone else.{" "}
+                {t("footer.newsletter_desc")}
               </p>
               <form onSubmit={handleToggleSubscription} className="w-full">
                 <label htmlFor="newsletter" className="sr-only">
@@ -329,7 +329,7 @@ export default function Footer() {
                   <input
                     id="newsletter"
                     type="email"
-                    placeholder="Your email"
+                    placeholder={t("footer.email_placeholder")}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full px-4 py-2 pr-24 rounded-full border border-black/10 outline-none text-sm focus:ring-2 focus:ring-[#ac0ad1]"
@@ -349,11 +349,11 @@ export default function Footer() {
                   >
                     {toggling
                       ? subscribed
-                        ? "Unsubscribing..."
-                        : "Subscribing..."
+                        ? t("footer.unsubscribing")
+                        : t("footer.subscribing")
                       : subscribed
-                        ? "Unsubscribe"
-                        : "Subscribe"}
+                        ? t("footer.unsubscribe")
+                        : t("footer.subscribe")}
                   </button>
                 </div>
               </form>
@@ -380,12 +380,12 @@ export default function Footer() {
               {/* Quick Links */}
               <div>
                 <h3 className="text-md font-semibold text-[#202020] mb-3">
-                  Quick links
+                  {t("footer.quick_links")}
                 </h3>
                 <ul className="space-y-2 text-sm text-[#202020]">
                   <li>
                     <Link href="/" className="hover:text-red-600">
-                      Home
+                      {t("footer.home")}
                     </Link>
                   </li>
                   <li>
@@ -411,7 +411,7 @@ export default function Footer() {
                   </li>
                   <li>
                     <Link href="/blog" className="hover:text-red-600">
-                      Blog
+                      {t("footer.blog")}
                     </Link>
                   </li>
                 </ul>
@@ -420,32 +420,32 @@ export default function Footer() {
               {/* Customer Service */}
               <div>
                 <h3 className="text-md font-semibold text-[#202020] mb-3">
-                  Customer service
+                  {t("footer.customer_service")}
                 </h3>
                 <ul className="space-y-2 text-sm text-[#202020]">
                   <li>
                     <Link href="/shipping" className="hover:text-red-600">
-                      Shipping & returns
+                      {t("footer.shipping_returns")}
                     </Link>
                   </li>
                   <li>
                     <Link href="/returns" className="hover:text-red-600">
-                      Return policy
+                      {t("footer.return_policy")}
                     </Link>
                   </li>
                   <li>
                     <Link href="/faq" className="hover:text-red-600">
-                      FAQ
+                      {t("footer.faq")}
                     </Link>
                   </li>
                   <li>
                     <Link href="/contact" className="hover:text-red-600">
-                      Contact us
+                      {t("footer.contact")}
                     </Link>
                   </li>
                   <li>
                     <Link href="/about" className="hover:text-red-600">
-                      About Us
+                      {t("footer.about")}
                     </Link>
                   </li>
                 </ul>
@@ -471,15 +471,14 @@ export default function Footer() {
 
           <div className="mt-4 border-t border-black/6 pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-[#202020]">
             <p>
-              © {new Date().getFullYear()} {storeName || "Our Store"}. All
-              rights reserved.
+              © {new Date().getFullYear()} {storeName || "Our Store"}. {t("footer.rights")}
             </p>
             <div className="flex items-center gap-4">
               <Link href="/privacy" className="hover:text-red-600">
-                Privacy
+                {t("footer.privacy")}
               </Link>
               <Link href="/terms" className="hover:text-red-600">
-                Terms
+                {t("footer.terms")}
               </Link>
             </div>
           </div>

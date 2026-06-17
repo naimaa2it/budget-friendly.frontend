@@ -84,7 +84,6 @@ const RESERVED_PROMOTION_FLAG_LABELS = new Set([
   "free shipping",
 ]);
 
-
 function ImageDragGrid({ images, onReorder, onRemove }) {
   const dragSrc = useRef(null);
   const [dragOverIdx, setDragOverIdx] = useState(null);
@@ -96,8 +95,13 @@ function ImageDragGrid({ images, onReorder, onRemove }) {
           key={i}
           className={`relative group rounded-lg transition-all ${dragOverIdx === i ? "scale-95 opacity-60 ring-2 ring-indigo-500" : ""}`}
           draggable
-          onDragStart={() => { dragSrc.current = i; }}
-          onDragOver={(e) => { e.preventDefault(); setDragOverIdx(i); }}
+          onDragStart={() => {
+            dragSrc.current = i;
+          }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragOverIdx(i);
+          }}
           onDrop={(e) => {
             e.preventDefault();
             setDragOverIdx(null);
@@ -108,14 +112,24 @@ function ImageDragGrid({ images, onReorder, onRemove }) {
             dragSrc.current = null;
             onReorder(arr);
           }}
-          onDragEnd={() => { dragSrc.current = null; setDragOverIdx(null); }}
+          onDragEnd={() => {
+            dragSrc.current = null;
+            setDragOverIdx(null);
+          }}
         >
           <div className="aspect-square rounded-lg overflow-hidden border-2 border-gray-200 shadow-sm cursor-grab">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={img.url} alt={img.alt || `Product ${i + 1}`} className="w-full h-full object-cover" draggable={false} />
+            <img
+              src={img.url}
+              alt={img.alt || `Product ${i + 1}`}
+              className="w-full h-full object-cover"
+              draggable={false}
+            />
             {(img.uploading || img.__local) && (
               <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center">
-                <div className="text-sm font-medium text-gray-700">Uploading...</div>
+                <div className="text-sm font-medium text-gray-700">
+                  Uploading...
+                </div>
               </div>
             )}
           </div>
@@ -124,9 +138,13 @@ function ImageDragGrid({ images, onReorder, onRemove }) {
             onClick={() => onRemove(i)}
             className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
             aria-label="Remove image"
-          >✕</button>
+          >
+            ✕
+          </button>
           {i === 0 && (
-            <div className="absolute top-2 left-2 bg-indigo-600 text-white text-xs px-2 py-1 rounded">Main</div>
+            <div className="absolute top-2 left-2 bg-indigo-600 text-white text-xs px-2 py-1 rounded">
+              Main
+            </div>
           )}
         </div>
       ))}
@@ -314,11 +332,15 @@ export default function ProductCreate() {
             .filter((tag) => tag && tag.name && tag.isActive !== false)
             .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
             .map((tag) => {
-              const href = String(tag.href || '');
-              const key = href.startsWith('/tag/')
-                ? normalizeBadgeKey(href.slice(5).replace(/-/g, '_'))
+              const href = String(tag.href || "");
+              const key = href.startsWith("/tag/")
+                ? normalizeBadgeKey(href.slice(5).replace(/-/g, "_"))
                 : normalizeBadgeKey(tag.name);
-              return { key, label: String(tag.name).trim(), color: "bg-gray-100 text-gray-800" };
+              return {
+                key,
+                label: String(tag.name).trim(),
+                color: "bg-gray-100 text-gray-800",
+              };
             })
             .filter((b) => b.key && b.label)
         : [];
@@ -858,19 +880,23 @@ export default function ProductCreate() {
                   <div>
                     <label className={labelClass}>Detailed Description</label>
                     <p className="text-sm text-gray-600 mb-3">
-                      Add text blocks, full-width images, or 2-image rows. Shown on the product page after Recently Viewed.
+                      Add text blocks, full-width images, or 2-image rows. Shown
+                      on the product page after Recently Viewed.
                     </p>
                     <DetailedDescriptionBuilder
                       value={product.detailedDescription}
                       onChange={(blocks) =>
-                        setProduct((p) => ({ ...p, detailedDescription: blocks }))
+                        setProduct((p) => ({
+                          ...p,
+                          detailedDescription: blocks,
+                        }))
                       }
                     />
                   </div>
                 </div>
               </section>
 
-              <aside className="space-y-4 xl:absolute xl:right-0 xl:top-0 xl:w-[22rem]">
+              <aside className="space-y-4 xl:absolute xl:right-0 xl:top-0 xl:w-[22rem] mb-10">
                 <section className="rounded-2xl border border-gray-200 bg-slate-50 p-5 shadow-sm">
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
                     Status
@@ -1035,7 +1061,6 @@ export default function ProductCreate() {
                         className={inputClass}
                       />
                     </div>
-
                   </div>
                 </section>
 
@@ -1375,8 +1400,15 @@ export default function ProductCreate() {
               {(product.images || []).length > 0 && (
                 <ImageDragGrid
                   images={product.images}
-                  onReorder={(imgs) => setProduct((p) => ({ ...p, images: imgs }))}
-                  onRemove={(i) => setProduct((p) => ({ ...p, images: p.images.filter((_, idx) => idx !== i) }))}
+                  onReorder={(imgs) =>
+                    setProduct((p) => ({ ...p, images: imgs }))
+                  }
+                  onRemove={(i) =>
+                    setProduct((p) => ({
+                      ...p,
+                      images: p.images.filter((_, idx) => idx !== i),
+                    }))
+                  }
                 />
               )}
             </div>
@@ -1400,20 +1432,31 @@ export default function ProductCreate() {
             <div className="">
               <label className={labelClass}>Specifications</label>
               <p className="text-sm text-gray-600 mb-4">
-                Add section headers and key-value rows. Headers group the rows under them.
+                Add section headers and key-value rows. Headers group the rows
+                under them.
               </p>
               <div className="space-y-1.5">
-                {(Array.isArray(product.specifications) ? product.specifications : []).map((spec, i) => {
+                {(Array.isArray(product.specifications)
+                  ? product.specifications
+                  : []
+                ).map((spec, i) => {
                   const patch = (val) =>
                     setProduct((p) => {
-                      const arr = [...(Array.isArray(p.specifications) ? p.specifications : [])];
+                      const arr = [
+                        ...(Array.isArray(p.specifications)
+                          ? p.specifications
+                          : []),
+                      ];
                       arr[i] = { ...arr[i], ...val };
                       return { ...p, specifications: arr };
                     });
                   const remove = () =>
                     setProduct((p) => ({
                       ...p,
-                      specifications: (Array.isArray(p.specifications) ? p.specifications : []).filter((_, idx) => idx !== i),
+                      specifications: (Array.isArray(p.specifications)
+                        ? p.specifications
+                        : []
+                      ).filter((_, idx) => idx !== i),
                     }));
 
                   if (spec.type === "header") {
@@ -1429,7 +1472,13 @@ export default function ProductCreate() {
                           placeholder="e.g., Technical Specification"
                           className="flex-1 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                         />
-                        <button type="button" onClick={remove} className="px-3 py-2 bg-red-400 text-white rounded-lg hover:bg-red-500 text-sm">✕</button>
+                        <button
+                          type="button"
+                          onClick={remove}
+                          className="px-3 py-2 bg-red-400 text-white rounded-lg hover:bg-red-500 text-sm"
+                        >
+                          ✕
+                        </button>
                       </div>
                     );
                   }
@@ -1450,7 +1499,13 @@ export default function ProductCreate() {
                         placeholder="e.g., 20Hz–20KHz"
                         className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm"
                       />
-                      <button type="button" onClick={remove} className="px-3 py-2 bg-red-400 text-white rounded-lg hover:bg-red-500 text-sm">✕</button>
+                      <button
+                        type="button"
+                        onClick={remove}
+                        className="px-3 py-2 bg-red-400 text-white rounded-lg hover:bg-red-500 text-sm"
+                      >
+                        ✕
+                      </button>
                     </div>
                   );
                 })}
@@ -1460,7 +1515,12 @@ export default function ProductCreate() {
                     onClick={() =>
                       setProduct((p) => ({
                         ...p,
-                        specifications: [...(Array.isArray(p.specifications) ? p.specifications : []), { key: "", value: "" }],
+                        specifications: [
+                          ...(Array.isArray(p.specifications)
+                            ? p.specifications
+                            : []),
+                          { key: "", value: "" },
+                        ],
                       }))
                     }
                     className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 font-medium text-sm"
@@ -1472,7 +1532,12 @@ export default function ProductCreate() {
                     onClick={() =>
                       setProduct((p) => ({
                         ...p,
-                        specifications: [...(Array.isArray(p.specifications) ? p.specifications : []), { type: "header", label: "" }],
+                        specifications: [
+                          ...(Array.isArray(p.specifications)
+                            ? p.specifications
+                            : []),
+                          { type: "header", label: "" },
+                        ],
                       }))
                     }
                     className="px-4 py-2 bg-indigo-100 text-indigo-700 border border-indigo-300 rounded-lg hover:bg-indigo-200 font-medium text-sm"
@@ -1615,8 +1680,6 @@ export default function ProductCreate() {
               )}
             </div>
           </div>
-
-
 
           {/* Policies Tab */}
           <div className="space-y-6">
@@ -2267,7 +2330,7 @@ export default function ProductCreate() {
 
         {/* Action Buttons */}
         <div className="bg-white rounded-xl shadow-md p-6 mt-6">
-          <div className="flex flex-col sm:flex-row gap-4 justify-end">
+          <div className="flex flex-col sm:flex-row gap-4 justify-start">
             <button
               type="button"
               onClick={() => router.push("/dashboard/products")}

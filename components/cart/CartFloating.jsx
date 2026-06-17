@@ -29,22 +29,19 @@ export default function CartFloating() {
 
   return (
     <>
-      {/* Mobile: thumb-reachable sticky bar at the bottom */}
+      {/* Mobile: floating cart icon above WhatsApp */}
       <button
         onClick={toggleSidebar}
         aria-label={label}
-        className={`md:hidden fixed inset-x-3 z-50 flex items-center gap-3 bg-[#f32424] text-white rounded-full shadow-xl pl-4 pr-3.5 py-3 transition-transform active:scale-95 ${bump ? "scale-105" : "scale-100"}`}
-        style={{ bottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+        className={`md:hidden fixed z-50 flex items-center justify-center bg-[#f32424] text-white rounded-full shadow-xl w-11 h-11 transition-transform active:scale-95 ${bump ? "animate-heartbeat" : ""}`}
+        style={{ bottom: 130, right: 20 }}
       >
-        <span className="relative shrink-0">
+        <span className="relative">
           <FaShoppingBag className="w-5 h-5" />
-          <span className="absolute -top-2 -right-2 bg-white text-[#f32424] text-[10px] font-bold w-4.5 h-4.5 rounded-full flex items-center justify-center leading-none">
+          <span className="absolute -top-2 -right-2.5 bg-white text-[#f32424] text-[10px] font-bold min-w-4 h-4 rounded-full flex items-center justify-center leading-none px-0.5">
             {count}
           </span>
         </span>
-        <span className="flex-1 text-left text-sm font-semibold">View Cart</span>
-        <span className="text-sm font-bold">৳{total}</span>
-        <FaChevronRight className="w-3 h-3 opacity-80 shrink-0" />
       </button>
 
       {/* Desktop: compact side tab */}

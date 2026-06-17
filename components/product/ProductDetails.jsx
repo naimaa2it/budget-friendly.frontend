@@ -171,6 +171,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
   const images = (product?.images || []).map((i) => i.url);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [offersOpen, setOffersOpen] = useState(false);
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
   const [zoomOpen, setZoomOpen] = useState(false);
@@ -822,11 +823,18 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
         <div className="w-full lg:w-52 flex-shrink-0 flex flex-col gap-3">
           {/* Available Offer card */}
           <div className="border border-gray-200 rounded-lg overflow-hidden">
-            <div className="bg-gray-50 border-b border-gray-200 px-3 py-2">
+            <button
+              onClick={() => setOffersOpen(v => !v)}
+              className="lg:cursor-default w-full bg-gray-50 border-b border-gray-200 px-3 py-2 flex items-center justify-between"
+            >
               <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">
                 Available Offer
               </p>
-            </div>
+              <FaChevronRight
+                className={`lg:hidden w-3 h-3 text-gray-400 transition-transform duration-200 ${offersOpen ? "rotate-90" : ""}`}
+              />
+            </button>
+            <div className={`lg:block ${offersOpen ? "block" : "hidden"}`}>
 
             {/* Reward Points */}
             <div className="px-3 py-3 flex items-start gap-3 border-b border-gray-100">
@@ -877,6 +885,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                 <FaPencilAlt className="text-green-500 w-3 h-3 flex-shrink-0" />
                 Write your Awesome Review
               </button>
+            </div>
             </div>
           </div>
           <AdSlot page="productPage" format="rectangle" className="w-full" />

@@ -30,19 +30,22 @@ export default function CartFloating() {
   return (
     <>
       {/* Mobile: floating cart icon above WhatsApp */}
-      <button
-        onClick={toggleSidebar}
-        aria-label={label}
-        className={`md:hidden fixed z-50 flex items-center justify-center bg-[#f32424] text-white rounded-full shadow-xl w-11 h-11 transition-transform active:scale-95 ${bump ? "animate-heartbeat" : ""}`}
-        style={{ bottom: 130, right: 20 }}
-      >
-        <span className="relative">
-          <FaShoppingBag className="w-5 h-5" />
-          <span className="absolute -top-2 -right-2.5 bg-white text-[#f32424] text-[10px] font-bold min-w-4 h-4 rounded-full flex items-center justify-center leading-none px-0.5">
-            {count}
+      <span className="md:hidden fixed z-50" style={{ bottom: 130, right: 20 }}>
+        {/* ping ring — always active like a map marker */}
+        <span className="absolute inset-0 rounded-full bg-[#f32424] opacity-40 animate-ping" />
+        <button
+          onClick={toggleSidebar}
+          aria-label={label}
+          className="relative flex items-center justify-center bg-[#f32424] text-white rounded-full shadow-xl w-11 h-11 active:scale-95 transition-transform"
+        >
+          <span className="relative">
+            <FaShoppingBag className="w-5 h-5" />
+            <span className="absolute -top-2 -right-2.5 bg-white text-[#f32424] text-[10px] font-bold min-w-4 h-4 rounded-full flex items-center justify-center leading-none px-0.5">
+              {count}
+            </span>
           </span>
-        </span>
-      </button>
+        </button>
+      </span>
 
       {/* Desktop: compact side tab */}
       <button

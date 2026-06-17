@@ -5,10 +5,12 @@ import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { useCart } from '@/components/context/CartContext';
 import { useUser } from '@/components/context/UserContext';
 import AuthModal from '@/components/auth/AuthModal';
+import { useLanguage } from '@/components/context/LanguageContext';
 
 export default function WishlistButton({ product }) {
   const { wishlistItems, addToWishlist, removeFromWishlist } = useCart();
   const { user } = useUser();
+  const { t } = useLanguage();
   const [showAuthModal, setShowAuthModal] = React.useState(false);
   const [pendingToggle, setPendingToggle] = React.useState(null);
 
@@ -40,7 +42,7 @@ export default function WishlistButton({ product }) {
       onClick={(e) => { e.stopPropagation(); toggle(); }}
       className={`w-10 h-10 flex items-center justify-center rounded-md transition-colors 
         ${isFav ? 'bg-red-600 text-white' : 'bg-[#1a1a2e] text-white'} hover:bg-red-600`}
-      aria-label="Add to wishlist"
+      aria-label={t("wishlist.add")}
     >
       {isFav ? <FaHeart /> : <FaRegHeart />}
     </button>

@@ -4,11 +4,13 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { getDisplayPrice } from '@/lib/pricing';
+import { useLanguage } from '@/components/context/LanguageContext';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export default function SearchBox({ className = '', inputClassName = '', onClose, autoFocus = false }) {
   const router = useRouter();
+  const { t } = useLanguage();
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -127,7 +129,7 @@ export default function SearchBox({ className = '', inputClassName = '', onClose
             onChange={handleChange}
             onKeyDown={handleKeyDown}
             onFocus={() => query.trim() && suggestions.length && setOpen(true)}
-            placeholder="Find your favorite product..."
+            placeholder={t("nav.search_placeholder_full")}
             autoComplete="off"
             className={`pl-9 pr-4 py-1.5 rounded-full border border-black/10 w-full outline-none placeholder:text-[13px] placeholder:text-gray-500 focus:border-red-400 transition-colors ${inputClassName}`}
             aria-label="Search"

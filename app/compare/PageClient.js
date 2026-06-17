@@ -5,82 +5,47 @@ import Image from "next/image";
 import Link from "next/link";
 import { FaTimes, FaCheck, FaStar } from "react-icons/fa";
 import { useCart } from "@/components/context/CartContext";
-
-const ROWS = [
-  {
-    key: "price",
-    label: "Price",
-    render: (p) => `৳${Number(p.price).toLocaleString()}`,
-  },
-  {
-    key: "compareAtPrice",
-    label: "Original Price",
-    render: (p) =>
-      p.compareAtPrice ? `৳${Number(p.compareAtPrice).toLocaleString()}` : "—",
-  },
-  {
-    key: "availability",
-    label: "Availability",
-    render: (p) => {
-      const map = {
-        in_stock: "In Stock",
-        out_of_stock: "Out of Stock",
-        pre_order: "Pre-Order",
-      };
-      return map[p.availability] || p.availability || "—";
-    },
-  },
-  {
-    key: "averageRating",
-    label: "Rating",
-    render: (p) =>
-      p.averageRating
-        ? `${Number(p.averageRating).toFixed(1)} ★ (${p.reviewCount || 0})`
-        : "No reviews",
-  },
-  { key: "sku", label: "SKU", render: (p) => p.sku || "—" },
-  {
-    key: "freeShipping",
-    label: "Free Shipping",
-    render: (p) => (p.freeShipping ? "✓ Yes" : "✗ No"),
-  },
-  {
-    key: "rewardPoints",
-    label: "Reward Points",
-    render: (p) => (p.rewardPoints ? `${p.rewardPoints} pts` : "—"),
-  },
-  {
-    key: "category",
-    label: "Category",
-    render: (p) =>
-      (typeof p.category === "object" ? p.category?.name : p.category) || "—",
-  },
-  {
-    key: "warranty",
-    label: "Warranty",
-    render: (p) => p.warranty?.period || "—",
-  },
-];
+import { useLanguage } from "@/components/context/LanguageContext";
 
 export default function ComparePageClient() {
   const { compareList, removeFromCompare, clearCompare } = useCompare();
   const { addToCart } = useCart();
+  const { t } = useLanguage();
+
+  const ROWS = [
+    { key: "price", label: t("compare.row_price"), render: (p) => `৳${Number(p.price).toLocaleString()}` },
+    { key: "compareAtPrice", label: t("compare.row_original_price"), render: (p) => p.compareAtPrice ? `৳${Number(p.compareAtPrice).toLocaleString()}` : "—" },
+    {
+      key: "availability",
+      label: t("compare.row_availability"),
+      render: (p) => {
+        const map = { in_stock: t("compare.in_stock"), out_of_stock: t("compare.out_of_stock"), pre_order: t("compare.pre_order") };
+        return map[p.availability] || p.availability || "—";
+      },
+    },
+    { key: "averageRating", label: t("compare.row_rating"), render: (p) => p.averageRating ? `${Number(p.averageRating).toFixed(1)} ★ (${p.reviewCount || 0})` : t("compare.no_reviews") },
+    { key: "sku", label: t("compare.row_sku"), render: (p) => p.sku || "—" },
+    { key: "freeShipping", label: t("compare.row_free_shipping"), render: (p) => (p.freeShipping ? "✓ Yes" : "✗ No") },
+    { key: "rewardPoints", label: t("compare.row_reward_points"), render: (p) => (p.rewardPoints ? `${p.rewardPoints} pts` : "—") },
+    { key: "category", label: t("compare.row_category"), render: (p) => (typeof p.category === "object" ? p.category?.name : p.category) || "—" },
+    { key: "warranty", label: t("compare.row_warranty"), render: (p) => p.warranty?.period || "—" },
+  ];
 
   if (compareList.length === 0) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-24 text-center">
         <p className="text-5xl mb-4">⚖️</p>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          No products to compare
+          {t("compare.no_products_title")}
         </h1>
         <p className="text-gray-500 mb-8">
-          Browse products and click the compare button to add them here.
+          {t("compare.no_products_desc")}
         </p>
         <Link
           href="/"
           className="inline-block bg-gray-900 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-700 transition"
         >
-          Browse Products
+          {t("compare.browse")}
         </Link>
       </div>
     );
@@ -90,17 +55,16 @@ export default function ComparePageClient() {
     <div className="max-w-7xl mx-auto px-2 py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Compare Products</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t("compare.title")}</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Comparing {compareList.length} product
-            {compareList.length !== 1 ? "s" : ""}
+            {t("compare.comparing")} {compareList.length} {t("compare.products_suffix")}
           </p>
         </div>
         <button
           onClick={clearCompare}
           className="text-sm text-gray-500 hover:text-red-600 underline transition"
         >
-          Clear all
+          {t("compare.clear_all")}
         </button>
       </div>
 
@@ -110,7 +74,7 @@ export default function ComparePageClient() {
           <thead>
             <tr className="border-b border-gray-200">
               <th className="w-40 p-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide bg-gray-50">
-                Feature
+                {t("compare.feature_col")}
               </th>
               {compareList.map((p) => {
                 const img = p.images?.[0]?.url || "/assets/placeholder.svg";
@@ -155,7 +119,7 @@ export default function ComparePageClient() {
                             : "bg-gray-900 text-white hover:bg-gray-700"
                         }`}
                       >
-                        {isOutOfStock ? "Out of Stock" : "Add to Cart"}
+                        {isOutOfStock ? t("home.out_of_stock") : t("home.add_to_cart")}
                       </button>
                     </div>
                   </th>
@@ -209,7 +173,7 @@ export default function ComparePageClient() {
                         {val}
                         {best && (
                           <span className="ml-1 text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-bold">
-                            Best
+                            {t("compare.best")}
                           </span>
                         )}
                       </td>

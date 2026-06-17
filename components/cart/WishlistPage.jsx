@@ -7,10 +7,12 @@ import Image from "next/image";
 import { FaTrash } from "react-icons/fa";
 import ProductCard from "@/components/product/ProductCard";
 import EmptyState from "@/components/ui/EmptyState";
+import { useLanguage } from "@/components/context/LanguageContext";
 
 export default function WishlistPage({ embedded = false }) {
   const router = useRouter();
   const { wishlistItems, removeFromWishlist } = useCart();
+  const { t } = useLanguage();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -54,7 +56,7 @@ export default function WishlistPage({ embedded = false }) {
             : "min-h-screen flex items-center justify-center"
         }
       >
-        <p>Loading wishlist...</p>
+        <p>{t("wishlist.loading")}</p>
       </div>
     );
   }
@@ -62,9 +64,9 @@ export default function WishlistPage({ embedded = false }) {
   if (products.length === 0) {
     return (
       <EmptyState
-        title="Your wishlist is empty"
-        description="Browse products and tap the heart icon to save them here."
-        buttonText="Continue Shopping"
+        title={t("wishlist.empty_title")}
+        description={t("wishlist.empty_msg")}
+        buttonText={t("success.continue_shopping")}
         onButtonClick={() => router.push("/")}
         className={embedded ? "py-8" : ""}
       />
@@ -75,7 +77,7 @@ export default function WishlistPage({ embedded = false }) {
     <>
       {!embedded && (
         <div className="max-w-7xl mx-auto px-2">
-          <h1 className="text-2xl font-bold mb-6">My Wishlist</h1>
+          <h1 className="text-2xl font-bold mb-6">{t("wishlist.title")}</h1>
         </div>
       )}
       <div
@@ -93,7 +95,7 @@ export default function WishlistPage({ embedded = false }) {
               <button
                 onClick={() => removeFromWishlist(getId(product))}
                 className="absolute top-10 left-2 text-red-600 hover:text-red-800 bg-white rounded-full p-1 shadow"
-                title="Remove from wishlist"
+                title={t("wishlist.remove")}
               >
                 <FaTrash />
               </button>

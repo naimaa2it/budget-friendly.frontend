@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { useLanguage } from "@/components/context/LanguageContext";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -45,6 +46,7 @@ const COLOR_THEMES = {
 
 function CouponCopy({ code }) {
   const [copied, setCopied] = useState(false);
+  const { t } = useLanguage();
   const copy = () => {
     navigator.clipboard.writeText(code);
     setCopied(true);
@@ -56,16 +58,17 @@ function CouponCopy({ code }) {
       className="mt-1 flex items-center justify-between gap-1 w-full bg-white border border-dashed border-gray-400 rounded px-2 py-0.5 text-xs font-mono font-bold text-gray-700 hover:bg-gray-50 transition"
     >
       <span className="truncate">{code}</span>
-      <span className="shrink-0 text-gray-400">{copied ? "✓" : "copy"}</span>
+      <span className="shrink-0 text-gray-400">{copied ? t("offers.copied") : t("offers.copy")}</span>
     </button>
   );
 }
 
 function OfferCard({ offer }) {
+  const { t: tr } = useLanguage();
   const t = COLOR_THEMES[offer.theme] || COLOR_THEMES.pink;
   return (
     <div
-      className={`relative border-2 ${t.borderColor} rounded-lg px-4 py-5 bg-gradient-to-br ${t.bgColor} overflow-hidden h-44`}
+      className={`relative border-2 ${t.borderColor} rounded-lg px-4 py-5 bg-linear-to-br ${t.bgColor} overflow-hidden h-44`}
     >
       <div
         className={`absolute -top-3 left-2/3 -translate-x-1/2 w-6 h-6 bg-white border-2 ${t.borderColor} rounded-full z-10`}
@@ -78,7 +81,7 @@ function OfferCard({ offer }) {
       <div className="flex h-full">
         {/* Left 2/3 */}
         <div className="w-2/3 pr-4 flex flex-col justify-center">
-          <p className="text-sm text-gray-600 mb-1">Spend: {offer.spend}</p>
+          <p className="text-sm text-gray-600 mb-1">{tr("offers.spend_label")} {offer.spend}</p>
           {offer.highlightSecondary ? (
             <>
               <h2 className={`text-3xl font-bold ${t.textColor} mb-1`}>
@@ -113,6 +116,7 @@ function OfferCard({ offer }) {
 }
 
 export default function OffersToSayYes() {
+  const { t } = useLanguage();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [mobileIndex, setMobileIndex] = useState(0);
   const [offers, setOffers] = useState([]);
@@ -156,8 +160,8 @@ export default function OffersToSayYes() {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
-          <span className=" text-red-500 ">OFFERS!</span>{" "}
-          <span className="font-normal">You Can&apos;t Miss!!</span>
+          <span className="text-red-500">{t("offers.title_highlight")}</span>{" "}
+          <span className="font-normal">{t("offers.title_rest")}</span>
         </h1>
       </div>
 

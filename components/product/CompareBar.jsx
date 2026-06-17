@@ -4,9 +4,11 @@ import { useCompare } from "@/components/context/CompareContext";
 import Image from "next/image";
 import Link from "next/link";
 import { FaTimes } from "react-icons/fa";
+import { useLanguage } from "@/components/context/LanguageContext";
 
 export default function CompareBar() {
   const { compareList, removeFromCompare, clearCompare } = useCompare();
+  const { t } = useLanguage();
 
   if (compareList.length === 0) return null;
 
@@ -19,7 +21,7 @@ export default function CompareBar() {
             return (
               <div
                 key={product._id}
-                className="relative shrink-0 flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2 bg-gray-50 min-w-[160px]"
+                className="relative shrink-0 flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2 bg-gray-50 min-w-40"
               >
                 <Image
                   src={encodeURI(img)}
@@ -50,9 +52,9 @@ export default function CompareBar() {
           {Array.from({ length: 4 - compareList.length }).map((_, i) => (
             <div
               key={`empty-${i}`}
-              className="shrink-0 w-[160px] h-[60px] border-2 border-dashed border-gray-200 rounded-lg flex items-center justify-center text-xs text-gray-400"
+              className="shrink-0 w-40 h-15 border-2 border-dashed border-gray-200 rounded-lg flex items-center justify-center text-xs text-gray-400"
             >
-              + Add product
+              {t("compare.add_product")}
             </div>
           ))}
         </div>
@@ -62,7 +64,7 @@ export default function CompareBar() {
             onClick={clearCompare}
             className="text-xs text-gray-500 hover:text-red-600 underline transition"
           >
-            Clear all
+            {t("compare.clear_all")}
           </button>
           <Link
             href="/compare"
@@ -72,7 +74,7 @@ export default function CompareBar() {
                 : "bg-gray-200 text-gray-400 cursor-not-allowed pointer-events-none"
             }`}
           >
-            Compare ({compareList.length})
+            {t("compare.compare")} ({compareList.length})
           </Link>
         </div>
       </div>

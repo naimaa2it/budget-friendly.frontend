@@ -2,11 +2,13 @@
 
 import React, { useState } from 'react';
 import { useStoreSettings } from '@/components/context/StoreSettingsContext';
+import { useLanguage } from '@/components/context/LanguageContext';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export default function ContactContent() {
   const { contactInfo } = useStoreSettings();
+  const { t } = useLanguage();
   const [form, setForm] = useState({ name: '', email: '', message: '' });
   const [status, setStatus] = useState(null); // 'loading' | 'success' | 'error'
   const [errorMsg, setErrorMsg] = useState('');
@@ -38,7 +40,7 @@ export default function ContactContent() {
       setStatus('error');
       setErrorMsg(
         err.name === 'AbortError'
-          ? 'Server is taking too long to respond. Please try again.'
+          ? t('contact.timeout_error')
           : err.message
       );
     }
@@ -46,18 +48,18 @@ export default function ContactContent() {
 
   return (
     <>
-      <h1 className="text-3xl font-bold mb-6">Contact Us</h1>
-      <p className="text-gray-600 mb-8">Have a question or need help? Fill in the form below and we will get back to you within 24 hours.</p>
+      <h1 className="text-3xl font-bold mb-6">{t('contact.title')}</h1>
+      <p className="text-gray-600 mb-8">{t('contact.desc')}</p>
 
       {status === 'success' ? (
         <div className="bg-green-50 border border-green-200 rounded-lg px-6 py-5 text-green-800 text-sm">
-          <p className="font-semibold mb-1">Message sent!</p>
-          <p>Thanks for reaching out. We&apos;ll get back to you within 24 hours. Check your inbox for a confirmation email.</p>
+          <p className="font-semibold mb-1">{t('contact.success_title')}</p>
+          <p>{t('contact.success_msg')}</p>
         </div>
       ) : (
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('contact.name_label')}</label>
             <input
               type="text"
               name="name"
@@ -65,11 +67,11 @@ export default function ContactContent() {
               onChange={handleChange}
               required
               className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ac0ad1]"
-              placeholder="Your name"
+              placeholder={t('contact.name_ph')}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('contact.email_label')}</label>
             <input
               type="email"
               name="email"
@@ -77,11 +79,11 @@ export default function ContactContent() {
               onChange={handleChange}
               required
               className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ac0ad1]"
-              placeholder="you@example.com"
+              placeholder={t('contact.email_ph')}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('contact.message_label')}</label>
             <textarea
               name="message"
               value={form.message}
@@ -89,7 +91,7 @@ export default function ContactContent() {
               required
               rows={5}
               className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ac0ad1]"
-              placeholder="How can we help?"
+              placeholder={t('contact.message_ph')}
             />
           </div>
           {status === 'error' && (
@@ -100,7 +102,7 @@ export default function ContactContent() {
             disabled={status === 'loading'}
             className="px-6 py-2 bg-rose-600 text-white rounded-full text-sm hover:opacity-90 disabled:opacity-60"
           >
-            {status === 'loading' ? 'Sending...' : 'Send Message'}
+            {status === 'loading' ? t('contact.sending') : t('contact.send')}
           </button>
         </form>
       )}

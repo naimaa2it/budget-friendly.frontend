@@ -68,6 +68,7 @@ export default function CheckoutPage() {
   // Progress indicators state
   const [progressItems, setProgressItems] = useState([]);
   const [savingsOpen, setSavingsOpen] = useState(false);
+  const [nudgeOpen, setNudgeOpen] = useState(false);
 
   // Order items scroll indicator
   const itemsScrollRef = useRef(null);
@@ -575,7 +576,6 @@ export default function CheckoutPage() {
       email: formData.email,
       city: finalCity,
       zone: finalZone,
-      address: formData.address,
     };
 
     const missingFields = Object.entries(requiredFields).filter(([, v]) => !v);
@@ -744,49 +744,41 @@ export default function CheckoutPage() {
 
         {/* Guest login nudge */}
         {!user && (
-          <div className="mb-6 flex items-start gap-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl">
-            <div className="text-2xl shrink-0">🎁</div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-purple-900 text-sm">
-                Login করুন — আরও সুবিধা পান!
-              </p>
-              <ul className="mt-1.5 space-y-0.5 text-xs text-purple-700">
-                <li className="flex items-center gap-1.5">
-                  <span className="text-yellow-500">★</span> Reward Points earn
-                  করুন এবং পরের order এ discount পান
-                </li>
-                <li className="flex items-center gap-1.5">
-                  <span className="text-green-500">✓</span> আগের ব্যবহার করা
-                  address auto-fill হবে
-                </li>
-                <li className="flex items-center gap-1.5">
-                  <span className="text-blue-500">📦</span> Order history ও
-                  tracking সহজে দেখুন
-                </li>
-                <li className="flex items-center gap-1.5">
-                  <span className="text-pink-500">🎟</span> Exclusive coupon ও
-                  special offer পাবেন
-                </li>
-              </ul>
-              <button
-                type="button"
-                onClick={() => setShowAuthModal(true)}
-                className="mt-2.5 inline-flex items-center gap-1.5 px-4 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-full transition"
+          <div className="mb-6 border border-purple-200 rounded-xl overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setNudgeOpen(v => !v)}
+              className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 transition"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🎁</span>
+                <span className="font-semibold text-purple-900 text-sm">Login করুন — আরও সুবিধা পান!</span>
+              </div>
+              <svg
+                className={`w-4 h-4 text-purple-400 transition-transform duration-200 ${nudgeOpen ? "rotate-180" : ""}`}
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
               >
-                Login / Sign up
-                <svg
-                  className="w-3 h-3"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            {nudgeOpen && (
+              <div className="px-4 py-3 bg-white">
+                <ul className="space-y-1.5 text-xs text-purple-700 mb-3">
+                  <li className="flex items-center gap-1.5"><span className="text-yellow-500">★</span> Reward Points earn করুন এবং পরের order এ discount পান</li>
+                  <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span> আগের address auto-fill হবে</li>
+                  <li className="flex items-center gap-1.5"><span className="text-blue-500">📦</span> Order history ও tracking সহজে দেখুন</li>
+                  <li className="flex items-center gap-1.5"><span className="text-pink-500">🎟</span> Exclusive coupon ও special offer পাবেন</li>
+                </ul>
+                <button
+                  type="button"
+                  onClick={() => setShowAuthModal(true)}
+                  className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-full transition"
                 >
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
+                  Login / Sign up
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -1089,7 +1081,7 @@ export default function CheckoutPage() {
                   name="address"
                   value={formData.address}
                   onChange={handleInputChange}
-                  placeholder="Address*"
+                  placeholder="Address (optional)"
                   rows={3}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none resize-none"
                   required

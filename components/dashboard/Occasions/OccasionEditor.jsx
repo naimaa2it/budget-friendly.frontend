@@ -10,6 +10,7 @@ export default function OccasionEditor({ sectionId = null, onSuccess, onCancel }
   const isEdit = !!sectionId;
 
   const [title, setTitle]           = useState('');
+  const [titleBn, setTitleBn]       = useState('');
   const [viewAllLink, setViewAllLink] = useState('/');
   const [isActive, setIsActive]     = useState(true);
   const [cards, setCards]           = useState([]);
@@ -27,6 +28,7 @@ export default function OccasionEditor({ sectionId = null, onSuccess, onCancel }
       .then(b => {
         const s = b.section || {};
         setTitle(s.title || '');
+        setTitleBn(s.titleBn || '');
         setViewAllLink(s.viewAllLink || '/');
         setIsActive(s.isActive !== false);
         setCards((s.cards || []).map(c => ({ ...c })));
@@ -88,7 +90,7 @@ export default function OccasionEditor({ sectionId = null, onSuccess, onCancel }
         link: c.link || '/',
       }));
 
-      const payload = { title: title.trim(), viewAllLink, isActive, cards: cleanCards };
+      const payload = { title: title.trim(), titleBn: titleBn.trim(), viewAllLink, isActive, cards: cleanCards };
       const url = isEdit
         ? `${API}/api/admin/occasions/${sectionId}`
         : `${API}/api/admin/occasions`;
@@ -135,11 +137,20 @@ export default function OccasionEditor({ sectionId = null, onSuccess, onCancel }
       {/* Title & View All */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Section Title *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Section Title * (English)</label>
           <input
             value={title}
             onChange={e => setTitle(e.target.value)}
             placeholder="e.g. Eid Fest on Kitchen Appliances!"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Section Title (বাংলা)</label>
+          <input
+            value={titleBn}
+            onChange={e => setTitleBn(e.target.value)}
+            placeholder="যেমন: ঈদ ফেস্ট - রান্নাঘর যন্ত্রপাতি!"
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>

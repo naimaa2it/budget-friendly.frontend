@@ -7,6 +7,7 @@ export default function FeaturedSectionEditor({ sectionId = null, onSuccess, onC
   const isEdit = !!sectionId;
 
   const [title, setTitle]             = useState('');
+  const [titleBn, setTitleBn]         = useState('');
   const [viewAllLink, setViewAllLink] = useState('/');
   const [isActive, setIsActive]       = useState(true);
   const [categoryId, setCategoryId]   = useState('');
@@ -30,6 +31,7 @@ export default function FeaturedSectionEditor({ sectionId = null, onSuccess, onC
       .then(async b => {
         const s = b.section || {};
         setTitle(s.title || '');
+        setTitleBn(s.titleBn || '');
         setViewAllLink(s.viewAllLink || '/');
         setIsActive(s.isActive !== false);
         setCategoryId(s.categoryId || '');
@@ -97,6 +99,7 @@ export default function FeaturedSectionEditor({ sectionId = null, onSuccess, onC
     try {
       const body = {
         title: title.trim(),
+        titleBn: titleBn.trim(),
         viewAllLink: viewAllLink.trim() || '/',
         isActive,
         categoryId: categoryId.trim(),
@@ -140,14 +143,25 @@ export default function FeaturedSectionEditor({ sectionId = null, onSuccess, onC
       </h2>
 
       {/* Title */}
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-1">Section Title *</label>
-        <input
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          placeholder="e.g. Eid Fest on Smart Televisions!"
-          className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">Section Title * (English)</label>
+          <input
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            placeholder="e.g. Eid Fest on Smart Televisions!"
+            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">Section Title (বাংলা)</label>
+          <input
+            value={titleBn}
+            onChange={e => setTitleBn(e.target.value)}
+            placeholder="যেমন: ঈদ ফেস্ট - স্মার্ট টেলিভিশন!"
+            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
       </div>
 
       {/* View All Link */}

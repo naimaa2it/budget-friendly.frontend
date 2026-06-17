@@ -126,7 +126,7 @@ function FeaturedSlider({ products }) {
 
 export default function FeaturedSections() {
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [sections, setSections] = useState([]);
   const [loaded, setLoaded] = useState(false);
 
@@ -151,7 +151,7 @@ export default function FeaturedSections() {
           {/* Section header */}
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg md:text-3xl font-bold text-gray-800">
-              {sec.title}
+              {lang === "bn" ? sec.titleBn || sec.title : sec.title}
             </h2>
             {sec.viewAllLink && sec.viewAllLink !== "/" && (
               <a

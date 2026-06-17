@@ -182,7 +182,7 @@ function OccasionSlider({ section }) {
 
 export default function OccasionSections() {
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [sections, setSections] = useState([]);
 
   useEffect(() => {
@@ -201,7 +201,7 @@ export default function OccasionSections() {
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg md:text-3xl font-bold text-gray-900">
-              {section.title}
+              {lang === "bn" ? section.titleBn || section.title : section.title}
             </h2>
             {section.viewAllLink && section.viewAllLink !== "/" && (
               <Link

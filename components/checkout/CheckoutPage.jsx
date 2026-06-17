@@ -409,7 +409,7 @@ export default function CheckoutPage() {
   };
 
   const handleApplyCoupon = async () => {
-    const code = formData.coupon.trim().toUpperCase();
+    const code = formData.coupon.trim();
     if (!code) {
       setCouponMsg({ type: "error", text: "Please enter a coupon code." });
       return;
@@ -1437,7 +1437,7 @@ export default function CheckoutPage() {
                           onChange={handleInputChange}
                           placeholder={t("checkout.enter_code_ph")}
                           disabled={appliedCoupons.length >= 2}
-                          className="w-full px-3 pr-20 py-2 text-xs border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-300 disabled:bg-gray-100 uppercase font-mono tracking-widest placeholder:text-gray-300 placeholder:tracking-widest"
+                          className="w-full px-3 pr-20 py-2 text-xs border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-300 disabled:bg-gray-100 font-mono tracking-widest placeholder:text-gray-300 placeholder:tracking-widest"
                         />
                         <button
                           type="button"

@@ -177,7 +177,7 @@ export default function FrequentlyBoughtTogetherModal() {
         </div>
 
         {/* FBT Section */}
-        <div className="p-5">
+        <div className="p-3">
           {loading ? (
             <div className="flex items-center justify-center py-10 gap-3 text-gray-400">
               <svg

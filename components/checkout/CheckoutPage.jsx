@@ -742,6 +742,54 @@ export default function CheckoutPage() {
         </div>
         <h1 className="text-3xl font-bold mb-8">Checkout</h1>
 
+        {/* Guest login nudge */}
+        {!user && (
+          <div className="mb-6 flex items-start gap-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl">
+            <div className="text-2xl shrink-0">🎁</div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-purple-900 text-sm">
+                Login করুন — আরও সুবিধা পান!
+              </p>
+              <ul className="mt-1.5 space-y-0.5 text-xs text-purple-700">
+                <li className="flex items-center gap-1.5">
+                  <span className="text-yellow-500">★</span> Reward Points earn
+                  করুন এবং পরের order এ discount পান
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <span className="text-green-500">✓</span> আগের ব্যবহার করা
+                  address auto-fill হবে
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <span className="text-blue-500">📦</span> Order history ও
+                  tracking সহজে দেখুন
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <span className="text-pink-500">🎟</span> Exclusive coupon ও
+                  special offer পাবেন
+                </li>
+              </ul>
+              <button
+                type="button"
+                onClick={() => setShowAuthModal(true)}
+                className="mt-2.5 inline-flex items-center gap-1.5 px-4 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-full transition"
+              >
+                Login / Sign up
+                <svg
+                  className="w-3 h-3"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* New-user eligibility banner */}
         {user &&
           user.createdAt &&

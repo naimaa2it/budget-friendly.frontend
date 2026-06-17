@@ -793,12 +793,11 @@ export default function CheckoutPage() {
               <FaTag className="text-blue-600 mt-0.5 shrink-0" />
               <div>
                 <p className="font-semibold text-blue-800">
-                  🎉 Welcome! You&apos;re eligible for a new-user perk.
+                  {t("checkout.new_user_welcome")}
                 </p>
                 <p className="text-sm text-blue-700 mt-0.5">
-                  Use coupon <strong>newUser26</strong> at checkout to get{" "}
-                  <strong>Free Delivery</strong> on your first order (min. order
-                  ৳800).
+                  {t("checkout.new_user_desc_prefix")} <strong>newUser26</strong> {t("checkout.new_user_desc_middle")}{" "}
+                  <strong>{t("checkout.new_user_desc_perk")}</strong> {t("checkout.new_user_desc_suffix")}
                 </p>
               </div>
             </div>

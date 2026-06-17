@@ -17,33 +17,39 @@ const categoryAssets = {
   "Vehicle Parts & Accessories": {
     image: "/assets/placeholder.svg",
     icon: <PiTireThin />,
+    nameBn: "যানবাহন যন্ত্রাংশ ও আনুষঙ্গিক",
   },
   "Frozen Fish": {
     image: "/assets/placeholder.svg",
     icon: <PiFishThin />,
+    nameBn: "হিমায়িত মাছ",
   },
   "Metals & Metal Products": {
     image: "/assets/placeholder.svg",
     icon: <GiRopeCoil />,
+    nameBn: "ধাতু ও ধাতব পণ্য",
   },
   "Dry Food": {
     image: "/assets/placeholder.svg",
     icon: <GiPeanut />,
+    nameBn: "শুকনো খাবার",
   },
   Agriculture: {
     image: "/assets/placeholder.svg",
     icon: <PiLeafThin />,
+    nameBn: "কৃষি",
   },
   "Wood Products": {
     image: "/assets/placeholder.svg",
     icon: <GiWoodPile />,
+    nameBn: "কাঠের পণ্য",
   },
 };
 
 export default function ShopByCategory() {
   const { categories: rawCategories, loading } = useCategories();
   const { user } = useUser();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const scrollContainerRef = useRef(null);
   const [page, setPage] = useState(0);
 
@@ -77,6 +83,7 @@ export default function ShopByCategory() {
   const categories = rawCategories.map((c) => ({
     _id: c._id,
     name: c.name,
+    nameBn: c.nameBn,
     slug: c.slug,
     image:
       c.images && c.images[0] && c.images[0].url ? c.images[0].url : undefined,
@@ -86,8 +93,12 @@ export default function ShopByCategory() {
     const assets = categoryAssets[category.name] || {};
     const slug = category.slug || (category.name || "").replace(/\s+/g, "-");
     const image = category.image || assets.image || "/assets/placeholder.svg";
+    const displayName =
+      lang === "bn"
+        ? category.nameBn || assets.nameBn || category.name
+        : category.name;
     return {
-      name: category.name,
+      name: displayName,
       image,
       icon: assets.icon || null,
       link: `/category/${slug}`,

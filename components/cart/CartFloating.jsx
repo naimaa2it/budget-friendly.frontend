@@ -27,7 +27,7 @@ export default function CartFloating() {
     (sum, item) => sum + getItemPrice(item) * item.quantity,
     0,
   );
-  const label = `Open cart, ${count} item${count > 1 ? "s" : ""}, total ৳${total}`;
+  const label = `${t("cart.open_label_prefix")} ${count} ${t("cart.items_label")}, ${t("cart.open_label_total")}${total}`;
 
   return (
     <>

@@ -18,6 +18,7 @@ import VariantEditModal, {
   getVariantSizes,
 } from "@/components/cart/VariantEditModal";
 import WaitlistModal from "@/components/cart/WaitlistModal";
+import { useLanguage } from "@/components/context/LanguageContext";
 
 export default function CartPage() {
   const router = useRouter();
@@ -29,6 +30,7 @@ export default function CartPage() {
     updateCartVariant,
     shareCart,
   } = useCart();
+  const { t } = useLanguage();
   const [editItem, setEditItem] = useState(null);
   const [editMode, setEditMode] = useState("edit"); // 'edit' or 'add'
   const [waitlistProduct, setWaitlistProduct] = useState(null);
@@ -136,7 +138,7 @@ export default function CartPage() {
               d="M4 12a8 8 0 018-8v8H4z"
             />
           </svg>
-          <span className="text-sm">Loading your cart…</span>
+          <span className="text-sm">{t("cart.loading")}</span>
         </div>
       </div>
     );
@@ -145,9 +147,9 @@ export default function CartPage() {
   if (cartItems.length === 0) {
     return (
       <EmptyState
-        title="Your Cart is Empty"
-        description="Start shopping to add items to your cart!"
-        buttonText="Continue Shopping"
+        title={t("cart.cart_empty_title")}
+        description={t("cart.cart_empty_msg")}
+        buttonText={t("success.continue_shopping")}
         onButtonClick={() => router.push("/")}
       />
     );
@@ -285,7 +287,7 @@ export default function CartPage() {
                           }}
                           className="flex items-center gap-1 mb-2 text-xs text-blue-600 hover:underline"
                         >
-                          <FaPencilAlt className="w-3 h-3" /> Select option
+                          <FaPencilAlt className="w-3 h-3" /> {t("cart.select_option")}
                         </button>
                       )
                     )}
@@ -299,14 +301,13 @@ export default function CartPage() {
                         }}
                         className="flex items-center gap-1 mb-2 text-xs text-green-600 hover:text-green-700 hover:underline"
                       >
-                        <FaPlus className="w-2.5 h-2.5" /> Add another
-                        size/color
+                        <FaPlus className="w-2.5 h-2.5" /> {t("cart.add_size_color")}
                       </button>
                     )}
 
                     <div className="flex items-center gap-3 md:gap-4 mb-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-600">Price:</span>
+                        <span className="text-sm text-gray-600">{t("cart.price")}</span>
                         <span className="text-base md:text-lg font-bold text-red-600">
                           ৳{price.toFixed(2)}
                         </span>
@@ -319,7 +320,7 @@ export default function CartPage() {
                     </div>
                     {product.freeShipping && (
                       <p className="text-sm font-semibold text-green-700 mb-3">
-                        🚚 Free Shipping
+                        {t("home.free_shipping")}
                       </p>
                     )}
                     {product.availability === "out_of_stock" && (
@@ -327,7 +328,7 @@ export default function CartPage() {
                         onClick={() => setWaitlistProduct(product)}
                         className="inline-flex items-center gap-1.5 mb-3 text-sm font-semibold text-amber-700 bg-amber-50 border border-amber-300 rounded-lg px-3 py-1.5 hover:bg-amber-100 transition"
                       >
-                        🔔 Out of Stock — Join Waitlist
+                        {t("cart.out_of_stock_waitlist")}
                       </button>
                     )}
 
@@ -352,14 +353,14 @@ export default function CartPage() {
                         </button>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-600">Total:</span>
+                        <span className="text-sm text-gray-600">{t("checkout.total")}</span>
                         <span className="text-lg md:text-xl font-bold text-gray-900">
                           ৳{(price * quantity).toFixed(2)}
                         </span>
                       </div>
                       {itemSaved > 0 && (
                         <div className="text-sm text-green-600">
-                          Saved{" "}
+                          {t("cart.saved")}{" "}
                           <span className="font-semibold">
                             ৳{itemSaved.toFixed(2)}
                           </span>
@@ -386,18 +387,18 @@ export default function CartPage() {
         <div className="bg-[#FFF5ED] rounded-lg shadow p-6 mb-6 -mt-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-2 md:mb-6">
             <div>
-              <h2 className="text-2xl font-bold mb-2">Cart Total</h2>
+              <h2 className="text-2xl font-bold mb-2">{t("cart.cart_total")}</h2>
               <p className="text-3xl font-bold text-red-600">
                 ৳{subtotal.toFixed(2)}
               </p>
               {saved > 0 && (
                 <p className="text-sm text-green-600 mt-2">
-                  You are saving ৳{saved.toFixed(2)} on this order
+                  {t("checkout.you_saving_prefix")} ৳{saved.toFixed(2)} {t("checkout.you_saving_suffix")}
                 </p>
               )}
               {anyFreeShip && (
                 <p className="text-sm font-semibold text-green-700 mt-2">
-                  🚚This item ships free!!
+                  {t("home.free_shipping")}
                 </p>
               )}
             </div>
@@ -408,13 +409,13 @@ export default function CartPage() {
                 className="flex items-center justify-center gap-2 border border-gray-300 text-gray-700 px-2 py-2 rounded-lg font-medium hover:bg-gray-50 transition disabled:opacity-50"
                 title="Share this cart"
               >
-                <FaShareAlt className="w-4 h-4" /> Share Cart
+                <FaShareAlt className="w-4 h-4" /> {t("cart.share_cart")}
               </button>
               <button
                 onClick={handleCheckout}
                 className="flex-1 md:flex-none bg-rose-500 text-white px-2 py-2 rounded-md font-semibold hover:bg-rose-700 transition text-base md:text-lg"
               >
-                Proceed To Checkout
+                {t("cart.proceed_checkout")}
               </button>
             </div>
           </div>
@@ -426,11 +427,11 @@ export default function CartPage() {
             <div className="flex items-center gap-3 mb-1">
               <span className="text-xl">🛍️</span>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
-                Frequently Bought Together
+                {t("cart.fbt_title")}
               </h2>
             </div>
             <p className="text-gray-500 text-sm mb-4 ml-9">
-              Customers who bought items in your cart also bought these
+              {t("cart.fbt_desc")}
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
               {fbtProducts.slice(0, 6).map((p) => (
@@ -451,7 +452,7 @@ export default function CartPage() {
           <div className="flex items-center gap-3 mb-4">
             <span className="text-xl">✨</span>
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
-              Picked For You
+              {t("cart.picked_for_you")}
             </h2>
           </div>
 
@@ -486,7 +487,7 @@ export default function CartPage() {
             </div>
           ) : (
             <p className="text-gray-400 text-sm text-center py-6">
-              No recommendations available right now.
+              {t("cart.no_recommendations")}
             </p>
           )}
         </div>

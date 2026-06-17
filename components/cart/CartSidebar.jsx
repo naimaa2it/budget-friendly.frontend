@@ -17,6 +17,7 @@ import VariantEditModal, {
   getVariantSizes,
 } from "@/components/cart/VariantEditModal";
 import WaitlistModal from "@/components/cart/WaitlistModal";
+import { useLanguage } from "@/components/context/LanguageContext";
 
 export default function CartSidebar() {
   const router = useRouter();
@@ -30,6 +31,7 @@ export default function CartSidebar() {
     shareCart,
   } = useCart();
 
+  const { t } = useLanguage();
   const [editItem, setEditItem] = useState(null);
   const [editMode, setEditMode] = useState("edit");
   const [waitlistProduct, setWaitlistProduct] = useState(null);
@@ -90,7 +92,7 @@ export default function CartSidebar() {
           <div className="flex items-center gap-2">
             <FaShoppingBag className="w-5 h-5" />
             <h2 className="text-lg font-semibold">
-              My Cart Item(s): {cartItems.length}
+              {t("cart.my_cart")} {cartItems.length} {t("cart.items_label")}
             </h2>
           </div>
           <div className="flex items-center gap-3">
@@ -193,8 +195,7 @@ export default function CartSidebar() {
                             }}
                             className="flex items-center gap-1 mt-0.5 text-xs text-blue-600 hover:underline"
                           >
-                            <FaPencilAlt className="w-2.5 h-2.5" /> Select
-                            option
+                            <FaPencilAlt className="w-2.5 h-2.5" /> {t("cart.select_option")}
                           </button>
                         )
                       )}
@@ -209,12 +210,12 @@ export default function CartSidebar() {
                           }}
                           className="mt-1 flex items-center gap-1 text-xs text-green-600 hover:text-green-700 hover:underline"
                         >
-                          Add another size/color
+                          {t("cart.add_size_color")}
                         </button>
                       )}
                       {product.freeShipping && (
                         <p className="text-xs font-semibold text-green-700 mt-0.5">
-                          🚚 FREE SHIPPING
+                          {t("cart.free_shipping_badge")}
                         </p>
                       )}
                       {product.availability === "out_of_stock" && (
@@ -222,7 +223,7 @@ export default function CartSidebar() {
                           onClick={() => setWaitlistProduct(product)}
                           className="mt-1 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-300 rounded px-2 py-0.5 hover:bg-amber-100 transition"
                         >
-                          🔔 Out of Stock — Join Waitlist
+                          {t("cart.out_of_stock_waitlist")}
                         </button>
                       )}
                     </div>
@@ -258,16 +259,16 @@ export default function CartSidebar() {
         {cartItems.length > 0 && (
           <div className="p-4 border-t shrink-0 mt-auto">
             <div className="flex justify-between mb-2">
-              <span className="font-medium">Total</span>
+              <span className="font-medium">{t("checkout.total")}</span>
               <span className="font-semibold">৳{Math.round(total)}</span>
             </div>
             {saved > 0 && (
               <div className="flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-lg px-3 py-1.5 mb-2">
                 <span className="text-sm">🎉</span>
                 <span className="text-xs font-medium text-green-700">
-                  You are saving{" "}
+                  {t("checkout.you_saving_prefix")}{" "}
                   <span className="font-extrabold">৳{Math.round(saved)}</span>{" "}
-                  on this order!
+                  {t("checkout.you_saving_suffix")}
                 </span>
               </div>
             )}
@@ -279,7 +280,7 @@ export default function CartSidebar() {
                 }}
                 className="flex-1 border border-gray-300 text-gray-700 py-1 rounded hover:bg-gray-50 "
               >
-                View Cart
+                {t("cart.view_cart")}
               </button>
               <button
                 onClick={() => {
@@ -288,7 +289,7 @@ export default function CartSidebar() {
                 }}
                 className="flex-1 bg-red-600 text-white py-1 rounded hover:bg-red-700"
               >
-                Proceed Checkout
+                {t("cart.proceed_checkout")}
               </button>
             </div>
           </div>

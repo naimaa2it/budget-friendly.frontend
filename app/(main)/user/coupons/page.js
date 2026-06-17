@@ -15,6 +15,7 @@ import {
   FaLock,
   FaGift,
 } from "react-icons/fa";
+import { useLanguage } from "@/components/context/LanguageContext";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -86,6 +87,7 @@ const COLOR_THEMES = {
 
 function CouponCard({ coupon, cartSubtotal = 0 }) {
   const [copied, setCopied] = useState(false);
+  const { t: tr } = useLanguage();
   const t = COLOR_THEMES[coupon.theme] || COLOR_THEMES.pink;
 
   const copy = () => {

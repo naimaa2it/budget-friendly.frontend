@@ -394,27 +394,27 @@ function SuccessContent() {
           {cancelled ? (
             <>
               <h1 className="text-lg font-bold text-gray-900">
-                Order Cancelled
+                {t("success.order_cancelled_title")}
               </h1>
               <p className="text-sm text-gray-500">
-                Your order has been cancelled.
+                {t("success.order_cancelled_desc")}
               </p>
             </>
           ) : order?.paymentStatus === "paid" ? (
             <>
               <h1 className="text-lg font-bold text-gray-900">
-                Payment Confirmed! 💳
+                {t("success.payment_confirmed")}
               </h1>
               <p className="text-sm text-gray-500">
-                Your payment was received successfully.
+                {t("success.payment_desc")}
               </p>
             </>
           ) : (
             <>
               <h1 className="text-lg font-bold text-gray-900">
-                Order Placed Successfully
+                {t("success.order_placed")}
               </h1>
-              <p className="text-sm text-gray-500">Thanks for your order!</p>
+              <p className="text-sm text-gray-500">{t("success.thanks_order")}</p>
             </>
           )}
         </div>
@@ -424,19 +424,19 @@ function SuccessContent() {
           {/* Order ID + Delivery */}
           <div className="flex justify-between py-4 text-sm">
             <div>
-              <p className="text-gray-500 text-xs mb-1">Order ID</p>
+              <p className="text-gray-500 text-xs mb-1">{t("success.order_id")}</p>
               <p className="font-bold text-gray-900">{shortId(orderId)}</p>
             </div>
             <div className="text-right">
-              <p className="text-gray-500 text-xs mb-1">Estimated Delivery</p>
-              <p className="font-bold text-gray-900">Within 2-3 Days</p>
+              <p className="text-gray-500 text-xs mb-1">{t("success.estimated_delivery")}</p>
+              <p className="font-bold text-gray-900">{t("success.within_days")}</p>
             </div>
           </div>
 
           {/* Shipping Address */}
           {!loading && addr && (
             <div className="py-4 text-sm">
-              <p className="text-gray-500 text-xs mb-1">Shipping Address</p>
+              <p className="text-gray-500 text-xs mb-1">{t("success.address")}</p>
               <p className="text-gray-800">
                 {billing.name}
                 {addr ? ", " + addr : ""}
@@ -448,7 +448,7 @@ function SuccessContent() {
           {!loading && order?.items?.length > 0 && (
             <div className="py-4">
               <p className="text-gray-500 text-xs mb-3">
-                Items Ordered ({order.items.length})
+                {t("success.items_ordered")} ({order.items.length})
               </p>
               <div className="space-y-3">
                 {order.items.map((item, i) => (
@@ -485,7 +485,7 @@ function SuccessContent() {
                         </p>
                       )}
                       <p className="text-xs text-gray-500">
-                        Qty: {item.quantity}
+                        {t("success.qty")} {item.quantity}
                       </p>
                     </div>
                     <p className="text-sm font-semibold text-gray-900 shrink-0">
@@ -513,7 +513,7 @@ function SuccessContent() {
           {/* Payment Status */}
           {!loading && order && (
             <div className="py-4 text-sm">
-              <p className="text-gray-500 text-xs mb-1">Payment Status</p>
+              <p className="text-gray-500 text-xs mb-1">{t("success.payment_status")}</p>
               <p
                 className={`font-semibold capitalize ${
                   order.paymentStatus === "paid"
@@ -524,7 +524,7 @@ function SuccessContent() {
                 }`}
               >
                 {order.paymentStatus === "cod"
-                  ? "Cash on Delivery"
+                  ? t("success.cash_on_delivery")
                   : order.paymentStatus}
               </p>
             </div>
@@ -533,7 +533,7 @@ function SuccessContent() {
           {/* Note */}
           {!loading && billing.note && (
             <div className="py-4 text-sm">
-              <p className="text-gray-500 text-xs mb-1">Order Note</p>
+              <p className="text-gray-500 text-xs mb-1">{t("success.order_note")}</p>
               <p className="text-gray-700">{billing.note}</p>
             </div>
           )}
@@ -543,7 +543,7 @@ function SuccessContent() {
             <div className="py-4">
               <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-sm">
                 <p className="text-orange-700 font-medium mb-1">
-                  Your can Edit or cancel order within: {fmtTime(timeLeft)}
+                  {t("success.edit_cancel_time")} {fmtTime(timeLeft)}
                 </p>
 
                 {isEditing ? (
@@ -712,7 +712,7 @@ function SuccessContent() {
           <div className="py-4 text-sm flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-xs mb-1">
-                Need Help With Anything?
+                {t("success.need_help")}
               </p>
               <p className="font-semibold text-gray-800">{PHONE}</p>
             </div>
@@ -837,7 +837,7 @@ function SuccessContent() {
             href="/"
             className="flex items-center justify-center gap-2 w-full py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition text-sm"
           >
-            🛍 Continue shopping
+            {t("success.continue_shopping")}
           </Link>
         </div>
       </div>

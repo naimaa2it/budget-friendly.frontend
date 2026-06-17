@@ -471,7 +471,8 @@ export default function Footer() {
 
           <div className="mt-4 border-t border-black/6 pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-[#202020]">
             <p>
-              © {new Date().getFullYear()} {storeName || "Our Store"}. {t("footer.rights")}
+              © {new Date().getFullYear()} {storeName || "Our Store"}.{" "}
+              {t("footer.rights")}
             </p>
             <div className="flex items-center gap-4">
               <Link href="/privacy" className="hover:text-red-600">

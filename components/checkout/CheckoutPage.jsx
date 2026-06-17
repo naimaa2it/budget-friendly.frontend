@@ -25,10 +25,12 @@ import {
 import PaymentSelector from "@/components/checkout/PaymentSelector";
 import SearchableSelect from "@/components/ui/SearchableSelect";
 import { toast } from "react-hot-toast";
+import { useLanguage } from "@/components/context/LanguageContext";
 import "animate.css";
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const { cartItems, clearCart, cartHydrated } = useCart();
   const { user } = useUser();
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -580,7 +582,7 @@ export default function CheckoutPage() {
 
     const missingFields = Object.entries(requiredFields).filter(([, v]) => !v);
     if (missingFields.length > 0) {
-      toast.error("Please fill in all required fields");
+      toast.error(t("checkout.required_fields"));
       return;
     }
 
@@ -740,7 +742,7 @@ export default function CheckoutPage() {
             </svg>
           </button>
         </div>
-        <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+        <h1 className="text-3xl font-bold mb-8">{t("checkout.title")}</h1>
 
         {/* Guest login nudge */}
         {!user && (
@@ -809,7 +811,7 @@ export default function CheckoutPage() {
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
               <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
                 <h2 className="text-sm font-bold text-gray-900">
-                  Order Items{" "}
+                  {t("checkout.order_items")}{" "}
                   <span className="text-gray-400 font-normal">
                     ({cartItems.length})
                   </span>
@@ -821,7 +823,7 @@ export default function CheckoutPage() {
                     className="flex items-center gap-1.5 text-xs font-semibold text-rose-500 hover:text-rose-600 transition animate__animated animate__heartBeat animate__infinite animate__slow"
                   >
                     <FaGift className="text-rose-500" />
-                    Unlock Rewards
+                    {t("checkout.unlock_rewards")}
                   </button>
                 )}
               </div>
@@ -925,13 +927,13 @@ export default function CheckoutPage() {
               className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
             >
               <h2 className="text-sm font-bold text-gray-900 mb-5">
-                Billing Details
+                {t("checkout.billing_details")}
               </h2>
 
               {previousAddresses.length > 0 && (
                 <div className="mb-5">
                   <p className="text-sm font-medium text-gray-700 mb-2">
-                    Use previous address
+                    {t("checkout.use_prev_address")}
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     {previousAddresses.map((billing, idx) => (
@@ -942,7 +944,7 @@ export default function CheckoutPage() {
                         className="text-left border border-gray-200 rounded-lg p-3 hover:border-red-300 hover:bg-red-50 transition"
                       >
                         <span className="block text-sm font-semibold text-gray-900 truncate">
-                          {billing.name || "Saved address"}
+                          {billing.name || t("checkout.saved_address")}
                         </span>
                         <span className="block text-xs text-gray-500 mt-1 line-clamp-2">
                           {[
@@ -972,7 +974,7 @@ export default function CheckoutPage() {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  placeholder="Name*"
+                  placeholder={t("checkout.name_ph")}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none"
                   required
                 />
@@ -985,7 +987,7 @@ export default function CheckoutPage() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  placeholder="Phone*"
+                  placeholder={t("checkout.phone_ph")}
                   className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none"
                   required
                 />
@@ -994,7 +996,7 @@ export default function CheckoutPage() {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  placeholder="Email address"
+                  placeholder={t("checkout.email_ph")}
                   className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none"
                   required
                 />
@@ -1009,7 +1011,7 @@ export default function CheckoutPage() {
                     value={formData.city}
                     onChange={handleInputChange}
                     options={cities}
-                    placeholder="City*"
+                    placeholder={t("checkout.city_ph")}
                     required
                   />
                   {formData.city === "other" && (
@@ -1017,7 +1019,7 @@ export default function CheckoutPage() {
                       type="text"
                       value={customCity}
                       onChange={(e) => setCustomCity(e.target.value)}
-                      placeholder="Enter your city"
+                      placeholder={t("checkout.enter_city")}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none mt-2"
                       required
                     />
@@ -1031,7 +1033,7 @@ export default function CheckoutPage() {
                     value={formData.zone}
                     onChange={handleInputChange}
                     options={zones}
-                    placeholder="Zone*"
+                    placeholder={t("checkout.zone_ph")}
                     required
                     disabled={!formData.city || formData.city === "other"}
                   />
@@ -1040,7 +1042,7 @@ export default function CheckoutPage() {
                       type="text"
                       value={customZone}
                       onChange={(e) => setCustomZone(e.target.value)}
-                      placeholder="Enter your zone"
+                      placeholder={t("checkout.enter_zone")}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none mt-2"
                       required
                     />
@@ -1054,7 +1056,7 @@ export default function CheckoutPage() {
                     value={formData.area}
                     onChange={handleInputChange}
                     options={areas}
-                    placeholder="Area"
+                    placeholder={t("checkout.area_ph")}
                     disabled={
                       !formData.zone ||
                       formData.zone === "other" ||
@@ -1068,7 +1070,7 @@ export default function CheckoutPage() {
                       type="text"
                       value={customArea}
                       onChange={(e) => setCustomArea(e.target.value)}
-                      placeholder="Enter your area"
+                      placeholder={t("checkout.enter_area")}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none mt-2"
                     />
                   )}
@@ -1081,7 +1083,7 @@ export default function CheckoutPage() {
                   name="address"
                   value={formData.address}
                   onChange={handleInputChange}
-                  placeholder="Address (optional)"
+                  placeholder={t("checkout.address_ph")}
                   rows={3}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none resize-none"
                   required
@@ -1094,7 +1096,7 @@ export default function CheckoutPage() {
                   name="note"
                   value={formData.note}
                   onChange={handleInputChange}
-                  placeholder="Write a Note..."
+                  placeholder={t("checkout.note_ph")}
                   rows={2}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none resize-none"
                 />
@@ -1108,7 +1110,7 @@ export default function CheckoutPage() {
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
                 <h2 className="text-sm font-bold text-gray-900">
-                  Order Summary
+                  {t("checkout.order_summary")}
                 </h2>
                 {/* {progressItems.length > 0 && (
                   <button
@@ -1148,18 +1150,18 @@ export default function CheckoutPage() {
                   </div>
                 )}
                 <div className="flex justify-between text-sm text-gray-500">
-                  <span>Subtotal</span>
+                  <span>{t("cart.subtotal")}</span>
                   <span className="font-medium text-gray-700">
                     ৳{(quote.subtotal ?? 0).toFixed(0)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm text-gray-500">
-                  <span>Shipping</span>
+                  <span>{t("orders.shipping")}</span>
                   <span
                     className={`font-medium ${displayShipping === 0 ? "text-green-600" : "text-gray-700"}`}
                   >
                     {displayShipping === 0
-                      ? "Free"
+                      ? t("checkout.free")
                       : `৳${displayShipping.toFixed(0)}`}
                   </span>
                 </div>
@@ -1179,7 +1181,7 @@ export default function CheckoutPage() {
                           </span>
                           <span className="opacity-70">
                             {coupon.givesFreeShipping
-                              ? "(Free Shipping)"
+                              ? t("checkout.free_shipping_coupon")
                               : `(-৳${coupon.discountValue ?? 0})`}
                           </span>
                         </span>
@@ -1197,7 +1199,7 @@ export default function CheckoutPage() {
 
                 {(quote.couponDiscount ?? 0) > 0 && (
                   <div className="flex justify-between text-sm text-green-600">
-                    <span>Coupon Discount</span>
+                    <span>{t("checkout.coupon_discount")}</span>
                     <span className="font-semibold">
                       -৳{(quote.couponDiscount ?? 0).toFixed(0)}
                     </span>
@@ -1215,7 +1217,7 @@ export default function CheckoutPage() {
                 )}
 
                 <div className="flex justify-between items-center pt-2 border-t border-dashed border-gray-200">
-                  <span className="text-sm font-bold text-gray-900">Total</span>
+                  <span className="text-sm font-bold text-gray-900">{t("checkout.total")}</span>
                   <span className="text-xl font-extrabold text-gray-900">
                     ৳{displayTotal.toFixed(0)}
                   </span>
@@ -1250,11 +1252,11 @@ export default function CheckoutPage() {
                     <div className="flex items-center gap-2 mt-2 bg-green-50 border border-green-100 rounded-lg px-3 py-2">
                       <span className="text-base">🎉</span>
                       <p className="text-xs text-green-700 font-medium">
-                        You are saving{" "}
+                        {t("checkout.you_saving_prefix")}{" "}
                         <span className="font-extrabold">
                           ৳{Math.round(totalSaved)}
                         </span>{" "}
-                        on this order!
+                        {t("checkout.you_saving_suffix")}
                       </p>
                     </div>
                   ) : null;
@@ -1272,7 +1274,7 @@ export default function CheckoutPage() {
                   <div className="flex items-center gap-2">
                     <span className="text-sm">🏷️</span>
                     <span className="text-xs font-semibold text-gray-700">
-                      Coupons &amp; Rewards
+                      {t("checkout.coupons_rewards")}
                     </span>
                     {/* badges when collapsed */}
                     {!savingsOpen && (
@@ -1336,7 +1338,7 @@ export default function CheckoutPage() {
                         {/* Text */}
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-bold text-gray-800 leading-tight">
-                            Reward Points
+                            {t("checkout.reward_points")}
                           </p>
                           {(quote.availablePoints ?? 0) > 0 ? (
                             <p className="text-[11px] leading-tight mt-0.5">
@@ -1361,7 +1363,7 @@ export default function CheckoutPage() {
                             </p>
                           ) : (
                             <p className="text-[11px] text-gray-400 leading-tight mt-0.5">
-                              No points yet
+                              {t("checkout.no_points")}
                             </p>
                           )}
                         </div>
@@ -1398,7 +1400,7 @@ export default function CheckoutPage() {
                             Reward Points
                           </p>
                           <p className="text-[11px] text-gray-400 mt-0.5">
-                            Sign in to use your points
+                            {t("checkout.sign_in_points")}
                           </p>
                         </div>
                       </div>
@@ -1420,7 +1422,7 @@ export default function CheckoutPage() {
                     <div>
                       <div className="flex items-center gap-2 mb-1.5">
                         <span className="text-xs font-semibold text-gray-700">
-                          🏷️ Coupon Code
+                          {t("checkout.coupon_label")}
                         </span>
                         {appliedCoupons.length > 0 && (
                           <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
@@ -1434,7 +1436,7 @@ export default function CheckoutPage() {
                           name="coupon"
                           value={formData.coupon}
                           onChange={handleInputChange}
-                          placeholder="ENTER CODE"
+                          placeholder={t("checkout.enter_code_ph")}
                           disabled={appliedCoupons.length >= 2}
                           className="w-full px-3 pr-20 py-2 text-xs border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-300 disabled:bg-gray-100 uppercase font-mono tracking-widest placeholder:text-gray-300 placeholder:tracking-widest"
                         />
@@ -1447,7 +1449,7 @@ export default function CheckoutPage() {
                           }
                           className="absolute right-1 top-1/2 -translate-y-1/2 px-3 py-1 bg-gray-900 text-white text-xs font-semibold rounded-md hover:bg-gray-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
                         >
-                          Apply
+                          {t("checkout.apply")}
                         </button>
                       </div>
 
@@ -1470,14 +1472,14 @@ export default function CheckoutPage() {
                           onClick={handleRemoveAllCoupons}
                           className="mt-1.5 text-xs text-red-400 hover:text-red-600 transition"
                         >
-                          Remove all coupons
+                          {t("checkout.remove_all_coupons")}
                         </button>
                       ) : (
                         <Link
                           href="/user/coupons"
                           className="mt-1 text-[11px] text-blue-500 hover:underline inline-block"
                         >
-                          Browse available coupons →
+                          {t("checkout.browse_coupons")}
                         </Link>
                       )}
                     </div>
@@ -1516,7 +1518,7 @@ export default function CheckoutPage() {
             <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-center">
               <h3 className="text-xl font-bold flex items-center gap-2">
                 <FaGift className="text-red-500" />
-                Available Rewards
+                {t("checkout.available_rewards")}
               </h3>
               <button
                 onClick={() => setShowRewardsModal(false)}
@@ -1586,7 +1588,7 @@ export default function CheckoutPage() {
                 }}
                 className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white py-2 rounded-sm hover:bg-red-800 transition font-semibold"
               >
-                Explore All Coupons →
+                {t("checkout.explore_coupons")}
               </button>
             </div>
           </div>

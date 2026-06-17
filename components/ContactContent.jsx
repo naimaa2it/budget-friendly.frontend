@@ -19,19 +19,28 @@ export default function ContactContent() {
     e.preventDefault();
     setStatus('loading');
     setErrorMsg('');
+    const controller = new AbortController();
+    const tid = setTimeout(() => controller.abort(), 30000);
     try {
       const res = await fetch(`${API_URL}/api/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
+        signal: controller.signal,
       });
+      clearTimeout(tid);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Something went wrong.');
       setStatus('success');
       setForm({ name: '', email: '', message: '' });
     } catch (err) {
+      clearTimeout(tid);
       setStatus('error');
-      setErrorMsg(err.message);
+      setErrorMsg(
+        err.name === 'AbortError'
+          ? 'Server is taking too long to respond. Please try again.'
+          : err.message
+      );
     }
   };
 

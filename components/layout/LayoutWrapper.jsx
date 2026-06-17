@@ -193,7 +193,7 @@ export default function LayoutWrapper({ children }) {
       {!hideNav && (
         <div className="sticky top-0 z-50 bg-white shadow-sm">
           <Navbar />
-          <MegaMenuNavbar />
+          {/* <MegaMenuNavbar /> */}
         </div>
       )}
 

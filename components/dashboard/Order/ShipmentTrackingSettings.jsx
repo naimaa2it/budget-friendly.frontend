@@ -235,12 +235,13 @@ function CourierManager({ couriers, onChange }) {
 }
 
 function CourierIntegrationCard({ courier, onSaved }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [credForm, setCredForm] = useState({});
+  const [loadedMasked, setLoadedMasked] = useState({});
   const [storeForm, setStoreForm] = useState({});
   const [apiEnabled, setApiEnabled] = useState(false);
 
@@ -258,12 +259,22 @@ function CourierIntegrationCard({ courier, onSaved }) {
         setData(body);
         setApiEnabled(Boolean(body.courier?.apiEnabled));
         setStoreForm(body.courier?.storeConfig || {});
-        setCredForm({});
+        const masked = body.credentials || {};
+        const fields = CREDENTIAL_FIELDS[courier.slug] || [];
+        const initialForm = {};
+        for (const f of fields) {
+          const hasKey = `has${f.key.charAt(0).toUpperCase()}${f.key.slice(1)}`;
+          if (masked[hasKey] && masked[f.key]) {
+            initialForm[f.key] = masked[f.key];
+          }
+        }
+        setCredForm(initialForm);
+        setLoadedMasked(initialForm);
       }
     } finally {
       setLoading(false);
     }
-  }, [courier._id]);
+  }, [courier._id, courier.slug]);
 
   useEffect(() => {
     load();
@@ -275,6 +286,12 @@ function CourierIntegrationCard({ courier, onSaved }) {
   const save = async () => {
     setSaving(true);
     try {
+      const changedCreds = {};
+      for (const [key, val] of Object.entries(credForm)) {
+        if (val !== undefined && val !== null && val !== "" && val !== loadedMasked[key]) {
+          changedCreds[key] = val;
+        }
+      }
       const r = await fetch(
         `${API}/api/admin/couriers/${courier._id}/integration`,
         {
@@ -283,14 +300,13 @@ function CourierIntegrationCard({ courier, onSaved }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             apiEnabled,
-            credentials: credForm,
+            credentials: changedCreds,
             storeConfig: storeForm,
           }),
         },
       );
       const body = await r.json();
       if (!r.ok) throw new Error(body.error || "Save failed");
-      setCredForm({});
       await load();
       onSaved?.();
       alert("Integration saved");
@@ -394,28 +410,32 @@ function CourierIntegrationCard({ courier, onSaved }) {
               ) : null}
 
               <div className="grid sm:grid-cols-2 gap-3">
-                {fields.map((f) => (
-                  <div key={f.key}>
-                    <label className="block text-xs text-gray-500 mb-1">
-                      {f.label}
-                    </label>
-                    <input
-                      type={f.type}
-                      placeholder={
-                        masked[
-                          `has${f.key.charAt(0).toUpperCase()}${f.key.slice(1)}`
-                        ]
-                          ? masked[f.key] || "•••• saved"
-                          : ""
-                      }
-                      value={credForm[f.key] || ""}
-                      onChange={(e) =>
-                        setCredForm((p) => ({ ...p, [f.key]: e.target.value }))
-                      }
-                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white"
-                    />
-                  </div>
-                ))}
+                {fields.map((f) => {
+                  const hasKey = `has${f.key.charAt(0).toUpperCase()}${f.key.slice(1)}`;
+                  const isSaved = Boolean(masked[hasKey]);
+                  const isUnchanged = isSaved && credForm[f.key] === loadedMasked[f.key];
+                  return (
+                    <div key={f.key}>
+                      <label className="flex items-center gap-1.5 text-xs text-gray-500 mb-1">
+                        {f.label}
+                        {isSaved && (
+                          <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-medium">
+                            saved
+                          </span>
+                        )}
+                      </label>
+                      <input
+                        type={f.type}
+                        value={credForm[f.key] ?? ""}
+                        onChange={(e) =>
+                          setCredForm((p) => ({ ...p, [f.key]: e.target.value }))
+                        }
+                        placeholder={isUnchanged ? "Clear to update" : ""}
+                        className={`w-full text-sm border rounded-lg px-3 py-2 bg-white ${isUnchanged ? "border-green-200" : "border-gray-200"}`}
+                      />
+                    </div>
+                  );
+                })}
               </div>
 
               {courier.slug === "pathao" && (

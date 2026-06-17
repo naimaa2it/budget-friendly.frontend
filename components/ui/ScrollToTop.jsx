@@ -45,11 +45,11 @@ const ScrollToTop = () => {
             stiffness: 260,
             damping: 20
           }}
-          className="fixed bottom-8 right-4 z-50"
+          className="fixed bottom-5 right-4 z-50"
         >
           {/* Progress ring */}
           <div className="absolute inset-0">
-            <svg className="w-10 h-10 transform -rotate-90" viewBox="0 0 50 50">
+            <svg className="w-8 h-8 transform -rotate-90" viewBox="0 0 50 50">
               <circle
                 cx="25"
                 cy="25"
@@ -76,11 +76,11 @@ const ScrollToTop = () => {
           {/* Main button */}
           <motion.button
             onClick={scrollToTop}
-            className="relative flex items-center justify-center 
-                       w-10 h-10 rounded-full 
-                       bg-gradient-to-br from-green-400 to-brand-olive 
+            className="relative flex items-center justify-center
+                       w-8 h-8 rounded-full
+                       bg-gradient-to-br from-green-400 to-brand-olive
                        text-white shadow-2xl
-                       hover:shadow-primary/30 
+                       hover:shadow-primary/30
                        transition-all duration-300
                        group"
             whileHover={{ scale: 1.1, rotate: 5 }}
@@ -106,7 +106,7 @@ const ScrollToTop = () => {
               }}
               className="relative z-10"
             >
-              <FaArrowUp className="text-lg" />
+              <FaArrowUp className="text-sm" />
             </motion.div>
             
             {/* Tooltip */}

@@ -19,6 +19,10 @@ const FloatingWhatsApp = ({
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-4px); }
     }
+    @media (max-width: 767px) {
+      .wa-float-btn { width: 34px !important; height: 34px !important; padding: 7px !important; }
+      .wa-float-btn-open { width: auto !important; }
+    }
   `;
 
   return (
@@ -36,6 +40,7 @@ const FloatingWhatsApp = ({
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
+          className={isHovered ? "wa-float-btn-open" : "wa-float-btn"}
           style={{
             display: "flex",
             alignItems: "center",
@@ -59,12 +64,10 @@ const FloatingWhatsApp = ({
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              width: "20px",
-              height: "20px",
               flexShrink: 0,
             }}
           >
-            <FaWhatsapp style={{ fontSize: "20px" }} />
+            <FaWhatsapp style={{ fontSize: "18px" }} />
           </div>
 
           {isHovered && (

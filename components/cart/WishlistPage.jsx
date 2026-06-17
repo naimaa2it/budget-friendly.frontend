@@ -74,7 +74,7 @@ export default function WishlistPage({ embedded = false }) {
   const content = (
     <>
       {!embedded && (
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-2">
           <h1 className="text-2xl font-bold mb-6">My Wishlist</h1>
         </div>
       )}

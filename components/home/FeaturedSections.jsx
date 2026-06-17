@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import ProductCard from '@/components/product/ProductCard';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import ProductCard from "@/components/product/ProductCard";
 
 // Returns how many cards fit at the current viewport width
 function useVisibleCount() {
@@ -11,13 +11,13 @@ function useVisibleCount() {
       const w = window.innerWidth;
       if (w >= 1280) setCount(5);
       else if (w >= 1024) setCount(4);
-      else if (w >= 768)  setCount(3);
-      else if (w >= 540)  setCount(2);
-      else                setCount(2);
+      else if (w >= 768) setCount(3);
+      else if (w >= 540) setCount(2);
+      else setCount(2);
     };
     update();
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
   }, []);
   return count;
 }
@@ -31,7 +31,7 @@ function FeaturedSlider({ products }) {
   const startAuto = useCallback(() => {
     clearInterval(autoRef.current);
     autoRef.current = setInterval(() => {
-      setCurrentIndex(prev => (prev >= maxIndex ? 0 : prev + 1));
+      setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
     }, 4000);
   }, [maxIndex]);
 
@@ -41,7 +41,7 @@ function FeaturedSlider({ products }) {
   }, [startAuto]);
 
   const go = (dir) => {
-    setCurrentIndex(prev => {
+    setCurrentIndex((prev) => {
       const next = prev + dir;
       if (next < 0) return maxIndex;
       if (next > maxIndex) return 0;
@@ -110,8 +110,11 @@ function FeaturedSlider({ products }) {
           {dots.map((_, i) => (
             <button
               key={i}
-              onClick={() => { setCurrentIndex(i); startAuto(); }}
-              className={`w-2 h-2 rounded-full transition-all ${i === currentIndex ? 'bg-rose-600 w-4' : 'bg-gray-300'}`}
+              onClick={() => {
+                setCurrentIndex(i);
+                startAuto();
+              }}
+              className={`w-2 h-2 rounded-full transition-all ${i === currentIndex ? "bg-rose-600 w-4" : "bg-gray-300"}`}
             />
           ))}
         </div>
@@ -121,14 +124,18 @@ function FeaturedSlider({ products }) {
 }
 
 export default function FeaturedSections() {
-  const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
   const [sections, setSections] = useState([]);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     fetch(`${API}/api/featured`)
-      .then(r => r.json())
-      .then(b => setSections((b.items || []).filter(s => s.products && s.products.length > 0)))
+      .then((r) => r.json())
+      .then((b) =>
+        setSections(
+          (b.items || []).filter((s) => s.products && s.products.length > 0),
+        ),
+      )
       .catch(() => setSections([]))
       .finally(() => setLoaded(true));
   }, [API]);
@@ -137,12 +144,14 @@ export default function FeaturedSections() {
 
   return (
     <section className="w-full py-6 space-y-10 bg-[#FFF5ED]">
-      {sections.map(sec => (
-        <div key={sec._id} className="max-w-7xl mx-auto px-4">
+      {sections.map((sec) => (
+        <div key={sec._id} className="max-w-7xl mx-auto px-2">
           {/* Section header */}
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg md:text-3xl font-bold text-gray-800">{sec.title}</h2>
-            {sec.viewAllLink && sec.viewAllLink !== '/' && (
+            <h2 className="text-lg md:text-3xl font-bold text-gray-800">
+              {sec.title}
+            </h2>
+            {sec.viewAllLink && sec.viewAllLink !== "/" && (
               <a
                 href={sec.viewAllLink}
                 className="text-md  text-rose-500 font-semibold hover:underline whitespace-nowrap"

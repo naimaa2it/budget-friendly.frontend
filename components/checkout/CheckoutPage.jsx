@@ -133,8 +133,10 @@ export default function CheckoutPage() {
         total: 0,
       }),
     })
-      .then((r) => r.ok ? r.json() : null)
-      .then((data) => { if (data?.sessionId) checkoutSessionId.current = data.sessionId; })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.sessionId) checkoutSessionId.current = data.sessionId;
+      })
       .catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -662,7 +664,7 @@ export default function CheckoutPage() {
           orderId: result.orderId,
           method: result.method,
           amount: result.amount,
-          merchant: result.merchantNumber || '',
+          merchant: result.merchantNumber || "",
         });
         router.push(`/checkout/payment?${params.toString()}`);
       } else if (result.method === "online" && result.url) {
@@ -707,7 +709,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-2">
         <h1 className="text-3xl font-bold mb-8">Checkout</h1>
 
         {/* New-user eligibility banner */}
@@ -1153,28 +1155,36 @@ export default function CheckoutPage() {
                 {(() => {
                   // Use shared cart utilities — same logic as CartSidebar
                   const mrpSavings = cartItems.reduce((sum, item) => {
-                    const { quantity, selectedColor, selectedSize, product } = item;
+                    const { quantity, selectedColor, selectedSize, product } =
+                      item;
                     const id = product._id || product.id;
                     const selling =
-                      quoteItemMap[makeCartKey(id, selectedColor, selectedSize)] ??
-                      getItemPrice(item);
+                      quoteItemMap[
+                        makeCartKey(id, selectedColor, selectedSize)
+                      ] ?? getItemPrice(item);
                     const mrp = getItemCompareAtPrice(item);
-                    return sum + (mrp > selling ? (mrp - selling) * quantity : 0);
+                    return (
+                      sum + (mrp > selling ? (mrp - selling) * quantity : 0)
+                    );
                   }, 0);
 
                   const totalSaved =
                     mrpSavings +
                     (quote.couponDiscount ?? 0) +
                     (quote.pointsDiscount ?? 0) +
-                    (quote.freeShippingFromCoupon ? (quote.baseShipping ?? 0) : 0);
+                    (quote.freeShippingFromCoupon
+                      ? (quote.baseShipping ?? 0)
+                      : 0);
 
                   return totalSaved > 0 ? (
                     <div className="flex items-center gap-2 mt-2 bg-green-50 border border-green-100 rounded-lg px-3 py-2">
                       <span className="text-base">🎉</span>
                       <p className="text-xs text-green-700 font-medium">
                         You are saving{" "}
-                        <span className="font-extrabold">৳{Math.round(totalSaved)}</span>
-                        {" "}on this order!
+                        <span className="font-extrabold">
+                          ৳{Math.round(totalSaved)}
+                        </span>{" "}
+                        on this order!
                       </p>
                     </div>
                   ) : null;

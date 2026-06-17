@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import Lottie from 'lottie-react';
+import React, { useEffect, useState } from "react";
+import Lottie from "lottie-react";
 
 // default animation: a generic "empty box" from LottieFiles CDN
-const DEFAULT_ANIMATION = "https://assets5.lottiefiles.com/packages/lf20_usmfx6bp.json";
+const DEFAULT_ANIMATION =
+  "https://assets5.lottiefiles.com/packages/lf20_usmfx6bp.json";
 
 export default function EmptyState({
   title = "Nothing to see here",
@@ -26,21 +27,21 @@ export default function EmptyState({
         .then((r) => r.json())
         .then((json) => setData(json))
         .catch((err) => {
-          console.error('Failed to load animation', err);
+          console.error("Failed to load animation", err);
         });
     }
   }, [animationUrl, animationData]);
 
   return (
     <div className={`min-h-screen bg-gray-50 py-16 ${className}`}>
-      <div className="max-w-7xl mx-auto px-4 text-center">
+      <div className="max-w-7xl mx-auto px-2 text-center">
         {data && (
           <div className="w-full max-w-xs mx-auto mb-4" style={animationStyle}>
             <Lottie
               animationData={data}
               loop
               autoplay
-              style={{ width: '100%', height: '100%' }}
+              style={{ width: "100%", height: "100%" }}
             />
           </div>
         )}

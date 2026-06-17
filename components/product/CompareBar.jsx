@@ -12,7 +12,7 @@ export default function CompareBar() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 shadow-2xl">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+      <div className="max-w-7xl mx-auto px-2 py-3 flex items-center gap-4">
         <div className="flex-1 flex items-center gap-3 overflow-x-auto">
           {compareList.map((product) => {
             const img = product.images?.[0]?.url || "/assets/placeholder.svg";

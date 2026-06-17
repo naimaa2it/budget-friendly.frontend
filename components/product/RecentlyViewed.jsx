@@ -3,7 +3,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { FaStar, FaChevronLeft, FaChevronRight, FaShoppingCart } from "react-icons/fa";
+import {
+  FaStar,
+  FaChevronLeft,
+  FaChevronRight,
+  FaShoppingCart,
+} from "react-icons/fa";
 import { useCart } from "@/components/context/CartContext";
 
 const STORAGE_KEY = "SmartBuy BD_recentlyViewed";
@@ -53,7 +58,7 @@ export default function RecentlyViewed({ currentProductId }) {
   if (items.length === 0) return null;
 
   return (
-    <section className="max-w-7xl mx-auto px-4 mt-12 mb-4">
+    <section className="max-w-7xl mx-auto px-2 mt-12 mb-4">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg md:text-xl font-bold text-gray-900 tracking-tight">
           Recently Viewed
@@ -72,7 +77,10 @@ export default function RecentlyViewed({ currentProductId }) {
             <FaChevronRight className="w-3 h-3 text-gray-600" />
           </button>
           <button
-            onClick={() => { localStorage.removeItem(STORAGE_KEY); setItems([]); }}
+            onClick={() => {
+              localStorage.removeItem(STORAGE_KEY);
+              setItems([]);
+            }}
             className="text-xs text-gray-400 hover:text-red-500 transition ml-1"
           >
             Clear
@@ -90,7 +98,10 @@ export default function RecentlyViewed({ currentProductId }) {
           const href = `/product/${item._id}`;
           const discount =
             item.compareAtPrice && item.compareAtPrice > item.price
-              ? Math.round(((item.compareAtPrice - item.price) / item.compareAtPrice) * 100)
+              ? Math.round(
+                  ((item.compareAtPrice - item.price) / item.compareAtPrice) *
+                    100,
+                )
               : null;
           const isOutOfStock = item.availability === "out_of_stock";
 
@@ -100,7 +111,10 @@ export default function RecentlyViewed({ currentProductId }) {
               className="group shrink-0 w-40 md:w-44 bg-white border border-orange-100 rounded-xl overflow-hidden hover:shadow-md hover:border-orange-300 transition-all duration-200 flex flex-col"
             >
               {/* Image */}
-              <Link href={href} className="relative bg-gray-50 aspect-square overflow-hidden block">
+              <Link
+                href={href}
+                className="relative bg-gray-50 aspect-square overflow-hidden block"
+              >
                 {item.image ? (
                   <Image
                     src={encodeURI(item.image)}
@@ -139,7 +153,9 @@ export default function RecentlyViewed({ currentProductId }) {
                       />
                     ))}
                     {item.reviewCount > 0 && (
-                      <span className="text-[9px] text-gray-400 ml-0.5">({item.reviewCount})</span>
+                      <span className="text-[9px] text-gray-400 ml-0.5">
+                        ({item.reviewCount})
+                      </span>
                     )}
                   </div>
                 )}

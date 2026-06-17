@@ -392,7 +392,7 @@ export default function Navbar() {
 
           <Link
             href="/track-order"
-            className="inline-flex items-center gap-1.5 p-2 sm:px-3 sm:py-1.5 text-sm font-medium text-[#202020] hover:text-rose-600 sm:border sm:border-gray-200 sm:rounded-lg sm:hover:border-rose-200 transition mr-1"
+            className="hidden md:inline-flex items-center gap-1.5 p-2 sm:px-3 sm:py-1.5 text-sm font-medium text-[#202020] hover:text-rose-600 sm:border sm:border-gray-200 sm:rounded-lg sm:hover:border-rose-200 transition mr-1"
             title={t("nav.track_order")}
           >
             <svg
@@ -413,7 +413,7 @@ export default function Navbar() {
           <button
             ref={searchIconRef}
             onClick={() => setMobileSearchOpen(true)}
-            className="p-2 text-[#202020] hover:text-rose-600 md:hidden "
+            className="p-1 text-[#202020] hover:text-rose-600 md:hidden "
             aria-label="Search"
             title="Search"
           >
@@ -441,7 +441,7 @@ export default function Navbar() {
                 router.push("/user/wishlist");
               }
             }}
-            className="relative p-2 text-[#202020] hover:text-rose-600 group"
+            className="relative hidden md:flex p-1 text-[#202020] hover:text-rose-600 group"
             aria-label="Wishlist"
             title="Wishlist"
           >

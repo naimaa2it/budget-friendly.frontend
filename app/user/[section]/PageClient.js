@@ -28,7 +28,6 @@ const STATUS_COLORS = {
   failed: "bg-gray-100 text-gray-600",
 };
 
-
 function OrderCountdown({ confirmAfter, onExpire }) {
   const { t } = useLanguage();
   const [left, setLeft] = React.useState(() =>
@@ -58,35 +57,44 @@ function OrderCountdown({ confirmAfter, onExpire }) {
     s = left % 60;
   return (
     <span className="text-orange-600 font-mono text-xs">
-      {m}:{String(s).padStart(2, "0")} {t('orders.left_to_cancel')}
+      {m}:{String(s).padStart(2, "0")} {t("orders.left_to_cancel")}
     </span>
   );
 }
 
 function ProductAddCard({ product, onAdd }) {
   const { t } = useLanguage();
-  const [selectedColor, setSelectedColor] = React.useState('');
-  const [selectedSize, setSelectedSize] = React.useState('');
+  const [selectedColor, setSelectedColor] = React.useState("");
+  const [selectedSize, setSelectedSize] = React.useState("");
   const [qty, setQty] = React.useState(1);
 
-  const colors = [...new Set(
-    (product.variants || []).map(v => v.color?.name || v.attributes?.color).filter(Boolean)
-  )];
-  const sizes = [...new Set(
-    (product.variants || [])
-      .map(v => v.size || v.attributes?.size)
-      .filter(Boolean)
-      .flatMap(s => s.split(',').map(x => x.trim()))
-      .filter(Boolean)
-  )];
+  const colors = [
+    ...new Set(
+      (product.variants || [])
+        .map((v) => v.color?.name || v.attributes?.color)
+        .filter(Boolean),
+    ),
+  ];
+  const sizes = [
+    ...new Set(
+      (product.variants || [])
+        .map((v) => v.size || v.attributes?.size)
+        .filter(Boolean)
+        .flatMap((s) => s.split(",").map((x) => x.trim()))
+        .filter(Boolean),
+    ),
+  ];
 
   const getPrice = () => {
-    if (!product.variants?.length || (!selectedColor && !selectedSize)) return product.price || 0;
-    const v = (product.variants || []).find(v => {
-      const vc = (v.color?.name || v.attributes?.color || '').toLowerCase();
-      const vs = (v.size || v.attributes?.size || '').toLowerCase();
-      return (!selectedColor || vc === selectedColor.toLowerCase()) &&
-             (!selectedSize || vs === selectedSize.toLowerCase());
+    if (!product.variants?.length || (!selectedColor && !selectedSize))
+      return product.price || 0;
+    const v = (product.variants || []).find((v) => {
+      const vc = (v.color?.name || v.attributes?.color || "").toLowerCase();
+      const vs = (v.size || v.attributes?.size || "").toLowerCase();
+      return (
+        (!selectedColor || vc === selectedColor.toLowerCase()) &&
+        (!selectedSize || vs === selectedSize.toLowerCase())
+      );
     });
     return v?.price || product.price || 0;
   };
@@ -106,38 +114,46 @@ function ProductAddCard({ product, onAdd }) {
           <div className="w-10 h-10 rounded-lg bg-gray-200 shrink-0" />
         )}
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-gray-800 truncate">{product.title}</p>
+          <p className="text-xs font-semibold text-gray-800 truncate">
+            {product.title}
+          </p>
           <p className="text-xs text-orange-600 font-bold">৳{getPrice()}</p>
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <button
             type="button"
-            onClick={() => setQty(q => Math.max(1, q - 1))}
+            onClick={() => setQty((q) => Math.max(1, q - 1))}
             className="w-6 h-6 rounded bg-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-300 flex items-center justify-center"
-          >−</button>
+          >
+            −
+          </button>
           <span className="w-6 text-center text-xs font-bold">{qty}</span>
           <button
             type="button"
-            onClick={() => setQty(q => q + 1)}
+            onClick={() => setQty((q) => q + 1)}
             className="w-6 h-6 rounded bg-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-300 flex items-center justify-center"
-          >+</button>
+          >
+            +
+          </button>
         </div>
       </div>
 
       {colors.length > 0 && (
         <div className="flex flex-wrap items-center gap-1">
           <span className="text-xs text-gray-400">Color:</span>
-          {colors.map(c => (
+          {colors.map((c) => (
             <button
               key={c}
               type="button"
-              onClick={() => setSelectedColor(prev => prev === c ? '' : c)}
+              onClick={() => setSelectedColor((prev) => (prev === c ? "" : c))}
               className={`px-2 py-0.5 rounded-full text-xs border transition ${
                 selectedColor === c
-                  ? 'bg-orange-500 text-white border-orange-500'
-                  : 'border-gray-300 text-gray-600 hover:border-orange-400'
+                  ? "bg-orange-500 text-white border-orange-500"
+                  : "border-gray-300 text-gray-600 hover:border-orange-400"
               }`}
-            >{c}</button>
+            >
+              {c}
+            </button>
           ))}
         </div>
       )}
@@ -145,17 +161,19 @@ function ProductAddCard({ product, onAdd }) {
       {sizes.length > 0 && (
         <div className="flex flex-wrap items-center gap-1">
           <span className="text-xs text-gray-400">Size:</span>
-          {sizes.map(s => (
+          {sizes.map((s) => (
             <button
               key={s}
               type="button"
-              onClick={() => setSelectedSize(prev => prev === s ? '' : s)}
+              onClick={() => setSelectedSize((prev) => (prev === s ? "" : s))}
               className={`px-2 py-0.5 rounded-full text-xs border font-mono transition ${
                 selectedSize === s
-                  ? 'bg-gray-800 text-white border-gray-800'
-                  : 'border-gray-300 text-gray-600 hover:border-gray-500'
+                  ? "bg-gray-800 text-white border-gray-800"
+                  : "border-gray-300 text-gray-600 hover:border-gray-500"
               }`}
-            >{s}</button>
+            >
+              {s}
+            </button>
           ))}
         </div>
       )}
@@ -165,7 +183,7 @@ function ProductAddCard({ product, onAdd }) {
         onClick={() => onAdd(selectedColor, selectedSize, qty, getPrice())}
         className="w-full py-1.5 bg-orange-500 text-white rounded-lg text-xs font-semibold hover:bg-orange-600 transition"
       >
-        {t('orders.add_to_order')}
+        {t("orders.add_to_order")}
       </button>
     </div>
   );
@@ -196,7 +214,7 @@ function OrdersSection({ API }) {
   const [cancelling, setCancelling] = React.useState(false);
   const [productVariantsMap, setProductVariantsMap] = React.useState({});
   const [pendingNewItems, setPendingNewItems] = React.useState([]);
-  const [productSearch, setProductSearch] = React.useState('');
+  const [productSearch, setProductSearch] = React.useState("");
   const [searchResults, setSearchResults] = React.useState([]);
   const [searchLoading, setSearchLoading] = React.useState(false);
 
@@ -261,7 +279,7 @@ function OrdersSection({ API }) {
   const handleConfirmCancel = async () => {
     const trimmed = cancelReason.trim();
     if (trimmed.length < 5) {
-      setCancelReasonError(t('orders.cancel_reason_min'));
+      setCancelReasonError(t("orders.cancel_reason_min"));
       return;
     }
     setCancelling(true);
@@ -304,21 +322,29 @@ function OrdersSection({ API }) {
       address: order.billingDetails?.address || "",
       note: order.billingDetails?.note || "",
     });
-    setEditItems((order.items || []).map((item, index) => ({ ...item, index })));
+    setEditItems(
+      (order.items || []).map((item, index) => ({ ...item, index })),
+    );
     setPendingNewItems([]);
-    setProductSearch('');
+    setProductSearch("");
     setSearchResults([]);
     // Fetch variants for existing products
-    const ids = [...new Set((order.items || []).map(i => i.productId).filter(Boolean))];
+    const ids = [
+      ...new Set((order.items || []).map((i) => i.productId).filter(Boolean)),
+    ];
     const map = {};
-    await Promise.all(ids.map(async (id) => {
-      try {
-        const r = await fetch(`${API}/api/products/${encodeURIComponent(id)}`);
-        const d = await r.json();
-        const prod = d.product || d;
-        if (prod?._id) map[String(id)] = prod;
-      } catch {}
-    }));
+    await Promise.all(
+      ids.map(async (id) => {
+        try {
+          const r = await fetch(
+            `${API}/api/products/${encodeURIComponent(id)}`,
+          );
+          const d = await r.json();
+          const prod = d.product || d;
+          if (prod?._id) map[String(id)] = prod;
+        } catch {}
+      }),
+    );
     setProductVariantsMap(map);
   };
 
@@ -338,7 +364,7 @@ function OrdersSection({ API }) {
             color: item.color ?? null,
             size: item.size ?? null,
           })),
-          addItems: pendingNewItems.map(ni => ({
+          addItems: pendingNewItems.map((ni) => ({
             productId: ni.product._id,
             quantity: ni.qty,
             color: ni.color || null,
@@ -348,10 +374,12 @@ function OrdersSection({ API }) {
       });
       const d = await r.json();
       if (d.ok) {
-        setOrders((prev) => prev.map((o) => (o._id === editOrderId ? d.order : o)));
+        setOrders((prev) =>
+          prev.map((o) => (o._id === editOrderId ? d.order : o)),
+        );
         setEditOrderId(null);
         setPendingNewItems([]);
-        setProductSearch('');
+        setProductSearch("");
         setSearchResults([]);
       } else {
         alert(d.error || "Could not update order.");
@@ -365,12 +393,23 @@ function OrdersSection({ API }) {
 
   const searchProducts = async (q) => {
     const trimmed = q.trim();
-    if (!trimmed) { setSearchResults([]); return; }
+    if (!trimmed) {
+      setSearchResults([]);
+      return;
+    }
     setSearchLoading(true);
     try {
-      const r = await fetch(`${API}/api/products?q=${encodeURIComponent(trimmed)}&limit=8&status=published`);
+      const r = await fetch(
+        `${API}/api/products?q=${encodeURIComponent(trimmed)}&limit=8&status=published`,
+      );
       const d = await r.json();
-      setSearchResults(Array.isArray(d.items) ? d.items : (Array.isArray(d.products) ? d.products : []));
+      setSearchResults(
+        Array.isArray(d.items)
+          ? d.items
+          : Array.isArray(d.products)
+            ? d.products
+            : [],
+      );
     } catch {
       setSearchResults([]);
     } finally {
@@ -381,25 +420,37 @@ function OrdersSection({ API }) {
   const getItemColors = (productId) => {
     const prod = productVariantsMap[String(productId)];
     if (!prod?.variants?.length) return [];
-    return [...new Set(prod.variants.map(v => v.color?.name || v.attributes?.color).filter(Boolean))];
+    return [
+      ...new Set(
+        prod.variants
+          .map((v) => v.color?.name || v.attributes?.color)
+          .filter(Boolean),
+      ),
+    ];
   };
 
   const getItemSizes = (productId) => {
     const prod = productVariantsMap[String(productId)];
     if (!prod?.variants?.length) return [];
-    const raw = prod.variants.map(v => v.size || v.attributes?.size).filter(Boolean);
-    return [...new Set(raw.flatMap(s => s.split(',').map(x => x.trim())).filter(Boolean))];
+    const raw = prod.variants
+      .map((v) => v.size || v.attributes?.size)
+      .filter(Boolean);
+    return [
+      ...new Set(
+        raw.flatMap((s) => s.split(",").map((x) => x.trim())).filter(Boolean),
+      ),
+    ];
   };
 
   const getVariantPrice = (productId, color, size) => {
     const prod = productVariantsMap[String(productId)];
     if (!prod) return null;
     if (!prod.variants?.length || (!color && !size)) return prod.price ?? null;
-    const v = prod.variants.find(v => {
-      const vc = (v.color?.name || v.attributes?.color || '').toLowerCase();
-      const vs = (v.size || v.attributes?.size || '').toLowerCase();
-      const sc = (color || '').toLowerCase();
-      const ss = (size || '').toLowerCase();
+    const v = prod.variants.find((v) => {
+      const vc = (v.color?.name || v.attributes?.color || "").toLowerCase();
+      const vs = (v.size || v.attributes?.size || "").toLowerCase();
+      const sc = (color || "").toLowerCase();
+      const ss = (size || "").toLowerCase();
       return (!sc || vc === sc) && (!ss || vs === ss);
     });
     return v?.price ?? prod.price ?? null;
@@ -444,9 +495,9 @@ function OrdersSection({ API }) {
   return (
     <div className="space-y-4">
       <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-2xl font-semibold">{t('orders.title')}</h2>
+        <h2 className="text-2xl font-semibold">{t("orders.title")}</h2>
         <p className="text-sm text-gray-500 mt-1">
-          {orders.length} {t('orders.items_count')}
+          {orders.length} {t("orders.items_count")}
         </p>
       </div>
 
@@ -462,7 +513,7 @@ function OrdersSection({ API }) {
             <path d="M9 2H4a2 2 0 00-2 2v16a2 2 0 002 2h16a2 2 0 002-2V9l-7-7z" />
             <path d="M14 2v6h6" />
           </svg>
-          <p className="font-medium">{t('orders.empty')}</p>
+          <p className="font-medium">{t("orders.empty")}</p>
         </div>
       )}
 
@@ -470,15 +521,22 @@ function OrdersSection({ API }) {
       {cancelModalOrderId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
-            <h3 className="text-base font-bold text-gray-900">{t('orders.cancel_reason_title')}</h3>
-            <p className="text-xs text-gray-500">{t('orders.cancel_confirm')}</p>
+            <h3 className="text-base font-bold text-gray-900">
+              {t("orders.cancel_reason_title")}
+            </h3>
+            <p className="text-xs text-gray-500">
+              {t("orders.cancel_confirm")}
+            </p>
             <textarea
               autoFocus
               rows={3}
               className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-400 outline-none resize-none"
-              placeholder={t('orders.cancel_reason_placeholder')}
+              placeholder={t("orders.cancel_reason_placeholder")}
               value={cancelReason}
-              onChange={(e) => { setCancelReason(e.target.value); setCancelReasonError(""); }}
+              onChange={(e) => {
+                setCancelReason(e.target.value);
+                setCancelReasonError("");
+              }}
             />
             {cancelReasonError && (
               <p className="text-xs text-red-500">{cancelReasonError}</p>
@@ -488,12 +546,18 @@ function OrdersSection({ API }) {
                 onClick={() => setCancelModalOrderId(null)}
                 disabled={cancelling}
                 className="flex-1 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition disabled:opacity-60"
-              >{t('orders.edit_cancel')}</button>
+              >
+                {t("orders.edit_cancel")}
+              </button>
               <button
                 onClick={handleConfirmCancel}
                 disabled={cancelling}
                 className="flex-1 py-2 bg-red-500 text-white rounded-lg text-sm font-semibold hover:bg-red-600 transition disabled:opacity-60"
-              >{cancelling ? t('orders.cancelling') : t('orders.cancel_reason_submit')}</button>
+              >
+                {cancelling
+                  ? t("orders.cancelling")
+                  : t("orders.cancel_reason_submit")}
+              </button>
             </div>
           </div>
         </div>
@@ -572,12 +636,12 @@ function OrdersSection({ API }) {
                   </span>
                   {order.paymentMethod === "cash-on-delivery" && (
                     <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
-                      {t('pay.cod')}
+                      {t("pay.cod")}
                     </span>
                   )}
                   {canPayOnline && (
                     <span className="text-xs px-2 py-0.5 rounded-full bg-rose-100 text-rose-600 font-semibold">
-                      {t('pay.unpaid')}
+                      {t("pay.unpaid")}
                     </span>
                   )}
                   {canAct && (
@@ -670,21 +734,21 @@ function OrdersSection({ API }) {
                 {/* Totals */}
                 <div className="bg-gray-50 rounded-lg p-3 text-sm space-y-1">
                   <div className="flex justify-between text-gray-600">
-                    <span>{t('orders.subtotal')}</span>
+                    <span>{t("orders.subtotal")}</span>
                     <span>৳{(order.subtotal || 0).toFixed(2)}</span>
                   </div>
                   {order.discount > 0 && (
                     <div className="flex justify-between text-green-700">
-                      <span>{t('orders.discount')}</span>
+                      <span>{t("orders.discount")}</span>
                       <span>-৳{order.discount.toFixed(2)}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-gray-600">
-                    <span>{t('orders.shipping')}</span>
+                    <span>{t("orders.shipping")}</span>
                     <span>৳{(order.shipping || 0).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between font-bold border-t border-gray-200 pt-1 mt-1">
-                    <span>{t('orders.total')}</span>
+                    <span>{t("orders.total")}</span>
                     <span>৳{(order.total || 0).toFixed(2)}</span>
                   </div>
                 </div>
@@ -692,7 +756,7 @@ function OrdersSection({ API }) {
                 {/* Delivery address */}
                 <div className="text-sm text-gray-700">
                   <p className="font-medium text-gray-900 mb-0.5">
-                    {t('orders.edit_address')}
+                    {t("orders.edit_address")}
                   </p>
                   <p>
                     {billing.name}
@@ -718,68 +782,95 @@ function OrdersSection({ API }) {
                   <div className="border border-orange-200 rounded-xl bg-orange-50 overflow-hidden">
                     {/* Sticky header */}
                     <div className="sticky top-0 z-10 bg-orange-100 border-b border-orange-200 px-4 py-2.5 flex items-center justify-between">
-                      <p className="text-sm font-bold text-orange-800">{t('orders.edit_title')}</p>
+                      <p className="text-sm font-bold text-orange-800">
+                        {t("orders.edit_title")}
+                      </p>
                       <div className="flex gap-2">
                         <button
                           onClick={() => setEditOrderId(null)}
                           className="px-3 py-1 border border-gray-300 rounded-lg text-xs hover:bg-white transition"
-                        >{t('orders.edit_cancel')}</button>
+                        >
+                          {t("orders.edit_cancel")}
+                        </button>
                         <button
                           onClick={handleSaveEdit}
                           disabled={saving}
                           className="px-4 py-1 bg-orange-500 text-white rounded-lg text-xs font-semibold hover:bg-orange-600 disabled:opacity-60 transition"
-                        >{saving ? t('orders.saving') : t('orders.edit_save')}</button>
+                        >
+                          {saving ? t("orders.saving") : t("orders.edit_save")}
+                        </button>
                       </div>
                     </div>
 
                     {/* Scrollable body */}
                     <div className="max-h-[70vh] overflow-y-auto p-3 space-y-3">
-
                       {/* Delivery address */}
                       <div className="bg-white rounded-xl border border-orange-100 p-3 space-y-2">
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('orders.edit_address')}</p>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                          {t("orders.edit_address")}
+                        </p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {[
-                            { key: 'name', placeholder: t('orders.name_ph') },
-                            { key: 'phone', placeholder: t('orders.phone_ph') },
-                            { key: 'email', placeholder: t('orders.email_ph') },
-                            { key: 'city', placeholder: t('orders.city_ph') },
-                            { key: 'zone', placeholder: t('orders.zone_ph') },
-                            { key: 'area', placeholder: t('orders.area_ph') },
+                            { key: "name", placeholder: t("orders.name_ph") },
+                            { key: "phone", placeholder: t("orders.phone_ph") },
+                            { key: "email", placeholder: t("orders.email_ph") },
+                            { key: "city", placeholder: t("orders.city_ph") },
+                            { key: "zone", placeholder: t("orders.zone_ph") },
+                            { key: "area", placeholder: t("orders.area_ph") },
                           ].map(({ key, placeholder }) => (
                             <input
                               key={key}
                               className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none"
                               placeholder={placeholder}
                               value={editBilling[key]}
-                              onChange={(e) => setEditBilling(prev => ({ ...prev, [key]: e.target.value }))}
+                              onChange={(e) =>
+                                setEditBilling((prev) => ({
+                                  ...prev,
+                                  [key]: e.target.value,
+                                }))
+                              }
                             />
                           ))}
                         </div>
                         <textarea
                           className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none resize-none"
                           rows={2}
-                          placeholder={t('orders.address_ph')}
+                          placeholder={t("orders.address_ph")}
                           value={editBilling.address}
-                          onChange={(e) => setEditBilling(prev => ({ ...prev, address: e.target.value }))}
+                          onChange={(e) =>
+                            setEditBilling((prev) => ({
+                              ...prev,
+                              address: e.target.value,
+                            }))
+                          }
                         />
                         <textarea
                           className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none resize-none"
                           rows={2}
-                          placeholder={t('orders.note_ph')}
+                          placeholder={t("orders.note_ph")}
                           value={editBilling.note}
-                          onChange={(e) => setEditBilling(prev => ({ ...prev, note: e.target.value }))}
+                          onChange={(e) =>
+                            setEditBilling((prev) => ({
+                              ...prev,
+                              note: e.target.value,
+                            }))
+                          }
                         />
                       </div>
 
                       {/* Existing items */}
                       <div className="bg-white rounded-xl border border-orange-100 p-3 space-y-2">
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('orders.edit_items')}</p>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                          {t("orders.edit_items")}
+                        </p>
                         {editItems.map((item, itemIndex) => {
                           const colors = getItemColors(item.productId);
                           const sizes = getItemSizes(item.productId);
                           return (
-                            <div key={itemIndex} className="rounded-xl border border-gray-100 bg-gray-50 p-3 space-y-2">
+                            <div
+                              key={itemIndex}
+                              className="rounded-xl border border-gray-100 bg-gray-50 p-3 space-y-2"
+                            >
                               <div className="flex items-center gap-2">
                                 {item.image && (
                                   <Image
@@ -791,69 +882,156 @@ function OrdersSection({ API }) {
                                   />
                                 )}
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-xs font-medium text-gray-800 truncate">{item.title}</p>
-                                  <p className="text-xs text-orange-600 font-semibold">৳{item.price}</p>
+                                  <p className="text-xs font-medium text-gray-800 truncate">
+                                    {item.title}
+                                  </p>
+                                  <p className="text-xs text-orange-600 font-semibold">
+                                    ৳{item.price}
+                                  </p>
                                 </div>
                                 <div className="flex items-center gap-1 shrink-0">
                                   <button
-                                    onClick={() => setEditItems(prev => prev.map((c, i) => i === itemIndex ? { ...c, quantity: Math.max(1, Number(c.quantity || 1) - 1) } : c))}
+                                    onClick={() =>
+                                      setEditItems((prev) =>
+                                        prev.map((c, i) =>
+                                          i === itemIndex
+                                            ? {
+                                                ...c,
+                                                quantity: Math.max(
+                                                  1,
+                                                  Number(c.quantity || 1) - 1,
+                                                ),
+                                              }
+                                            : c,
+                                        ),
+                                      )
+                                    }
                                     className="w-6 h-6 rounded bg-gray-200 text-gray-700 font-bold text-sm hover:bg-gray-300 flex items-center justify-center"
-                                  >−</button>
-                                  <span className="w-7 text-center text-sm font-bold">{item.quantity}</span>
+                                  >
+                                    −
+                                  </button>
+                                  <span className="w-7 text-center text-sm font-bold">
+                                    {item.quantity}
+                                  </span>
                                   <button
-                                    onClick={() => setEditItems(prev => prev.map((c, i) => i === itemIndex ? { ...c, quantity: Number(c.quantity || 1) + 1 } : c))}
+                                    onClick={() =>
+                                      setEditItems((prev) =>
+                                        prev.map((c, i) =>
+                                          i === itemIndex
+                                            ? {
+                                                ...c,
+                                                quantity:
+                                                  Number(c.quantity || 1) + 1,
+                                              }
+                                            : c,
+                                        ),
+                                      )
+                                    }
                                     className="w-6 h-6 rounded bg-gray-200 text-gray-700 font-bold text-sm hover:bg-gray-300 flex items-center justify-center"
-                                  >+</button>
+                                  >
+                                    +
+                                  </button>
                                   <button
                                     type="button"
                                     onClick={() => {
-                                      if (editItems.length <= 1) { alert(t('orders.at_least_one')); return; }
-                                      setEditItems(prev => prev.filter((_, i) => i !== itemIndex));
+                                      if (editItems.length <= 1) {
+                                        alert(t("orders.at_least_one"));
+                                        return;
+                                      }
+                                      setEditItems((prev) =>
+                                        prev.filter((_, i) => i !== itemIndex),
+                                      );
                                     }}
                                     className="w-6 h-6 rounded bg-red-100 text-red-500 hover:bg-red-200 text-xs font-bold flex items-center justify-center ml-1"
                                     title="সরিয়ে দিন"
-                                  >✕</button>
+                                  >
+                                    ✕
+                                  </button>
                                 </div>
                               </div>
                               {colors.length > 0 && (
                                 <div className="flex flex-wrap items-center gap-1">
-                                  <span className="text-xs text-gray-400">Color:</span>
-                                  {colors.map(c => (
+                                  <span className="text-xs text-gray-400">
+                                    Color:
+                                  </span>
+                                  {colors.map((c) => (
                                     <button
                                       key={c}
                                       type="button"
-                                      onClick={() => setEditItems(prev => prev.map((it, i) => {
-                                        if (i !== itemIndex) return it;
-                                        const newColor = it.color === c ? null : c;
-                                        const newPrice = getVariantPrice(it.productId, newColor, it.size);
-                                        return { ...it, color: newColor, ...(newPrice != null ? { price: newPrice } : {}) };
-                                      }))}
-                                      className={`px-2 py-0.5 rounded-full text-xs border transition ${item.color === c ? 'bg-orange-500 text-white border-orange-500' : 'border-gray-300 text-gray-600 hover:border-orange-400'}`}
-                                    >{c}</button>
+                                      onClick={() =>
+                                        setEditItems((prev) =>
+                                          prev.map((it, i) => {
+                                            if (i !== itemIndex) return it;
+                                            const newColor =
+                                              it.color === c ? null : c;
+                                            const newPrice = getVariantPrice(
+                                              it.productId,
+                                              newColor,
+                                              it.size,
+                                            );
+                                            return {
+                                              ...it,
+                                              color: newColor,
+                                              ...(newPrice != null
+                                                ? { price: newPrice }
+                                                : {}),
+                                            };
+                                          }),
+                                        )
+                                      }
+                                      className={`px-2 py-0.5 rounded-full text-xs border transition ${item.color === c ? "bg-orange-500 text-white border-orange-500" : "border-gray-300 text-gray-600 hover:border-orange-400"}`}
+                                    >
+                                      {c}
+                                    </button>
                                   ))}
                                 </div>
                               )}
                               {sizes.length > 0 && (
                                 <div className="flex flex-wrap items-center gap-1">
-                                  <span className="text-xs text-gray-400">Size:</span>
-                                  {sizes.map(s => (
+                                  <span className="text-xs text-gray-400">
+                                    Size:
+                                  </span>
+                                  {sizes.map((s) => (
                                     <button
                                       key={s}
                                       type="button"
-                                      onClick={() => setEditItems(prev => prev.map((it, i) => {
-                                        if (i !== itemIndex) return it;
-                                        const newSize = it.size === s ? null : s;
-                                        const newPrice = getVariantPrice(it.productId, it.color, newSize);
-                                        return { ...it, size: newSize, ...(newPrice != null ? { price: newPrice } : {}) };
-                                      }))}
-                                      className={`px-2 py-0.5 rounded-full text-xs border font-mono transition ${item.size === s ? 'bg-gray-800 text-white border-gray-800' : 'border-gray-300 text-gray-600 hover:border-gray-500'}`}
-                                    >{s}</button>
+                                      onClick={() =>
+                                        setEditItems((prev) =>
+                                          prev.map((it, i) => {
+                                            if (i !== itemIndex) return it;
+                                            const newSize =
+                                              it.size === s ? null : s;
+                                            const newPrice = getVariantPrice(
+                                              it.productId,
+                                              it.color,
+                                              newSize,
+                                            );
+                                            return {
+                                              ...it,
+                                              size: newSize,
+                                              ...(newPrice != null
+                                                ? { price: newPrice }
+                                                : {}),
+                                            };
+                                          }),
+                                        )
+                                      }
+                                      className={`px-2 py-0.5 rounded-full text-xs border font-mono transition ${item.size === s ? "bg-gray-800 text-white border-gray-800" : "border-gray-300 text-gray-600 hover:border-gray-500"}`}
+                                    >
+                                      {s}
+                                    </button>
                                   ))}
                                 </div>
                               )}
-                              {colors.length === 0 && sizes.length === 0 && (item.color || item.size) && (
-                                <p className="text-xs text-gray-400">{[item.color, item.size].filter(Boolean).join(' / ')}</p>
-                              )}
+                              {colors.length === 0 &&
+                                sizes.length === 0 &&
+                                (item.color || item.size) && (
+                                  <p className="text-xs text-gray-400">
+                                    {[item.color, item.size]
+                                      .filter(Boolean)
+                                      .join(" / ")}
+                                  </p>
+                                )}
                             </div>
                           );
                         })}
@@ -862,22 +1040,51 @@ function OrdersSection({ API }) {
                       {/* Pending new items preview */}
                       {pendingNewItems.length > 0 && (
                         <div className="bg-white rounded-xl border border-green-100 p-3 space-y-2">
-                          <p className="text-xs font-semibold text-green-700 uppercase tracking-wide">{t('orders.pending_adds')} ({pendingNewItems.length})</p>
+                          <p className="text-xs font-semibold text-green-700 uppercase tracking-wide">
+                            {t("orders.pending_adds")} ({pendingNewItems.length}
+                            )
+                          </p>
                           {pendingNewItems.map((ni, i) => (
-                            <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-green-50 border border-green-100">
+                            <div
+                              key={i}
+                              className="flex items-center gap-2 p-2 rounded-lg bg-green-50 border border-green-100"
+                            >
                               {ni.product.images?.[0]?.url && (
-                                <Image src={ni.product.images[0].url} alt={ni.product.title} width={32} height={32} className="w-8 h-8 rounded-lg object-cover shrink-0" />
+                                <Image
+                                  src={ni.product.images[0].url}
+                                  alt={ni.product.title}
+                                  width={32}
+                                  height={32}
+                                  className="w-8 h-8 rounded-lg object-cover shrink-0"
+                                />
                               )}
                               <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium truncate">{ni.product.title}</p>
-                                {(ni.color || ni.size) && <p className="text-xs text-gray-400">{[ni.color, ni.size].filter(Boolean).join(' / ')}</p>}
-                                <p className="text-xs text-gray-500">Qty: {ni.qty} · ৳{(ni.price * ni.qty).toFixed(0)}</p>
+                                <p className="text-xs font-medium truncate">
+                                  {ni.product.title}
+                                </p>
+                                {(ni.color || ni.size) && (
+                                  <p className="text-xs text-gray-400">
+                                    {[ni.color, ni.size]
+                                      .filter(Boolean)
+                                      .join(" / ")}
+                                  </p>
+                                )}
+                                <p className="text-xs text-gray-500">
+                                  Qty: {ni.qty} · ৳
+                                  {(ni.price * ni.qty).toFixed(0)}
+                                </p>
                               </div>
                               <button
                                 type="button"
-                                onClick={() => setPendingNewItems(prev => prev.filter((_, idx) => idx !== i))}
+                                onClick={() =>
+                                  setPendingNewItems((prev) =>
+                                    prev.filter((_, idx) => idx !== i),
+                                  )
+                                }
                                 className="text-red-400 hover:text-red-600 text-sm font-bold shrink-0"
-                              >✕</button>
+                              >
+                                ✕
+                              </button>
                             </div>
                           ))}
                         </div>
@@ -885,10 +1092,12 @@ function OrdersSection({ API }) {
 
                       {/* Add more products */}
                       <div className="bg-white rounded-xl border border-orange-100 p-3 space-y-2">
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('orders.add_product_title')}</p>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                          {t("orders.add_product_title")}
+                        </p>
                         <input
                           className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none"
-                          placeholder={t('orders.search_placeholder')}
+                          placeholder={t("orders.search_placeholder")}
                           value={productSearch}
                           onChange={(e) => {
                             setProductSearch(e.target.value);
@@ -896,28 +1105,36 @@ function OrdersSection({ API }) {
                           }}
                         />
                         {searchLoading && (
-                          <p className="text-xs text-gray-400 text-center py-2">{t('orders.searching')}</p>
+                          <p className="text-xs text-gray-400 text-center py-2">
+                            {t("orders.searching")}
+                          </p>
                         )}
-                        {!searchLoading && productSearch && searchResults.length === 0 && (
-                          <p className="text-xs text-gray-400 text-center py-2">{t('orders.not_found')}</p>
-                        )}
+                        {!searchLoading &&
+                          productSearch &&
+                          searchResults.length === 0 && (
+                            <p className="text-xs text-gray-400 text-center py-2">
+                              {t("orders.not_found")}
+                            </p>
+                          )}
                         {searchResults.length > 0 && (
                           <div className="space-y-2 max-h-56 overflow-y-auto pr-0.5">
-                            {searchResults.map(product => (
+                            {searchResults.map((product) => (
                               <ProductAddCard
                                 key={product._id}
                                 product={product}
                                 onAdd={(color, size, qty, price) => {
-                                  setPendingNewItems(prev => [...prev, { product, color, size, qty, price }]);
+                                  setPendingNewItems((prev) => [
+                                    ...prev,
+                                    { product, color, size, qty, price },
+                                  ]);
                                   setSearchResults([]);
-                                  setProductSearch('');
+                                  setProductSearch("");
                                 }}
                               />
                             ))}
                           </div>
                         )}
                       </div>
-
                     </div>
                   </div>
                 ) : (
@@ -929,8 +1146,8 @@ function OrdersSection({ API }) {
                         className="w-full py-2.5 bg-rose-500 text-white rounded-lg text-sm font-semibold hover:bg-rose-600 disabled:opacity-60 transition"
                       >
                         {retrying === order._id
-                          ? t('orders.retrying')
-                          : "💳 " + t('orders.pay_now')}
+                          ? t("orders.retrying")
+                          : "💳 " + t("orders.pay_now")}
                       </button>
                     )}
                     {canAct && (
@@ -939,24 +1156,38 @@ function OrdersSection({ API }) {
                           onClick={() => openEdit(order)}
                           className="flex-1 py-2 border border-orange-400 text-orange-600 rounded-lg text-sm font-medium hover:bg-orange-50 transition"
                         >
-                          {t('orders.edit_order')}
+                          {t("orders.edit_order")}
                         </button>
                         <button
                           onClick={() => openCancelModal(order._id)}
                           className="flex-1 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 transition"
                         >
-                          {t('orders.cancel_order')}
+                          {t("orders.cancel_order")}
                         </button>
                       </div>
                     )}
-                    {["accepted", "approved", "confirmed", "picked", "processing", "shipped", "delivered"].includes(order.status) && (
+                    {[
+                      "accepted",
+                      "approved",
+                      "confirmed",
+                      "picked",
+                      "processing",
+                      "shipped",
+                      "delivered",
+                    ].includes(order.status) && (
                       <Link
                         href={`/user/orders/${order._id}/invoice`}
                         target="_blank"
                         className="w-full flex items-center justify-center gap-2 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
                       >
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17v2a2 2 0 002 2h16a2 2 0 002-2v-2"/>
+                        <svg
+                          className="w-4 h-4"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17v2a2 2 0 002 2h16a2 2 0 002-2v-2" />
                         </svg>
                         Download Invoice
                       </Link>
@@ -971,7 +1202,6 @@ function OrdersSection({ API }) {
     </div>
   );
 }
-
 
 function MyReviewsSection({ API }) {
   const [reviews, setReviews] = React.useState([]);
@@ -1212,13 +1442,13 @@ export default function UserSectionPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 -mb-2 md:-mb-5">
+      <div className="max-w-7xl mx-auto px-2 -mb-2 md:-mb-5">
         {/* always-visible back button */}
         <button
           onClick={() => router.back()}
           className="mt-2 text-gray-500 rounded hover:text-gray-900"
         >
-          {t('common.back')}
+          {t("common.back")}
         </button>
       </div>
       <div className="max-w-7xl mx-auto py-6 md:py-8 px-3 md:px-4">
@@ -1229,7 +1459,7 @@ export default function UserSectionPage() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-red-200 bg-white text-gray-800"
           >
             <span className="text-sm">☰</span>
-            <span className="text-sm font-medium">{t('user.profile')}</span>
+            <span className="text-sm font-medium">{t("user.profile")}</span>
           </button>
         </div>
 
@@ -1287,7 +1517,7 @@ export default function UserSectionPage() {
               {/* PROFILE Section */}
               <div className="mb-6">
                 <h4 className="px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                  {t('profile.section_profile')}
+                  {t("profile.section_profile")}
                 </h4>
                 <button
                   onClick={() => handleSectionClick("profile")}
@@ -1307,7 +1537,7 @@ export default function UserSectionPage() {
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                     <circle cx="12" cy="7" r="4" />
                   </svg>
-                  <span>{t('profile.general_info')}</span>
+                  <span>{t("profile.general_info")}</span>
                 </button>
                 <button
                   onClick={() => handleSectionClick("wishlist")}
@@ -1326,7 +1556,7 @@ export default function UserSectionPage() {
                   >
                     <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 0 0-7.1 7.1L12 21l8.8-9.3a5 5 0 0 0 0-7.1z" />
                   </svg>
-                  <span>{t('profile.favourites')}</span>
+                  <span>{t("profile.favourites")}</span>
                 </button>
                 <button
                   onClick={() => {
@@ -1346,14 +1576,14 @@ export default function UserSectionPage() {
                     <circle cx="20" cy="20" r="1" />
                     <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
                   </svg>
-                  <span>{t('profile.cart')}</span>
+                  <span>{t("profile.cart")}</span>
                 </button>
               </div>
 
               {/* ORDERS Section */}
               <div className="mb-6">
                 <h4 className="px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                  {t('profile.section_orders')}
+                  {t("profile.section_orders")}
                 </h4>
                 <button
                   onClick={() => handleSectionClick("orders")}
@@ -1372,7 +1602,7 @@ export default function UserSectionPage() {
                   >
                     <path d="M9 2H4a2 2 0 0 0-2 2v5m0 9v3a2 2 0 0 0 2 2h5M15 2h5a2 2 0 0 1 2 2v5m0 9v3a2 2 0 0 1-2 2h-5" />
                   </svg>
-                  <span>{t('user.orders')}</span>
+                  <span>{t("user.orders")}</span>
                 </button>
                 <button
                   onClick={() => handleSectionClick("address")}
@@ -1392,14 +1622,14 @@ export default function UserSectionPage() {
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                     <circle cx="12" cy="10" r="3" />
                   </svg>
-                  <span>{t('profile.my_address')}</span>
+                  <span>{t("profile.my_address")}</span>
                 </button>
               </div>
 
               {/* OTHER Section */}
               <div className="mb-6">
                 <h4 className="px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                  {t('profile.section_other')}
+                  {t("profile.section_other")}
                 </h4>
                 <button
                   onClick={() => handleSectionClick("reviews")}
@@ -1418,7 +1648,7 @@ export default function UserSectionPage() {
                   >
                     <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
                   </svg>
-                  <span>{t('profile.my_reviews')}</span>
+                  <span>{t("profile.my_reviews")}</span>
                 </button>
                 <button
                   onClick={() => handleSectionClick("rewards")}
@@ -1437,7 +1667,7 @@ export default function UserSectionPage() {
                   >
                     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                   </svg>
-                  <span>{t('profile.my_rewards')}</span>
+                  <span>{t("profile.my_rewards")}</span>
                 </button>
                 <button
                   onClick={() => handleSectionClick("loyalty")}
@@ -1480,7 +1710,7 @@ export default function UserSectionPage() {
                     <line x1="9" y1="9" x2="15" y2="15" />
                     <line x1="15" y1="9" x2="9" y2="15" />
                   </svg>
-                  <span>{t('profile.my_coupons')}</span>
+                  <span>{t("profile.my_coupons")}</span>
                 </button>
               </div>
             </div>
@@ -1502,7 +1732,7 @@ export default function UserSectionPage() {
                   <polyline points="16 17 21 12 16 7" />
                   <line x1="21" y1="12" x2="9" y2="12" />
                 </svg>
-                <span>{t('user.logout')}</span>
+                <span>{t("user.logout")}</span>
               </button>
             </div>
           </div>
@@ -1513,14 +1743,14 @@ export default function UserSectionPage() {
               <div className="bg-white rounded-lg shadow">
                 <div className="p-4 md:p-6 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <h2 className="text-xl md:text-2xl font-semibold">
-                    {t('profile_page.title')}
+                    {t("profile_page.title")}
                   </h2>
                   {!isEditing ? (
                     <button
                       onClick={() => setIsEditing(true)}
                       className="w-full sm:w-auto px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
                     >
-                      {t('profile_page.edit')}
+                      {t("profile_page.edit")}
                     </button>
                   ) : (
                     <div className="flex w-full sm:w-auto gap-2">
@@ -1528,7 +1758,7 @@ export default function UserSectionPage() {
                         onClick={() => setIsEditing(false)}
                         className="flex-1 sm:flex-none px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
                       >
-                        {t('common.cancel')}
+                        {t("common.cancel")}
                       </button>
                       <button
                         onClick={handleSaveProfile}
@@ -1719,13 +1949,9 @@ export default function UserSectionPage() {
               />
             )}
 
-            {section === "rewards" && (
-              <UserRewardsSection />
-            )}
+            {section === "rewards" && <UserRewardsSection />}
 
-            {section === "loyalty" && (
-              <UserLoyaltySection />
-            )}
+            {section === "loyalty" && <UserLoyaltySection />}
 
             {section === "coupons" && (
               <div className="bg-white rounded-lg shadow p-4 md:p-6">

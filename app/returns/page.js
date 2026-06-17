@@ -1,10 +1,13 @@
-import PolicySidebar from '@/components/Policy/Sidebar';
-import ReturnAccordion from '@/components/Policy/ReturnAccordion';
+import PolicySidebar from "@/components/Policy/Sidebar";
+import ReturnAccordion from "@/components/Policy/ReturnAccordion";
 
-import { siteTitle, getStoreName } from '@/lib/storeMeta';
+import { siteTitle, getStoreName } from "@/lib/storeMeta";
 
 export async function generateMetadata() {
-  const [title, storeName] = await Promise.all([siteTitle('Return & Replacement Policy'), getStoreName()]);
+  const [title, storeName] = await Promise.all([
+    siteTitle("Return & Replacement Policy"),
+    getStoreName(),
+  ]);
   return {
     title,
     description: `${storeName}'s hassle-free return and replacement policy. Learn how to return products, get refunds, and replacement timelines for your orders in Bangladesh.`,
@@ -13,7 +16,7 @@ export async function generateMetadata() {
 
 export default function ReturnsPage() {
   return (
-    <main className="max-w-7xl mx-auto px-4 py-16 grid grid-cols-1 md:grid-cols-4 gap-8">
+    <main className="max-w-7xl mx-auto px-2 py-16 grid grid-cols-1 md:grid-cols-4 gap-8">
       <aside className="md:col-span-1">
         <PolicySidebar />
       </aside>

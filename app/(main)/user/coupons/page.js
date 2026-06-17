@@ -112,7 +112,7 @@ function CouponCard({ coupon, cartSubtotal = 0 }) {
       {coupon.canApply && (
         <div className="absolute top-2 right-2 z-10">
           <span className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
-            <FaCheckCircle className="w-3 h-3" /> Ready
+            <FaCheckCircle className="w-3 h-3" /> {tr("coupons.ready")}
           </span>
         </div>
       )}
@@ -157,7 +157,7 @@ function CouponCard({ coupon, cartSubtotal = 0 }) {
           {coupon.expiresAt && (
             <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full flex items-center gap-1">
               <FaClock className="w-2.5 h-2.5" />
-              Expires {new Date(coupon.expiresAt).toLocaleDateString()}
+              {tr("coupons.expires")} {new Date(coupon.expiresAt).toLocaleDateString()}
             </span>
           )}
         </div>
@@ -198,8 +198,8 @@ function CouponCard({ coupon, cartSubtotal = 0 }) {
           <>
             <p className="text-xs text-gray-500 mb-2">
               {isUnlocked
-                ? "Use coupon code at checkout:"
-                : "Add more items to unlock:"}
+                ? tr("coupons.use_at_checkout")
+                : tr("coupons.add_more")}
             </p>
             <button
               onClick={copy}
@@ -216,11 +216,11 @@ function CouponCard({ coupon, cartSubtotal = 0 }) {
               >
                 {copied ? (
                   <>
-                    <FaCheckCircle className="w-3 h-3" /> Copied!
+                    <FaCheckCircle className="w-3 h-3" /> {tr("coupons.copied")}
                   </>
                 ) : (
                   <>
-                    <FaCopy className="w-3 h-3" /> Copy
+                    <FaCopy className="w-3 h-3" /> {tr("coupons.copy")}
                   </>
                 )}
               </span>
@@ -235,6 +235,7 @@ function CouponCard({ coupon, cartSubtotal = 0 }) {
 export default function CouponsPage() {
   const { user } = useUser();
   const { cartItems } = useCart();
+  const { t } = useLanguage();
   const [data, setData] = useState({
     eligible: [],
     other: [],
@@ -288,17 +289,11 @@ export default function CouponsPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
           <FaTicketAlt className="text-red-500" />
-          <span>
-            <span className="text-red-500">Coupons</span>{" "}
-            <span className="font-normal">& Offers</span>
-          </span>
+          <span>{t("coupons.title")}</span>
         </h1>
         <p className="text-sm text-gray-500 mt-1">
           {user ? (
-            <>
-              Showing coupons available for your account. You can apply up to 3
-              stackable coupons at checkout.
-            </>
+            <>{t("coupons.desc")}</>
           ) : (
             <>
               <button
@@ -306,9 +301,9 @@ export default function CouponsPage() {
                 onClick={() => setShowAuthModal(true)}
                 className="text-blue-600 underline"
               >
-                Login
+                {t("nav.login")}
               </button>{" "}
-              to see personalized coupons available for you.
+              {t("coupons.login_msg")}
             </>
           )}
         </p>
@@ -338,7 +333,7 @@ export default function CouponsPage() {
             <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-sm">
               <FaShoppingCart />
               <span>
-                Cart subtotal: <strong>৳{cartSubtotal.toFixed(0)}</strong>
+                {t("coupons.cart_subtotal")} <strong>৳{cartSubtotal.toFixed(0)}</strong>
               </span>
             </div>
           )}
@@ -356,7 +351,7 @@ export default function CouponsPage() {
               : "bg-gray-100 text-gray-700 hover:bg-gray-200"
           }`}
         >
-          Smart View
+          {t("coupons.smart_view")}
         </button>
         <button
           onClick={() => setViewMode("all")}
@@ -366,7 +361,7 @@ export default function CouponsPage() {
               : "bg-gray-100 text-gray-700 hover:bg-gray-200"
           }`}
         >
-          All Coupons ({allCoupons.length})
+          {t("coupons.all_coupons")} ({allCoupons.length})
         </button>
       </div>
 
@@ -383,15 +378,15 @@ export default function CouponsPage() {
         /* All Coupons View */
         <div className="space-y-6">
           <h2 className="text-xl font-bold text-gray-800">
-            All Available Coupons
+            {t("coupons.all_coupons")}
           </h2>
           {allCoupons.length === 0 ? (
             <div className="text-center py-20 border-2 border-dashed border-gray-200 rounded-xl text-gray-400">
               <FaTicketAlt className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <p className="text-lg font-medium">
-                No coupons available right now.
+                {t("coupons.no_coupons")}
               </p>
-              <p className="text-sm mt-1">Check back soon for new offers!</p>
+              <p className="text-sm mt-1">{t("coupons.check_back")}</p>
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -413,7 +408,7 @@ export default function CouponsPage() {
             <section>
               <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <FaCheckCircle className="text-green-500" />
-                Ready to Use
+                {t("coupons.ready_to_use")}
               </h2>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {readyToUse.map((coupon) => (
@@ -432,7 +427,7 @@ export default function CouponsPage() {
             <section>
               <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <FaGift className="text-orange-500" />
-                Almost Unlocked - Add a bit more to cart!
+                {t("coupons.almost_unlocked")}
               </h2>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {almostUnlocked.map((coupon) => (
@@ -450,7 +445,7 @@ export default function CouponsPage() {
           {otherEligible.length > 0 && (
             <section>
               <h2 className="text-xl font-bold text-gray-800 mb-4">
-                More Coupons For You
+                {t("coupons.more_for_you")}
               </h2>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {otherEligible.map((coupon) => (
@@ -468,11 +463,10 @@ export default function CouponsPage() {
           {data.other?.length > 0 && (
             <section>
               <h2 className="text-xl font-bold text-gray-500 mb-4">
-                Other Coupons (Not Available for You)
+                {t("coupons.other_coupons")}
               </h2>
               <p className="text-sm text-gray-400 mb-4">
-                These coupons have specific requirements that you don&apos;t
-                currently meet.
+                {t("coupons.requirements_msg")}
               </p>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {data.other.map((coupon) => (
@@ -491,9 +485,9 @@ export default function CouponsPage() {
             <div className="text-center py-20 border-2 border-dashed border-gray-200 rounded-xl text-gray-400">
               <FaTicketAlt className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <p className="text-lg font-medium">
-                No coupons available right now.
+                {t("coupons.no_coupons")}
               </p>
-              <p className="text-sm mt-1">Check back soon for new offers!</p>
+              <p className="text-sm mt-1">{t("coupons.check_back")}</p>
             </div>
           )}
         </div>
@@ -507,7 +501,7 @@ export default function CouponsPage() {
             className="inline-flex items-center gap-2 px-8 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold transition"
           >
             <FaShoppingCart />
-            Apply Coupons at Checkout
+            {t("coupons.apply_checkout")}
           </Link>
         </div>
       )}

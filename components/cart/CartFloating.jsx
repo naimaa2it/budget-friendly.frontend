@@ -3,9 +3,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useCart, getItemPrice } from "@/components/context/CartContext";
 import { FaShoppingBag, FaShoppingCart, FaChevronRight } from "react-icons/fa";
+import { useLanguage } from "@/components/context/LanguageContext";
 
 export default function CartFloating() {
   const { cartItems, getCartCount, toggleSidebar, isSidebarOpen } = useCart();
+  const { t } = useLanguage();
   const count = getCartCount();
   const [bump, setBump] = useState(false);
   const prevCount = useRef(count);
@@ -56,7 +58,7 @@ export default function CartFloating() {
         <FaShoppingCart className="w-5 h-5" />
         <div className="flex flex-col items-start text-xs leading-tight">
           <span>
-            {count} ITEM{count > 1 ? "S" : ""}
+            {count} {t("cart.items_label")}
           </span>
           <span>৳{total}</span>
         </div>

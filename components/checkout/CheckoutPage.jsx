@@ -563,12 +563,6 @@ export default function CheckoutPage() {
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
 
-    // Require login
-    if (!user) {
-      setShowAuthModal(true);
-      return;
-    }
-
     // Get final location values (use custom input if "other" is selected)
     const finalCity = formData.city === "other" ? customCity : formData.city;
     const finalZone = formData.zone === "other" ? customZone : formData.zone;
@@ -607,7 +601,7 @@ export default function CheckoutPage() {
     } catch (_) {}
 
     const orderData = {
-      userEmail: user.email,
+      userEmail: user?.email || formData.email,
       // Only product IDs, quantities, and variant selectors — NO prices, totals, or other
       // financial figures. The server re-fetches and recalculates everything.
       items: cartItems.map((item) => ({
@@ -1076,7 +1070,7 @@ export default function CheckoutPage() {
                 <h2 className="text-sm font-bold text-gray-900">
                   Order Summary
                 </h2>
-                {progressItems.length > 0 && (
+                {/* {progressItems.length > 0 && (
                   <button
                     type="button"
                     onClick={handleViewRewards}
@@ -1085,7 +1079,7 @@ export default function CheckoutPage() {
                     <FaGift className="text-rose-500" />
                     Unlock Rewards
                   </button>
-                )}
+                )} */}
               </div>
 
               {/* Price Breakdown */}

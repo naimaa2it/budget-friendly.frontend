@@ -828,7 +828,7 @@ export default function ProductCreate() {
         </div>
 
         {/* Tab Content */}
-        <div className="relative space-y-12 xl:pr-[24rem]">
+        <div className="relative space-y-12 xl:pr-[24rem] xl:min-h-[220rem]">
           {/* Basic Info Tab */}
           <div className="space-y-6">
             <div className="grid grid-cols-1 gap-6 items-start">

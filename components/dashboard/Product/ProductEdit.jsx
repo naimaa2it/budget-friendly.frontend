@@ -1045,7 +1045,7 @@ export default function ProductEdit({ productId }) {
         </div>
 
         {/* Tab Content */}
-        <div className="relative bg-white rounded-xl shadow-md p-8 space-y-12 xl:pr-[26rem]">
+        <div className="relative bg-white rounded-xl shadow-md p-8 space-y-12 xl:pr-[26rem] xl:min-h-[220rem]">
           {/* Basic Info Tab */}
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">

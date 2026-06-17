@@ -45,7 +45,7 @@ const ScrollToTop = () => {
             stiffness: 260,
             damping: 20
           }}
-          className="fixed bottom-5 right-4 z-50"
+          className="fixed bottom-4 right-4 z-50"
         >
           {/* Progress ring */}
           <div className="absolute inset-0">

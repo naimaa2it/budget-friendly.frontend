@@ -334,7 +334,7 @@ export default function ProductCard({
                   e.stopPropagation();
                   setWaitlistProduct(product);
                 }}
-                className="flex-1 flex items-center justify-center  border border-teal-500 text-teal-700 gap-0.5 py-2 rounded-md text-[6px] md:text-[8px] font-semibold hover:bg-teal-50 transition"
+                className="flex-1 flex items-center justify-center  border border-teal-500 text-teal-700 gap-0.5 py-2 rounded-md text-[8px] md:text-[8px] font-semibold hover:bg-teal-50 transition"
               >
                 <FaBell className="w-2 h-2 hidden md:block -mr-0.5" /> Join
                 Waitlist

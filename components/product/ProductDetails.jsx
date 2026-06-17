@@ -184,8 +184,10 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
   useEffect(() => {
     if (!zoomOpen || images.length <= 1) return;
     const handler = (e) => {
-      if (e.key === "ArrowLeft") setCurrentIndex((i) => (i - 1 + images.length) % images.length);
-      if (e.key === "ArrowRight") setCurrentIndex((i) => (i + 1) % images.length);
+      if (e.key === "ArrowLeft")
+        setCurrentIndex((i) => (i - 1 + images.length) % images.length);
+      if (e.key === "ArrowRight")
+        setCurrentIndex((i) => (i + 1) % images.length);
       if (e.key === "Escape") setZoomOpen(false);
     };
     window.addEventListener("keydown", handler);
@@ -220,22 +222,28 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
       "@context": "https://schema.org",
       "@type": "Product",
       name: product.title,
-      description: typeof product.description === "string"
-        ? product.description
-        : Array.isArray(product.description)
-          ? product.description.map((b) => typeof b === "string" ? b : b?.text || "").join(" ")
-          : "",
+      description:
+        typeof product.description === "string"
+          ? product.description
+          : Array.isArray(product.description)
+            ? product.description
+                .map((b) => (typeof b === "string" ? b : b?.text || ""))
+                .join(" ")
+            : "",
       image: (product.images || []).map((i) => i.url).filter(Boolean),
       sku: product.sku || undefined,
-      brand: product.department ? { "@type": "Brand", name: product.department } : undefined,
+      brand: product.department
+        ? { "@type": "Brand", name: product.department }
+        : undefined,
       offers: {
         "@type": "Offer",
         url: `${SITE_URL}/product/${product._id}`,
         priceCurrency: "BDT",
         price: product.price,
-        availability: product.availability === "out_of_stock"
-          ? "https://schema.org/OutOfStock"
-          : "https://schema.org/InStock",
+        availability:
+          product.availability === "out_of_stock"
+            ? "https://schema.org/OutOfStock"
+            : "https://schema.org/InStock",
         seller: { "@type": "Organization", name: "SmartBuy BD" },
       },
       ...(product.averageRating > 0 && product.reviewCount > 0
@@ -257,7 +265,9 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
     script.type = "application/ld+json";
     script.textContent = JSON.stringify(schema);
     document.head.appendChild(script);
-    return () => { script.remove(); };
+    return () => {
+      script.remove();
+    };
   }, [product]);
 
   // Update document title, meta description, and canonical link client-side —
@@ -293,7 +303,8 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
 
     return () => {
       document.title = prevTitle;
-      if (metaDesc && prevDesc !== undefined) metaDesc.setAttribute("content", prevDesc || "");
+      if (metaDesc && prevDesc !== undefined)
+        metaDesc.setAttribute("content", prevDesc || "");
     };
   }, [product]);
 
@@ -416,7 +427,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
   return (
     <div
       key={product?._id || product?.id}
-      className="max-w-7xl mx-auto py-6 px-4"
+      className="max-w-7xl mx-auto py-6 px-2"
     >
       {/* Back button */}
       <button
@@ -1181,13 +1192,16 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
         <div
           className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4"
           onClick={() => setZoomOpen(false)}
-          onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+          onTouchStart={(e) => {
+            touchStartX.current = e.touches[0].clientX;
+          }}
           onTouchEnd={(e) => {
             if (touchStartX.current === null || images.length <= 1) return;
             const diff = e.changedTouches[0].clientX - touchStartX.current;
             if (Math.abs(diff) > 50) {
               if (diff < 0) setCurrentIndex((i) => (i + 1) % images.length);
-              else setCurrentIndex((i) => (i - 1 + images.length) % images.length);
+              else
+                setCurrentIndex((i) => (i - 1 + images.length) % images.length);
             }
             touchStartX.current = null;
           }}
@@ -1214,7 +1228,11 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
             {/* Prev / Next */}
             {images.length > 1 && (
               <button
-                onClick={() => setCurrentIndex((i) => (i - 1 + images.length) % images.length)}
+                onClick={() =>
+                  setCurrentIndex(
+                    (i) => (i - 1 + images.length) % images.length,
+                  )
+                }
                 className="absolute left-2 z-10 p-2.5 bg-white/90 rounded-full shadow-md hover:bg-white hover:scale-110 transition-all"
               >
                 <FaChevronLeft className="w-4 h-4 text-gray-700" />
@@ -1232,7 +1250,12 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
             {/* Zoomed image */}
             <div
               className="bg-white rounded-2xl overflow-hidden flex items-center justify-center shadow-2xl"
-              style={{ maxWidth: "720px", maxHeight: "80vh", width: "100%", height: "100%" }}
+              style={{
+                maxWidth: "720px",
+                maxHeight: "80vh",
+                width: "100%",
+                height: "100%",
+              }}
             >
               <Image
                 src={encodeURI(currentImage)}

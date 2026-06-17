@@ -58,7 +58,7 @@ export default function RecentlyViewed({ currentProductId }) {
   if (items.length === 0) return null;
 
   return (
-    <section className="max-w-7xl mx-auto px-2 mt-12 mb-4">
+    <section className="max-w-7xl mx-auto  mt-12 mb-4">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg md:text-xl font-bold text-gray-900 tracking-tight">
           Recently Viewed

@@ -10,7 +10,7 @@ export default function RelatedProducts({ products = [] }) {
   if (products.length === 0) return null;
 
   return (
-    <div className="mt-6 relative">
+    <div className="mt-6 relative px-2">
       <h2 className="text-2xl font-semibold mb-2">Related Products</h2>
       {/* carousel container needs relative positioning for absolute arrows */}
       <div className="relative">

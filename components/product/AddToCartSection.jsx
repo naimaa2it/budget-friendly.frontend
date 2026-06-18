@@ -6,12 +6,14 @@ import WishlistButton from '@/components/product/WishlistButton';
 import { useCart } from '@/components/context/CartContext';
 import { resolveVariantPrice, resolveVariant, getVariantColors, getVariantSizes } from '@/components/cart/VariantEditModal';
 import { FaBell, FaClock } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
 
 const STORAGE_KEY = (id) => `waitlist_joined_${id}`;
 
 export default function AddToCartSection({ product, selectedColor = null, selectedSize = null }) {
   const [qty, setQty] = useState(1);
   const { addToCart } = useCart();
+  const router = useRouter();
   const [notifyType, setNotifyType] = useState('email');
   const [notifyValue, setNotifyValue] = useState('');
   const [notifyLoading, setNotifyLoading] = useState(false);
@@ -63,6 +65,15 @@ export default function AddToCartSection({ product, selectedColor = null, select
       selectedSize:  selectedSize  || null,
       selectedVariant,
     });
+  };
+
+  const handleBuyNow = () => {
+    addToCart(product, qty, {
+      selectedColor: selectedColor || null,
+      selectedSize:  selectedSize  || null,
+      selectedVariant,
+    });
+    router.push('/checkout');
   };
 
   return (
@@ -148,6 +159,12 @@ export default function AddToCartSection({ product, selectedColor = null, select
             className="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition"
           >
             Add to cart
+          </button>
+          <button
+            onClick={handleBuyNow}
+            className="bg-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition"
+          >
+            Buy Now
           </button>
           {qty > 1 && (
             <span className="text-sm text-gray-700">৳{(effectivePrice * qty).toFixed(2)}</span>

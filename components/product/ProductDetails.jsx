@@ -450,6 +450,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                   <button
                     key={idx}
                     onClick={() => setCurrentIndex(idx)}
+                    onMouseEnter={() => setCurrentIndex(idx)}
                     className={`rounded border-1 overflow-hidden transition aspect-square ${
                       currentIndex === idx
                         ? "border-gray-900"
@@ -908,10 +909,10 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
       )}
 
       {/* warranty, return policy, customization — accordion */}
-      {(product?.warranty?.period ||
-        product?.warranty?.details ||
-        product?.returnPolicy?.days != null ||
-        product?.returnPolicy?.details ||
+      {(product?.warranty?.period?.trim() ||
+        product?.warranty?.details?.trim() ||
+        (product?.returnPolicy?.days > 0) ||
+        product?.returnPolicy?.details?.trim() ||
         product?.customization?.customizable) && (
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="border border-gray-200 rounded-xl overflow-hidden bg-white divide-y divide-gray-100">

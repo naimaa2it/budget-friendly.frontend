@@ -43,7 +43,7 @@ export default function DetailedDescriptionRenderer({ value }) {
         /* ── Full-width image ── */
         if (block.type === "image" && block.url) {
           return (
-            <div key={block.id || i} className="w-full">
+            <div key={block.id || i} className="w-full py-1">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={block.url}
@@ -66,7 +66,7 @@ export default function DetailedDescriptionRenderer({ value }) {
             : cols === 3 ? "grid-cols-3"
             : "grid-cols-4";
           return (
-            <div key={block.id || i} className={`grid gap-0 ${gridClass}`}>
+            <div key={block.id || i} className={`grid gap-1 ${gridClass} py-1`}>
               {imgs.map((img, idx) => (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img

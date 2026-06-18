@@ -374,7 +374,7 @@ export default function ProductEdit({ productId }) {
             .filter((b) => b.key && b.label),
         ),
       );
-      const resp = await fetch(`${API}/api/admin/settings`, {
+      const resp = await fetch(`${API}/api/admin/settings/badges`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

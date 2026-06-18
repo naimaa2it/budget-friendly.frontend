@@ -163,7 +163,7 @@ export default function MediaLibrary() {
           <p className="text-sm text-gray-500 mt-0.5">Browse and manage all uploaded images and videos.</p>
         </div>
         <div className="flex items-center gap-2">
-          {selected.size > 0 && (
+          {selected.size > 0 && user?.role === 'admin' && (
             <button
               onClick={handleDelete}
               disabled={deleting}
@@ -313,11 +313,13 @@ export default function MediaLibrary() {
                           onClick={e => copyUrl(item.url, e)}
                           className="bg-white/90 hover:bg-white rounded-md w-6 h-6 flex items-center justify-center text-gray-700 text-xs"
                         >⎘</button>
-                        <button
-                          title="Delete"
-                          onClick={e => deleteSingle(item, e)}
-                          className="bg-red-500 hover:bg-red-600 rounded-md w-6 h-6 flex items-center justify-center text-white text-xs"
-                        >✕</button>
+                        {user?.role === 'admin' && (
+                          <button
+                            title="Delete"
+                            onClick={e => deleteSingle(item, e)}
+                            className="bg-red-500 hover:bg-red-600 rounded-md w-6 h-6 flex items-center justify-center text-white text-xs"
+                          >✕</button>
+                        )}
                       </div>
                     </div>
                     <p className="text-white text-[10px] leading-tight truncate">
@@ -385,10 +387,12 @@ export default function MediaLibrary() {
                   onClick={e => copyUrl(previewItem.url, e)}
                   className="px-3 py-1.5 bg-gray-200 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-300"
                 >Copy URL</button>
-                <button
-                  onClick={e => deleteSingle(previewItem, e)}
-                  className="px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-medium hover:bg-red-700"
-                >Delete</button>
+                {user?.role === 'admin' && (
+                  <button
+                    onClick={e => deleteSingle(previewItem, e)}
+                    className="px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-medium hover:bg-red-700"
+                  >Delete</button>
+                )}
               </div>
             </div>
           </div>

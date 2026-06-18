@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useUser } from "@/components/context/UserContext";
 
 const emptyForm = { name: "", color: "#3B82F6", description: "" };
 
 export default function CustomerTagList() {
+  const { user } = useUser();
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
   const [items, setItems] = useState([]);
   const [form, setForm] = useState(emptyForm);
@@ -172,13 +174,15 @@ export default function CustomerTagList() {
                     >
                       Edit
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => deleteTag(tag._id)}
-                      className="rounded border border-red-300 px-3 py-1.5 text-sm text-red-600"
-                    >
-                      Delete
-                    </button>
+                    {user?.role === "admin" && (
+                      <button
+                        type="button"
+                        onClick={() => deleteTag(tag._id)}
+                        className="rounded border border-red-300 px-3 py-1.5 text-sm text-red-600"
+                      >
+                        Delete
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

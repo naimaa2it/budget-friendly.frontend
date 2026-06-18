@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { useUser } from "@/components/context/UserContext";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 const emptyForm = { name: "", optionsText: "" };
@@ -15,6 +16,7 @@ const normalizeVariation = (item) => ({
 });
 
 export default function ProductVariationsManager() {
+  const { user } = useUser();
   const [items, setItems] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
@@ -259,13 +261,15 @@ export default function ProductVariationsManager() {
                           >
                             Edit
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => deleteVariation(item.id)}
-                            className="rounded-full border border-gray-300 px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-50"
-                          >
-                            Delete
-                          </button>
+                          {user?.role === "admin" && (
+                            <button
+                              type="button"
+                              onClick={() => deleteVariation(item.id)}
+                              className="rounded-full border border-gray-300 px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-50"
+                            >
+                              Delete
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>

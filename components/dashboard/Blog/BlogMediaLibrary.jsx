@@ -150,7 +150,7 @@ export default function BlogMediaLibrary({
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
           />
         </div>
-        {showSelection && selected.size > 0 && (
+        {showSelection && selected.size > 0 && user?.role === "admin" && (
           <button
             onClick={deleteSelected}
             disabled={deleting}

@@ -6,8 +6,36 @@ import Link from "next/link";
 import { useUser } from "@/components/context/UserContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatOrderId } from "@/lib/orderId";
+import CourierScorePanel from "@/components/dashboard/Customer/CourierScorePanel";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+function useCourierLifetime(phone) {
+  const [lifetime, setLifetime] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const load = useCallback(async (refresh = false) => {
+    if (!phone) return;
+    setLoading(true);
+    try {
+      const params = refresh ? "?refresh=1" : "";
+      const r = await fetch(
+        `${API}/api/admin/phones/${encodeURIComponent(phone)}/lifetime-stats${params}`,
+        { credentials: "include" },
+      );
+      const body = await r.json();
+      setLifetime(r.ok ? body : { error: body.error || "Failed to load" });
+    } catch {
+      setLifetime({ error: "Failed to load" });
+    } finally {
+      setLoading(false);
+    }
+  }, [phone]);
+
+  useEffect(() => { load(); }, [load]);
+
+  return { lifetime, loading, refresh: () => load(true) };
+}
 
 // ─── Shared helpers ──────────────────────────────────────────────────────────
 
@@ -98,6 +126,8 @@ function DateFilter({ value, onChange }) {
 // ─── Actions dropdown ─────────────────────────────────────────────────────────
 
 function OrderActionsMenu({ order, onDelete }) {
+  const { user } = useUser();
+  const canDelete = user?.role === "admin";
   const [open, setOpen] = useState(false);
   const [menuPos, setMenuPos] = useState(null);
   const btnRef = useRef(null);
@@ -164,7 +194,9 @@ function OrderActionsMenu({ order, onDelete }) {
               <span className="block px-3 py-2 text-gray-300 cursor-not-allowed">Courier score</span>
             )}
             <Link href={detailsHref} className="block px-3 py-2 hover:bg-gray-50 text-gray-700" onClick={() => setOpen(false)}>Edit</Link>
-            <button type="button" onClick={(e) => { setOpen(false); onDelete(e, order._id); }} className="w-full text-left px-3 py-2 hover:bg-red-50 text-red-600">Delete</button>
+            {canDelete && (
+              <button type="button" onClick={(e) => { setOpen(false); onDelete(e, order._id); }} className="w-full text-left px-3 py-2 hover:bg-red-50 text-red-600">Delete</button>
+            )}
           </div>
         </>,
         document.body,
@@ -175,7 +207,7 @@ function OrderActionsMenu({ order, onDelete }) {
 
 // ─── Reusable orders table ────────────────────────────────────────────────────
 
-function OrdersTable({ orders, onDelete, onRowClick }) {
+function OrdersTable({ orders, onDelete, onRowClick, onCustomerClick }) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm text-left">
@@ -199,9 +231,18 @@ function OrdersTable({ orders, onDelete, onRowClick }) {
                   {formatOrderId(order._id)}
                 </Link>
               </td>
-              <td className="px-4 py-3">
-                <p className="font-medium text-gray-800">{order.billingDetails?.name || "—"}</p>
-                <p className="text-xs text-gray-400">{order.billingDetails?.phone}</p>
+              <td className="px-4 py-3" onClick={(e) => onCustomerClick && e.stopPropagation()}>
+                {onCustomerClick ? (
+                  <button type="button" className="text-left" onClick={() => onCustomerClick(order)}>
+                    <p className="font-medium text-gray-800 hover:text-indigo-600 hover:underline">{order.billingDetails?.name || "—"}</p>
+                    <p className="text-xs text-gray-400">{order.billingDetails?.phone}</p>
+                  </button>
+                ) : (
+                  <>
+                    <p className="font-medium text-gray-800">{order.billingDetails?.name || "—"}</p>
+                    <p className="text-xs text-gray-400">{order.billingDetails?.phone}</p>
+                  </>
+                )}
               </td>
               <td className="px-4 py-3 text-gray-600 max-w-[12rem] truncate">{itemSummary(order.items)}</td>
               <td className="px-4 py-3 font-semibold text-gray-800">৳{order.total?.toLocaleString()}</td>
@@ -232,7 +273,9 @@ function OrdersTable({ orders, onDelete, onRowClick }) {
 
 // ─── Cancelled Orders Table ───────────────────────────────────────────────────
 
-function CancelledOrdersTable({ orders, onDelete, onRowClick }) {
+function CancelledOrdersTable({ orders, onDelete, onRowClick, onCustomerClick }) {
+  const { user } = useUser();
+  const canDelete = user?.role === "admin";
   const getCancelReason = (order) => {
     const history = order.statusHistory || [];
     const entry = [...history].reverse().find((h) => h.newStatus === "cancelled");
@@ -273,9 +316,18 @@ function CancelledOrdersTable({ orders, onDelete, onRowClick }) {
                 </td>
 
                 {/* Customer */}
-                <td className="px-4 py-3">
-                  <p className="font-medium text-gray-800">{order.billingDetails?.name || "—"}</p>
-                  <p className="text-xs text-gray-400">{order.billingDetails?.phone}</p>
+                <td className="px-4 py-3" onClick={(e) => onCustomerClick && e.stopPropagation()}>
+                  {onCustomerClick ? (
+                    <button type="button" className="text-left" onClick={() => onCustomerClick(order)}>
+                      <p className="font-medium text-gray-800 hover:text-indigo-600 hover:underline">{order.billingDetails?.name || "—"}</p>
+                      <p className="text-xs text-gray-400">{order.billingDetails?.phone}</p>
+                    </button>
+                  ) : (
+                    <>
+                      <p className="font-medium text-gray-800">{order.billingDetails?.name || "—"}</p>
+                      <p className="text-xs text-gray-400">{order.billingDetails?.phone}</p>
+                    </>
+                  )}
                 </td>
 
                 {/* Items */}
@@ -316,13 +368,17 @@ function CancelledOrdersTable({ orders, onDelete, onRowClick }) {
                     >
                       View
                     </Link>
-                    <span className="text-gray-200">|</span>
-                    <button
-                      onClick={(e) => onDelete(e, order._id)}
-                      className="text-xs text-red-500 hover:text-red-700 hover:underline font-medium"
-                    >
-                      Delete
-                    </button>
+                    {canDelete && (
+                      <>
+                        <span className="text-gray-200">|</span>
+                        <button
+                          onClick={(e) => onDelete(e, order._id)}
+                          className="text-xs text-red-500 hover:text-red-700 hover:underline font-medium"
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -624,6 +680,8 @@ function AddReturnModal({ onClose, onSave }) {
 }
 
 function ReturnsActionsMenu({ order, onAction, onDelete }) {
+  const { user } = useUser();
+  const canDelete = user?.role === "admin";
   const [open, setOpen] = useState(false);
   const [menuPos, setMenuPos] = useState(null);
   const btnRef = useRef(null);
@@ -673,8 +731,12 @@ function ReturnsActionsMenu({ order, onAction, onDelete }) {
             {status !== "pending" && (
               <button type="button" onClick={() => { setOpen(false); onAction("pending", order); }} className="w-full text-left px-3 py-2 hover:bg-amber-50 text-amber-700">Reset to Pending</button>
             )}
-            <div className="my-1 border-t border-gray-100" />
-            <button type="button" onClick={() => { setOpen(false); onDelete(order._id); }} className="w-full text-left px-3 py-2 hover:bg-red-50 text-red-500">Remove Request</button>
+            {canDelete && (
+              <>
+                <div className="my-1 border-t border-gray-100" />
+                <button type="button" onClick={() => { setOpen(false); onDelete(order._id); }} className="w-full text-left px-3 py-2 hover:bg-red-50 text-red-500">Remove Request</button>
+              </>
+            )}
           </div>
         </>,
         document.body,
@@ -916,6 +978,7 @@ function AllOrdersSection() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
 
   const fetchOrders = useCallback(async (tab, q, pg, preset) => {
     setLoading(true);
@@ -996,10 +1059,23 @@ function AllOrdersSection() {
         ) : orders.length === 0 ? (
           <div className="py-16 text-center text-gray-400 text-sm">No orders found.</div>
         ) : (
-          <OrdersTable orders={orders} onDelete={handleDelete} onRowClick={(id) => router.push(`/dashboard/orders/${id}`)} />
+          <OrdersTable
+            orders={orders}
+            onDelete={handleDelete}
+            onRowClick={(id) => router.push(`/dashboard/orders/${id}`)}
+            onCustomerClick={(order) => setSelectedCustomer({
+              name: order.billingDetails?.name,
+              phone: order.billingDetails?.phone,
+              email: order.billingDetails?.email,
+              userId: order.userId,
+            })}
+          />
         )}
         <Pagination page={page} totalPages={totalPages} onPage={setPage} />
       </div>
+      {selectedCustomer && (
+        <OrderCustomerModal {...selectedCustomer} onClose={() => setSelectedCustomer(null)} />
+      )}
     </div>
   );
 }
@@ -1015,6 +1091,14 @@ function FilteredOrdersSection({ statusFilter, title, emptyMsg, showAging = fals
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+
+  const openCustomer = (order) => setSelectedCustomer({
+    name: order.billingDetails?.name,
+    phone: order.billingDetails?.phone,
+    email: order.billingDetails?.email,
+    userId: order.userId,
+  });
 
   const fetch_ = useCallback(async (q, pg, preset) => {
     setLoading(true);
@@ -1108,9 +1192,11 @@ function FilteredOrdersSection({ statusFilter, title, emptyMsg, showAging = fals
                           {formatOrderId(order._id)}
                         </Link>
                       </td>
-                      <td className="px-4 py-3">
-                        <p className="font-medium text-gray-800">{order.billingDetails?.name || "—"}</p>
-                        <p className="text-xs text-gray-400">{order.billingDetails?.phone}</p>
+                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                        <button type="button" className="text-left" onClick={() => openCustomer(order)}>
+                          <p className="font-medium text-gray-800 hover:text-indigo-600 hover:underline">{order.billingDetails?.name || "—"}</p>
+                          <p className="text-xs text-gray-400">{order.billingDetails?.phone}</p>
+                        </button>
                       </td>
                       <td className="px-4 py-3 text-gray-600 max-w-[12rem] truncate">{itemSummary(order.items)}</td>
                       <td className="px-4 py-3 font-semibold text-gray-800">৳{order.total?.toLocaleString()}</td>
@@ -1146,12 +1232,21 @@ function FilteredOrdersSection({ statusFilter, title, emptyMsg, showAging = fals
             orders={orders}
             onDelete={handleDelete}
             onRowClick={(id) => router.push(`/dashboard/orders/${id}`)}
+            onCustomerClick={openCustomer}
           />
         ) : (
-          <OrdersTable orders={orders} onDelete={handleDelete} onRowClick={(id) => router.push(`/dashboard/orders/${id}`)} />
+          <OrdersTable
+            orders={orders}
+            onDelete={handleDelete}
+            onRowClick={(id) => router.push(`/dashboard/orders/${id}`)}
+            onCustomerClick={openCustomer}
+          />
         )}
         <Pagination page={page} totalPages={totalPages} onPage={setPage} />
       </div>
+      {selectedCustomer && (
+        <OrderCustomerModal {...selectedCustomer} onClose={() => setSelectedCustomer(null)} />
+      )}
     </div>
   );
 }
@@ -1161,10 +1256,11 @@ function FilteredOrdersSection({ statusFilter, title, emptyMsg, showAging = fals
 function CustomerNoteModal({ order, onClose }) {
   const [prevOrders, setPrevOrders] = useState([]);
   const [prevLoading, setPrevLoading] = useState(false);
+  const phone = order.billingDetails?.phone;
+  const { lifetime, loading: lifetimeLoading, refresh: refreshLifetime } = useCourierLifetime(phone);
 
   useEffect(() => {
     const uid = order.userId;
-    const phone = order.billingDetails?.phone;
     if (!uid && !phone) return;
     setPrevLoading(true);
     const params = uid
@@ -1184,7 +1280,7 @@ function CustomerNoteModal({ order, onClose }) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b">
@@ -1248,6 +1344,16 @@ function CustomerNoteModal({ order, onClose }) {
             </div>
           </div>
 
+          {/* Courier Score */}
+          <div className="px-6 py-4 border-b">
+            <CourierScorePanel
+              lifetime={lifetime}
+              phone={phone}
+              loading={lifetimeLoading}
+              onRefresh={refreshLifetime}
+            />
+          </div>
+
           {/* Previous orders */}
           <div className="px-6 py-4">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
@@ -1301,6 +1407,7 @@ function CustomerNoteModal({ order, onClose }) {
 }
 
 function CustomerNotesSection() {
+  const { user } = useUser();
   const router = useRouter();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -1407,13 +1514,15 @@ function CustomerNotesSection() {
                   <div className="text-right shrink-0 flex flex-col items-end gap-1.5">
                     <p className="font-semibold text-gray-800">৳{order.total?.toLocaleString()}</p>
                     <p className="text-xs text-gray-400">{fmtDate(order.createdAt)}</p>
-                    <button
-                      onClick={() => deleteOrder(order._id)}
-                      disabled={deletingId === order._id}
-                      className="text-xs text-red-500 hover:text-red-700 hover:underline disabled:opacity-40"
-                    >
-                      {deletingId === order._id ? "…" : "Delete"}
-                    </button>
+                    {user?.role === "admin" && (
+                      <button
+                        onClick={() => deleteOrder(order._id)}
+                        disabled={deletingId === order._id}
+                        className="text-xs text-red-500 hover:text-red-700 hover:underline disabled:opacity-40"
+                      >
+                        {deletingId === order._id ? "…" : "Delete"}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1470,6 +1579,7 @@ const TIMELINE_STATUS_STYLE = {
 function OrderTimelineSection() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
 
   useEffect(() => {
     setLoading(true);
@@ -1523,7 +1633,17 @@ function OrderTimelineSection() {
                       )}
                     </div>
                     <div className="flex items-center gap-3 mt-0.5">
-                      <p className="text-xs text-gray-600">{ev.customerName}{ev.customerPhone ? ` · ${ev.customerPhone}` : ""}</p>
+                      {ev.customerName ? (
+                        <button
+                          type="button"
+                          className="text-xs text-gray-600 hover:text-indigo-600 hover:underline"
+                          onClick={() => setSelectedCustomer({ name: ev.customerName, phone: ev.customerPhone })}
+                        >
+                          {ev.customerName}{ev.customerPhone ? ` · ${ev.customerPhone}` : ""}
+                        </button>
+                      ) : (
+                        <p className="text-xs text-gray-600">{ev.customerPhone || ""}</p>
+                      )}
                       <p className="text-xs text-gray-400 ml-auto">{new Date(ev.at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</p>
                     </div>
                     {ev.reason && <p className="text-xs text-gray-400 italic mt-0.5">"{ev.reason}"</p>}
@@ -1537,6 +1657,9 @@ function OrderTimelineSection() {
           </div>
         ))}
       </div>
+      {selectedCustomer && (
+        <OrderCustomerModal {...selectedCustomer} onClose={() => setSelectedCustomer(null)} />
+      )}
     </div>
   );
 }
@@ -1546,6 +1669,7 @@ function OrderTimelineSection() {
 function AbandonedCartModal({ user, onClose }) {
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
+  const { lifetime, loading: lifetimeLoading, refresh: refreshLifetime } = useCourierLifetime(user.mobile);
 
   const cartValue = (user.savedCart?.items || []).reduce(
     (s, i) => s + (i.price || 0) * (i.quantity || 1), 0
@@ -1580,7 +1704,7 @@ function AbandonedCartModal({ user, onClose }) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -1668,6 +1792,16 @@ function AbandonedCartModal({ user, onClose }) {
             </div>
           </div>
 
+          {/* Courier Score */}
+          <div className="px-6 py-4 border-b">
+            <CourierScorePanel
+              lifetime={lifetime}
+              phone={user.mobile}
+              loading={lifetimeLoading}
+              onRefresh={refreshLifetime}
+            />
+          </div>
+
           {/* Previous orders */}
           <div className="px-6 py-4">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
@@ -1723,6 +1857,7 @@ function AbandonedCartModal({ user, onClose }) {
 }
 
 function AbandonedCartSection() {
+  const { user } = useUser();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -1890,13 +2025,15 @@ function AbandonedCartSection() {
 
                     {/* Delete */}
                     <td className="px-4 py-3">
-                      <button
-                        onClick={() => deleteCart(u._id)}
-                        disabled={deletingId === u._id}
-                        className="text-xs text-red-500 hover:text-red-700 hover:underline disabled:opacity-40 font-medium"
-                      >
-                        {deletingId === u._id ? "…" : "Delete"}
-                      </button>
+                      {user?.role === "admin" && (
+                        <button
+                          onClick={() => deleteCart(u._id)}
+                          disabled={deletingId === u._id}
+                          className="text-xs text-red-500 hover:text-red-700 hover:underline disabled:opacity-40 font-medium"
+                        >
+                          {deletingId === u._id ? "…" : "Delete"}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );
@@ -1964,9 +2101,136 @@ const ORDER_STATUS_COLOR = {
   failed: "bg-gray-100 text-gray-500",
 };
 
+// ─── Generic Order Customer Modal (used by AllOrders / Filtered / Timeline) ───
+
+function OrderCustomerModal({ name, phone, email, userId, onClose }) {
+  const [prevOrders, setPrevOrders] = useState([]);
+  const [prevLoading, setPrevLoading] = useState(false);
+  const { lifetime, loading: lifetimeLoading, refresh: refreshLifetime } = useCourierLifetime(phone);
+
+  useEffect(() => {
+    if (!userId && !phone) return;
+    setPrevLoading(true);
+    const params = userId
+      ? new URLSearchParams({ userId, limit: 10, page: 1 })
+      : new URLSearchParams({ q: phone, limit: 10, page: 1 });
+    fetch(`${API}/api/admin/orders?${params}`, { credentials: "include" })
+      .then((r) => r.ok ? r.json() : { orders: [] })
+      .then((data) => setPrevOrders(data.orders || []))
+      .catch(() => {})
+      .finally(() => setPrevLoading(false));
+  }, [userId, phone]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.45)" }}
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b">
+          <div>
+            <h3 className="text-lg font-bold text-gray-900">{name || "—"}</h3>
+            {phone && <p className="text-xs font-mono text-gray-400 mt-0.5">{phone}</p>}
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-700 text-xl leading-none"
+          >×</button>
+        </div>
+
+        <div className="overflow-y-auto flex-1">
+          {/* Contact */}
+          <div className="px-6 py-4 border-b">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Contact Info</p>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p className="text-xs text-gray-400 mb-0.5">নাম</p>
+                <p className="font-medium text-gray-800">{name || "—"}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400 mb-0.5">ফোন</p>
+                <p className="font-medium text-gray-800">{phone || "—"}</p>
+              </div>
+              {email && (
+                <div className="col-span-2">
+                  <p className="text-xs text-gray-400 mb-0.5">ইমেইল</p>
+                  <p className="font-medium text-gray-800">{email}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Courier Score */}
+          <div className="px-6 py-4 border-b">
+            <CourierScorePanel
+              lifetime={lifetime}
+              phone={phone}
+              loading={lifetimeLoading}
+              onRefresh={refreshLifetime}
+            />
+          </div>
+
+          {/* Previous Orders */}
+          <div className="px-6 py-4">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+              Previous Orders
+              {!prevLoading && (
+                <span className="ml-2 text-gray-300 font-normal normal-case">
+                  ({prevOrders.length} টি পাওয়া গেছে)
+                </span>
+              )}
+            </p>
+            {prevLoading ? (
+              <p className="text-xs text-gray-400 py-3 text-center">লোড হচ্ছে…</p>
+            ) : prevOrders.length === 0 ? (
+              <p className="text-xs text-gray-400 py-3 text-center italic">কোনো আগের order নেই</p>
+            ) : (
+              <div className="space-y-2">
+                {prevOrders.map((o) => (
+                  <a
+                    key={o._id}
+                    href={`/dashboard/orders/${o._id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-between gap-3 p-3 rounded-xl border hover:border-gray-300 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-xs font-mono text-gray-500 shrink-0">
+                        #{String(o._id).slice(-8).toUpperCase()}
+                      </span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${ORDER_STATUS_COLOR[o.status] || "bg-gray-100 text-gray-500"}`}>
+                        {ORDER_STATUS_LABEL[o.status] || o.status}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className="text-sm font-semibold text-gray-800">
+                        ৳{Number(o.total || 0).toLocaleString("en-BD")}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        {o.createdAt ? new Date(o.createdAt).toLocaleDateString("en-BD", { day: "numeric", month: "short", year: "numeric" }) : ""}
+                      </span>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 function CheckoutSessionModal({ session, onClose }) {
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
+  const { lifetime, loading: lifetimeLoading, refresh: refreshLifetime } = useCourierLifetime(session.userPhone);
 
   const itemTotal = (session.items || []).reduce(
     (sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0
@@ -2007,7 +2271,7 @@ function CheckoutSessionModal({ session, onClose }) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -2105,6 +2369,16 @@ function CheckoutSessionModal({ session, onClose }) {
             </div>
           </div>
 
+          {/* Courier Score */}
+          <div className="px-6 py-4 border-b">
+            <CourierScorePanel
+              lifetime={lifetime}
+              phone={session.userPhone}
+              loading={lifetimeLoading}
+              onRefresh={refreshLifetime}
+            />
+          </div>
+
           {/* Previous orders */}
           <div className="px-6 py-4">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
@@ -2169,6 +2443,7 @@ function CheckoutSessionModal({ session, onClose }) {
 }
 
 function AbandonCheckoutSection() {
+  const { user } = useUser();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -2354,14 +2629,16 @@ function AbandonCheckoutSection() {
 
                     {/* Delete */}
                     <td className="px-4 py-3">
-                      <button
-                        onClick={() => deleteSession(s._id)}
-                        disabled={deletingId === s._id}
-                        className="text-xs text-red-400 hover:text-red-600 hover:underline disabled:opacity-40"
-                        title="Delete record"
-                      >
-                        {deletingId === s._id ? "…" : "Delete"}
-                      </button>
+                      {user?.role === "admin" && (
+                        <button
+                          onClick={() => deleteSession(s._id)}
+                          disabled={deletingId === s._id}
+                          className="text-xs text-red-400 hover:text-red-600 hover:underline disabled:opacity-40"
+                          title="Delete record"
+                        >
+                          {deletingId === s._id ? "…" : "Delete"}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );
@@ -2445,6 +2722,7 @@ function WishlistCustomerModal({ customer, productId, onClose }) {
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const customerId = customer.id || customer._id;
+  const { lifetime, loading: lifetimeLoading, refresh: refreshLifetime } = useCourierLifetime(customer.mobile);
 
   useEffect(() => {
     if (!customerId) return;
@@ -2465,7 +2743,7 @@ function WishlistCustomerModal({ customer, productId, onClose }) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -2500,6 +2778,16 @@ function WishlistCustomerModal({ customer, productId, onClose }) {
                 <p className="font-medium text-gray-800">{customer.email || "—"}</p>
               </div>
             </div>
+          </div>
+
+          {/* Courier Score */}
+          <div className="px-6 py-4 border-b">
+            <CourierScorePanel
+              lifetime={lifetime}
+              phone={customer.mobile}
+              loading={lifetimeLoading}
+              onRefresh={refreshLifetime}
+            />
           </div>
 
           {/* Previous orders */}
@@ -2557,6 +2845,7 @@ function WishlistCustomerModal({ customer, productId, onClose }) {
 }
 
 function AllWishlistSection() {
+  const { user } = useUser();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -2729,27 +3018,31 @@ function AllWishlistSection() {
                               >
                                 {c.name || c.email || "Unknown"}
                               </button>
-                              <button
-                                onClick={() => deleteCustomer(item.productId, String(c.id))}
-                                disabled={deletingCustomerKey === key}
-                                className="w-4 h-4 flex items-center justify-center rounded-full bg-gray-100 hover:bg-red-100 text-gray-400 hover:text-red-500 text-xs disabled:opacity-40 transition-colors leading-none"
-                                title="Remove from wishlist"
-                              >
-                                {deletingCustomerKey === key ? "…" : "×"}
-                              </button>
+                              {user?.role === "admin" && (
+                                <button
+                                  onClick={() => deleteCustomer(item.productId, String(c.id))}
+                                  disabled={deletingCustomerKey === key}
+                                  className="w-4 h-4 flex items-center justify-center rounded-full bg-gray-100 hover:bg-red-100 text-gray-400 hover:text-red-500 text-xs disabled:opacity-40 transition-colors leading-none"
+                                  title="Remove from wishlist"
+                                >
+                                  {deletingCustomerKey === key ? "…" : "×"}
+                                </button>
+                              )}
                             </div>
                           );
                         })}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => deleteProduct(item.productId)}
-                        disabled={deletingProductId === item.productId}
-                        className="text-xs text-red-500 hover:text-red-700 hover:underline disabled:opacity-40"
-                      >
-                        {deletingProductId === item.productId ? "…" : "Delete"}
-                      </button>
+                      {user?.role === "admin" && (
+                        <button
+                          onClick={() => deleteProduct(item.productId)}
+                          disabled={deletingProductId === item.productId}
+                          className="text-xs text-red-500 hover:text-red-700 hover:underline disabled:opacity-40"
+                        >
+                          {deletingProductId === item.productId ? "…" : "Delete"}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 </React.Fragment>

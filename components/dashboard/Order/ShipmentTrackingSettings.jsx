@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useUser } from "@/components/context/UserContext";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -218,13 +219,15 @@ function CourierManager({ couriers, onChange }) {
                 >
                   Edit
                 </button>
-                <button
-                  type="button"
-                  onClick={() => deleteCourier(c._id)}
-                  className="text-xs text-red-600"
-                >
-                  Delete
-                </button>
+                {user?.role === "admin" && (
+                  <button
+                    type="button"
+                    onClick={() => deleteCourier(c._id)}
+                    className="text-xs text-red-600"
+                  >
+                    Delete
+                  </button>
+                )}
               </>
             )}
           </li>
@@ -638,6 +641,7 @@ function ShopShipmentConfig({ onSaved }) {
 }
 
 export default function ShipmentTrackingSettings() {
+  const { user } = useUser();
   const [couriers, setCouriers] = useState([]);
 
   const loadMeta = useCallback(async () => {

@@ -187,13 +187,15 @@ export default function SettingsForm() {
                 >
                   Select from Media
                 </button>
-                <button
-                  type="button"
-                  onClick={handleDeleteLogo}
-                  className="px-3 py-1.5 border rounded text-sm text-red-600 border-red-200 bg-white hover:bg-red-50"
-                >
-                  Delete Logo
-                </button>
+                {user?.role === "admin" && (
+                  <button
+                    type="button"
+                    onClick={handleDeleteLogo}
+                    className="px-3 py-1.5 border rounded text-sm text-red-600 border-red-200 bg-white hover:bg-red-50"
+                  >
+                    Delete Logo
+                  </button>
+                )}
               </div>
             </div>
             <p className="mt-2 text-xs text-gray-500">

@@ -14,6 +14,7 @@ import {
   FaPrint,
   FaTrash,
 } from "react-icons/fa";
+import { useUser } from "@/components/context/UserContext";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -61,6 +62,7 @@ function makeBarcodeCode() {
 }
 
 export default function BarcodeManager() {
+  const { user } = useUser();
   const router = useRouter();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -462,13 +464,15 @@ export default function BarcodeManager() {
                             >
                               <FaEdit /> Edit
                             </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDelete(item)}
-                              className="inline-flex items-center gap-2 rounded-lg border border-rose-300 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-50"
-                            >
-                              <FaTrash /> Delete
-                            </button>
+                            {user?.role === "admin" && (
+                              <button
+                                type="button"
+                                onClick={() => handleDelete(item)}
+                                className="inline-flex items-center gap-2 rounded-lg border border-rose-300 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-50"
+                              >
+                                <FaTrash /> Delete
+                              </button>
+                            )}
                           </div>
                         </div>
 

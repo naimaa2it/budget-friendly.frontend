@@ -79,6 +79,7 @@ const COURIER_HELP = {
 };
 
 function CourierManager({ couriers, onChange }) {
+  const { user } = useUser();
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [editingId, setEditingId] = useState(null);

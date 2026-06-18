@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useCallback, useState } from "react";
 import RichTextEditor from "@/components/dashboard/RichTextEditor";
+import MediaPicker from "@/components/dashboard/MediaPicker";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -32,6 +33,7 @@ function ImageSlot({
   image,
   onUpload,
   onRemove,
+  onPickFromLibrary,
   draggable,
   onDragStart,
   onDragOver,
@@ -96,19 +98,16 @@ function ImageSlot({
 
   return (
     <div
-      className={`relative border-2 border-dashed rounded-lg bg-gray-50 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition-colors ${
+      className={`relative border-2 border-dashed rounded-lg bg-gray-50 flex flex-col items-center justify-center transition-colors ${
         isDragOver ? "border-indigo-500 bg-indigo-50" : "border-gray-300"
       } ${uploading ? "pointer-events-none opacity-60" : ""}`}
       style={{ aspectRatio: "4/3", minHeight: 120 }}
-      onClick={() => inputRef.current?.click()}
       onDragOver={(e) => { e.preventDefault(); onDragOver?.(e); }}
       onDrop={(e) => {
         e.preventDefault();
         if (e.dataTransfer.files?.length) handleFiles(e.dataTransfer.files);
         else onDrop?.(e);
       }}
-      tabIndex={0}
-      onKeyDown={(e) => e.key === "Enter" && inputRef.current?.click()}
     >
       <input
         ref={inputRef}
@@ -120,19 +119,35 @@ function ImageSlot({
       {uploading ? (
         <div className="text-sm text-indigo-600 font-medium">Uploading…</div>
       ) : (
-        <>
-          <svg className="w-7 h-7 text-gray-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="flex flex-col items-center gap-2 px-2">
+          <svg className="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          <p className="text-xs text-gray-500 text-center px-1">Click, drop or paste</p>
-        </>
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            className="text-xs font-medium text-indigo-600 hover:text-indigo-800 underline"
+          >
+            Upload image
+          </button>
+          {onPickFromLibrary && (
+            <button
+              type="button"
+              onClick={onPickFromLibrary}
+              className="text-xs font-medium text-gray-500 hover:text-indigo-600 border border-gray-300 rounded px-2 py-0.5 hover:border-indigo-400 transition"
+            >
+              🖼 Media Library
+            </button>
+          )}
+          <p className="text-xs text-gray-400 text-center">or drag &amp; drop</p>
+        </div>
       )}
     </div>
   );
 }
 
 /* ── Image Row block (2/3/4 cols, draggable to reorder) ── */
-function ImageRowBlock({ block, onPatch }) {
+function ImageRowBlock({ block, onPatch, onPickFromLibrary }) {
   const dragSrc = useRef(null);
   const [dragOverIdx, setDragOverIdx] = useState(null);
 
@@ -196,6 +211,7 @@ function ImageRowBlock({ block, onPatch }) {
             onDragEnd={() => { dragSrc.current = null; setDragOverIdx(null); }}
             onUpload={(asset) => patchImage(idx, asset)}
             onRemove={() => patchImage(idx, { url: "", public_id: "", alt: "" })}
+            onPickFromLibrary={onPickFromLibrary ? () => onPickFromLibrary(idx) : undefined}
           />
         ))}
       </div>
@@ -227,6 +243,7 @@ function BlockWrapper({ index, total, onMoveUp, onMoveDown, onRemove, label, chi
 export default function DetailedDescriptionBuilder({ value, onChange }) {
   const blocks = normalizeBlocks(value);
   const update = (b) => onChange(b);
+  const [pickerTarget, setPickerTarget] = useState(null);
 
   const addBlock = (type, extra = {}) => {
     let block;
@@ -287,6 +304,7 @@ export default function DetailedDescriptionBuilder({ value, onChange }) {
                   image={block}
                   onUpload={(asset) => patchBlock(i, asset)}
                   onRemove={() => patchBlock(i, { url: "", public_id: "" })}
+                  onPickFromLibrary={() => setPickerTarget({ blockIdx: i })}
                 />
                 {block.url && (
                   <input type="text" value={block.alt || ""} onChange={(e) => patchBlock(i, { alt: e.target.value })}
@@ -302,7 +320,11 @@ export default function DetailedDescriptionBuilder({ value, onChange }) {
           return (
             <BlockWrapper key={block.id} index={i} total={blocks.length} label="Image Row"
               onMoveUp={() => moveBlock(i, -1)} onMoveDown={() => moveBlock(i, 1)} onRemove={() => removeBlock(i)}>
-              <ImageRowBlock block={block} onPatch={(patch) => patchBlock(i, patch)} />
+              <ImageRowBlock
+                block={block}
+                onPatch={(patch) => patchBlock(i, patch)}
+                onPickFromLibrary={(imageIdx) => setPickerTarget({ blockIdx: i, imageIdx })}
+              />
             </BlockWrapper>
           );
         }
@@ -333,6 +355,25 @@ export default function DetailedDescriptionBuilder({ value, onChange }) {
           No blocks yet — use the buttons above to add content.
         </p>
       )}
+
+      <MediaPicker
+        open={pickerTarget !== null}
+        onSelect={(asset) => {
+          if (pickerTarget === null) return;
+          const { blockIdx, imageIdx } = pickerTarget;
+          const block = blocks[blockIdx];
+          if (!block) return;
+          if (block.type === "image") {
+            patchBlock(blockIdx, { url: asset.url, public_id: asset.public_id });
+          } else if (block.type === "image-row" && imageIdx !== undefined) {
+            const imgs = [...(block.images || [])];
+            imgs[imageIdx] = { ...(imgs[imageIdx] || {}), url: asset.url, public_id: asset.public_id };
+            patchBlock(blockIdx, { images: imgs });
+          }
+          setPickerTarget(null);
+        }}
+        onClose={() => setPickerTarget(null)}
+      />
     </div>
   );
 }

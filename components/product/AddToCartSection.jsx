@@ -99,6 +99,7 @@ export default function AddToCartSection({
       selectedColor: selectedColor || null,
       selectedSize: selectedSize || null,
       selectedVariant,
+      silent: true,
     });
     router.push("/checkout");
   };
@@ -238,7 +239,7 @@ export default function AddToCartSection({
           </div>
           <button
             onClick={handleBuyNow}
-            className="w-full mr-8 bg-gray-900 text-white py-2.5 rounded-lg font-medium hover:bg-gray-700 transition"
+            className="w-full mr-8 bg-gray-900 text-white py-2.5 rounded-md font-medium hover:bg-gray-700 transition"
           >
             Buy Now
           </button>

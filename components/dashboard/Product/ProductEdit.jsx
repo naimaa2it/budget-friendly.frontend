@@ -519,7 +519,14 @@ export default function ProductEdit({ productId }) {
             refundable: true,
             details: "",
           };
-          p.faqs = p.faqs || [];
+          p.faqs = (p.faqs || []).map((f) => ({
+            ...f,
+            answer:
+              f.answers?.find((a) => a.isOfficial)?.body ||
+              f.answers?.[0]?.body ||
+              f.answer ||
+              "",
+          }));
           p.frequentlyBoughtTogether = (p.frequentlyBoughtTogether || []).map(
             (item) =>
               typeof item === "object" && item !== null

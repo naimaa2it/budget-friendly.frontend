@@ -52,6 +52,9 @@ const STATUS_STYLE = {
   returned: "bg-teal-100 text-teal-700",
   cancelled: "bg-gray-100 text-gray-600",
   failed: "bg-red-100 text-red-600",
+  "return-pending": "bg-amber-100 text-amber-700",
+  "return-approved": "bg-teal-100 text-teal-700",
+  "return-rejected": "bg-red-100 text-red-600",
 };
 
 const PAYMENT_STATUS_STYLE = {
@@ -1576,7 +1579,20 @@ const TIMELINE_STATUS_STYLE = {
   returned: "bg-teal-500",
   cancelled: "bg-gray-400",
   failed: "bg-red-500",
+  "return-pending": "bg-amber-400",
+  "return-approved": "bg-teal-400",
+  "return-rejected": "bg-red-400",
 };
+
+const RETURN_STATUS_LABEL = {
+  "return-pending": "Return Pending",
+  "return-approved": "Return Approved",
+  "return-rejected": "Return Rejected",
+};
+
+function timelineStatusLabel(s) {
+  return RETURN_STATUS_LABEL[s] || s;
+}
 
 function OrderTimelineSection() {
   const [events, setEvents] = useState([]);
@@ -1663,7 +1679,7 @@ function OrderTimelineSection() {
                   </Link>
                 </span>
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${STATUS_STYLE[order.latestStatus] || ""}`}>
-                  {order.latestStatus}
+                  {timelineStatusLabel(order.latestStatus)}
                 </span>
                 <span className="text-xs text-gray-600 flex-1 min-w-0 truncate">
                   {order.customerName}{order.customerPhone ? ` · ${order.customerPhone}` : ""}
@@ -1683,9 +1699,9 @@ function OrderTimelineSection() {
                         <div className={`absolute -left-4.5 w-3 h-3 rounded-full mt-0.5 shrink-0 ${TIMELINE_STATUS_STYLE[ev.newStatus] || "bg-gray-300"}`} />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${STATUS_STYLE[ev.newStatus] || ""}`}>{ev.newStatus}</span>
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_STYLE[ev.newStatus] || ""}`}>{timelineStatusLabel(ev.newStatus)}</span>
                             {ev.previousStatus && (
-                              <span className="text-xs text-gray-400">← {ev.previousStatus}</span>
+                              <span className="text-xs text-gray-400">← {timelineStatusLabel(ev.previousStatus)}</span>
                             )}
                             <span className="text-xs text-gray-400 ml-auto">
                               {new Date(ev.at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}

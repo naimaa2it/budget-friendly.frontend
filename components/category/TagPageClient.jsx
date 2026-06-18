@@ -149,9 +149,10 @@ export default function TagPageClient({ slug }) {
 
   const config = TAG_CONFIG[slug] || {
     label: slug.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-    badge: slug.replace(/-/g, "_"),
     icon: "🏷️",
-    defaultSort: "position",
+    defaultSort: "newest",
+    mode: "productTag",
+    tagValue: slug.replace(/-/g, " "),
   };
 
   const [products, setProducts] = useState([]);
@@ -193,7 +194,7 @@ export default function TagPageClient({ slug }) {
       try {
         let query = "limit=500";
 
-        if (config.mode !== "custom") {
+        if (config.mode !== "custom" && config.mode !== "productTag") {
           if (config.flag) query += `&flag=${encodeURIComponent(config.flag)}`;
           if (config.maxPrice != null)
             query += `&maxPrice=${encodeURIComponent(String(config.maxPrice))}`;
@@ -201,7 +202,16 @@ export default function TagPageClient({ slug }) {
 
         let items = [];
 
-        if (
+        if (config.mode === "productTag") {
+          const resp = await fetch(
+            `${API}/api/products?${query}&tag=${encodeURIComponent(config.tagValue)}`,
+          );
+          const json = await resp.json();
+          items = (json.items || []).map((p) => ({
+            ...p,
+            price: getDisplayPrice(p).price,
+          }));
+        } else if (
           config.mode !== "custom" &&
           Array.isArray(config.badgeAliases) &&
           config.badgeAliases.length > 0

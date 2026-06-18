@@ -28,7 +28,7 @@ export default function ProductCard({
   imageQuality = 100,
   showActionsOnHover = true,
   showDiscount = true,
-  maxTags = 2,
+  maxTags = 3,
   loading = false,
 }) {
   const router = useRouter();
@@ -69,8 +69,10 @@ export default function ProductCard({
   } = getDisplayPrice(product);
   const discountPct = showDiscount ? resolvedDiscount : null;
 
-  // badge config — priority order determines which 2 show first
+  // badge config — priority order determines which show first
   const BADGE_PRIORITY = [
+    "free_shipping",
+    "flash_sale",
     "hot",
     "best_seller",
     "new_arrival",
@@ -78,6 +80,9 @@ export default function ProductCard({
     "limited",
     "popular_pics",
     "deals_of_the_day",
+    "featured",
+    "clearance",
+    "coupon",
   ];
   const BADGE_MAP = {
     best_seller: { label: "Best Seller", cls: "bg-yellow-400 text-yellow-900" },
@@ -88,15 +93,30 @@ export default function ProductCard({
     popular_pics: { label: "Popular", cls: "bg-pink-500 text-white" },
     deals_of_the_day: { label: "Deal", cls: "bg-emerald-500 text-white" },
     free_shipping: { label: "Free Ship", cls: "bg-green-500 text-white" },
+    flash_sale: { label: "Flash Sale", cls: "bg-rose-600 text-white" },
+    featured: { label: "Featured", cls: "bg-indigo-500 text-white" },
+    clearance: { label: "Clearance", cls: "bg-amber-500 text-white" },
+    coupon: { label: "Coupon", cls: "bg-teal-500 text-white" },
   };
-  let sortedBadges = BADGE_PRIORITY.filter((b) =>
-    (product.badges || []).includes(b),
+
+  // collect active flag-based pseudo-badges
+  const flagBadges = [
+    product.freeShipping && "free_shipping",
+    product.flashSale && "flash_sale",
+    product.featured && "featured",
+    product.clearance && "clearance",
+    product.coupon && "coupon",
+  ].filter(Boolean);
+
+  // priority-sorted standard badges + flag badges
+  const prioritySorted = BADGE_PRIORITY.filter(
+    (b) => (product.badges || []).includes(b) || flagBadges.includes(b),
   );
-  if (product.freeShipping) {
-    // ensure free_shipping appears first
-    sortedBadges = ["free_shipping", ...sortedBadges];
-  }
-  const visibleTags = sortedBadges.slice(0, maxTags);
+  // append any custom badges not in BADGE_PRIORITY
+  const customBadges = (product.badges || []).filter(
+    (b) => !BADGE_PRIORITY.includes(b),
+  );
+  const visibleTags = [...prioritySorted, ...customBadges].slice(0, maxTags);
 
   // handle image navigation
   const images =
@@ -189,14 +209,20 @@ export default function ProductCard({
                   Pre-Order
                 </span>
               )}
-              {visibleTags.map((b) => (
-                <span
-                  key={b}
-                  className={`${BADGE_MAP[b].cls} text-[9px] font-bold px-1.5 py-0.5 rounded-sm leading-none`}
-                >
-                  {BADGE_MAP[b].label}
-                </span>
-              ))}
+              {visibleTags.map((b) => {
+                const badge = BADGE_MAP[b] || {
+                  label: b.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+                  cls: "bg-gray-700 text-white",
+                };
+                return (
+                  <span
+                    key={b}
+                    className={`${badge.cls} text-[9px] font-bold px-1.5 py-0.5 rounded-sm leading-none`}
+                  >
+                    {badge.label}
+                  </span>
+                );
+              })}
             </div>
           </div>
 

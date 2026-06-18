@@ -405,6 +405,10 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
   const tabProduct = { ...product, description };
   const topBadges = [
     ...(product.freeShipping ? ["free_shipping"] : []),
+    ...(product.flashSale ? ["flash_sale"] : []),
+    ...(product.featured ? ["featured"] : []),
+    ...(product.clearance ? ["clearance"] : []),
+    ...(product.coupon ? ["coupon"] : []),
     ...(product.badges || []).filter((b) => b !== "free_shipping"),
   ].slice(0, 3);
 
@@ -541,16 +545,35 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                         label: "🏷️ Deal of the Day",
                         cls: "bg-gradient-to-r from-green-200 to-green-300 text-green-800",
                       },
+                      flash_sale: {
+                        label: "⚡ Flash Sale",
+                        cls: "bg-gradient-to-r from-rose-200 to-rose-300 text-rose-800",
+                      },
+                      featured: {
+                        label: "🏅 Featured",
+                        cls: "bg-gradient-to-r from-indigo-200 to-indigo-300 text-indigo-800",
+                      },
+                      clearance: {
+                        label: "🏷️ Clearance",
+                        cls: "bg-gradient-to-r from-amber-200 to-amber-300 text-amber-800",
+                      },
+                      coupon: {
+                        label: "🎫 Coupon",
+                        cls: "bg-gradient-to-r from-teal-200 to-teal-300 text-teal-800",
+                      },
                     };
-                    const b = map[badge];
-                    return b ? (
+                    const b = map[badge] || {
+                      label: badge.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+                      cls: "bg-gradient-to-r from-gray-200 to-gray-300 text-gray-800",
+                    };
+                    return (
                       <span
                         key={badge}
                         className={`${b.cls} text-[10px] font-bold px-2 py-0.5 rounded`}
                       >
                         {b.label}
                       </span>
-                    ) : null;
+                    );
                   })}
                 </div>
               )}
@@ -774,9 +797,26 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
               </div>
             )}
             {tags.length > 0 && (
-              <div className="flex items-center gap-2">
-                <span className="text-gray-400 w-20 flex-shrink-0">Tags:</span>
-                <span className="text-gray-600">{tags.join(", ")}</span>
+              <div className="flex items-start gap-2">
+                <span className="text-gray-400 w-20 flex-shrink-0 pt-0.5">Tags:</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {tags.map((tag, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() =>
+                        router.push(
+                          `/tag/${encodeURIComponent(
+                            String(tag).toLowerCase().replace(/\s+/g, "-"),
+                          )}`,
+                        )
+                      }
+                      className="text-xs px-2.5 py-0.5 bg-gray-100 hover:bg-red-50 hover:text-red-600 text-gray-600 rounded-full border border-gray-200 hover:border-red-200 transition-colors cursor-pointer"
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
             <div className="flex items-center gap-2">

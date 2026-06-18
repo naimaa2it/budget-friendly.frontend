@@ -16,6 +16,7 @@ import PopupBanner from "@/components/ui/PopupBanner";
 import { getStoreName } from "@/lib/storeMeta";
 import { CompareProvider } from "@/components/context/CompareContext";
 import CompareBar from "@/components/product/CompareBar";
+import GlobalScrollFix from "@/components/ui/GlobalScrollFix";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://smartproductbuy.com";
@@ -146,6 +147,7 @@ export default async function RootLayout({ children }) {
             <CartProvider>
               <CategoryProvider>
                 <CompareProvider>
+                  <GlobalScrollFix />
                   <ScrollToTop />
                   <LayoutWrapper>{children}</LayoutWrapper>
                   {/* <FloatingWhatsApp /> */}

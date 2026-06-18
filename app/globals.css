@@ -77,6 +77,16 @@ body {
 
 
 
+/* Prevent mouse-wheel from spinning number inputs */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 /* NOTE: layout and component-specific styles should use Tailwind utility classes inline. */
 
 /* ensure hyperlinks in rich content are highlighted blue and underlined */

@@ -136,6 +136,8 @@ export default function ProductVariantBuilder({
   const [optionDrafts, setOptionDrafts] = useState({});
   const [newVariationName, setNewVariationName] = useState("");
   const [catalogLoading, setCatalogLoading] = useState(false);
+  const [editingGroup, setEditingGroup] = useState(null);
+  const [editingName, setEditingName] = useState("");
 
   useEffect(() => {
     let mounted = true;
@@ -326,6 +328,42 @@ export default function ProductVariantBuilder({
     setNewVariationName("");
   };
 
+  const renameVariation = (oldName, newName) => {
+    const trimmed = newName.trim();
+    if (!trimmed || trimmed === oldName) {
+      setEditingGroup(null);
+      return;
+    }
+    setCatalog((current) =>
+      current.map((group) =>
+        group.name === oldName ? { ...group, name: trimmed } : group,
+      ),
+    );
+    setSelectedNames((current) =>
+      current.map((name) => (name === oldName ? trimmed : name)),
+    );
+    setOptionDrafts((current) => {
+      const next = { ...current };
+      if (oldName in next) {
+        next[trimmed] = next[oldName];
+        delete next[oldName];
+      }
+      return next;
+    });
+    setProduct((prev) => ({
+      ...prev,
+      variants: (prev.variants || []).map((v) => {
+        const attrs = { ...(v.attributes || {}) };
+        if (oldName in attrs) {
+          attrs[trimmed] = attrs[oldName];
+          delete attrs[oldName];
+        }
+        return { ...v, attributes: attrs };
+      }),
+    }));
+    setEditingGroup(null);
+  };
+
   return (
     <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
       <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -398,21 +436,62 @@ export default function ProductVariantBuilder({
                     : "border-gray-200 bg-white"
                 }`}
               >
-                <label className="flex items-center justify-between gap-3">
-                  <span className="flex items-center gap-2 font-semibold text-gray-900">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="flex items-center gap-2 font-semibold text-gray-900 min-w-0 flex-1">
                     <input
                       type="checkbox"
                       checked={selected}
                       onChange={() => toggleVariation(group.name)}
-                      className="h-4 w-4"
+                      className="h-4 w-4 shrink-0"
                     />
-                    {group.name}
+                    {editingGroup === group.name ? (
+                      <span className="flex items-center gap-1 flex-1">
+                        <input
+                          autoFocus
+                          value={editingName}
+                          onChange={(e) => setEditingName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") renameVariation(group.name, editingName);
+                            if (e.key === "Escape") setEditingGroup(null);
+                          }}
+                          className="flex-1 rounded border border-indigo-300 px-2 py-0.5 text-sm font-semibold"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => renameVariation(group.name, editingName)}
+                          className="shrink-0 rounded bg-indigo-600 px-2 py-0.5 text-xs text-white hover:bg-indigo-700"
+                        >
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingGroup(null)}
+                          className="shrink-0 rounded border border-gray-300 px-2 py-0.5 text-xs text-gray-600 hover:bg-gray-50"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1.5 flex-1 min-w-0">
+                        <span className="truncate">{group.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => { setEditingGroup(group.name); setEditingName(group.name); }}
+                          className="shrink-0 text-gray-400 hover:text-indigo-600 transition-colors"
+                          title="Rename"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                          </svg>
+                        </button>
+                      </span>
+                    )}
                   </span>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-500 shrink-0">
                     {group.options.filter((option) => option.selected).length}{" "}
                     selected
                   </span>
-                </label>
+                </div>
 
                 {selected && (
                   <div className="mt-3 space-y-3">

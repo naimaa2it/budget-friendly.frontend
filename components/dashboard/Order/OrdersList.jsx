@@ -1579,6 +1579,7 @@ const TIMELINE_STATUS_STYLE = {
 function OrderTimelineSection() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [expandedOrders, setExpandedOrders] = useState(new Set());
   const [selectedCustomer, setSelectedCustomer] = useState(null);
 
   useEffect(() => {
@@ -1590,6 +1591,15 @@ function OrderTimelineSection() {
       .finally(() => setLoading(false));
   }, []);
 
+  const toggle = (orderId) => {
+    setExpandedOrders((prev) => {
+      const next = new Set(prev);
+      if (next.has(orderId)) next.delete(orderId);
+      else next.add(orderId);
+      return next;
+    });
+  };
+
   if (loading) return <div className="bg-white rounded-xl shadow-sm border py-20 text-center text-gray-400 text-sm">Loading timeline…</div>;
 
   if (!events.length) return (
@@ -1598,64 +1608,109 @@ function OrderTimelineSection() {
     </div>
   );
 
-  // Group by date
-  const groups = {};
+  // Group events by orderId, preserving order of first occurrence
+  const orderMap = {};
+  const orderKeys = [];
   for (const ev of events) {
-    const day = fmtDate(ev.at);
-    if (!groups[day]) groups[day] = [];
-    groups[day].push(ev);
+    if (!orderMap[ev.orderId]) {
+      orderMap[ev.orderId] = {
+        orderId: ev.orderId,
+        orderIdShort: ev.orderIdShort,
+        customerName: ev.customerName,
+        customerPhone: ev.customerPhone,
+        latestStatus: ev.newStatus,
+        latestAt: ev.at,
+        events: [],
+      };
+      orderKeys.push(ev.orderId);
+    }
+    orderMap[ev.orderId].events.push(ev);
   }
+  const orders = orderKeys.map((k) => orderMap[k]);
 
   return (
     <div className="bg-white rounded-xl shadow-sm border">
       <div className="px-5 py-4 border-b">
         <h2 className="text-base font-semibold text-gray-800">Order Timeline</h2>
-        <p className="text-xs text-gray-400 mt-0.5">Recent status changes across all orders</p>
+        <p className="text-xs text-gray-400 mt-0.5">Recent status changes across all orders — click an order to expand</p>
       </div>
-      <div className="px-5 py-4 space-y-6">
-        {Object.entries(groups).map(([day, dayEvents]) => (
-          <div key={day}>
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">{day}</p>
-            <div className="relative pl-6 space-y-4">
-              <div className="absolute left-1.5 top-0 bottom-0 w-px bg-gray-200" />
-              {dayEvents.map((ev, i) => (
-                <div key={i} className="relative flex items-start gap-3">
-                  <div className={`absolute -left-4.5 w-3 h-3 rounded-full mt-0.5 shrink-0 ${TIMELINE_STATUS_STYLE[ev.newStatus] || "bg-gray-300"}`} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Link href={`/dashboard/orders/${ev.orderId}`}
-                        className="font-mono text-xs text-rose-600 hover:underline bg-rose-50 px-1.5 py-0.5 rounded">
-                        #{ev.orderIdShort}
-                      </Link>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${STATUS_STYLE[ev.newStatus] || ""}`}>{ev.newStatus}</span>
-                      {ev.previousStatus && (
-                        <span className="text-xs text-gray-400">← {ev.previousStatus}</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-3 mt-0.5">
-                      {ev.customerName ? (
-                        <button
-                          type="button"
-                          className="text-xs text-gray-600 hover:text-indigo-600 hover:underline"
-                          onClick={() => setSelectedCustomer({ name: ev.customerName, phone: ev.customerPhone })}
-                        >
-                          {ev.customerName}{ev.customerPhone ? ` · ${ev.customerPhone}` : ""}
-                        </button>
-                      ) : (
-                        <p className="text-xs text-gray-600">{ev.customerPhone || ""}</p>
-                      )}
-                      <p className="text-xs text-gray-400 ml-auto">{new Date(ev.at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</p>
-                    </div>
-                    {ev.reason && <p className="text-xs text-gray-400 italic mt-0.5">"{ev.reason}"</p>}
-                    {ev.changedBy && ev.changedBy !== "system" && (
-                      <p className="text-xs text-gray-400">by {ev.changedBy}</p>
-                    )}
+      <div className="divide-y divide-gray-100">
+        {orders.map((order) => {
+          const isOpen = expandedOrders.has(order.orderId);
+          return (
+            <div key={order.orderId}>
+              <button
+                type="button"
+                onClick={() => toggle(order.orderId)}
+                className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50 transition text-left"
+              >
+                <svg
+                  className={`w-3.5 h-3.5 text-gray-400 shrink-0 transition-transform duration-150 ${isOpen ? "rotate-90" : ""}`}
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                >
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+                <span
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Link
+                    href={`/dashboard/orders/${order.orderId}`}
+                    className="font-mono text-xs text-rose-600 hover:underline bg-rose-50 px-1.5 py-0.5 rounded"
+                  >
+                    #{order.orderIdShort}
+                  </Link>
+                </span>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${STATUS_STYLE[order.latestStatus] || ""}`}>
+                  {order.latestStatus}
+                </span>
+                <span className="text-xs text-gray-600 flex-1 min-w-0 truncate">
+                  {order.customerName}{order.customerPhone ? ` · ${order.customerPhone}` : ""}
+                </span>
+                <span className="text-xs text-gray-300 shrink-0">
+                  {order.events.length} event{order.events.length !== 1 ? "s" : ""}
+                </span>
+                <span className="text-xs text-gray-400 shrink-0">{fmtDate(order.latestAt)}</span>
+              </button>
+
+              {isOpen && (
+                <div className="px-5 pb-4 pt-1 bg-gray-50/60">
+                  <div className="relative pl-6 space-y-3">
+                    <div className="absolute left-1.5 top-0 bottom-0 w-px bg-gray-200" />
+                    {order.events.map((ev, i) => (
+                      <div key={i} className="relative flex items-start gap-3">
+                        <div className={`absolute -left-4.5 w-3 h-3 rounded-full mt-0.5 shrink-0 ${TIMELINE_STATUS_STYLE[ev.newStatus] || "bg-gray-300"}`} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${STATUS_STYLE[ev.newStatus] || ""}`}>{ev.newStatus}</span>
+                            {ev.previousStatus && (
+                              <span className="text-xs text-gray-400">← {ev.previousStatus}</span>
+                            )}
+                            <span className="text-xs text-gray-400 ml-auto">
+                              {new Date(ev.at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+                            </span>
+                          </div>
+                          {ev.customerName && (
+                            <button
+                              type="button"
+                              className="text-xs text-gray-500 hover:text-indigo-600 hover:underline mt-0.5"
+                              onClick={() => setSelectedCustomer({ name: ev.customerName, phone: ev.customerPhone })}
+                            >
+                              {ev.customerName}{ev.customerPhone ? ` · ${ev.customerPhone}` : ""}
+                            </button>
+                          )}
+                          {ev.reason && <p className="text-xs text-gray-400 italic mt-0.5">"{ev.reason}"</p>}
+                          {ev.changedBy && ev.changedBy !== "system" && (
+                            <p className="text-xs text-gray-400">by {ev.changedBy}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       {selectedCustomer && (
         <OrderCustomerModal {...selectedCustomer} onClose={() => setSelectedCustomer(null)} />

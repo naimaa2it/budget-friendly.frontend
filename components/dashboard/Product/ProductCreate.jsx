@@ -169,7 +169,19 @@ export default function ProductCreate() {
     buyingPrice: undefined,
     price: undefined,
     compareAtPrice: undefined,
-    sku: "",
+    sku: (() => {
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      const rand = (n) =>
+        Array.from({ length: n }, () =>
+          chars[Math.floor(Math.random() * chars.length)],
+        ).join("");
+      const d = new Date();
+      const ymd =
+        String(d.getFullYear()).slice(-2) +
+        String(d.getMonth() + 1).padStart(2, "0") +
+        String(d.getDate()).padStart(2, "0");
+      return `SB-${ymd}-${rand(5)}`;
+    })(),
     barcode: "",
     inventory: undefined,
     availability: "in_stock",

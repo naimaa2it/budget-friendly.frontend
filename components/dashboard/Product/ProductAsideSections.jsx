@@ -32,6 +32,20 @@ export default function ProductAsideSections({
     status: "idle",
     message: "",
   });
+
+  const generateSku = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    const rand = (n) =>
+      Array.from({ length: n }, () =>
+        chars[Math.floor(Math.random() * chars.length)],
+      ).join("");
+    const date = new Date();
+    const ymd =
+      String(date.getFullYear()).slice(-2) +
+      String(date.getMonth() + 1).padStart(2, "0") +
+      String(date.getDate()).padStart(2, "0");
+    setProduct((p) => ({ ...p, sku: `SB-${ymd}-${rand(5)}` }));
+  };
   const promotionFlags = [
     {
       field: "featured",
@@ -470,8 +484,17 @@ export default function ProductAsideSections({
                 setProduct((p) => ({ ...p, sku: e.target.value }))
               }
               className={inputClass}
-              placeholder="ABC-123"
+              placeholder="SB-260618-AB12C"
             />
+            <div className="mt-2">
+              <button
+                type="button"
+                onClick={generateSku}
+                className="rounded-lg border border-indigo-300 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-50"
+              >
+                Generate SKU
+              </button>
+            </div>
           </div>
           <div>
             <label className={labelClass}>Barcode</label>

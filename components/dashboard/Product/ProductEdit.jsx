@@ -507,7 +507,19 @@ export default function ProductEdit({ productId }) {
           p.availability =
             p.availability || (p.inventory > 0 ? "in_stock" : "out_of_stock");
           p.department = p.department || "";
-          p.sku = p.sku || "";
+          if (!p.sku) {
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            const rand = (n) =>
+              Array.from({ length: n }, () =>
+                chars[Math.floor(Math.random() * chars.length)],
+              ).join("");
+            const d = new Date();
+            const ymd =
+              String(d.getFullYear()).slice(-2) +
+              String(d.getMonth() + 1).padStart(2, "0") +
+              String(d.getDate()).padStart(2, "0");
+            p.sku = `SB-${ymd}-${rand(5)}`;
+          }
           p.barcode = p.barcode || "";
           p.customization = p.customization || {
             customizable: false,

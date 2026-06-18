@@ -797,9 +797,9 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
               </div>
             )}
             {tags.length > 0 && (
-              <div className="flex items-start gap-2">
-                <span className="text-gray-400 w-20 flex-shrink-0 pt-0.5">Tags:</span>
-                <div className="flex flex-wrap gap-1.5">
+              <div className="flex items-center gap-2">
+                <span className="text-gray-400 w-20 flex-shrink-0">Tags:</span>
+                <div className="flex flex-wrap gap-x-2 gap-y-1">
                   {tags.map((tag, i) => (
                     <button
                       key={i}
@@ -811,9 +811,9 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                           )}`,
                         )
                       }
-                      className="text-xs px-2.5 py-0.5 bg-gray-100 hover:bg-red-50 hover:text-red-600 text-gray-600 rounded-full border border-gray-200 hover:border-red-200 transition-colors cursor-pointer"
+                      className="text-xs text-gray-500 hover:text-red-600 transition-colors cursor-pointer"
                     >
-                      {tag}
+                      #{tag}
                     </button>
                   ))}
                 </div>

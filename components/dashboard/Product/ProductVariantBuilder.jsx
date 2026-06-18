@@ -138,6 +138,8 @@ export default function ProductVariantBuilder({
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [editingGroup, setEditingGroup] = useState(null);
   const [editingName, setEditingName] = useState("");
+  const [editingOption, setEditingOption] = useState(null); // { groupName, optionId }
+  const [editingOptionValue, setEditingOptionValue] = useState("");
 
   useEffect(() => {
     let mounted = true;
@@ -364,6 +366,57 @@ export default function ProductVariantBuilder({
     setEditingGroup(null);
   };
 
+  const renameOption = (groupName, optionId, newValue) => {
+    const trimmed = newValue.trim();
+    const group = catalog.find((g) => g.name === groupName);
+    const option = group?.options.find((o) => o.id === optionId);
+    const oldValue = option?.value;
+    if (!trimmed || !oldValue || trimmed === oldValue) {
+      setEditingOption(null);
+      return;
+    }
+    setCatalog((current) =>
+      current.map((g) =>
+        g.name !== groupName
+          ? g
+          : {
+              ...g,
+              options: g.options.map((o) =>
+                o.id === optionId ? { ...o, value: trimmed } : o,
+              ),
+            },
+      ),
+    );
+    setProduct((prev) => ({
+      ...prev,
+      variants: (prev.variants || []).map((v) => {
+        const attrs = { ...(v.attributes || {}) };
+        let updated = { ...v };
+        if (attrs[groupName] === oldValue) {
+          attrs[groupName] = trimmed;
+          updated.attributes = attrs;
+        }
+        if (
+          groupName.toLowerCase() === "color" &&
+          v.color?.name?.toLowerCase() === oldValue.toLowerCase()
+        ) {
+          updated.color = { ...(v.color || {}), name: trimmed };
+        }
+        if (
+          groupName.toLowerCase() === "size" &&
+          v.size === oldValue
+        ) {
+          updated.size = trimmed;
+        }
+        if (v.name === titleFromAttributes(v.attributes || {})) {
+          updated.name = titleFromAttributes(updated.attributes || {});
+        }
+        return updated;
+      }),
+    }));
+    setEditingOption(null);
+  };
+
   return (
     <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
       <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -465,7 +518,7 @@ export default function ProductVariantBuilder({
                         </button>
                         <button
                           type="button"
-                          onClick={() => setEditingGroup(null)}
+                          onClick={(e) => { e.stopPropagation(); setEditingGroup(null); }}
                           className="shrink-0 rounded border border-gray-300 px-2 py-0.5 text-xs text-gray-600 hover:bg-gray-50"
                         >
                           ✕
@@ -496,24 +549,104 @@ export default function ProductVariantBuilder({
                 {selected && (
                   <div className="mt-3 space-y-3">
                     <div className="flex flex-wrap gap-2">
-                      {group.options.map((option) => (
-                        <label
-                          key={option.id}
-                          className={`inline-flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-sm ${
-                            option.selected
-                              ? "border-indigo-300 bg-white text-indigo-700"
-                              : "border-gray-200 bg-white text-gray-600"
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={!!option.selected}
-                            onChange={() => toggleOption(group.name, option.id)}
-                            className="h-3.5 w-3.5"
-                          />
-                          {option.value}
-                        </label>
-                      ))}
+                      {group.options.map((option) => {
+                        const isEditingThis =
+                          editingOption?.groupName === group.name &&
+                          editingOption?.optionId === option.id;
+                        if (isEditingThis) {
+                          return (
+                            <span
+                              key={option.id}
+                              className="inline-flex items-center gap-1 rounded-full border border-indigo-300 bg-white px-2 py-1"
+                            >
+                              <input
+                                autoFocus
+                                value={editingOptionValue}
+                                onChange={(e) =>
+                                  setEditingOptionValue(e.target.value)
+                                }
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter")
+                                    renameOption(
+                                      group.name,
+                                      option.id,
+                                      editingOptionValue,
+                                    );
+                                  if (e.key === "Escape")
+                                    setEditingOption(null);
+                                }}
+                                className="w-24 rounded border border-indigo-200 px-1.5 py-0.5 text-xs font-medium outline-none focus:ring-1 focus:ring-indigo-400"
+                              />
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  renameOption(
+                                    group.name,
+                                    option.id,
+                                    editingOptionValue,
+                                  )
+                                }
+                                className="rounded bg-indigo-600 px-1.5 py-0.5 text-[10px] text-white hover:bg-indigo-700"
+                              >
+                                ✓
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingOption(null);
+                                }}
+                                className="rounded border border-gray-300 px-1.5 py-0.5 text-[10px] text-gray-600 hover:bg-gray-50"
+                              >
+                                ✕
+                              </button>
+                            </span>
+                          );
+                        }
+                        return (
+                          <label
+                            key={option.id}
+                            className={`group/opt inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm ${
+                              option.selected
+                                ? "border-indigo-300 bg-white text-indigo-700"
+                                : "border-gray-200 bg-white text-gray-600"
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={!!option.selected}
+                              onChange={() =>
+                                toggleOption(group.name, option.id)
+                              }
+                              className="h-3.5 w-3.5"
+                            />
+                            {option.value}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setEditingOption({
+                                  groupName: group.name,
+                                  optionId: option.id,
+                                });
+                                setEditingOptionValue(option.value);
+                              }}
+                              className="opacity-0 group-hover/opt:opacity-100 text-gray-400 hover:text-indigo-600 transition-opacity ml-0.5"
+                              title="Rename option"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-3 w-3"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                              </svg>
+                            </button>
+                          </label>
+                        );
+                      })}
                     </div>
                     <div className="flex gap-2">
                       <input

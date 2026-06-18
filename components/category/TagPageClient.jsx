@@ -152,6 +152,7 @@ export default function TagPageClient({ slug }) {
     icon: "🏷️",
     defaultSort: "newest",
     mode: "productTag",
+    // try both space-separated and hyphenated forms; backend regex handles case
     tagValue: slug.replace(/-/g, " "),
   };
 
@@ -211,6 +212,17 @@ export default function TagPageClient({ slug }) {
             ...p,
             price: getDisplayPrice(p).price,
           }));
+          // fallback: try slug form (with hyphens) if no results
+          if (items.length === 0 && config.tagValue !== slug) {
+            const resp2 = await fetch(
+              `${API}/api/products?${query}&tag=${encodeURIComponent(slug)}`,
+            );
+            const json2 = await resp2.json();
+            items = (json2.items || []).map((p) => ({
+              ...p,
+              price: getDisplayPrice(p).price,
+            }));
+          }
         } else if (
           config.mode !== "custom" &&
           Array.isArray(config.badgeAliases) &&

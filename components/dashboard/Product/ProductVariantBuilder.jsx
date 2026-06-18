@@ -243,7 +243,6 @@ export default function ProductVariantBuilder({
             }
           : previous.color || { name: "", hex: "#000000" },
         size: sizeValue || previous.size || "",
-        sku: previous.sku || "",
         buyingPrice: previous.buyingPrice ?? product.buyingPrice,
         price: previous.price ?? product.price ?? undefined,
         compareAtPrice: previous.compareAtPrice ?? product.compareAtPrice,
@@ -698,7 +697,6 @@ export default function ProductVariantBuilder({
                 <thead className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   <tr>
                     <th className="px-3 py-3">Variant</th>
-                    <th className="px-3 py-3">SKU</th>
                     <th className="px-3 py-3">Buying Price</th>
                     <th className="px-3 py-3">Selling Price ✱</th>
                     <th className="px-3 py-3">MRP / Original Price</th>
@@ -728,16 +726,6 @@ export default function ProductVariantBuilder({
                             .map(([key, value]) => `${key}: ${value}`)
                             .join(" | ")}
                         </p>
-                      </td>
-                      <td className="px-3 py-3 align-top">
-                        <input
-                          value={variant.sku || ""}
-                          onChange={(e) =>
-                            updateVariant(index, { sku: e.target.value })
-                          }
-                          className="w-full rounded-lg border border-gray-300 px-3 py-2"
-                          placeholder="SKU"
-                        />
                       </td>
                       <td className="px-3 py-3 align-top">
                         <input

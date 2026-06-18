@@ -815,7 +815,6 @@ export default function ProductEdit({ productId }) {
           name: "",
           color: { name: "", hex: "#000000" },
           size: "",
-          sku: "",
           price: undefined,
           inventory: undefined,
           attributes: {},

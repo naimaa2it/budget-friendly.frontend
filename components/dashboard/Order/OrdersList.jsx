@@ -711,7 +711,7 @@ function ReturnsActionsMenu({ order, onAction, onDelete }) {
     return () => { cancelAnimationFrame(raf); window.removeEventListener("scroll", updatePos, true); window.removeEventListener("resize", updatePos); };
   }, [open, updatePos]);
 
-  const status = order.returnRequest?.status;
+  const status = order.returnRequest?.status ?? "pending";
 
   return (
     <div onClick={(e) => e.stopPropagation()}>
@@ -738,7 +738,7 @@ function ReturnsActionsMenu({ order, onAction, onDelete }) {
             {canDelete && (
               <>
                 <div className="my-1 border-t border-gray-100" />
-                <button type="button" onClick={() => { setOpen(false); onDelete(order._id); }} className="w-full text-left px-3 py-2 hover:bg-red-50 text-red-500">Remove Request</button>
+                <button type="button" onClick={() => { setOpen(false); onDelete(order._id); }} className="w-full text-left px-3 py-2 hover:bg-red-50 text-red-500">Remove</button>
               </>
             )}
           </div>
@@ -860,8 +860,8 @@ function ReturnsRefundsSection() {
         <div className="px-5 py-4 border-b flex flex-col gap-3">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="min-w-0">
-              <h2 className="text-base font-semibold text-gray-800">Returns & Refunds</h2>
-              <p className="text-xs text-gray-400 mt-0.5">Manage customer return requests and issue refunds</p>
+              <h2 className="text-base font-semibold text-gray-800">Returned Orders</h2>
+              <p className="text-xs text-gray-400 mt-0.5">Orders marked as returned — approve or reject each return</p>
             </div>
             <div className="sm:ml-auto flex items-center gap-2 shrink-0">
               <span className="text-xs text-gray-400">{total} request{total !== 1 ? "s" : ""}</span>
@@ -896,8 +896,8 @@ function ReturnsRefundsSection() {
         ) : orders.length === 0 ? (
           <div className="py-16 text-center">
             <div className="w-14 h-14 mx-auto rounded-2xl bg-gray-100 flex items-center justify-center text-3xl mb-3">↩</div>
-            <p className="text-sm font-medium text-gray-600">No return requests</p>
-            <p className="text-xs text-gray-400 mt-1">Create a return request manually or wait for customer submissions.</p>
+            <p className="text-sm font-medium text-gray-600">No returned orders</p>
+            <p className="text-xs text-gray-400 mt-1">Orders with status "returned" will appear here for processing.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -937,12 +937,12 @@ function ReturnsRefundsSection() {
                       {order.returnRequest?.status === "approved" ? `৳${(order.returnRequest.refundAmount || 0).toLocaleString()}` : "—"}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-block text-xs font-medium px-2 py-1 rounded-full capitalize ${RETURN_STATUS_STYLE[order.returnRequest?.status] || ""}`}>
-                        {order.returnRequest?.status || "—"}
+                      <span className={`inline-block text-xs font-medium px-2 py-1 rounded-full capitalize ${RETURN_STATUS_STYLE[order.returnRequest?.status ?? "pending"] || ""}`}>
+                        {order.returnRequest?.status ?? "pending"}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
-                      {order.returnRequest?.requestedAt ? fmtDate(order.returnRequest.requestedAt) : "—"}
+                      {order.returnRequest?.requestedAt ? fmtDate(order.returnRequest.requestedAt) : fmtDate(order.updatedAt || order.createdAt)}
                     </td>
                     <td className="px-4 py-3">
                       <ReturnsActionsMenu order={order} onAction={handleMenuAction} onDelete={handleDelete} />

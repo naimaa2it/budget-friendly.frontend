@@ -185,7 +185,11 @@ export const CartProvider = ({ children }) => {
 
   // Load wishlist from localStorage after mount (avoids SSR/client mismatch)
   useEffect(() => {
-    setWishlistItems(getStorageItem(WISHLIST_STORAGE_KEY, []));
+    const stored = getStorageItem(WISHLIST_STORAGE_KEY, []);
+    const clean = Array.isArray(stored)
+      ? stored.filter((id) => typeof id === "string" && id.length > 0)
+      : [];
+    setWishlistItems(clean);
     setWishlistHydrated(true);
   }, []);
 
@@ -328,6 +332,7 @@ export const CartProvider = ({ children }) => {
   const addToWishlist = useCallback(
     (product) => {
       const id = getId(product);
+      if (typeof id !== "string" || !id) return;
       setWishlistItems((prev) => {
         if (prev.includes(id)) return prev;
         return [...prev, id];

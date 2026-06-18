@@ -18,9 +18,12 @@ export default function WishlistPage({ embedded = false }) {
 
   // fetch product details for every id in wishlist
   useEffect(() => {
+    let cancelled = false;
+
     const load = async () => {
       if (wishlistItems.length === 0) {
         setProducts([]);
+        setLoading(false);
         return;
       }
       setLoading(true);
@@ -37,12 +40,16 @@ export default function WishlistPage({ embedded = false }) {
           }
         });
         const results = await Promise.all(proms);
-        setProducts(results.filter(Boolean));
+        if (!cancelled) {
+          setProducts(results.filter(Boolean));
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
+
     load();
+    return () => { cancelled = true; };
   }, [wishlistItems]);
 
   const getId = (p) => p._id || p.id;

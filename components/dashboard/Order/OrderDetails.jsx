@@ -19,6 +19,7 @@ const STATUS_STYLE = {
   processing: "bg-indigo-100 text-indigo-700",
   shipped: "bg-purple-100 text-purple-700",
   delivered: "bg-green-100 text-green-700",
+  returned: "bg-teal-100 text-teal-700",
   cancelled: "bg-gray-100 text-gray-600",
   failed: "bg-red-100 text-red-600",
 };
@@ -774,6 +775,7 @@ export default function OrderDetails({ orderId }) {
                   "processing",
                   "shipped",
                   "delivered",
+                  "returned",
                   "failed",
                   "cancelled",
                 ].map((s) => (

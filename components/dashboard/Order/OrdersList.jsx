@@ -49,6 +49,7 @@ const STATUS_STYLE = {
   processing: "bg-indigo-100 text-indigo-700",
   shipped: "bg-purple-100 text-purple-700",
   delivered: "bg-green-100 text-green-700",
+  returned: "bg-teal-100 text-teal-700",
   cancelled: "bg-gray-100 text-gray-600",
   failed: "bg-red-100 text-red-600",
 };
@@ -964,8 +965,8 @@ function ReturnsRefundsSection() {
 
 // ─── All Orders section ───────────────────────────────────────────────────────
 
-const ALL_ORDERS_TABS = ["all", "pending", "accepted", "confirmed", "delivered", "cancelled", "failed"];
-const ALL_ORDERS_LABELS = { all: "All", pending: "Pending", accepted: "Accepted", confirmed: "Confirmed", delivered: "Delivered", cancelled: "Cancelled", failed: "Failed" };
+const ALL_ORDERS_TABS = ["all", "pending", "accepted", "confirmed", "delivered", "rejected", "returned", "cancelled", "failed"];
+const ALL_ORDERS_LABELS = { all: "All", pending: "Pending", accepted: "Accepted", confirmed: "Confirmed", delivered: "Delivered", rejected: "Rejected", returned: "Returned", cancelled: "Cancelled", failed: "Failed" };
 
 function AllOrdersSection() {
   const router = useRouter();
@@ -1572,6 +1573,7 @@ const TIMELINE_STATUS_STYLE = {
   processing: "bg-indigo-500",
   shipped: "bg-purple-500",
   delivered: "bg-green-500",
+  returned: "bg-teal-500",
   cancelled: "bg-gray-400",
   failed: "bg-red-500",
 };

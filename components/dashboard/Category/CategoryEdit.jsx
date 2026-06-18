@@ -10,7 +10,7 @@ export default function CategoryEdit({ categoryId }) {
   const { user, refreshUser } = useUser();
   const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
-  const [category, setCategory] = useState({ name: '', parentId: '', order: 0, isActive: true, images: [] });
+  const [category, setCategory] = useState({ name: '', description: '', parentId: '', order: 0, isActive: true, images: [] });
   // helper to traverse tree by id
   const findNode = (nodes, id) => {
     if (!id) return null;
@@ -48,6 +48,7 @@ export default function CategoryEdit({ categoryId }) {
             parentIdVal = c.parent || '';
             setCategory({
               name: c.name || '',
+              description: c.description || '',
               parentId: parentIdVal,
               order: c.order || 0,
               isActive: typeof c.isActive === 'boolean' ? c.isActive : true,
@@ -144,7 +145,7 @@ export default function CategoryEdit({ categoryId }) {
       if (selectedSubSub) parentId = selectedSubSub;
       else if (selectedSub) parentId = selectedSub;
       else if (selectedMain) parentId = selectedMain;
-      const payload = { name: category.name, parentId: parentId || undefined, order: category.order, isActive: category.isActive };
+      const payload = { name: category.name, description: category.description || '', parentId: parentId || undefined, order: category.order, isActive: category.isActive };
       if (Array.isArray(category.images)) payload.images = category.images;
       const resp = await fetch(`${API}/api/admin/categories/${categoryId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) });
       const body = await resp.json();
@@ -171,6 +172,16 @@ export default function CategoryEdit({ categoryId }) {
           <div>
             <label className="block text-sm font-medium">Name</label>
             <input value={category.name} onChange={e => setCategory(c => ({ ...c, name: e.target.value }))} className="w-full border px-3 py-2 rounded" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium">Description <span className="text-gray-400 font-normal">(shown on category page)</span></label>
+            <textarea
+              value={category.description}
+              onChange={e => setCategory(c => ({ ...c, description: e.target.value }))}
+              className="w-full border px-3 py-2 rounded h-24 resize-none"
+              placeholder={`e.g. Browse our best ${category.name || 'products'} with fast delivery across Bangladesh.`}
+            />
           </div>
 
           <div>

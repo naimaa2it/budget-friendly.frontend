@@ -218,6 +218,7 @@ export default function CategoryManager() {
 // Create Main Category Modal
 function CreateMainModal({ API, onClose, onSuccess }) {
   const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
   const [images, setImages] = useState([]);
   const [saving, setSaving] = useState(false);
 
@@ -257,7 +258,7 @@ function CreateMainModal({ API, onClose, onSuccess }) {
     if (!name.trim()) return alert('Category name is required');
     setSaving(true);
     try {
-      const payload = { name: name.trim(), isActive: true };
+      const payload = { name: name.trim(), description: description.trim(), isActive: true };
       const uploadedImages = images.filter(i => !i.__local && !i.__tempId && i.public_id);
       if (uploadedImages.length > 0) {
         payload.images = uploadedImages;
@@ -294,6 +295,16 @@ function CreateMainModal({ API, onClose, onSuccess }) {
                 placeholder="Enter category name"
                 className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-100"
                 autoFocus
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Description <span className="text-gray-400 font-normal">(shown on category page)</span></label>
+              <textarea
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                placeholder={`e.g. Browse our best ${name || 'products'} with fast delivery across Bangladesh.`}
+                className="w-full border px-3 py-2 rounded h-20 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-100"
               />
             </div>
 
@@ -352,13 +363,14 @@ function CreateMainModal({ API, onClose, onSuccess }) {
 // Edit Category & Manage Children Modal
 function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
   const [name, setName] = useState(category.name);
+  const [description, setDescription] = useState(category.description || '');
   const [images, setImages] = useState(category.images || []);
   const [originalImages, setOriginalImages] = useState(category.images || []);
   const [children, setChildren] = useState(category.children || []);
   const [saving, setSaving] = useState(false);
-  
+
   // Batch add children
-  const [newChildren, setNewChildren] = useState([{ name: '', images: [] }]);
+  const [newChildren, setNewChildren] = useState([{ name: '', description: '', images: [] }]);
 
   const canAddChildren = category.level < 2; // Main (0) and Sub (1) can add children
 
@@ -424,7 +436,7 @@ function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
       const removedImageIds = originalImageIds.filter(id => !currentImageIds.includes(id));
       
       // Update parent category
-      const payload = { name: name.trim(), isActive: true };
+      const payload = { name: name.trim(), description: description.trim(), isActive: true };
       const uploadedImages = images.filter(i => !i.__local && !i.__tempId && i.public_id);
       payload.images = uploadedImages;
       
@@ -447,6 +459,7 @@ function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
         if (child.name.trim()) {
           const childPayload = {
             name: child.name.trim(),
+            description: (child.description || '').trim(),
             parentId: category._id,
             isActive: true
           };
@@ -499,6 +512,16 @@ function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
                 </div>
 
                 <div>
+                  <label className="block text-sm font-medium mb-2">Description <span className="text-gray-400 font-normal">(shown on category page)</span></label>
+                  <textarea
+                    value={description}
+                    onChange={e => setDescription(e.target.value)}
+                    placeholder={`e.g. Browse our best ${name || 'products'} with fast delivery across Bangladesh.`}
+                    className="w-full border px-3 py-2 rounded h-20 resize-none"
+                  />
+                </div>
+
+                <div>
                   <label className="block text-sm font-medium mb-2">Images</label>
                   <div className="flex gap-3 flex-wrap">
                     {images.map((img, idx) => (
@@ -541,7 +564,7 @@ function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
                     Add {category.level === 0 ? 'Subcategories' : 'Sub-Subcategories'}
                   </h4>
                   <button
-                    onClick={() => setNewChildren([...newChildren, { name: '', images: [] }])}
+                    onClick={() => setNewChildren([...newChildren, { name: '', description: '', images: [] }])}
                     className="text-sm px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
                   >
                     + Add Row
@@ -552,14 +575,22 @@ function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
                   {newChildren.map((child, idx) => (
                     <div key={idx} className="bg-white p-3 rounded border">
                       <div className="flex gap-3">
-                        <div className="flex-1">
+                        <div className="flex-1 space-y-2">
                           <input
                             value={child.name}
-                            onChange={e => setNewChildren(kids => kids.map((k, i) => 
+                            onChange={e => setNewChildren(kids => kids.map((k, i) =>
                               i === idx ? { ...k, name: e.target.value } : k
                             ))}
                             placeholder={`${category.level === 0 ? 'Subcategory' : 'Sub-subcategory'} name`}
                             className="w-full border px-3 py-2 rounded"
+                          />
+                          <textarea
+                            value={child.description || ''}
+                            onChange={e => setNewChildren(kids => kids.map((k, i) =>
+                              i === idx ? { ...k, description: e.target.value } : k
+                            ))}
+                            placeholder="Description (optional)"
+                            className="w-full border px-3 py-2 rounded h-16 resize-none text-sm"
                           />
                         </div>
                         

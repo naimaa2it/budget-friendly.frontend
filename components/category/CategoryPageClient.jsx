@@ -356,7 +356,7 @@ export default function CategoryPageClient({ slug }) {
         {/* Back button */}
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-4 transition"
+          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-2 transition"
         >
           <span className="text-xs">‹</span> Back
         </button>
@@ -389,7 +389,7 @@ export default function CategoryPageClient({ slug }) {
           <h1 className="text-2xl md:text-4xl font-bold text-gray-900">
             {category?.name || slug}
           </h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-gray-600 mt-2 max-w-4xl mx-auto">
             {category?.description || `Products for ${category?.name || slug}.`}
           </p>
         </div>

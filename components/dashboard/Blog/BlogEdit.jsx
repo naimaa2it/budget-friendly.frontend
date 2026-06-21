@@ -28,6 +28,9 @@ export default function BlogEdit({ postId }) {
   const [publishDate, setPublishDate] = useState("");
   const [readingTime, setReadingTime] = useState(5);
   const [status, setStatus] = useState("draft");
+  const [seoTitle, setSeoTitle] = useState("");
+  const [seoDescription, setSeoDescription] = useState("");
+  const [seoKeywords, setSeoKeywords] = useState("");
   const [saving, setSaving] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
   const editorRef = useRef(null);
@@ -216,6 +219,9 @@ export default function BlogEdit({ postId }) {
           );
           setReadingTime(b.post.readingTime || 5);
           setStatus(b.post.status || "draft");
+          setSeoTitle(b.post.seo?.title || "");
+          setSeoDescription(b.post.seo?.description || "");
+          setSeoKeywords((b.post.seo?.keywords || []).join(", "));
         }
       })
       .catch(console.error);
@@ -259,6 +265,14 @@ export default function BlogEdit({ postId }) {
         publishDate: publishDate || null,
         readingTime: readingTime || 5,
         status: publish ? "published" : status || "draft",
+        seo: {
+          title: seoTitle.trim(),
+          description: seoDescription.trim(),
+          keywords: seoKeywords
+            .split(",")
+            .map((k) => k.trim())
+            .filter(Boolean),
+        },
       };
       const method = "PUT";
       const resp = await fetch(`${API}/api/admin/blog/${postId}`, {
@@ -551,6 +565,53 @@ export default function BlogEdit({ postId }) {
           sections={dynamicSections}
           onChange={setDynamicSections}
         />
+      </div>
+
+      {/* SEO */}
+      <div className="mb-6 p-4 border rounded-lg bg-gray-50">
+        <h3 className="text-sm font-semibold mb-3">SEO</h3>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              SEO Title <span className="text-gray-400">(leave blank to use post title)</span>
+            </label>
+            <input
+              type="text"
+              value={seoTitle}
+              onChange={(e) => setSeoTitle(e.target.value)}
+              maxLength={70}
+              placeholder="Custom SEO title (max 70 chars)"
+              className="w-full border rounded px-3 py-1.5 text-sm"
+            />
+            <p className="text-xs text-gray-400 mt-0.5">{seoTitle.length}/70</p>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              Meta Description <span className="text-gray-400">(leave blank to use excerpt)</span>
+            </label>
+            <textarea
+              value={seoDescription}
+              onChange={(e) => setSeoDescription(e.target.value)}
+              maxLength={160}
+              rows={2}
+              placeholder="Meta description (max 160 chars)"
+              className="w-full border rounded px-3 py-1.5 text-sm resize-none"
+            />
+            <p className="text-xs text-gray-400 mt-0.5">{seoDescription.length}/160</p>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              Keywords <span className="text-gray-400">(comma-separated)</span>
+            </label>
+            <input
+              type="text"
+              value={seoKeywords}
+              onChange={(e) => setSeoKeywords(e.target.value)}
+              placeholder="e.g. smartphone, gadget, best price"
+              className="w-full border rounded px-3 py-1.5 text-sm"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Action Buttons */}

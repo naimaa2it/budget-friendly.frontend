@@ -271,41 +271,61 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
     };
   }, [product]);
 
-  // Update document title, meta description, and canonical link client-side —
-  // the static export can't know the product at build time, so the shell HTML
-  // ships generic placeholders that we replace once the real data loads.
+  // Update document title, meta tags, and canonical link client-side.
+  // For __placeholder__ pages (new products added after build), this ensures
+  // Google sees real metadata on its JS-rendering pass.
   useEffect(() => {
     if (!product) return;
-    const prevTitle = document.title;
-    document.title = `${product.title} | SmartBuy BD`;
-
-    const descContent =
-      typeof product.description === "string"
-        ? product.description.slice(0, 160)
-        : `Buy ${product.title} at SmartBuy BD. Best price, fast delivery across Bangladesh.`;
-    let metaDesc = document.querySelector('meta[name="description"]');
-    const prevDesc = metaDesc?.getAttribute("content");
-    if (!metaDesc) {
-      metaDesc = document.createElement("meta");
-      metaDesc.setAttribute("name", "description");
-      document.head.appendChild(metaDesc);
-    }
-    metaDesc.setAttribute("content", descContent);
 
     const SITE_URL =
       process.env.NEXT_PUBLIC_SITE_URL || "https://smartproductbuy.com";
+
+    const seoTitle = product.seo?.title || product.title;
+    const seoDesc =
+      product.seo?.description ||
+      (typeof product.description === "string"
+        ? product.description.replace(/<[^>]*>/g, "").slice(0, 160)
+        : `Buy ${product.title} at SmartBuy BD. Best price, fast delivery across Bangladesh.`);
+    const seoKeywords = (product.seo?.keywords || []).join(", ");
+    const seoImage =
+      product.images?.[0]?.url || `${SITE_URL}/mainLogo.png`;
+    const productUrl = `${SITE_URL}/product/${product._id}`;
+
+    const prevTitle = document.title;
+    document.title = `${seoTitle} | SmartBuy BD`;
+
+    const setMeta = (selector, attr, value) => {
+      let el = document.querySelector(selector);
+      if (!el) {
+        el = document.createElement("meta");
+        const [attrName, attrVal] = selector.match(/\[([^=]+)="([^"]+)"\]/)?.slice(1) || [];
+        if (attrName) el.setAttribute(attrName, attrVal);
+        document.head.appendChild(el);
+      }
+      el.setAttribute(attr, value);
+    };
+
+    setMeta('meta[name="description"]', "content", seoDesc);
+    if (seoKeywords) setMeta('meta[name="keywords"]', "content", seoKeywords);
+    setMeta('meta[property="og:title"]', "content", `${seoTitle} | SmartBuy BD`);
+    setMeta('meta[property="og:description"]', "content", seoDesc);
+    setMeta('meta[property="og:image"]', "content", seoImage);
+    setMeta('meta[property="og:url"]', "content", productUrl);
+    setMeta('meta[property="og:type"]', "content", "website");
+    setMeta('meta[name="twitter:title"]', "content", `${seoTitle} | SmartBuy BD`);
+    setMeta('meta[name="twitter:description"]', "content", seoDesc);
+    setMeta('meta[name="twitter:image"]', "content", seoImage);
+
     let canonical = document.querySelector('link[rel="canonical"]');
     if (!canonical) {
       canonical = document.createElement("link");
       canonical.setAttribute("rel", "canonical");
       document.head.appendChild(canonical);
     }
-    canonical.setAttribute("href", `${SITE_URL}/product/${product._id}`);
+    canonical.setAttribute("href", productUrl);
 
     return () => {
       document.title = prevTitle;
-      if (metaDesc && prevDesc !== undefined)
-        metaDesc.setAttribute("content", prevDesc || "");
     };
   }, [product]);
 

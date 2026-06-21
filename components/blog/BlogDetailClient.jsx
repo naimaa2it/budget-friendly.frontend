@@ -147,48 +147,70 @@ export default function BlogDetailClient({ slug }) {
     fetchBlog();
   }, [slug]);
 
-  // Update document title, meta description, canonical link, and inject
-  // BlogPosting JSON-LD client-side — the static export ships a generic
-  // placeholder shell, so we patch in the real values once data loads.
+  // Update document title, meta tags, canonical link, and inject BlogPosting
+  // JSON-LD client-side — for __placeholder__ pages (new posts added after
+  // build), this ensures Google sees real metadata on its JS-rendering pass.
   useEffect(() => {
     if (!blog) return;
-    const prevTitle = document.title;
-    document.title = `${blog.title} | SmartBuy BD`;
-
-    const descContent =
-      blog.excerpt || truncateText(blog.content?.replace(/<[^>]*>/g, ""), 160) ||
-      `Read ${blog.title} on the SmartBuy BD blog.`;
-    let metaDesc = document.querySelector('meta[name="description"]');
-    const prevDesc = metaDesc?.getAttribute("content");
-    if (!metaDesc) {
-      metaDesc = document.createElement("meta");
-      metaDesc.setAttribute("name", "description");
-      document.head.appendChild(metaDesc);
-    }
-    metaDesc.setAttribute("content", descContent);
 
     const SITE_URL =
       process.env.NEXT_PUBLIC_SITE_URL || "https://smartproductbuy.com";
+
+    const seoTitle = blog.seo?.title || blog.title;
+    const seoDesc =
+      blog.seo?.description ||
+      blog.excerpt ||
+      truncateText(blog.content?.replace(/<[^>]*>/g, ""), 160) ||
+      `Read ${blog.title} on the SmartBuy BD blog.`;
+    const seoKeywords = (blog.seo?.keywords || blog.tags || []).join(", ");
+    const imageUrl = getImageUrl(blog.featuredImage, blog.thumbnail);
+    const seoImage = imageUrl || `${SITE_URL}/mainLogo.png`;
+    const blogUrl = `${SITE_URL}/blog/${slug}`;
+
+    const prevTitle = document.title;
+    document.title = `${seoTitle} | SmartBuy BD`;
+
+    const setMeta = (selector, attr, value) => {
+      let el = document.querySelector(selector);
+      if (!el) {
+        el = document.createElement("meta");
+        const match = selector.match(/\[([^=]+)="([^"]+)"\]/);
+        if (match) el.setAttribute(match[1], match[2]);
+        document.head.appendChild(el);
+      }
+      el.setAttribute(attr, value);
+    };
+
+    setMeta('meta[name="description"]', "content", seoDesc);
+    if (seoKeywords) setMeta('meta[name="keywords"]', "content", seoKeywords);
+    setMeta('meta[property="og:title"]', "content", `${seoTitle} | SmartBuy BD`);
+    setMeta('meta[property="og:description"]', "content", seoDesc);
+    setMeta('meta[property="og:image"]', "content", seoImage);
+    setMeta('meta[property="og:url"]', "content", blogUrl);
+    setMeta('meta[property="og:type"]', "content", "article");
+    setMeta('meta[name="twitter:title"]', "content", `${seoTitle} | SmartBuy BD`);
+    setMeta('meta[name="twitter:description"]', "content", seoDesc);
+    setMeta('meta[name="twitter:image"]', "content", seoImage);
+
     let canonical = document.querySelector('link[rel="canonical"]');
     if (!canonical) {
       canonical = document.createElement("link");
       canonical.setAttribute("rel", "canonical");
       document.head.appendChild(canonical);
     }
-    canonical.setAttribute("href", `${SITE_URL}/blog/${slug}`);
+    canonical.setAttribute("href", blogUrl);
 
-    const imageUrl = getImageUrl(blog.featuredImage, blog.thumbnail);
     const schema = {
       "@context": "https://schema.org",
       "@type": "BlogPosting",
-      headline: blog.title,
-      description: descContent,
+      headline: seoTitle,
+      description: seoDesc,
       image: imageUrl ? [imageUrl] : undefined,
       datePublished: blog.publishedAt || blog.publishDate || blog.createdAt,
       dateModified: blog.updatedAt || blog.publishedAt || blog.createdAt,
       author: { "@type": "Organization", name: "SmartBuy BD" },
       publisher: { "@type": "Organization", name: "SmartBuy BD" },
-      mainEntityOfPage: `${SITE_URL}/blog/${slug}`,
+      mainEntityOfPage: blogUrl,
     };
     const existing = document.getElementById("blog-jsonld");
     if (existing) existing.remove();
@@ -200,7 +222,6 @@ export default function BlogDetailClient({ slug }) {
 
     return () => {
       document.title = prevTitle;
-      if (metaDesc && prevDesc !== undefined) metaDesc.setAttribute("content", prevDesc || "");
       script.remove();
     };
   }, [blog, slug]);

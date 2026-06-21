@@ -56,11 +56,15 @@ export default function SettingsForm() {
         credentials: "include",
         body: JSON.stringify({ websiteLogo: logoValue }),
       });
-      if (!r.ok) throw new Error("Save failed");
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({}));
+        throw new Error(body.error || `Server error (${r.status})`);
+      }
       setLogoStatus("saved");
       setTimeout(() => setLogoStatus(""), 2500);
-    } catch {
-      setLogoStatus("error");
+    } catch (err) {
+      console.error("saveLogo failed:", err);
+      setLogoStatus(err.message || "error");
     }
   };
 
@@ -187,15 +191,13 @@ export default function SettingsForm() {
                 >
                   Select from Media
                 </button>
-                {user?.role === "admin" && (
-                  <button
-                    type="button"
-                    onClick={handleDeleteLogo}
-                    className="px-3 py-1.5 border rounded text-sm text-red-600 border-red-200 bg-white hover:bg-red-50"
-                  >
-                    Delete Logo
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={handleDeleteLogo}
+                  className="px-3 py-1.5 border rounded text-sm text-red-600 border-red-200 bg-white hover:bg-red-50"
+                >
+                  Delete Logo
+                </button>
               </div>
             </div>
             <p className="mt-2 text-xs text-gray-500">
@@ -205,8 +207,8 @@ export default function SettingsForm() {
               {logoStatus === "saved" && (
                 <span className="text-green-600">Logo saved!</span>
               )}
-              {logoStatus === "error" && (
-                <span className="text-red-600">Failed to save logo.</span>
+              {logoStatus && logoStatus !== "saving" && logoStatus !== "saved" && (
+                <span className="text-red-600">Failed to save logo: {logoStatus}</span>
               )}
               {!logoStatus &&
                 "Upload/change/delete logo here. Changes apply to the website immediately."}
@@ -358,22 +360,13 @@ export default function SettingsForm() {
       </div>
 
       <div className="mt-6 flex gap-3">
-        {user?.role === "admin" ? (
-          <button
-            onClick={handleSave}
-            className="px-4 py-2 bg-indigo-600 text-white rounded"
-            disabled={saving}
-          >
-            {saving ? "Saving…" : "Save settings"}
-          </button>
-        ) : (
-          <button
-            className="px-4 py-2 border rounded bg-gray-50 text-gray-500"
-            disabled
-          >
-            Read-only
-          </button>
-        )}
+        <button
+          onClick={handleSave}
+          className="px-4 py-2 bg-indigo-600 text-white rounded"
+          disabled={saving}
+        >
+          {saving ? "Saving…" : "Save settings"}
+        </button>
         <button
           onClick={() => window.location.reload()}
           className="px-4 py-2 border rounded"
@@ -383,8 +376,7 @@ export default function SettingsForm() {
       </div>
 
       <div className="mt-6 text-xs text-gray-500">
-        Only admins can update store settings. Payment provider secrets should
-        be stored in environment variables for production.
+        Payment provider secrets should be stored in environment variables for production.
       </div>
 
       <MediaPicker

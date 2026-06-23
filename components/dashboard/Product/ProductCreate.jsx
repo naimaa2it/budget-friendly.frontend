@@ -634,6 +634,7 @@ export default function ProductCreate() {
     try {
       const fd = new FormData();
       fd.append("file", file);
+      fd.append("folder", "SmartBuyBD/products");
       const resp = await fetch(`${API}/api/admin/upload`, {
         method: "POST",
         body: fd,

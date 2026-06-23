@@ -230,6 +230,7 @@ function CreateMainModal({ API, onClose, onSuccess }) {
     try {
       const fd = new FormData();
       fd.append('file', file);
+      fd.append('folder', 'SmartBuyBD/categories');
       const resp = await fetch(`${API}/api/admin/upload`, {
         method: 'POST',
         body: fd,
@@ -237,7 +238,7 @@ function CreateMainModal({ API, onClose, onSuccess }) {
       });
       const body = await resp.json();
       if (!resp.ok) throw new Error(body.error || 'Upload failed');
-      
+
       const asset = {
         public_id: body.asset.public_id,
         url: body.asset.url,
@@ -389,6 +390,7 @@ function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
     try {
       const fd = new FormData();
       fd.append('file', file);
+      fd.append('folder', 'SmartBuyBD/categories');
       const resp = await fetch(`${API}/api/admin/upload`, {
         method: 'POST',
         body: fd,
@@ -396,7 +398,7 @@ function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
       });
       const body = await resp.json();
       if (!resp.ok) throw new Error(body.error);
-      
+
       const asset = {
         public_id: body.asset.public_id,
         url: body.asset.url,

@@ -74,6 +74,7 @@ export default function SettingsForm() {
     try {
       const fd = new FormData();
       fd.append("file", file);
+      fd.append("folder", "SmartBuyBD/settings");
       const r = await fetch(`${API}/api/admin/upload`, {
         method: "POST",
         credentials: "include",

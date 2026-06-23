@@ -123,6 +123,7 @@ export default function CategoryEdit({ categoryId }) {
     try {
       const fd = new FormData();
       fd.append('file', file);
+      fd.append('folder', 'SmartBuyBD/categories');
       const resp = await fetch(`${API}/api/admin/upload`, { method: 'POST', body: fd, credentials: 'include' });
       const body = await resp.json();
       if (!resp.ok) throw new Error(body.error || 'Upload failed');

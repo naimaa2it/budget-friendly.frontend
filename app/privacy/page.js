@@ -1,5 +1,5 @@
 import PolicySidebar from "@/components/Policy/Sidebar";
-import { siteTitle, getStoreName } from "@/lib/storeMeta";
+import { siteTitle, getStoreName, getPolicyContent } from "@/lib/storeMeta";
 
 export async function generateMetadata() {
   const [title, storeName] = await Promise.all([
@@ -13,56 +13,47 @@ export async function generateMetadata() {
 }
 
 export default async function PrivacyPage() {
-  const storeName = await getStoreName();
+  const [storeName, policyContent] = await Promise.all([
+    getStoreName(),
+    getPolicyContent(),
+  ]);
+  const sections = policyContent?.privacy || [];
+
   return (
     <main className="max-w-7xl mx-auto px-2 py-16 grid grid-cols-1 md:grid-cols-4 gap-8">
       <aside className="md:col-span-1">
         <PolicySidebar />
       </aside>
-      <div className="md:col-span-3 space-y-6 text-gray-600 text-sm leading-relaxed">
-        <h1 className="text-3xl font-bold mb-6">Privacy Policy</h1>
-        <p>
-          {storeName} (&quot;we&quot;, &quot;us&quot;) is committed to
-          protecting your personal information. This policy explains what data
-          we collect, how we use it, and your rights.
-        </p>
-        <section>
-          <h2 className="text-base font-semibold text-gray-800 mb-1">
-            Data We Collect
-          </h2>
-          <p>
-            Name, email, delivery address, and order history when you create an
-            account or place an order. We also collect usage data (pages
-            visited, clicks) to improve the site.
-          </p>
-        </section>
-        <section>
-          <h2 className="text-base font-semibold text-gray-800 mb-1">
-            How We Use Your Data
-          </h2>
-          <p>
-            To fulfil orders, send transactional emails, and personalise your
-            shopping experience. We never sell your data to third parties.
-          </p>
-        </section>
-        <section>
-          <h2 className="text-base font-semibold text-gray-800 mb-1">
-            Cookies
-          </h2>
-          <p>
-            We use essential cookies for authentication and preference storage.
-            Analytics cookies require your consent.
-          </p>
-        </section>
-        <section>
-          <h2 className="text-base font-semibold text-gray-800 mb-1">
-            Your Rights
-          </h2>
-          <p>
-            You may request access, correction, or deletion of your personal
-            data at any time by contacting our support team.
-          </p>
-        </section>
+      <div className="md:col-span-3">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-purple-100 text-purple-600">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">গোপনীয়তা নীতি</h1>
+            <p className="text-xs text-gray-500">আপনার তথ্য সুরক্ষায় আমরা প্রতিশ্রুতিবদ্ধ</p>
+          </div>
+        </div>
+
+        {sections.length > 0 ? (
+          <>
+            <p className="text-sm text-gray-600 mb-6 leading-relaxed">
+              {storeName} আপনার ব্যক্তিগত তথ্য সুরক্ষায় প্রতিশ্রুতিবদ্ধ।
+            </p>
+            <div className="space-y-6">
+              {sections.map((sec, i) => (
+                <section key={i} className="border-l-4 border-purple-200 pl-4">
+                  <h2 className="text-base font-semibold text-gray-800 mb-2">{sec.heading}</h2>
+                  <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{sec.content}</p>
+                </section>
+              ))}
+            </div>
+          </>
+        ) : (
+          <p className="text-sm text-gray-400">কোনো তথ্য পাওয়া যায়নি।</p>
+        )}
       </div>
     </main>
   );

@@ -1,30 +1,31 @@
 "use client";
 
-import React from 'react';
 import Accordion from './Accordion';
-
-const shippingItems = [
-  { question: 'What is the shipping charge refund policy?', answer: '' },
-  { question: 'What is the delivery time?', answer: '' },
-  { question: 'Can I change the delivery address after placing the order?', answer: '' },
-  { question: 'Can I pay through bKash after receiving the product?', answer: '' },
-  { question: 'Can I get Express Delivery with all the products if I pay an extra Delivery Charge?', answer: '' },
-  { question: 'Can I collect a product delivery from your Pickup Point ?', answer: '' },
-  { question: 'Does Pickaboo deliver internationally?', answer: '' },
-  { question: 'How can I get Delivery Outside Dhaka?', answer: '' },
-  { question: 'Can I get Home Delivery Outside Dhaka?', answer: '' },
-  { question: 'What is Click & Collect ?', answer: '' },
-  { question: 'What is the Delivery Charge?', answer: '' },
-  { question: 'What is Express Delivery & How Does it Work?', answer: '' },
-  { question: 'What Happens if I Miss the Delivery?', answer: '' },
-  { question: 'Can I check the product before making the payment?', answer: '' },
-  { question: '90-Minute Delivery: Terms & Conditions', answer: '' },
-  { question: 'How does the delivery process work?', answer: 'Once our system processes your order, your products are inspected thoroughly to ensure they are in a perfect condition. After they pass through the final round of quality check, they are packed and handed over to our trusted delivery partner. Our delivery partners then bring the package to you at the earliest possibility. In case, they are unable to reach your provided address or at a suitable time, they will contact you to resolve the issue.' },
-  { question: 'How are items packaged?', answer: 'We package our products in cardboard boxes with your invoice wrapped with along with it. Fragile items like bottles are safely secured with additional bubble wrap.' },
-  { question: 'What are the delivery charges?', answer: 'Inside and outside Dhaka: 69 BDT for less than 1599 tk purchase. Free delivery over 1599 tk.' },
-  { question: 'What is the estimated delivery time?', answer: 'Inside Dhaka and Chittagong: 1-2 working days. Outside Dhaka: 4-5 working days. However, the delivery might be delayed based on political, environmental, transportation, or any other unavoidable issues which will be notified by our customer relationship team.' },
-];
+import { useStoreSettings } from '@/components/context/StoreSettingsContext';
 
 export default function ShippingAccordion() {
-  return <Accordion items={shippingItems} />;
+  const { policyContent } = useStoreSettings();
+  const items = policyContent?.shipping || [];
+
+  return (
+    <div>
+      <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-orange-100 text-orange-500">
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2 .001M13 16l2 .001M13 16H9m4 0h2m0 0h2a1 1 0 001-1v-5l-3-4H9" />
+          </svg>
+        </div>
+        <div>
+          <h2 className="text-lg font-bold text-gray-800">শিপিং ও ডেলিভারি</h2>
+          <p className="text-xs text-gray-500">সারাবাংলাদেশে দ্রুত ও নিরাপদ ডেলিভারি</p>
+        </div>
+      </div>
+      {items.length > 0 ? (
+        <Accordion items={items} />
+      ) : (
+        <p className="text-sm text-gray-400">কোনো তথ্য পাওয়া যায়নি।</p>
+      )}
+    </div>
+  );
 }

@@ -148,18 +148,28 @@ export default function CartSidebar() {
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-2">
                     {thumb && (
-                      <Image
-                        src={encodeURI(thumb)}
-                        alt={product.title || product.name}
-                        width={48}
-                        height={48}
-                        className="object-contain"
-                      />
+                      <a
+                        href={`/product/${product._id}`}
+                        onClick={toggleSidebar}
+                        className="shrink-0"
+                      >
+                        <Image
+                          src={encodeURI(thumb)}
+                          alt={product.title || product.name}
+                          width={48}
+                          height={48}
+                          className="object-contain hover:opacity-80 transition-opacity"
+                        />
+                      </a>
                     )}
                     <div>
-                      <p className="font-medium text-sm">
+                      <a
+                        href={`/product/${product._id}`}
+                        onClick={toggleSidebar}
+                        className="font-medium text-sm hover:text-red-600 transition-colors line-clamp-2"
+                      >
                         {product.title || product.name}
-                      </p>
+                      </a>
                       {selectedColor || selectedSize ? (
                         <div className="flex items-center gap-1 mt-0.5 flex-wrap">
                           {selectedColor && (

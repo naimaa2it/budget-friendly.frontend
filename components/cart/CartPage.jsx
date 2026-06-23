@@ -227,20 +227,24 @@ export default function CartPage() {
                 <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6 relative">
                   {/* Product Image */}
                   <div className="shrink-0 self-start">
-                    <Image
-                      src={encodeURI(image)}
-                      alt={title}
-                      width={84}
-                      height={84}
-                      className="object-contain rounded w-[84px] h-[84px] md:w-[100px] md:h-[100px]"
-                    />
+                    <a href={`/product/${product._id}`} className="block">
+                      <Image
+                        src={encodeURI(image)}
+                        alt={title}
+                        width={84}
+                        height={84}
+                        className="object-contain rounded w-21 h-21 md:w-25 md:h-25 hover:opacity-80 transition-opacity"
+                      />
+                    </a>
                   </div>
 
                   {/* Product Details */}
                   <div className="flex-1">
-                    <h3 className="text-base md:text-lg font-semibold mb-1 pr-10 md:pr-0">
-                      {title}
-                    </h3>
+                    <a href={`/product/${product._id}`} className="block">
+                      <h3 className="text-base md:text-lg font-semibold mb-1 pr-10 md:pr-0 hover:text-red-600 transition-colors">
+                        {title}
+                      </h3>
+                    </a>
 
                     {/* Variant display with color swatch */}
                     {selectedColor || selectedSize ? (

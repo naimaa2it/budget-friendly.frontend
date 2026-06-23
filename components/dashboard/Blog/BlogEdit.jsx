@@ -573,7 +573,10 @@ export default function BlogEdit({ postId }) {
         <div className="space-y-3">
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
-              SEO Title <span className="text-gray-400">(leave blank to use post title)</span>
+              SEO Title{" "}
+              <span className="text-gray-400">
+                (leave blank to use post title)
+              </span>
             </label>
             <input
               type="text"
@@ -587,7 +590,10 @@ export default function BlogEdit({ postId }) {
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
-              Meta Description <span className="text-gray-400">(leave blank to use excerpt)</span>
+              Meta Description{" "}
+              <span className="text-gray-400">
+                (leave blank to use excerpt)
+              </span>
             </label>
             <textarea
               value={seoDescription}
@@ -597,7 +603,9 @@ export default function BlogEdit({ postId }) {
               placeholder="Meta description (max 160 chars)"
               className="w-full border rounded px-3 py-1.5 text-sm resize-none"
             />
-            <p className="text-xs text-gray-400 mt-0.5">{seoDescription.length}/160</p>
+            <p className="text-xs text-gray-400 mt-0.5">
+              {seoDescription.length}/160
+            </p>
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">

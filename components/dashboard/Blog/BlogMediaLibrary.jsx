@@ -13,7 +13,7 @@ export default function BlogMediaLibrary({
 
   const [items, setItems] = useState([]);
   const [folders, setFolders] = useState([]);
-  const [folder, setFolder] = useState("SmartBuyBD/blog"); // Default to blog folder
+  const [folder, setFolder] = useState("SmartBuyBD/blog");
   const [q, setQ] = useState("");
   const [nextCursor, setNextCursor] = useState(null);
   const [loading, setLoading] = useState(false);

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import React from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -138,14 +139,10 @@ export default function ProductCard({
     product.availability === "out_of_stock" || product.inventory === 0;
   const href = `/product/${id}`;
 
-  const handleCardClick = () => {
-    router.push(href);
-  };
-
   return (
     <>
-      <div
-        onClick={handleCardClick}
+      <Link
+        href={href}
         className="bg-white border border-[#F1E4D8] rounded-xl shadow-sm group hover:shadow-xl transition-all duration-300 flex flex-col cursor-pointer h-full"
       >
         <div
@@ -379,7 +376,7 @@ export default function ProductCard({
             </button>
           )}
         </div>
-      </div>
+      </Link>
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}

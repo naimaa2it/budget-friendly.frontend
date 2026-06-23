@@ -148,9 +148,11 @@ function ImageSlot({
 }
 
 /* ── Image Row block (2/3/4 cols, draggable to reorder) ── */
-function ImageRowBlock({ block, onPatch, onPickFromLibrary }) {
+function ImageRowBlock({ block, onPatch, onPickFromLibrary, onPickAllFromLibrary }) {
   const dragSrc = useRef(null);
+  const bulkInputRef = useRef();
   const [dragOverIdx, setDragOverIdx] = useState(null);
+  const [bulkUploading, setBulkUploading] = useState(false);
 
   const images = block.images || [];
   const cols = block.cols || images.length || 2;
@@ -167,13 +169,37 @@ function ImageRowBlock({ block, onPatch, onPickFromLibrary }) {
     onPatch({ images: imgs });
   };
 
+  const handleBulkFiles = useCallback(
+    async (files) => {
+      const fileArr = Array.from(files)
+        .filter((f) => f.type.startsWith("image/"))
+        .slice(0, cols);
+      if (!fileArr.length) return;
+      setBulkUploading(true);
+      try {
+        const results = await Promise.all(fileArr.map((f) => uploadFile(f)));
+        const newImgs = [...images];
+        while (newImgs.length < cols) newImgs.push({ url: "", public_id: "", alt: "" });
+        results.forEach((asset, i) => {
+          newImgs[i] = { ...(newImgs[i] || {}), ...asset, alt: "" };
+        });
+        onPatch({ images: newImgs });
+      } catch (err) {
+        alert(err.message || "Upload failed");
+      } finally {
+        setBulkUploading(false);
+      }
+    },
+    [images, cols, onPatch],
+  );
+
   const gridClass =
     cols === 2 ? "grid-cols-2" : cols === 3 ? "grid-cols-3" : "grid-cols-4";
 
   return (
     <div>
-      {/* Column selector */}
-      <div className="flex items-center gap-2 mb-3">
+      {/* Toolbar: column selector + bulk actions */}
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
         <span className="text-xs text-gray-500 font-medium">Columns:</span>
         {[2, 3, 4].map((n) => (
           <button
@@ -189,6 +215,35 @@ function ImageRowBlock({ block, onPatch, onPickFromLibrary }) {
             {n}
           </button>
         ))}
+
+        {/* Bulk upload / library — pushed to right */}
+        <div className="ml-auto flex items-center gap-2">
+          <input
+            ref={bulkInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="sr-only"
+            onChange={(e) => handleBulkFiles(e.target.files)}
+          />
+          <button
+            type="button"
+            onClick={() => bulkInputRef.current?.click()}
+            disabled={bulkUploading}
+            className="flex items-center gap-1 text-xs font-medium text-indigo-600 border border-indigo-200 bg-indigo-50 rounded px-2.5 py-1 hover:bg-indigo-100 disabled:opacity-50 transition"
+          >
+            {bulkUploading ? "Uploading…" : "⬆ Upload all"}
+          </button>
+          {onPickAllFromLibrary && (
+            <button
+              type="button"
+              onClick={onPickAllFromLibrary}
+              className="flex items-center gap-1 text-xs font-medium text-gray-600 border border-gray-300 rounded px-2.5 py-1 hover:bg-gray-50 transition"
+            >
+              🖼 Pick from library
+            </button>
+          )}
+        </div>
       </div>
 
       <div className={`grid ${gridClass} gap-2`}>
@@ -270,6 +325,42 @@ export default function DetailedDescriptionBuilder({ value, onChange }) {
     update(arr);
   };
 
+  // pickerTarget shape:
+  //   { blockIdx }              — single full-width image block
+  //   { blockIdx, imageIdx }    — single slot inside image-row
+  //   { blockIdx, multi: true } — pick multiple for entire image-row
+  const isMultiPicker = pickerTarget?.multi === true;
+
+  const handlePickerSelect = (assetOrAssets) => {
+    if (!pickerTarget) return;
+    const { blockIdx, imageIdx, multi } = pickerTarget;
+    const block = blocks[blockIdx];
+    if (!block) return;
+
+    if (block.type === "image") {
+      const asset = Array.isArray(assetOrAssets) ? assetOrAssets[0] : assetOrAssets;
+      if (asset) patchBlock(blockIdx, { url: asset.url, public_id: asset.public_id });
+    } else if (block.type === "image-row") {
+      if (multi && Array.isArray(assetOrAssets)) {
+        const imgs = [...(block.images || [])];
+        assetOrAssets.forEach((asset, i) => {
+          if (i < imgs.length) {
+            imgs[i] = { ...(imgs[i] || {}), url: asset.url, public_id: asset.public_id };
+          }
+        });
+        patchBlock(blockIdx, { images: imgs });
+      } else if (imageIdx !== undefined) {
+        const asset = Array.isArray(assetOrAssets) ? assetOrAssets[0] : assetOrAssets;
+        if (asset) {
+          const imgs = [...(block.images || [])];
+          imgs[imageIdx] = { ...(imgs[imageIdx] || {}), url: asset.url, public_id: asset.public_id };
+          patchBlock(blockIdx, { images: imgs });
+        }
+      }
+    }
+    setPickerTarget(null);
+  };
+
   return (
     <div className="space-y-3">
       {blocks.map((block, i) => {
@@ -325,6 +416,7 @@ export default function DetailedDescriptionBuilder({ value, onChange }) {
                 block={block}
                 onPatch={(patch) => patchBlock(i, patch)}
                 onPickFromLibrary={(imageIdx) => setPickerTarget({ blockIdx: i, imageIdx })}
+                onPickAllFromLibrary={() => setPickerTarget({ blockIdx: i, multi: true })}
               />
             </BlockWrapper>
           );
@@ -359,20 +451,8 @@ export default function DetailedDescriptionBuilder({ value, onChange }) {
 
       <MediaPicker
         open={pickerTarget !== null}
-        onSelect={(asset) => {
-          if (pickerTarget === null) return;
-          const { blockIdx, imageIdx } = pickerTarget;
-          const block = blocks[blockIdx];
-          if (!block) return;
-          if (block.type === "image") {
-            patchBlock(blockIdx, { url: asset.url, public_id: asset.public_id });
-          } else if (block.type === "image-row" && imageIdx !== undefined) {
-            const imgs = [...(block.images || [])];
-            imgs[imageIdx] = { ...(imgs[imageIdx] || {}), url: asset.url, public_id: asset.public_id };
-            patchBlock(blockIdx, { images: imgs });
-          }
-          setPickerTarget(null);
-        }}
+        multiple={isMultiPicker}
+        onSelect={handlePickerSelect}
         onClose={() => setPickerTarget(null)}
       />
     </div>

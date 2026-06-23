@@ -1,21 +1,20 @@
 "use client";
 
 /**
- * MediaPicker — reusable modal to browse Cloudinary images and pick one.
+ * MediaPicker — reusable modal to browse Cloudinary images and pick one or many.
  *
- * Usage:
- *   <MediaPicker
- *     open={showPicker}
- *     onSelect={(asset) => { setImage(asset); setShowPicker(false); }}
- *     onClose={() => setShowPicker(false)}
- *   />
+ * Props:
+ *   open       — show/hide the modal
+ *   onSelect   — called with a single asset object, or an array when multiple=true
+ *   onClose    — called when the modal is dismissed
+ *   multiple   — when true, allows selecting multiple images (default false)
  *
  * asset shape: { public_id, url, width, height, format }
  */
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 
-export default function MediaPicker({ open, onSelect, onClose }) {
+export default function MediaPicker({ open, onSelect, onClose, multiple = false }) {
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   const ROOT_FOLDER = process.env.NEXT_PUBLIC_CLOUDINARY_FOLDER || "SmartBuyBD";
@@ -26,9 +25,14 @@ export default function MediaPicker({ open, onSelect, onClose }) {
   const [q, setQ] = useState("");
   const [nextCursor, setNextCursor] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [selected, setSelected] = useState(null);
+  const [selected, setSelected] = useState(multiple ? [] : null);
 
   const qTimer = useRef(null);
+
+  // reset selection when modal opens or mode changes
+  useEffect(() => {
+    if (open) setSelected(multiple ? [] : null);
+  }, [open, multiple]);
 
   const load = useCallback(
     async (reset = true) => {
@@ -79,17 +83,56 @@ export default function MediaPicker({ open, onSelect, onClose }) {
 
   if (!open) return null;
 
-  const handleSelect = () => {
-    if (!selected) return;
-    onSelect(selected);
+  const isSel = (item) => {
+    if (multiple) return (selected || []).some((s) => s.public_id === item.public_id);
+    return selected?.public_id === item.public_id;
   };
+
+  const selOrder = (item) => {
+    if (!multiple) return -1;
+    return (selected || []).findIndex((s) => s.public_id === item.public_id);
+  };
+
+  const toggleItem = (item) => {
+    if (multiple) {
+      setSelected((prev) => {
+        const arr = prev || [];
+        const exists = arr.find((s) => s.public_id === item.public_id);
+        return exists ? arr.filter((s) => s.public_id !== item.public_id) : [...arr, item];
+      });
+    } else {
+      setSelected((prev) => (prev?.public_id === item.public_id ? null : item));
+    }
+  };
+
+  const handleSelect = () => {
+    if (multiple) {
+      if (!selected || selected.length === 0) return;
+      onSelect(selected);
+    } else {
+      if (!selected) return;
+      onSelect(selected);
+    }
+  };
+
+  const canConfirm = multiple ? (selected || []).length > 0 : !!selected;
+  const btnLabel = multiple
+    ? `Use ${(selected || []).length} image${(selected || []).length !== 1 ? "s" : ""}`
+    : "Use this image";
 
   return (
     <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b">
-          <h2 className="text-lg font-bold text-gray-800">Media Library</h2>
+          <div>
+            <h2 className="text-lg font-bold text-gray-800">Media Library</h2>
+            {multiple && (
+              <p className="text-xs text-indigo-600 font-medium mt-0.5">
+                Multiple selection mode — click to select/deselect
+              </p>
+            )}
+          </div>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-700 text-2xl leading-none"
@@ -122,6 +165,14 @@ export default function MediaPicker({ open, onSelect, onClose }) {
             </select>
           )}
           {loading && <span className="text-xs text-gray-400">Loading…</span>}
+          {multiple && (selected || []).length > 0 && (
+            <button
+              onClick={() => setSelected([])}
+              className="ml-auto text-xs text-red-500 hover:text-red-700 underline"
+            >
+              Clear selection
+            </button>
+          )}
         </div>
 
         {/* Grid */}
@@ -133,13 +184,14 @@ export default function MediaPicker({ open, onSelect, onClose }) {
           ) : (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
               {items.map((item) => {
-                const isSel = selected?.public_id === item.public_id;
+                const sel = isSel(item);
+                const order = selOrder(item);
                 return (
                   <button
                     key={item.public_id}
-                    onClick={() => setSelected(isSel ? null : item)}
+                    onClick={() => toggleItem(item)}
                     className={`relative aspect-square rounded-xl overflow-hidden border-2 transition ${
-                      isSel
+                      sel
                         ? "border-blue-500 ring-2 ring-blue-400"
                         : "border-transparent hover:border-gray-300"
                     }`}
@@ -154,10 +206,10 @@ export default function MediaPicker({ open, onSelect, onClose }) {
                         e.currentTarget.src = "/assets/placeholder.svg";
                       }}
                     />
-                    {isSel && (
-                      <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center">
-                        <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
-                          ✓
+                    {sel && (
+                      <div className="absolute inset-0 bg-blue-500/20 flex items-start justify-end p-1.5">
+                        <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow">
+                          {multiple ? order + 1 : "✓"}
                         </span>
                       </div>
                     )}
@@ -184,12 +236,22 @@ export default function MediaPicker({ open, onSelect, onClose }) {
         {/* Footer */}
         <div className="flex items-center justify-between px-5 py-4 border-t bg-gray-50 rounded-b-2xl">
           <p className="text-sm text-gray-500">
-            {selected ? (
-              <span className="text-gray-700 font-medium truncate max-w-xs inline-block">
-                {selected.public_id}
-              </span>
+            {multiple ? (
+              (selected || []).length > 0 ? (
+                <span className="text-gray-700 font-medium">
+                  {selected.length} image{selected.length !== 1 ? "s" : ""} selected
+                </span>
+              ) : (
+                "Click images to select them"
+              )
             ) : (
-              "Click an image to select it"
+              selected ? (
+                <span className="text-gray-700 font-medium truncate max-w-xs inline-block">
+                  {selected.public_id}
+                </span>
+              ) : (
+                "Click an image to select it"
+              )
             )}
           </p>
           <div className="flex gap-2">
@@ -201,10 +263,10 @@ export default function MediaPicker({ open, onSelect, onClose }) {
             </button>
             <button
               onClick={handleSelect}
-              disabled={!selected}
+              disabled={!canConfirm}
               className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-40"
             >
-              Use this image
+              {btnLabel}
             </button>
           </div>
         </div>

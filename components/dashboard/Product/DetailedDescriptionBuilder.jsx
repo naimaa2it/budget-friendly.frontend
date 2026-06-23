@@ -18,7 +18,7 @@ const normalizeBlocks = (value) => {
 async function uploadFile(file) {
   const fd = new FormData();
   fd.append("file", file);
-  fd.append("folder", "SmartBuyBD/products");
+  fd.append("folder", "Pickob/products");
   const resp = await fetch(`${API}/api/admin/upload`, {
     method: "POST",
     body: fd,
@@ -148,7 +148,7 @@ function ImageSlot({
 }
 
 /* ── Image Row block (2/3/4 cols, draggable to reorder) ── */
-function ImageRowBlock({ block, onPatch, onPickFromLibrary, onPickAllFromLibrary }) {
+function ImageRowBlock({ block, onPatch, onPickFromLibrary, onPickAllFromLibrary, onImageUploaded }) {
   const dragSrc = useRef(null);
   const bulkInputRef = useRef();
   const [dragOverIdx, setDragOverIdx] = useState(null);
@@ -184,13 +184,14 @@ function ImageRowBlock({ block, onPatch, onPickFromLibrary, onPickAllFromLibrary
           newImgs[i] = { ...(newImgs[i] || {}), ...asset, alt: "" };
         });
         onPatch({ images: newImgs });
+        results.forEach((asset) => onImageUploaded?.(asset));
       } catch (err) {
         alert(err.message || "Upload failed");
       } finally {
         setBulkUploading(false);
       }
     },
-    [images, cols, onPatch],
+    [images, cols, onPatch, onImageUploaded],
   );
 
   const gridClass =
@@ -265,7 +266,7 @@ function ImageRowBlock({ block, onPatch, onPickFromLibrary, onPickAllFromLibrary
               onPatch({ images: imgs });
             }}
             onDragEnd={() => { dragSrc.current = null; setDragOverIdx(null); }}
-            onUpload={(asset) => patchImage(idx, asset)}
+            onUpload={(asset) => { patchImage(idx, asset); onImageUploaded?.(asset); }}
             onRemove={() => patchImage(idx, { url: "", public_id: "", alt: "" })}
             onPickFromLibrary={onPickFromLibrary ? () => onPickFromLibrary(idx) : undefined}
           />
@@ -296,7 +297,7 @@ function BlockWrapper({ index, total, onMoveUp, onMoveDown, onRemove, label, chi
 }
 
 /* ── Main builder ── */
-export default function DetailedDescriptionBuilder({ value, onChange }) {
+export default function DetailedDescriptionBuilder({ value, onChange, onImageUploaded }) {
   const blocks = normalizeBlocks(value);
   const update = (b) => onChange(b);
   const [pickerTarget, setPickerTarget] = useState(null);
@@ -394,7 +395,7 @@ export default function DetailedDescriptionBuilder({ value, onChange }) {
               <div className="max-w-xl mx-auto">
                 <ImageSlot
                   image={block}
-                  onUpload={(asset) => patchBlock(i, asset)}
+                  onUpload={(asset) => { patchBlock(i, asset); onImageUploaded?.(asset); }}
                   onRemove={() => patchBlock(i, { url: "", public_id: "" })}
                   onPickFromLibrary={() => setPickerTarget({ blockIdx: i })}
                 />
@@ -417,6 +418,7 @@ export default function DetailedDescriptionBuilder({ value, onChange }) {
                 onPatch={(patch) => patchBlock(i, patch)}
                 onPickFromLibrary={(imageIdx) => setPickerTarget({ blockIdx: i, imageIdx })}
                 onPickAllFromLibrary={() => setPickerTarget({ blockIdx: i, multi: true })}
+                onImageUploaded={onImageUploaded}
               />
             </BlockWrapper>
           );

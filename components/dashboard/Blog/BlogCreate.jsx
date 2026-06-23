@@ -135,7 +135,7 @@ export default function BlogCreate() {
     if (!file) return;
     const fd = new FormData();
     fd.append("file", file);
-    fd.append("folder", "SmartBuyBD/blog/images");
+    fd.append("folder", "Pickob/blog/images");
     const r = await fetch(`${API}/api/admin/upload`, {
       method: "POST",
       body: fd,
@@ -278,7 +278,7 @@ export default function BlogCreate() {
         <h3 className="text-sm font-semibold mb-3">Featured Image</h3>
         <MediaUploader
           onUploadComplete={handleFeaturedImageUpload}
-          folder="SmartBuyBD/blog/images"
+          folder="Pickob/blog/images"
           accept="image/*"
           multiple={false}
           label="Upload Featured Image"
@@ -465,7 +465,7 @@ export default function BlogCreate() {
         <h3 className="text-sm font-semibold mb-3">Additional Images</h3>
         <MediaUploader
           onUploadComplete={handleAdditionalImagesUpload}
-          folder="SmartBuyBD/blog/images"
+          folder="Pickob/blog/images"
           accept="image/*"
           multiple={true}
           label="Upload Additional Images"
@@ -478,7 +478,7 @@ export default function BlogCreate() {
         <h3 className="text-sm font-semibold mb-3">Videos</h3>
         <MediaUploader
           onUploadComplete={handleVideosUpload}
-          folder="SmartBuyBD/blog/videos"
+          folder="Pickob/blog/videos"
           accept="video/*"
           multiple={true}
           label="Upload Videos"

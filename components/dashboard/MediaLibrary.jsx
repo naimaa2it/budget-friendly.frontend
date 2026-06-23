@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import toast from "react-hot-toast";
 import { useUser } from "@/components/context/UserContext";
 
-const ROOT_FOLDER = process.env.NEXT_PUBLIC_CLOUDINARY_FOLDER || "SmartBuyBD";
+const ROOT_FOLDER = process.env.NEXT_PUBLIC_CLOUDINARY_FOLDER || "Pickob";
 
 export default function MediaLibrary() {
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";

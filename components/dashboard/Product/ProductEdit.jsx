@@ -212,6 +212,13 @@ export default function ProductEdit({ productId }) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
+  const [recentUploads, setRecentUploads] = useState([]);
+
+  const trackUpload = (asset) => {
+    setRecentUploads((prev) =>
+      prev.some((r) => r.public_id === asset.public_id) ? prev : [asset, ...prev],
+    );
+  };
   const [newReview, setNewReview] = useState({
     authorName: "",
     rating: "",
@@ -768,7 +775,7 @@ export default function ProductEdit({ productId }) {
     try {
       const fd = new FormData();
       fd.append("file", file);
-      fd.append("folder", "SmartBuyBD/products");
+      fd.append("folder", "Pickob/products");
       const resp = await fetch(`${API}/api/admin/upload`, {
         method: "POST",
         body: fd,
@@ -792,6 +799,7 @@ export default function ProductEdit({ productId }) {
         });
         return { ...p, images: imgs };
       });
+      trackUpload(asset);
 
       try {
         URL.revokeObjectURL(preview);
@@ -1142,6 +1150,7 @@ export default function ProductEdit({ productId }) {
                           detailedDescription: blocks,
                         }))
                       }
+                      onImageUploaded={trackUpload}
                     />
                   </div>
                 </div>
@@ -2003,6 +2012,7 @@ export default function ProductEdit({ productId }) {
 
               <MediaPicker
                 open={showPicker}
+                recentUploads={recentUploads}
                 onSelect={(asset) => {
                   setProduct((p) => ({
                     ...p,

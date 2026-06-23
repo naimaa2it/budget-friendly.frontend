@@ -152,7 +152,7 @@ export default function PromoPanelEditor({ panelId = null, onSuccess, onCancel }
     try {
       const fd = new FormData();
       fd.append('file', file);
-      fd.append('folder', 'SmartBuyBD/panels');
+      fd.append('folder', 'Pickob/panels');
       const resp = await fetch(`${API}/api/admin/upload`, { method: 'POST', credentials: 'include', body: fd });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error || 'Upload failed');

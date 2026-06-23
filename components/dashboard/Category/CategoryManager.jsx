@@ -230,7 +230,7 @@ function CreateMainModal({ API, onClose, onSuccess }) {
     try {
       const fd = new FormData();
       fd.append('file', file);
-      fd.append('folder', 'SmartBuyBD/categories');
+      fd.append('folder', 'Pickob/categories');
       const resp = await fetch(`${API}/api/admin/upload`, {
         method: 'POST',
         body: fd,
@@ -390,7 +390,7 @@ function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
     try {
       const fd = new FormData();
       fd.append('file', file);
-      fd.append('folder', 'SmartBuyBD/categories');
+      fd.append('folder', 'Pickob/categories');
       const resp = await fetch(`${API}/api/admin/upload`, {
         method: 'POST',
         body: fd,

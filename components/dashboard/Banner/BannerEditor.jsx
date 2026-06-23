@@ -47,7 +47,7 @@ export default function BannerEditor({ bannerId = null, onSuccess, onCancel }) {
     try {
       const fd = new FormData();
       fd.append('file', file);
-      fd.append('folder', 'SmartBuyBD/banners');
+      fd.append('folder', 'Pickob/banners');
       const resp = await fetch(`${API}/api/admin/upload`, { method: 'POST', credentials: 'include', body: fd });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error || 'Upload failed');

@@ -14,10 +14,10 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 
-export default function MediaPicker({ open, onSelect, onClose, multiple = false }) {
+export default function MediaPicker({ open, onSelect, onClose, multiple = false, recentUploads = [] }) {
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-  const ROOT_FOLDER = process.env.NEXT_PUBLIC_CLOUDINARY_FOLDER || "SmartBuyBD";
+  const ROOT_FOLDER = process.env.NEXT_PUBLIC_CLOUDINARY_FOLDER || "Pickob";
 
   const [items, setItems] = useState([]);
   const [folders, setFolders] = useState([]);
@@ -177,47 +177,60 @@ export default function MediaPicker({ open, onSelect, onClose, multiple = false 
 
         {/* Grid */}
         <div className="flex-1 overflow-y-auto p-4">
-          {items.length === 0 && !loading ? (
-            <div className="text-center py-16 text-gray-400">
-              No images found.
-            </div>
-          ) : (
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-              {items.map((item) => {
-                const sel = isSel(item);
-                const order = selOrder(item);
-                return (
-                  <button
-                    key={item.public_id}
-                    onClick={() => toggleItem(item)}
-                    className={`relative aspect-square rounded-xl overflow-hidden border-2 transition ${
-                      sel
-                        ? "border-blue-500 ring-2 ring-blue-400"
-                        : "border-transparent hover:border-gray-300"
-                    }`}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={item.url}
-                      alt={item.public_id}
-                      className="w-full h-full object-cover bg-gray-100"
-                      loading="lazy"
-                      onError={(e) => {
-                        e.currentTarget.src = "/assets/placeholder.svg";
-                      }}
-                    />
-                    {sel && (
-                      <div className="absolute inset-0 bg-blue-500/20 flex items-start justify-end p-1.5">
-                        <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow">
-                          {multiple ? order + 1 : "✓"}
-                        </span>
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          )}
+          {(() => {
+            const recentIds = new Set(recentUploads.map((r) => r.public_id));
+            const dedupedItems = items.filter((i) => !recentIds.has(i.public_id));
+            const mergedItems = [...recentUploads, ...dedupedItems];
+            return mergedItems.length === 0 && !loading ? (
+              <div className="text-center py-16 text-gray-400">
+                No images found.
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                {mergedItems.map((item) => {
+                  const sel = isSel(item);
+                  const order = selOrder(item);
+                  const isRecent = recentIds.has(item.public_id);
+                  return (
+                    <button
+                      key={item.public_id}
+                      onClick={() => toggleItem(item)}
+                      className={`relative aspect-square rounded-xl overflow-hidden border-2 transition ${
+                        sel
+                          ? "border-blue-500 ring-2 ring-blue-400"
+                          : "border-transparent hover:border-gray-300"
+                      }`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={item.url}
+                        alt={item.public_id}
+                        className="w-full h-full object-cover bg-gray-100"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.src = "/assets/placeholder.svg";
+                        }}
+                      />
+                      {isRecent && !sel && (
+                        <div className="absolute top-1 left-1">
+                          <span className="bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow">
+                            New
+                          </span>
+                        </div>
+                      )}
+                      {sel && (
+                        <div className="absolute inset-0 bg-blue-500/20 flex items-start justify-end p-1.5">
+                          <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow">
+                            {multiple ? order + 1 : "✓"}
+                          </span>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })()}
 
           {/* Load more */}
           {nextCursor && (

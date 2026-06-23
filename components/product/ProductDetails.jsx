@@ -98,7 +98,7 @@ function StockBadge({ inventory, availability }) {
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600">
+    <span className=" items-center gap-1.5 text-xs font-semibold text-rose-600 hidden md:block">
       <span className="w-2 h-2 rounded-full bg-rose-500 inline-block" />
       Only{inventory != null ? ` ${inventory}` : ""} items left in Stock
     </span>
@@ -287,8 +287,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
         ? product.description.replace(/<[^>]*>/g, "").slice(0, 160)
         : `Buy ${product.title} at SmartBuy BD. Best price, fast delivery across Bangladesh.`);
     const seoKeywords = (product.seo?.keywords || []).join(", ");
-    const seoImage =
-      product.images?.[0]?.url || `${SITE_URL}/mainLogo.png`;
+    const seoImage = product.images?.[0]?.url || `${SITE_URL}/mainLogo.png`;
     const productUrl = `${SITE_URL}/product/${product._id}`;
 
     const prevTitle = document.title;
@@ -298,7 +297,8 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
       let el = document.querySelector(selector);
       if (!el) {
         el = document.createElement("meta");
-        const [attrName, attrVal] = selector.match(/\[([^=]+)="([^"]+)"\]/)?.slice(1) || [];
+        const [attrName, attrVal] =
+          selector.match(/\[([^=]+)="([^"]+)"\]/)?.slice(1) || [];
         if (attrName) el.setAttribute(attrName, attrVal);
         document.head.appendChild(el);
       }
@@ -307,12 +307,20 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
 
     setMeta('meta[name="description"]', "content", seoDesc);
     if (seoKeywords) setMeta('meta[name="keywords"]', "content", seoKeywords);
-    setMeta('meta[property="og:title"]', "content", `${seoTitle} | SmartBuy BD`);
+    setMeta(
+      'meta[property="og:title"]',
+      "content",
+      `${seoTitle} | SmartBuy BD`,
+    );
     setMeta('meta[property="og:description"]', "content", seoDesc);
     setMeta('meta[property="og:image"]', "content", seoImage);
     setMeta('meta[property="og:url"]', "content", productUrl);
     setMeta('meta[property="og:type"]', "content", "website");
-    setMeta('meta[name="twitter:title"]', "content", `${seoTitle} | SmartBuy BD`);
+    setMeta(
+      'meta[name="twitter:title"]',
+      "content",
+      `${seoTitle} | SmartBuy BD`,
+    );
     setMeta('meta[name="twitter:description"]', "content", seoDesc);
     setMeta('meta[name="twitter:image"]', "content", seoImage);
 
@@ -583,7 +591,9 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                       },
                     };
                     const b = map[badge] || {
-                      label: badge.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+                      label: badge
+                        .replace(/_/g, " ")
+                        .replace(/\b\w/g, (c) => c.toUpperCase()),
                       cls: "bg-gradient-to-r from-gray-200 to-gray-300 text-gray-800",
                     };
                     return (
@@ -768,14 +778,6 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
           {/* Shipping info */}
           <div className="flex flex-col gap-2 mb-3 text-sm text-gray-600">
             <div className="flex items-center gap-2">
-              <FaTruck className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-              <span>
-                Free shipping on all orders over{" "}
-                <strong className="text-gray-700 font-medium">1000 BDT</strong>.
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2">
               <FaClock className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
               <span>
                 Delivers in:{" "}
@@ -783,7 +785,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                   3–5 Working Days
                 </strong>{" "}
                 <a
-                  href="/pages/shipping-policy"
+                  href="/shipping"
                   className="underline underline-offset-2 text-black text-xs hover:text-gray-700 transition"
                 >
                   Shipping &amp; Return
@@ -800,12 +802,6 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
 
           {/* SKU / Category / Tags / Share */}
           <div className="flex flex-col gap-2 text-sm">
-            {product.sku && (
-              <div className="flex items-center gap-2">
-                <span className="text-gray-400 w-20 flex-shrink-0">SKU:</span>
-                <span className="text-gray-600">{product.sku}</span>
-              </div>
-            )}
             {category && (
               <div className="flex items-center gap-2">
                 <span className="text-gray-400 w-20 flex-shrink-0">
@@ -971,7 +967,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
       {/* warranty, return policy, customization — accordion */}
       {(product?.warranty?.period?.trim() ||
         product?.warranty?.details?.trim() ||
-        (product?.returnPolicy?.days > 0) ||
+        product?.returnPolicy?.days > 0 ||
         product?.returnPolicy?.details?.trim() ||
         product?.customization?.customizable) && (
         <div className="max-w-6xl mx-auto px-4 py-4">

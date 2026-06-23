@@ -28,7 +28,7 @@ export default function DetailedDescriptionRenderer({ value }) {
                   ? "text-right"
                   : "text-left";
             return (
-              <div key={block.id || i} className="max-w-5xl mx-auto px-4 py-8">
+              <div key={block.id || i} className="max-w-7xl mx-auto px-4 py-8">
                 <div
                   className={`prose prose-base max-w-none text-gray-700 ${align}
                     [&_h1]:text-3xl [&_h1]:font-bold [&_h1]:text-gray-900 [&_h1]:mb-4
@@ -78,7 +78,10 @@ export default function DetailedDescriptionRenderer({ value }) {
                     ? "grid-cols-3"
                     : "grid-cols-4";
             return (
-              <div key={block.id || i} className={`grid gap-1 ${gridClass} py-1`}>
+              <div
+                key={block.id || i}
+                className={`grid gap-1 ${gridClass} py-1`}
+              >
                 {imgs.map((img, idx) => (
                   <div
                     key={idx}

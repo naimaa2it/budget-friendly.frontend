@@ -218,6 +218,8 @@ export default function ProductEdit({ productId }) {
     title: "",
     body: "",
   });
+  const [editingReviewIdx, setEditingReviewIdx] = useState(null);
+  const [editReviewForm, setEditReviewForm] = useState({ authorName: "", rating: "", title: "", body: "" });
   const [lastSaved, setLastSaved] = useState(null); // Track last auto-save time
   const [fbtSearch, setFbtSearch] = useState("");
   const [fbtSearchResults, setFbtSearchResults] = useState([]);
@@ -866,6 +868,16 @@ export default function ProductEdit({ productId }) {
   const removeReviewAt = (idx) => {
     setProduct((p) => {
       const reviews = (p.reviews || []).filter((_, i) => i !== idx);
+      const { count, avg } = recalcReviews(reviews);
+      return { ...p, reviews, reviewCount: count, averageRating: avg };
+    });
+  };
+
+  const updateReviewAt = (idx, fields) => {
+    setProduct((p) => {
+      const reviews = (p.reviews || []).map((r, i) =>
+        i === idx ? { ...r, ...fields } : r,
+      );
       const { count, avg } = recalcReviews(reviews);
       return { ...p, reviews, reviewCount: count, averageRating: avg };
     });
@@ -2773,39 +2785,135 @@ export default function ProductEdit({ productId }) {
                       key={i}
                       className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm"
                     >
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-semibold text-gray-900">
-                              {r.authorName || "Anonymous"}
-                            </span>
-                            <span className="text-yellow-500">
-                              {"★".repeat(Math.round(r.rating || 0))}
-                              {"☆".repeat(5 - Math.round(r.rating || 0))}
-                            </span>
+                      {editingReviewIdx === i ? (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <label className={labelClass}>Author Name</label>
+                              <input
+                                type="text"
+                                value={editReviewForm.authorName}
+                                onChange={(e) => setEditReviewForm((f) => ({ ...f, authorName: e.target.value }))}
+                                className={inputClass}
+                                placeholder="Reviewer name"
+                              />
+                            </div>
+                            <div>
+                              <label className={labelClass}>Rating (1–5)</label>
+                              <input
+                                type="number"
+                                min={1}
+                                max={5}
+                                step={0.1}
+                                value={editReviewForm.rating}
+                                onChange={(e) => setEditReviewForm((f) => ({ ...f, rating: e.target.value }))}
+                                className={inputClass}
+                                placeholder="e.g. 4.5"
+                              />
+                            </div>
                           </div>
-                          <p className="text-sm text-gray-500">
-                            {new Date(r.createdAt).toLocaleDateString("en-US", {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            })}
-                          </p>
+                          <div>
+                            <label className={labelClass}>Review Title</label>
+                            <input
+                              type="text"
+                              value={editReviewForm.title}
+                              onChange={(e) => setEditReviewForm((f) => ({ ...f, title: e.target.value }))}
+                              className={inputClass}
+                              placeholder="e.g. Great product!"
+                            />
+                          </div>
+                          <div>
+                            <label className={labelClass}>Review Content</label>
+                            <textarea
+                              value={editReviewForm.body}
+                              onChange={(e) => setEditReviewForm((f) => ({ ...f, body: e.target.value }))}
+                              rows={4}
+                              className={`${inputClass} resize-none`}
+                              placeholder="Review body…"
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const rating = parseFloat(editReviewForm.rating);
+                                if (isNaN(rating) || rating < 1 || rating > 5)
+                                  return alert("Rating must be between 1 and 5");
+                                updateReviewAt(i, {
+                                  authorName: editReviewForm.authorName,
+                                  rating,
+                                  title: editReviewForm.title,
+                                  body: editReviewForm.body,
+                                });
+                                setEditingReviewIdx(null);
+                              }}
+                              className="px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-semibold"
+                            >
+                              Save
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditingReviewIdx(null)}
+                              className="px-5 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                            >
+                              Cancel
+                            </button>
+                          </div>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => removeReviewAt(i)}
-                          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                      {r.title && (
-                        <h4 className="font-semibold text-gray-900 mb-2">
-                          {r.title}
-                        </h4>
+                      ) : (
+                        <>
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-semibold text-gray-900">
+                                  {r.authorName || "Anonymous"}
+                                </span>
+                                <span className="text-yellow-500">
+                                  {"★".repeat(Math.round(r.rating || 0))}
+                                  {"☆".repeat(5 - Math.round(r.rating || 0))}
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-500">
+                                {new Date(r.createdAt).toLocaleDateString("en-US", {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                })}
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingReviewIdx(i);
+                                  setEditReviewForm({
+                                    authorName: r.authorName || "",
+                                    rating: r.rating ?? "",
+                                    title: r.title || "",
+                                    body: r.body || "",
+                                  });
+                                }}
+                                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeReviewAt(i)}
+                                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                          {r.title && (
+                            <h4 className="font-semibold text-gray-900 mb-2">
+                              {r.title}
+                            </h4>
+                          )}
+                          <p className="text-gray-700">{r.body}</p>
+                        </>
                       )}
-                      <p className="text-gray-700">{r.body}</p>
                     </div>
                   ))}
                 </div>

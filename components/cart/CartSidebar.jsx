@@ -9,7 +9,13 @@ import {
   getItemCompareAtPrice,
 } from "@/components/context/CartContext";
 import QuantitySelector from "@/components/ui/QuantitySelector";
-import { FaTimes, FaShoppingBag, FaTrash, FaPencilAlt, FaShareAlt } from "react-icons/fa";
+import {
+  FaTimes,
+  FaShoppingBag,
+  FaTrash,
+  FaPencilAlt,
+  FaShareAlt,
+} from "react-icons/fa";
 import toast from "react-hot-toast";
 import EmptyAnimation from "@/components/ui/EmptyAnimation";
 import VariantEditModal, {
@@ -43,13 +49,14 @@ export default function CartSidebar() {
     try {
       const url = await shareCart();
       if (navigator.share) {
-        await navigator.share({ title: "My SmartBuy BD Cart", url });
+        await navigator.share({ title: "My Pickob Cart", url });
       } else {
         await navigator.clipboard?.writeText(url);
         toast.success("Cart link copied to clipboard!");
       }
     } catch (err) {
-      if (err?.name !== "AbortError") toast.error("Could not share cart. Try again.");
+      if (err?.name !== "AbortError")
+        toast.error("Could not share cart. Try again.");
     } finally {
       setSharing(false);
     }
@@ -195,7 +202,8 @@ export default function CartSidebar() {
                             }}
                             className="flex items-center gap-1 mt-0.5 text-xs text-blue-600 hover:underline"
                           >
-                            <FaPencilAlt className="w-2.5 h-2.5" /> {t("cart.select_option")}
+                            <FaPencilAlt className="w-2.5 h-2.5" />{" "}
+                            {t("cart.select_option")}
                           </button>
                         )
                       )}

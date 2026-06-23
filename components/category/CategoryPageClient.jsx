@@ -200,11 +200,11 @@ export default function CategoryPageClient({ slug }) {
   useEffect(() => {
     if (!category?.name) return;
     const prevTitle = document.title;
-    document.title = `${category.name} | SmartBuy BD`;
+    document.title = `${category.name} | Pickob`;
 
     const descContent =
       category.description ||
-      `Browse ${category.name} at SmartBuy BD — gadgets and electronics with best prices and fast delivery across Bangladesh.`;
+      `Browse ${category.name} at Pickob — gadgets and electronics with best prices and fast delivery across Bangladesh.`;
     let metaDesc = document.querySelector('meta[name="description"]');
     const prevDesc = metaDesc?.getAttribute("content");
     if (!metaDesc) {

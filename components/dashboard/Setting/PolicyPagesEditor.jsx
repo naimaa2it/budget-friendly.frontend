@@ -5,67 +5,234 @@ import React, { useEffect, useState } from "react";
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 const TABS = [
-  { key: "shipping", label: "শিপিং", type: "qa", color: "orange" },
-  { key: "return",   label: "রিটার্ন", type: "qa", color: "blue" },
-  { key: "faq",      label: "FAQ",     type: "qa", color: "green" },
-  { key: "privacy",  label: "প্রাইভেসি", type: "section", color: "purple" },
-  { key: "terms",    label: "শর্তাবলী", type: "section", color: "gray" },
+  { key: "shipping", label: "শিপিং",     type: "qa",      icon: "🚚" },
+  { key: "return",   label: "রিটার্ন",    type: "qa",      icon: "↩️" },
+  { key: "faq",      label: "FAQ",        type: "qa",      icon: "❓" },
+  { key: "privacy",  label: "প্রাইভেসি",  type: "section", icon: "🔒" },
+  { key: "terms",    label: "শর্তাবলী",   type: "section", icon: "📄" },
 ];
 
-const EMPTY_QA = { question: "", answer: "" };
-const EMPTY_SECTION = { heading: "", content: "" };
+/* ───────────── Default Bengali content ───────────── */
+const DEFAULT_CONTENT = {
+  shipping: [
+    {
+      question: "ফ্রি শিপিং কি পাওয়া যায়?",
+      answer: "হ্যাঁ! ৳১৫৯৯ বা তার বেশি কেনাকাটায় সারাদেশে সম্পূর্ণ বিনামূল্যে ডেলিভারি পাবেন।",
+    },
+    {
+      question: "ডেলিভারি চার্জ কত?",
+      answer: "৳১৫৯৯ এর নিচে যেকোনো অর্ডারে মাত্র ৳৬৯ ডেলিভারি চার্জ প্রযোজ্য — ঢাকার ভেতরে ও বাইরে উভয় ক্ষেত্রে।",
+    },
+    {
+      question: "ঢাকায় ডেলিভারি পেতে কতদিন লাগে?",
+      answer: "ঢাকা ও চট্টগ্রামের ভেতরে সাধারণত ১–২ কার্যদিবসের মধ্যে ডেলিভারি দেওয়া হয়।",
+    },
+    {
+      question: "ঢাকার বাইরে কতদিনে ডেলিভারি পাব?",
+      answer: "সারাদেশে ৩–৫ কার্যদিবসের মধ্যে ডেলিভারি দেওয়া হয়। হরতাল বা প্রাকৃতিক দুর্যোগে সামান্য বিলম্ব হতে পারে।",
+    },
+    {
+      question: "bKash / Nagad / Rocket-এ পেমেন্ট করা যাবে?",
+      answer: "হ্যাঁ! আমরা bKash, Nagad ও Rocket সহ সকল মোবাইল ব্যাংকিং সেবা সমর্থন করি। এছাড়া ক্রেডিট/ডেবিট কার্ডেও পেমেন্ট করা যাবে।",
+    },
+    {
+      question: "ক্যাশ অন ডেলিভারি (COD) পাওয়া যায়?",
+      answer: "হ্যাঁ! পণ্য হাতে পাওয়ার পর পেমেন্ট করার সুবিধা রয়েছে। COD-তে অর্ডার করলে পণ্য দেখে সন্তুষ্ট হয়ে পেমেন্ট করুন।",
+    },
+    {
+      question: "ডেলিভারি ট্র্যাক করব কীভাবে?",
+      answer: "অর্ডার শিপ হওয়ার পর আপনার ফোন নম্বরে SMS এবং ইমেইলে ট্র্যাকিং নম্বর পাঠানো হবে। সেটি দিয়ে আপনার পার্সেল ট্র্যাক করতে পারবেন।",
+    },
+    {
+      question: "ডেলিভারি ঠিকানা পরিবর্তন করা যাবে?",
+      answer: "হ্যাঁ, তবে অর্ডার দেওয়ার ২ ঘণ্টার মধ্যে কাস্টমার কেয়ারে যোগাযোগ করতে হবে। একবার শিপমেন্ট হয়ে গেলে ঠিকানা পরিবর্তন সম্ভব নয়।",
+    },
+    {
+      question: "ডেলিভারি মিস হলে কী হবে?",
+      answer: "আমাদের ডেলিভারি এজেন্ট আপনাকে কল করবে। সংযোগ না পেলে পরের কার্যদিবসে পুনরায় ডেলিভারির চেষ্টা করা হবে। পরপর ৩ বার মিস হলে অর্ডার বাতিল ও রিফান্ড প্রক্রিয়া শুরু হবে।",
+    },
+    {
+      question: "Pickup Point থেকে পণ্য নেওয়া যাবে?",
+      answer: "হ্যাঁ! অর্ডার করার সময় 'Click & Collect' অপশন বেছে নিলে ডেলিভারি চার্জ ছাড়াই আমাদের পয়েন্ট থেকে পণ্য সংগ্রহ করতে পারবেন।",
+    },
+    {
+      question: "আন্তর্জাতিক ডেলিভারি কি হয়?",
+      answer: "না, আমরা বর্তমানে শুধুমাত্র বাংলাদেশের ভেতরে ডেলিভারি দিচ্ছি।",
+    },
+    {
+      question: "পণ্য কীভাবে প্যাক করা হয়?",
+      answer: "প্রতিটি পণ্য মজবুত কার্ডবোর্ড বক্সে এবং ইনভয়েস সহ প্যাক করা হয়। ভঙ্গুর পণ্য বাড়তি বাবল র‍্যাপে সুরক্ষিত করা হয়।",
+    },
+  ],
+  return: [
+    {
+      question: "কতদিনের মধ্যে পণ্য ফেরত দেওয়া যাবে?",
+      answer: "পণ্য হাতে পাওয়ার ৩ দিনের (৭২ ঘণ্টার) মধ্যে রিটার্নের জন্য আবেদন করতে হবে। এর পরে রিটার্ন গ্রহণ করা হবে না।",
+    },
+    {
+      question: "কোন কোন ক্ষেত্রে পণ্য ফেরত দেওয়া যাবে?",
+      answer: "নিচের কারণে পণ্য ফেরত দেওয়া যাবে:\n• ত্রুটিপূর্ণ বা নষ্ট পণ্য\n• ভুল পণ্য ডেলিভারি\n• ক্ষতিগ্রস্ত প্যাকেজিং\n• বিজ্ঞাপনের সাথে পণ্যের মিল নেই",
+    },
+    {
+      question: "কোন পণ্য ফেরত দেওয়া যাবে না?",
+      answer: "নিচের পণ্যগুলো রিটার্ন করা যাবে না:\n• ব্যবহৃত বা সীল ভাঙা পণ্য\n• ডিজিটাল পণ্য ও সফটওয়্যার\n• কাস্টমাইজড পণ্য\n• ইনারওয়্যার ও হাইজিন পণ্য\n• খাদ্যপণ্য",
+    },
+    {
+      question: "রিটার্ন কীভাবে করব?",
+      answer: "রিটার্নের জন্য:\n১. আমাদের কাস্টমার কেয়ারে ফোন করুন\n২. পণ্যের ছবি বা ভিডিও সহ সমস্যা জানান\n৩. আমাদের টিম ২৪ ঘণ্টার মধ্যে যোগাযোগ করবে",
+    },
+    {
+      question: "ঢাকায় কি পিক-আপ সুবিধা আছে?",
+      answer: "হ্যাঁ! ঢাকার মধ্যে ত্রুটিপূর্ণ পণ্যের ক্ষেত্রে আমাদের এজেন্ট বিনামূল্যে বাসা থেকে পিক-আপ করবে। ঢাকার বাইরে থেকে কুরিয়ারে পাঠাতে হবে।",
+    },
+    {
+      question: "রিটার্নের পর পণ্য কি চেক করা হয়?",
+      answer: "হ্যাঁ, পণ্য পাওয়ার পর আমাদের QC টিম যাচাই করে। ত্রুটি প্রমাণিত হলে রিপ্লেসমেন্ট বা সম্পূর্ণ রিফান্ড দেওয়া হবে।",
+    },
+    {
+      question: "রিফান্ড কতদিনে পাব?",
+      answer: "পণ্য যাচাইয়ের পর ৭–১০ কার্যদিবসের মধ্যে রিফান্ড দেওয়া হবে — bKash, Nagad বা কার্ডে (যেটায় পেমেন্ট করেছিলেন)।",
+    },
+    {
+      question: "রিটার্ন চার্জ কত?",
+      answer: "ত্রুটিপূর্ণ পণ্যের ক্ষেত্রে রিটার্ন চার্জ সম্পূর্ণ বিনামূল্যে। কাস্টমারের ভুলে (ভুল সাইজ, মন পরিবর্তন) রিটার্নের ক্ষেত্রে কুরিয়ার চার্জ কাস্টমার বহন করবেন।",
+    },
+    {
+      question: "ডেলিভারির পরপরই সমস্যা পেলে কী করব?",
+      answer: "প্যাকেজ খোলার সময় ভিডিও করুন। সমস্যা দেখামাত্র ছবি/ভিডিও সহ আমাদের কাস্টমার কেয়ারে ৩ দিনের মধ্যে জানান।",
+    },
+  ],
+  faq: [
+    {
+      question: "অর্ডার ট্র্যাক করব কীভাবে?",
+      answer: "অর্ডার শিপ হলে আপনার ফোনে SMS ও ইমেইলে ট্র্যাকিং নম্বর পাঠানো হবে। 'My Orders' থেকেও রিয়েল-টাইম স্ট্যাটাস দেখতে পারবেন।",
+    },
+    {
+      question: "অর্ডার বাতিল করা যাবে?",
+      answer: "অর্ডার দেওয়ার ১ ঘণ্টার মধ্যে বাতিল করা যাবে। এরপর প্রসেসিং শুরু হলে বাতিল সম্ভব নয়। বাতিলের জন্য কাস্টমার কেয়ারে যোগাযোগ করুন।",
+    },
+    {
+      question: "পণ্যগুলো কি আসল ও মানসম্পন্ন?",
+      answer: "হ্যাঁ। আমরা শুধুমাত্র অনুমোদিত পরিবেশক ও যাচাইকৃত সরবরাহকারীদের কাছ থেকে পণ্য সংগ্রহ করি। প্রতিটি পণ্য মান নিয়ন্ত্রণ পরীক্ষায় পাস করে।",
+    },
+    {
+      question: "ওয়ারেন্টি আছে?",
+      answer: "নির্বাচিত পণ্যে ব্র্যান্ডের অফিশিয়াল ওয়ারেন্টি প্রযোজ্য। পণ্যের পেজে ওয়ারেন্টির বিস্তারিত তথ্য দেওয়া থাকে।",
+    },
+    {
+      question: "ডিসকাউন্ট বা কুপন কোড কোথায় পাব?",
+      answer: "আমাদের Facebook পেজ ও ওয়েবসাইটের প্রমো ব্যানারে নিয়মিত অফার দেওয়া হয়। নিউজলেটার সাবস্ক্রাইব করলে এক্সক্লুসিভ ডিল পাবেন।",
+    },
+    {
+      question: "অ্যাকাউন্ট না খুলে অর্ডার করা যাবে?",
+      answer: "হ্যাঁ, গেস্ট হিসেবেও অর্ডার করা যাবে। তবে অ্যাকাউন্ট খুললে অর্ডার ট্র্যাক, রিটার্ন এবং ভবিষ্যৎ অর্ডার আরও সহজ হবে।",
+    },
+    {
+      question: "পেমেন্ট কি নিরাপদ?",
+      answer: "হ্যাঁ, আমাদের সকল পেমেন্ট SSL এনক্রিপশনের মাধ্যমে নিরাপদে প্রক্রিয়া করা হয়। আপনার কার্ড বা মোবাইল ব্যাংকিং তথ্য আমাদের সার্ভারে সংরক্ষণ করা হয় না।",
+    },
+    {
+      question: "পণ্যের স্টক শেষ হলে কী করব?",
+      answer: "'Notify Me' বাটনে ক্লিক করুন — স্টকে আসার সাথে সাথে আপনাকে SMS/ইমেইলে জানানো হবে।",
+    },
+    {
+      question: "কাস্টমার কেয়ারের সময় কখন?",
+      answer: "আমাদের কাস্টমার কেয়ার সকাল ১০টা থেকে রাত ৮টা পর্যন্ত (শুক্রবার ছাড়া) সপ্তাহের ৬ দিন সেবা দিচ্ছে।",
+    },
+  ],
+  privacy: [
+    {
+      heading: "আমরা কী তথ্য সংগ্রহ করি",
+      content: "অ্যাকাউন্ট তৈরি বা অর্ডার দেওয়ার সময় আপনার নাম, ফোন নম্বর, ইমেইল, ডেলিভারি ঠিকানা এবং অর্ডার ইতিহাস সংগ্রহ করা হয়। সাইটের মান উন্নয়নের জন্য ব্যবহারের তথ্য (পেজ ভিজিট, ক্লিক) ও সংগ্রহ করা হয়।",
+    },
+    {
+      heading: "আপনার তথ্য কীভাবে ব্যবহার করা হয়",
+      content: "অর্ডার প্রসেস করা, ডেলিভারি নিশ্চিত করা এবং কাস্টমার সাপোর্ট দেওয়ার জন্য আপনার তথ্য ব্যবহার করা হয়। আমরা কখনো আপনার ব্যক্তিগত তথ্য তৃতীয় পক্ষের কাছে বিক্রি করি না।",
+    },
+    {
+      heading: "কুকিজ নীতি",
+      content: "আমরা লগইন সেশন ও পছন্দ সংরক্ষণের জন্য প্রয়োজনীয় কুকিজ ব্যবহার করি। অ্যানালিটিক্স কুকিজ শুধুমাত্র আপনার সম্মতিতে ব্যবহার করা হয়।",
+    },
+    {
+      heading: "তথ্য সুরক্ষা",
+      content: "আপনার সকল তথ্য SSL এনক্রিপশন প্রযুক্তিতে সুরক্ষিত রাখা হয়। আমাদের সার্ভার নিয়মিত নিরাপত্তা অডিটের মধ্য দিয়ে যায়। পেমেন্ট তথ্য কোনো অবস্থায় আমাদের সার্ভারে সংরক্ষণ করা হয় না।",
+    },
+    {
+      heading: "আপনার অধিকার",
+      content: "আপনি যেকোনো সময় আমাদের সাপোর্ট টিমের সাথে যোগাযোগ করে আপনার ব্যক্তিগত তথ্য দেখা, সংশোধন করা বা মুছে ফেলার অনুরোধ করতে পারবেন।",
+    },
+    {
+      heading: "পরিবর্তনের বিজ্ঞপ্তি",
+      content: "এই গোপনীয়তা নীতিতে কোনো পরিবর্তন আনা হলে ওয়েবসাইটে এবং নিবন্ধিত ইমেইলে আপনাকে জানানো হবে।",
+    },
+  ],
+  terms: [
+    {
+      heading: "সাইট ব্যবহারের শর্ত",
+      content: "SmartBuy BD ব্যবহার করতে আপনার বয়স কমপক্ষে ১৮ বছর হতে হবে। আপনি অননুমোদিতভাবে সাইটে প্রবেশ বা অপব্যবহার করবেন না বলে সম্মত হচ্ছেন।",
+    },
+    {
+      heading: "অর্ডার ও মূল্য নির্ধারণ",
+      content: "সকল মূল্য বাংলাদেশি টাকায় (BDT) নির্ধারিত। মূল্য ত্রুটি বা অস্বাভাবিক পরিস্থিতিতে আমরা যেকোনো অর্ডার বাতিল করার অধিকার রাখি। অর্ডার কনফার্মেশনের পর চূড়ান্ত মূল্য নির্ধারিত হয়।",
+    },
+    {
+      heading: "পেমেন্ট নীতি",
+      content: "আমরা bKash, Nagad, Rocket, ক্রেডিট/ডেবিট কার্ড এবং ক্যাশ অন ডেলিভারি (COD) গ্রহণ করি। সকল পেমেন্ট নিরাপদ এনক্রিপশনের মাধ্যমে প্রক্রিয়া করা হয়।",
+    },
+    {
+      heading: "ডেলিভারি ও রিটার্ন",
+      content: "ডেলিভারি ও রিটার্ন সংক্রান্ত বিস্তারিত আমাদের শিপিং পলিসি ও রিটার্ন পলিসি পেজে দেওয়া আছে। উক্ত নীতিগুলো এই শর্তাবলীর অংশ হিসেবে গণ্য হবে।",
+    },
+    {
+      heading: "মেধাস্বত্ব",
+      content: "এই সাইটের সকল কনটেন্ট — লোগো, ছবি, লেখা — SmartBuy BD-এর মালিকানাধীন। লিখিত অনুমতি ছাড়া পুনরুৎপাদন বা বাণিজ্যিক ব্যবহার নিষিদ্ধ।",
+    },
+    {
+      heading: "দায় সীমাবদ্ধতা",
+      content: "SmartBuy BD সাইট ব্যবহার বা ক্রয়কৃত পণ্য থেকে সৃষ্ট পরোক্ষ বা আনুষঙ্গিক ক্ষতির জন্য দায়ী নয়। তৃতীয় পক্ষের কুরিয়ার সার্ভিসের কারণে ডেলিভারিতে বিলম্বের জন্য আমরা দায়ী নই।",
+    },
+    {
+      heading: "শর্তাবলী পরিবর্তন",
+      content: "আমরা যেকোনো সময় এই শর্তাবলী পরিবর্তন করার অধিকার রাখি। পরিবর্তনের পরও সাইট ব্যবহার অব্যাহত রাখলে আপনি নতুন শর্তাবলী মেনে নিয়েছেন বলে গণ্য হবে।",
+    },
+  ],
+};
+/* ─────────────────────────────────────────────────── */
 
 function QAEditor({ items, onChange }) {
-  const add = () => onChange([...items, { ...EMPTY_QA }]);
+  const add    = () => onChange([...items, { question: "", answer: "" }]);
   const remove = (i) => onChange(items.filter((_, idx) => idx !== i));
-  const update = (i, field, value) => {
-    const next = items.map((it, idx) =>
-      idx === i ? { ...it, [field]: value } : it,
-    );
-    onChange(next);
-  };
+  const update = (i, field, value) =>
+    onChange(items.map((it, idx) => (idx === i ? { ...it, [field]: value } : it)));
 
   return (
     <div className="space-y-4">
       {items.map((item, i) => (
         <div key={i} className="border border-gray-200 rounded-xl p-4 bg-gray-50 relative">
           <span className="absolute top-3 left-3 text-xs text-gray-400 font-mono">#{i + 1}</span>
-          <button
-            type="button"
-            onClick={() => remove(i)}
-            className="absolute top-3 right-3 text-red-400 hover:text-red-600 text-xs"
-            title="মুছুন"
-          >
+          <button type="button" onClick={() => remove(i)}
+            className="absolute top-3 right-3 text-red-400 hover:text-red-600 text-xs">
             ✕ মুছুন
           </button>
           <div className="mt-4 space-y-2">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">প্রশ্ন (Question)</label>
-              <input
-                value={item.question}
-                onChange={(e) => update(i, "question", e.target.value)}
+              <label className="block text-xs font-medium text-gray-600 mb-1">প্রশ্ন</label>
+              <input value={item.question} onChange={(e) => update(i, "question", e.target.value)}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-400"
-                placeholder="প্রশ্ন লিখুন…"
-              />
+                placeholder="প্রশ্ন লিখুন…" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">উত্তর (Answer)</label>
-              <textarea
-                value={item.answer}
-                onChange={(e) => update(i, "answer", e.target.value)}
+              <label className="block text-xs font-medium text-gray-600 mb-1">উত্তর</label>
+              <textarea value={item.answer} onChange={(e) => update(i, "answer", e.target.value)}
                 rows={4}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-400 resize-y"
-                placeholder="উত্তর লিখুন… (নতুন লাইনের জন্য Enter চাপুন)"
-              />
+                placeholder="উত্তর লিখুন…" />
             </div>
           </div>
         </div>
       ))}
-      <button
-        type="button"
-        onClick={add}
-        className="w-full border-2 border-dashed border-gray-300 hover:border-indigo-400 text-gray-500 hover:text-indigo-600 rounded-xl py-3 text-sm transition"
-      >
+      <button type="button" onClick={add}
+        className="w-full border-2 border-dashed border-gray-300 hover:border-indigo-400 text-gray-500 hover:text-indigo-600 rounded-xl py-3 text-sm transition">
         + নতুন প্রশ্ন যোগ করুন
       </button>
     </div>
@@ -73,56 +240,39 @@ function QAEditor({ items, onChange }) {
 }
 
 function SectionEditor({ items, onChange }) {
-  const add = () => onChange([...items, { ...EMPTY_SECTION }]);
+  const add    = () => onChange([...items, { heading: "", content: "" }]);
   const remove = (i) => onChange(items.filter((_, idx) => idx !== i));
-  const update = (i, field, value) => {
-    const next = items.map((it, idx) =>
-      idx === i ? { ...it, [field]: value } : it,
-    );
-    onChange(next);
-  };
+  const update = (i, field, value) =>
+    onChange(items.map((it, idx) => (idx === i ? { ...it, [field]: value } : it)));
 
   return (
     <div className="space-y-4">
       {items.map((item, i) => (
         <div key={i} className="border border-gray-200 rounded-xl p-4 bg-gray-50 relative">
           <span className="absolute top-3 left-3 text-xs text-gray-400 font-mono">#{i + 1}</span>
-          <button
-            type="button"
-            onClick={() => remove(i)}
-            className="absolute top-3 right-3 text-red-400 hover:text-red-600 text-xs"
-            title="মুছুন"
-          >
+          <button type="button" onClick={() => remove(i)}
+            className="absolute top-3 right-3 text-red-400 hover:text-red-600 text-xs">
             ✕ মুছুন
           </button>
           <div className="mt-4 space-y-2">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">শিরোনাম (Heading)</label>
-              <input
-                value={item.heading}
-                onChange={(e) => update(i, "heading", e.target.value)}
+              <label className="block text-xs font-medium text-gray-600 mb-1">শিরোনাম</label>
+              <input value={item.heading} onChange={(e) => update(i, "heading", e.target.value)}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-400"
-                placeholder="বিভাগের শিরোনাম লিখুন…"
-              />
+                placeholder="বিভাগের শিরোনাম লিখুন…" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">বিষয়বস্তু (Content)</label>
-              <textarea
-                value={item.content}
-                onChange={(e) => update(i, "content", e.target.value)}
+              <label className="block text-xs font-medium text-gray-600 mb-1">বিষয়বস্তু</label>
+              <textarea value={item.content} onChange={(e) => update(i, "content", e.target.value)}
                 rows={5}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-400 resize-y"
-                placeholder="বিষয়বস্তু লিখুন… (নতুন লাইনের জন্য Enter চাপুন)"
-              />
+                placeholder="বিষয়বস্তু লিখুন…" />
             </div>
           </div>
         </div>
       ))}
-      <button
-        type="button"
-        onClick={add}
-        className="w-full border-2 border-dashed border-gray-300 hover:border-indigo-400 text-gray-500 hover:text-indigo-600 rounded-xl py-3 text-sm transition"
-      >
+      <button type="button" onClick={add}
+        className="w-full border-2 border-dashed border-gray-300 hover:border-indigo-400 text-gray-500 hover:text-indigo-600 rounded-xl py-3 text-sm transition">
         + নতুন বিভাগ যোগ করুন
       </button>
     </div>
@@ -130,20 +280,13 @@ function SectionEditor({ items, onChange }) {
 }
 
 export default function PolicyPagesEditor() {
-  const [activeTab, setActiveTab] = useState("shipping");
-  const [policyContent, setPolicyContent] = useState({
-    shipping: [],
-    return: [],
-    faq: [],
-    privacy: [],
-    terms: [],
-  });
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [activeTab, setActiveTab]       = useState("shipping");
+  const [policyContent, setPolicyContent] = useState({ shipping: [], return: [], faq: [], privacy: [], terms: [] });
+  const [loading, setLoading]           = useState(true);
+  const [saving, setSaving]             = useState(false);
+  const [toast, setToast]               = useState("");
 
   useEffect(() => {
-    setLoading(true);
     fetch(`${API}/api/admin/settings`, { credentials: "include" })
       .then((r) => r.json())
       .then((b) => {
@@ -160,26 +303,22 @@ export default function PolicyPagesEditor() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleChange = (key, value) => {
-    setPolicyContent((prev) => ({ ...prev, [key]: value }));
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(""), 3000);
   };
 
-  const handleSave = async () => {
+  const save = async (data) => {
     setSaving(true);
-    setSaved(false);
     try {
       const resp = await fetch(`${API}/api/admin/settings`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ policyContent }),
+        body: JSON.stringify({ policyContent: data }),
       });
-      if (!resp.ok) {
-        const body = await resp.json();
-        throw new Error(body.error || "Save failed");
-      }
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+      if (!resp.ok) throw new Error((await resp.json()).error || "Save failed");
+      showToast("✅ সেভ হয়েছে!");
     } catch (err) {
       alert(err.message || "সেভ করতে সমস্যা হয়েছে");
     } finally {
@@ -187,34 +326,65 @@ export default function PolicyPagesEditor() {
     }
   };
 
+  const handleSave = () => save(policyContent);
+
+  const handleQuickSetup = async () => {
+    if (!confirm("সব ট্যাবে বাংলা কনটেন্ট যোগ করে সেভ করা হবে। বিদ্যমান কনটেন্ট মুছে যাবে। নিশ্চিত?")) return;
+    setPolicyContent(DEFAULT_CONTENT);
+    await save(DEFAULT_CONTENT);
+  };
+
+  const handleChange = (key, value) =>
+    setPolicyContent((prev) => ({ ...prev, [key]: value }));
+
+  const handleLoadTabDefault = () => {
+    if (!confirm(`"${TABS.find(t => t.key === activeTab)?.label}" ট্যাবে default কনটেন্ট লোড করা হবে। নিশ্চিত?`)) return;
+    setPolicyContent((prev) => ({ ...prev, [activeTab]: DEFAULT_CONTENT[activeTab] }));
+    showToast("Default কনটেন্ট লোড হয়েছে — সেভ করুন");
+  };
+
   if (loading)
-    return (
-      <div className="text-center py-16 text-gray-400 text-sm">লোড হচ্ছে…</div>
-    );
+    return <div className="text-center py-16 text-gray-400 text-sm">লোড হচ্ছে…</div>;
 
   const activeTabConfig = TABS.find((t) => t.key === activeTab);
+  const totalItems = Object.values(policyContent).reduce((s, a) => s + a.length, 0);
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto space-y-4">
+
+      {/* Quick Setup banner — shown when DB is empty */}
+      {totalItems === 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-amber-800">কনটেন্ট এখনো যোগ করা হয়নি</p>
+            <p className="text-xs text-amber-600 mt-0.5">নিচের বাটনে ক্লিক করলে সব পলিসি পেজে বাংলা কনটেন্ট একসাথে সেভ হয়ে যাবে।</p>
+          </div>
+          <button onClick={handleQuickSetup} disabled={saving}
+            className="shrink-0 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-lg transition disabled:opacity-60">
+            {saving ? "সেভ হচ্ছে…" : "⚡ Quick Setup — সব কনটেন্ট যোগ করুন"}
+          </button>
+        </div>
+      )}
+
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        {/* Header */}
         <div className="border-b border-gray-100 px-6 py-4 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-gray-800">Policy Pages Editor</h2>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Dashboard থেকে সাইটের সব পলিসি পেজের কনটেন্ট এডিট করুন
-            </p>
+            <p className="text-xs text-gray-500 mt-0.5">Dashboard থেকে সাইটের সব পলিসি পেজ এডিট করুন</p>
           </div>
           <div className="flex items-center gap-3">
-            {saved && (
-              <span className="text-xs text-green-600 bg-green-50 px-3 py-1 rounded-full">
-                সেভ হয়েছে!
+            {toast && (
+              <span className="text-xs text-green-700 bg-green-50 border border-green-200 px-3 py-1 rounded-full">
+                {toast}
               </span>
             )}
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-sm font-medium rounded-lg transition"
-            >
+            <button onClick={handleQuickSetup} disabled={saving}
+              className="px-3 py-1.5 text-xs border border-amber-300 text-amber-700 hover:bg-amber-50 rounded-lg transition disabled:opacity-60">
+              ⚡ Quick Setup
+            </button>
+            <button onClick={handleSave} disabled={saving}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-sm font-medium rounded-lg transition">
               {saving ? "সেভ হচ্ছে…" : "সেভ করুন"}
             </button>
           </div>
@@ -223,16 +393,13 @@ export default function PolicyPagesEditor() {
         {/* Tabs */}
         <div className="flex gap-1 px-4 pt-3 border-b border-gray-100 overflow-x-auto">
           {TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
+            <button key={tab.key} onClick={() => setActiveTab(tab.key)}
               className={`px-4 py-2 text-sm font-medium rounded-t-lg whitespace-nowrap transition border-b-2 ${
                 activeTab === tab.key
                   ? "border-indigo-500 text-indigo-700 bg-indigo-50"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              {tab.label}
+              }`}>
+              {tab.icon} {tab.label}
               <span className="ml-1.5 text-xs text-gray-400">
                 ({(policyContent[tab.key] || []).length})
               </span>
@@ -242,43 +409,37 @@ export default function PolicyPagesEditor() {
 
         {/* Editor body */}
         <div className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="text-sm font-medium text-gray-700">
-              {activeTabConfig?.label} পেজের কনটেন্ট
-            </span>
-            <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
-              /{activeTab === "faq" ? "faq" : activeTab === "shipping" ? "shipping" : activeTab === "return" ? "returns" : activeTab}
-            </span>
-            <span className="text-xs text-gray-400">
-              — ফাঁকা রাখলে সাইটের default কনটেন্ট দেখাবে
-            </span>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700">
+                {activeTabConfig?.icon} {activeTabConfig?.label} পেজ
+              </span>
+              <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
+                /{activeTab === "faq" ? "faq" : activeTab === "shipping" ? "shipping" : activeTab === "return" ? "returns" : activeTab}
+              </span>
+            </div>
+            <button onClick={handleLoadTabDefault}
+              className="text-xs text-indigo-600 hover:text-indigo-800 border border-indigo-200 hover:bg-indigo-50 px-3 py-1 rounded-lg transition">
+              এই ট্যাবে default কনটেন্ট লোড করুন
+            </button>
           </div>
 
           {activeTabConfig?.type === "qa" ? (
-            <QAEditor
-              items={policyContent[activeTab] || []}
-              onChange={(val) => handleChange(activeTab, val)}
-            />
+            <QAEditor items={policyContent[activeTab] || []}
+              onChange={(val) => handleChange(activeTab, val)} />
           ) : (
-            <SectionEditor
-              items={policyContent[activeTab] || []}
-              onChange={(val) => handleChange(activeTab, val)}
-            />
+            <SectionEditor items={policyContent[activeTab] || []}
+              onChange={(val) => handleChange(activeTab, val)} />
           )}
         </div>
 
-        <div className="border-t border-gray-100 px-6 py-3 bg-gray-50 flex justify-end gap-3">
-          <button
-            onClick={() => handleChange(activeTab, [])}
-            className="text-xs text-gray-400 hover:text-red-500 transition"
-          >
-            এই পেজ রিসেট করুন (ফাঁকা করুন)
+        <div className="border-t border-gray-100 px-6 py-3 bg-gray-50 flex justify-between items-center">
+          <button onClick={() => { handleChange(activeTab, []); showToast("ট্যাব খালি করা হয়েছে"); }}
+            className="text-xs text-gray-400 hover:text-red-500 transition">
+            এই ট্যাব রিসেট করুন
           </button>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-sm font-medium rounded-lg transition"
-          >
+          <button onClick={handleSave} disabled={saving}
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-sm font-medium rounded-lg transition">
             {saving ? "সেভ হচ্ছে…" : "সেভ করুন"}
           </button>
         </div>

@@ -1,7 +1,8 @@
-import CategoryPageWrapper from './PageClient';
+import CategoryPageWrapper from "./PageClient";
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://smartproductbuy.com';
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://smartproductbuy.com";
 
 function flattenCategories(cats) {
   const result = [];
@@ -16,10 +17,10 @@ function flattenCategories(cats) {
 }
 
 export async function generateStaticParams() {
-  const params = [{ slug: '__placeholder__' }];
+  const params = [{ slug: "__placeholder__" }];
   try {
     const res = await fetch(`${API}/api/products/categories`, {
-      cache: 'force-cache',
+      cache: "force-cache",
     });
     if (!res.ok) return params;
     const { categories = [] } = await res.json();
@@ -32,26 +33,26 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  if (slug === '__placeholder__') {
+  if (slug === "__placeholder__") {
     return {
-      title: 'Shop by Category',
+      title: "Shop by Category",
       description:
-        'Browse gadgets and electronics by category at SmartBuy BD. Best prices, fast delivery across Bangladesh.',
+        "Browse gadgets and electronics by category at Pickob. Best prices, fast delivery across Bangladesh.",
     };
   }
   try {
     const res = await fetch(`${API}/api/products/categories`, {
-      cache: 'force-cache',
+      cache: "force-cache",
     });
-    if (!res.ok) throw new Error('not found');
+    if (!res.ok) throw new Error("not found");
     const { categories = [] } = await res.json();
     const category = flattenCategories(categories).find((c) => c.slug === slug);
-    if (!category) throw new Error('not found');
+    if (!category) throw new Error("not found");
 
-    const title = `${category.name} — Gadgets & Electronics | SmartBuy BD`;
+    const title = `${category.name} — Gadgets & Electronics | Pickob`;
     const description =
       category.description ||
-      `Browse ${category.name} at SmartBuy BD — gadgets and electronics with best prices and fast delivery across Bangladesh.`;
+      `Browse ${category.name} at Pickob — gadgets and electronics with best prices and fast delivery across Bangladesh.`;
     const categoryUrl = `${SITE_URL}/category/${slug}`;
     const image = category.images?.[0]?.url || `${SITE_URL}/mainLogo.png`;
 
@@ -63,11 +64,11 @@ export async function generateMetadata({ params }) {
         title,
         description,
         url: categoryUrl,
-        type: 'website',
+        type: "website",
         images: [{ url: image, width: 800, height: 600, alt: title }],
       },
       twitter: {
-        card: 'summary_large_image',
+        card: "summary_large_image",
         title,
         description,
         images: [image],
@@ -75,9 +76,9 @@ export async function generateMetadata({ params }) {
     };
   } catch {
     return {
-      title: 'Shop by Category',
+      title: "Shop by Category",
       description:
-        'Browse gadgets and electronics by category at SmartBuy BD. Best prices, fast delivery across Bangladesh.',
+        "Browse gadgets and electronics by category at Pickob. Best prices, fast delivery across Bangladesh.",
     };
   }
 }

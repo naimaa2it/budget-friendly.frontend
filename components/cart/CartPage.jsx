@@ -42,7 +42,7 @@ export default function CartPage() {
     try {
       const url = await shareCart();
       if (navigator.share) {
-        await navigator.share({ title: "My SmartBuy BD Cart", url });
+        await navigator.share({ title: "My Pickob Cart", url });
       } else {
         await navigator.clipboard?.writeText(url);
         toast.success("Cart link copied to clipboard!");
@@ -287,7 +287,8 @@ export default function CartPage() {
                           }}
                           className="flex items-center gap-1 mb-2 text-xs text-blue-600 hover:underline"
                         >
-                          <FaPencilAlt className="w-3 h-3" /> {t("cart.select_option")}
+                          <FaPencilAlt className="w-3 h-3" />{" "}
+                          {t("cart.select_option")}
                         </button>
                       )
                     )}
@@ -301,13 +302,16 @@ export default function CartPage() {
                         }}
                         className="flex items-center gap-1 mb-2 text-xs text-green-600 hover:text-green-700 hover:underline"
                       >
-                        <FaPlus className="w-2.5 h-2.5" /> {t("cart.add_size_color")}
+                        <FaPlus className="w-2.5 h-2.5" />{" "}
+                        {t("cart.add_size_color")}
                       </button>
                     )}
 
                     <div className="flex items-center gap-3 md:gap-4 mb-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-600">{t("cart.price")}</span>
+                        <span className="text-sm text-gray-600">
+                          {t("cart.price")}
+                        </span>
                         <span className="text-base md:text-lg font-bold text-red-600">
                           ৳{price.toFixed(2)}
                         </span>
@@ -353,7 +357,9 @@ export default function CartPage() {
                         </button>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-600">{t("checkout.total")}</span>
+                        <span className="text-sm text-gray-600">
+                          {t("checkout.total")}
+                        </span>
                         <span className="text-lg md:text-xl font-bold text-gray-900">
                           ৳{(price * quantity).toFixed(2)}
                         </span>
@@ -387,13 +393,16 @@ export default function CartPage() {
         <div className="bg-[#FFF5ED] rounded-lg shadow p-6 mb-6 -mt-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-2 md:mb-6">
             <div>
-              <h2 className="text-2xl font-bold mb-2">{t("cart.cart_total")}</h2>
+              <h2 className="text-2xl font-bold mb-2">
+                {t("cart.cart_total")}
+              </h2>
               <p className="text-3xl font-bold text-red-600">
                 ৳{subtotal.toFixed(2)}
               </p>
               {saved > 0 && (
                 <p className="text-sm text-green-600 mt-2">
-                  {t("checkout.you_saving_prefix")} ৳{saved.toFixed(2)} {t("checkout.you_saving_suffix")}
+                  {t("checkout.you_saving_prefix")} ৳{saved.toFixed(2)}{" "}
+                  {t("checkout.you_saving_suffix")}
                 </p>
               )}
               {anyFreeShip && (

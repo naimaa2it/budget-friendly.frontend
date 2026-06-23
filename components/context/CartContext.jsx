@@ -15,8 +15,8 @@ const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 const CartContext = createContext(null);
 
 // Storage keys
-const CART_STORAGE_KEY = "SmartBuy BD_cart";
-const WISHLIST_STORAGE_KEY = "SmartBuy BD_wishlist";
+const CART_STORAGE_KEY = "Pickob_cart";
+const WISHLIST_STORAGE_KEY = "Pickob_wishlist";
 
 const getStorageItem = (key, defaultValue = null) => {
   if (typeof window === "undefined") return defaultValue;

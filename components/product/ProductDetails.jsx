@@ -245,7 +245,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
           product.availability === "out_of_stock"
             ? "https://schema.org/OutOfStock"
             : "https://schema.org/InStock",
-        seller: { "@type": "Organization", name: "SmartBuy BD" },
+        seller: { "@type": "Organization", name: "Pickob" },
       },
       ...(product.averageRating > 0 && product.reviewCount > 0
         ? {
@@ -285,13 +285,13 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
       product.seo?.description ||
       (typeof product.description === "string"
         ? product.description.replace(/<[^>]*>/g, "").slice(0, 160)
-        : `Buy ${product.title} at SmartBuy BD. Best price, fast delivery across Bangladesh.`);
+        : `Buy ${product.title} at Pickob. Best price, fast delivery across Bangladesh.`);
     const seoKeywords = (product.seo?.keywords || []).join(", ");
     const seoImage = product.images?.[0]?.url || `${SITE_URL}/mainLogo.png`;
     const productUrl = `${SITE_URL}/product/${product._id}`;
 
     const prevTitle = document.title;
-    document.title = `${seoTitle} | SmartBuy BD`;
+    document.title = `${seoTitle} | Pickob`;
 
     const setMeta = (selector, attr, value) => {
       let el = document.querySelector(selector);
@@ -307,20 +307,12 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
 
     setMeta('meta[name="description"]', "content", seoDesc);
     if (seoKeywords) setMeta('meta[name="keywords"]', "content", seoKeywords);
-    setMeta(
-      'meta[property="og:title"]',
-      "content",
-      `${seoTitle} | SmartBuy BD`,
-    );
+    setMeta('meta[property="og:title"]', "content", `${seoTitle} | Pickob`);
     setMeta('meta[property="og:description"]', "content", seoDesc);
     setMeta('meta[property="og:image"]', "content", seoImage);
     setMeta('meta[property="og:url"]', "content", productUrl);
     setMeta('meta[property="og:type"]', "content", "website");
-    setMeta(
-      'meta[name="twitter:title"]',
-      "content",
-      `${seoTitle} | SmartBuy BD`,
-    );
+    setMeta('meta[name="twitter:title"]', "content", `${seoTitle} | Pickob`);
     setMeta('meta[name="twitter:description"]', "content", seoDesc);
     setMeta('meta[name="twitter:image"]', "content", seoImage);
 

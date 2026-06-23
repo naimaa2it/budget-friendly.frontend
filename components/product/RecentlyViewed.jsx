@@ -11,7 +11,7 @@ import {
 } from "react-icons/fa";
 import { useCart } from "@/components/context/CartContext";
 
-const STORAGE_KEY = "SmartBuy BD_recentlyViewed";
+const STORAGE_KEY = "Pickob_recentlyViewed";
 const MAX_ITEMS = 30;
 
 export function saveRecentlyViewed(product) {

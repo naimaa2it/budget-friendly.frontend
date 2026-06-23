@@ -83,7 +83,7 @@ export default function ScanPage() {
           href="/"
           className="text-lg font-bold text-rose-600 tracking-tight"
         >
-          SmartBuy BD
+          Pickob
         </Link>
         <Link
           href="/"
@@ -184,7 +184,7 @@ export default function ScanPage() {
       </main>
 
       <footer className="text-center py-4 text-xs text-gray-400">
-        © SmartBuy BD — Scan to shop
+        © Pickob — Scan to shop
       </footer>
     </div>
   );

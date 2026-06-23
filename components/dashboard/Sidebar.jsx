@@ -7,7 +7,7 @@ import { useUser } from "@/components/context/UserContext";
 import { useStoreSettings } from "@/components/context/StoreSettingsContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-const STORAGE_KEY = "SmartBuy BD-dashboard-sidebar-collapsed";
+const STORAGE_KEY = "Pickob-dashboard-sidebar-collapsed";
 
 // Mirrors backend lib/permissions.js: admins always have full access, and a
 // moderator with no permissions assigned keeps full access too — assigning
@@ -15,7 +15,8 @@ const STORAGE_KEY = "SmartBuy BD-dashboard-sidebar-collapsed";
 function hasPermission(user, key) {
   if (!user) return false;
   if (user.role === "admin") return true;
-  if (!Array.isArray(user.permissions) || user.permissions.length === 0) return true;
+  if (!Array.isArray(user.permissions) || user.permissions.length === 0)
+    return true;
   return user.permissions.includes(key);
 }
 
@@ -148,10 +149,7 @@ const SECTIONS = [
     label: "Orders",
     icon: SECTION_ICONS.commerce,
     permissionKey: "orders",
-    matchPrefixes: [
-      "/dashboard/orders",
-      "/dashboard/orders/order-pick",
-    ],
+    matchPrefixes: ["/dashboard/orders", "/dashboard/orders/order-pick"],
     items: [
       {
         key: "all-orders",
@@ -431,7 +429,11 @@ const SECTIONS = [
     key: "system",
     label: "System",
     icon: SECTION_ICONS.system,
-    matchPrefixes: ["/dashboard/authorized", "/dashboard/settings", "/dashboard/policy-pages"],
+    matchPrefixes: [
+      "/dashboard/authorized",
+      "/dashboard/settings",
+      "/dashboard/policy-pages",
+    ],
     items: [
       {
         key: "authorized",
@@ -653,7 +655,9 @@ export default function Sidebar({
               />
             ) : (
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-pink-500 to-rose-500 text-sm font-bold text-white shadow-sm">
-                {storeName ? storeName.replace(/\s+/g, "").slice(0, 2).toUpperCase() : "SB"}
+                {storeName
+                  ? storeName.replace(/\s+/g, "").slice(0, 2).toUpperCase()
+                  : "SB"}
               </span>
             )}
             {!collapsed && (

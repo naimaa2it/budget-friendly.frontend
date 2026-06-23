@@ -84,9 +84,8 @@ export default function CustomersList() {
           <div>
             <h2 className="text-xl font-bold text-gray-900">Customers</h2>
             <p className="text-sm text-gray-500 mt-0.5">
-              Search by name, email, or mobile. List shows SmartBuy BD stats —
-              open profile for lifetime courier fraud check
-              (Pathao/Steadfast/RedX).
+              Search by name, email, or mobile. List shows Pickob stats — open
+              profile for lifetime courier fraud check (Pathao/Steadfast/RedX).
             </p>
           </div>
           <input

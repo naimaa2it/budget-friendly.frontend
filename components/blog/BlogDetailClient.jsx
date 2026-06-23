@@ -161,14 +161,14 @@ export default function BlogDetailClient({ slug }) {
       blog.seo?.description ||
       blog.excerpt ||
       truncateText(blog.content?.replace(/<[^>]*>/g, ""), 160) ||
-      `Read ${blog.title} on the SmartBuy BD blog.`;
+      `Read ${blog.title} on the Pickob blog.`;
     const seoKeywords = (blog.seo?.keywords || blog.tags || []).join(", ");
     const imageUrl = getImageUrl(blog.featuredImage, blog.thumbnail);
     const seoImage = imageUrl || `${SITE_URL}/mainLogo.png`;
     const blogUrl = `${SITE_URL}/blog/${slug}`;
 
     const prevTitle = document.title;
-    document.title = `${seoTitle} | SmartBuy BD`;
+    document.title = `${seoTitle} | Pickob`;
 
     const setMeta = (selector, attr, value) => {
       let el = document.querySelector(selector);
@@ -183,12 +183,12 @@ export default function BlogDetailClient({ slug }) {
 
     setMeta('meta[name="description"]', "content", seoDesc);
     if (seoKeywords) setMeta('meta[name="keywords"]', "content", seoKeywords);
-    setMeta('meta[property="og:title"]', "content", `${seoTitle} | SmartBuy BD`);
+    setMeta('meta[property="og:title"]', "content", `${seoTitle} | Pickob`);
     setMeta('meta[property="og:description"]', "content", seoDesc);
     setMeta('meta[property="og:image"]', "content", seoImage);
     setMeta('meta[property="og:url"]', "content", blogUrl);
     setMeta('meta[property="og:type"]', "content", "article");
-    setMeta('meta[name="twitter:title"]', "content", `${seoTitle} | SmartBuy BD`);
+    setMeta('meta[name="twitter:title"]', "content", `${seoTitle} | Pickob`);
     setMeta('meta[name="twitter:description"]', "content", seoDesc);
     setMeta('meta[name="twitter:image"]', "content", seoImage);
 
@@ -208,8 +208,8 @@ export default function BlogDetailClient({ slug }) {
       image: imageUrl ? [imageUrl] : undefined,
       datePublished: blog.publishedAt || blog.publishDate || blog.createdAt,
       dateModified: blog.updatedAt || blog.publishedAt || blog.createdAt,
-      author: { "@type": "Organization", name: "SmartBuy BD" },
-      publisher: { "@type": "Organization", name: "SmartBuy BD" },
+      author: { "@type": "Organization", name: "Pickob" },
+      publisher: { "@type": "Organization", name: "Pickob" },
       mainEntityOfPage: blogUrl,
     };
     const existing = document.getElementById("blog-jsonld");

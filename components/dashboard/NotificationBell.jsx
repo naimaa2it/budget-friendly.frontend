@@ -7,7 +7,7 @@ import { useUser } from "@/components/context/UserContext";
 import { FaBell } from "react-icons/fa";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-const STORAGE_KEY = "SmartBuy BD-dashboard-notif-last-seen";
+const STORAGE_KEY = "Pickob-dashboard-notif-last-seen";
 const POLL_INTERVAL_MS = 30000;
 
 // Mirrors backend lib/permissions.js — the bell only polls the orders
@@ -15,7 +15,8 @@ const POLL_INTERVAL_MS = 30000;
 function canSeeOrders(user) {
   if (!user) return false;
   if (user.role === "admin") return true;
-  if (!Array.isArray(user.permissions) || user.permissions.length === 0) return true;
+  if (!Array.isArray(user.permissions) || user.permissions.length === 0)
+    return true;
   return user.permissions.includes("orders");
 }
 

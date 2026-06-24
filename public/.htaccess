@@ -19,6 +19,7 @@ DirectoryIndex index.html
 
   RewriteRule ^product/([^/]+)/?$ /product/__placeholder__/index.html [L]
   RewriteRule ^blog/([^/]+)/?$ /blog/__placeholder__/index.html [L]
+  RewriteRule ^category/([^/]+)/([^/]+)/?$ /category/__placeholder__/__placeholder__/index.html [L]
   RewriteRule ^category/([^/]+)/?$ /category/__placeholder__/index.html [L]
   RewriteRule ^barcode/([^/]+)/?$ /barcode/__placeholder__/index.html [L]
   RewriteRule ^scan/([^/]+)/?$ /scan/__placeholder__/index.html [L]

@@ -2,7 +2,7 @@ import TagPageClient from "@/components/category/TagPageClient";
 import { getStoreName } from "@/lib/storeMeta";
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://smartproductbuy.com";
+  process.env.NEXT_PUBLIC_SITE_URL || "http://pickob.com";
 
 const TAG_LABELS = {
   "best-seller": "Best Sellers",

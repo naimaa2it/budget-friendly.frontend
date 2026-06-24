@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
@@ -154,7 +154,7 @@ export default function BlogDetailClient({ slug }) {
     if (!blog) return;
 
     const SITE_URL =
-      process.env.NEXT_PUBLIC_SITE_URL || "https://smartproductbuy.com";
+      process.env.NEXT_PUBLIC_SITE_URL || "http://pickob.com";
 
     const seoTitle = blog.seo?.title || blog.title;
     const seoDesc =

@@ -1,4 +1,4 @@
-import { Work_Sans } from "next/font/google";
+﻿import { Work_Sans } from "next/font/google";
 import "./globals.css";
 import { UserProvider } from "@/components/context/UserContext";
 import { CartProvider } from "@/components/context/CartContext";
@@ -19,7 +19,7 @@ import CompareBar from "@/components/product/CompareBar";
 import GlobalScrollFix from "@/components/ui/GlobalScrollFix";
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://smartproductbuy.com";
+  process.env.NEXT_PUBLIC_SITE_URL || "http://pickob.com";
 
 const workSans = Work_Sans({
   variable: "--font-work-sans",

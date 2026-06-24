@@ -1,7 +1,7 @@
-export const dynamic = "force-static";
+﻿export const dynamic = "force-static";
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://smartproductbuy.com";
+  process.env.NEXT_PUBLIC_SITE_URL || "http://pickob.com";
 
 export default function robots() {
   return {

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -217,7 +217,7 @@ export default function CategoryPageClient({ slug }) {
     metaDesc.setAttribute("content", descContent);
 
     const SITE_URL =
-      process.env.NEXT_PUBLIC_SITE_URL || "https://smartproductbuy.com";
+      process.env.NEXT_PUBLIC_SITE_URL || "http://pickob.com";
     let canonical = document.querySelector('link[rel="canonical"]');
     if (!canonical) {
       canonical = document.createElement("link");

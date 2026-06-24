@@ -2,7 +2,7 @@ import CategoryPageWrapper from "./PageClient";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://smartproductbuy.com";
+  process.env.NEXT_PUBLIC_SITE_URL || "http://pickob.com";
 
 function flattenCategories(cats) {
   const result = [];

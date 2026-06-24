@@ -76,8 +76,15 @@ export function CategoryProvider({ children }) {
     return categoriesMap[id] || null;
   };
 
-  const getCategoryBySlug = (slug) => {
-    return Object.values(categoriesMap).find(cat => cat.slug === slug) || null;
+  const getCategoryBySlug = (slug, parentId = null) => {
+    const all = Object.values(categoriesMap);
+    if (parentId) {
+      const withParent = all.find(
+        cat => cat.slug === slug && String(cat.parent) === String(parentId)
+      );
+      if (withParent) return withParent;
+    }
+    return all.find(cat => cat.slug === slug) || null;
   };
 
   const getSubcategories = (parentId) => {

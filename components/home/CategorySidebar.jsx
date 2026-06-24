@@ -26,7 +26,12 @@ const CategorySidebar = ({ onLinkClick }) => {
   }, []);
 
   const updateFlyoutTop = useCallback((categoryId) => {
-    if (!categoryId || !categoryRefs.current[categoryId] || !containerRef.current) return;
+    if (
+      !categoryId ||
+      !categoryRefs.current[categoryId] ||
+      !containerRef.current
+    )
+      return;
     const itemEl = categoryRefs.current[categoryId];
     const containerRect = containerRef.current.getBoundingClientRect();
     const itemRect = itemEl.getBoundingClientRect();
@@ -56,7 +61,9 @@ const CategorySidebar = ({ onLinkClick }) => {
   };
 
   const getSubcategoriesLevel1 = (categoryId) => {
-    return (subcategories[categoryId] || []).filter((s) => s.level === 1 || !s.level);
+    return (subcategories[categoryId] || []).filter(
+      (s) => s.level === 1 || !s.level,
+    );
   };
 
   const getSubSubcategories = (subcategoryId) => {
@@ -86,8 +93,8 @@ const CategorySidebar = ({ onLinkClick }) => {
         {/* All Products — always at top */}
         <div className="border-b border-gray-200">
           <Link
-            href="/search"
-            className="w-full flex items-center gap-3 px-4 py-2 transition-colors duration-200 hover:bg-pink-50 group"
+            href="/products"
+            className="w-full flex items-center gap-3 px-4 py-1 transition-colors duration-200 hover:bg-pink-50 group"
             onClick={handleLinkClick}
           >
             <span className="text-xl">🛍️</span>
@@ -113,7 +120,9 @@ const CategorySidebar = ({ onLinkClick }) => {
               return (
                 <div
                   key={category._id}
-                  ref={(el) => { categoryRefs.current[category._id] = el; }}
+                  ref={(el) => {
+                    categoryRefs.current[category._id] = el;
+                  }}
                   className="border-b border-gray-200"
                   onMouseEnter={() => hasSubs && handleMouseEnter(category._id)}
                 >
@@ -159,17 +168,19 @@ const CategorySidebar = ({ onLinkClick }) => {
                     {expandedCategory === category._id && (
                       <div className="bg-gray-50 border-t border-gray-100 px-4 py-2">
                         <div className="grid grid-cols-2 gap-x-4 gap-y-0">
-                          {(subcategories[category._id] || []).map((subcategory) => (
-                            <Link
-                              key={subcategory._id}
-                              href={`/category/${subcategory.slug}`}
-                              className="flex items-center gap-1.5 py-1 text-xs text-gray-700 hover:text-rose-600 transition-colors duration-150 border-b border-gray-100"
-                              onClick={handleLinkClick}
-                            >
-                              <span className="w-1 h-1 rounded-full bg-rose-300 shrink-0" />
-                              {subcategory.name}
-                            </Link>
-                          ))}
+                          {(subcategories[category._id] || []).map(
+                            (subcategory) => (
+                              <Link
+                                key={subcategory._id}
+                                href={`/category/${category.slug}/${subcategory.slug}`}
+                                className="flex items-center gap-1.5 py-1 text-xs text-gray-700 hover:text-rose-600 transition-colors duration-150 border-b border-gray-100"
+                                onClick={handleLinkClick}
+                              >
+                                <span className="w-1 h-1 rounded-full bg-rose-300 shrink-0" />
+                                {subcategory.name}
+                              </Link>
+                            ),
+                          )}
                         </div>
                       </div>
                     )}
@@ -211,7 +222,7 @@ const CategorySidebar = ({ onLinkClick }) => {
               {getSubcategoriesLevel1(activeCategory).map((subcategory) => (
                 <Link
                   key={subcategory._id}
-                  href={`/category/${subcategory.slug}`}
+                  href={`/category/${activeCategoryData.slug}/${subcategory.slug}`}
                   className="block py-1.5 text-sm font-normal text-gray-600 whitespace-nowrap hover:text-rose-600 transition-colors"
                   onClick={handleLinkClick}
                 >

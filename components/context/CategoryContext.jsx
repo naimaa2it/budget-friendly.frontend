@@ -87,6 +87,16 @@ export function CategoryProvider({ children }) {
     return all.find(cat => cat.slug === slug) || null;
   };
 
+  const getCategoryBySlugAndParentSlug = (slug, parentSlug) => {
+    const all = Object.values(categoriesMap);
+    return all.find(cat => {
+      if (cat.slug !== slug) return false;
+      if (!cat.parent) return false;
+      const parentCat = categoriesMap[cat.parent];
+      return parentCat && parentCat.slug === parentSlug;
+    }) || null;
+  };
+
   const getSubcategories = (parentId) => {
     return subcategories[parentId] || [];
   };
@@ -112,6 +122,7 @@ export function CategoryProvider({ children }) {
     error,
     getCategoryById,
     getCategoryBySlug,
+    getCategoryBySlugAndParentSlug,
     getSubcategories,
     getMainCategories,
     getAllCategories,

@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import ProductCard from "@/components/product/ProductCard";
 import ProductFilters from "@/components/product/ProductFilters";
 import SortDropdown from "@/components/product/SortDropdown";
@@ -15,11 +15,9 @@ import AdSlot from "@/components/ui/AdSlot";
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 const PRODUCTS_PER_PAGE = 20;
 
-export default function CategoryPageClient({ slug }) {
+export default function CategoryPageClient({ slug, parentSlug = null }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const parentId = searchParams.get("parentId");
-  const { getCategoryBySlug, categoriesMap, getSubcategories } =
+  const { getCategoryBySlug, getCategoryBySlugAndParentSlug, categoriesMap, getSubcategories } =
     useCategories();
   const [category, setCategory] = useState(null);
   const [parentCategory, setParentCategory] = useState(null);
@@ -90,7 +88,9 @@ export default function CategoryPageClient({ slug }) {
       let shouldLoadProducts = false;
       try {
         // Get category from context instead of fetching
-        let match = getCategoryBySlug(slug, parentId);
+        let match = parentSlug
+          ? getCategoryBySlugAndParentSlug(slug, parentSlug)
+          : getCategoryBySlug(slug);
 
         if (!match) {
           setCategory({ name: slug, description: "" });
@@ -194,7 +194,7 @@ export default function CategoryPageClient({ slug }) {
         }
       }
     })();
-  }, [slug, parentId, getCategoryBySlug, categoriesMap, getSubcategories]);
+  }, [slug, parentSlug, getCategoryBySlug, getCategoryBySlugAndParentSlug, categoriesMap, getSubcategories]);
 
   // Update document title, meta description, canonical link, and inject
   // BreadcrumbList JSON-LD client-side — the static export ships a generic
@@ -224,7 +224,8 @@ export default function CategoryPageClient({ slug }) {
       canonical.setAttribute("rel", "canonical");
       document.head.appendChild(canonical);
     }
-    canonical.setAttribute("href", `${SITE_URL}/category/${slug}`);
+    const categoryPath = parentSlug ? `${parentSlug}/${slug}` : slug;
+    canonical.setAttribute("href", `${SITE_URL}/category/${categoryPath}`);
 
     const breadcrumbSchema = {
       "@context": "https://schema.org",
@@ -245,7 +246,7 @@ export default function CategoryPageClient({ slug }) {
           "@type": "ListItem",
           position: parentCategory ? 3 : 2,
           name: category.name,
-          item: `${SITE_URL}/category/${slug}`,
+          item: `${SITE_URL}/category/${parentSlug ? `${parentSlug}/${slug}` : slug}`,
         },
       ],
     };
@@ -410,7 +411,7 @@ export default function CategoryPageClient({ slug }) {
                     className="relative flex flex-col items-center w-full max-w-[92px] md:max-w-[110px]"
                   >
                     <Link
-                      href={`/category/${sslug}?parentId=${category._id}`}
+                      href={`/category/${category.slug}/${sslug}`}
                       className="flex flex-col items-center group cursor-pointer w-full"
                     >
                       <div className="w-18 h-18 md:w-34 md:h-34 lg:w-38 lg:h-38 rounded-full bg-[#FFF5ED] border-4 border-white shadow-md flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform">

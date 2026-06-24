@@ -199,12 +199,13 @@ export default function MegaMenuNavbar() {
               >
                 {getCategorySubcategories(hoveredCategory).map((subcategory) => {
                   const subSubcats = getSubSubcategories(subcategory._id);
+                  const hoveredCategorySlug = categories.find(c => c._id === hoveredCategory)?.slug || '';
 
                   return (
                     <div key={subcategory._id} className="space-y-3">
                       {/* Subcategory with Icon */}
                       <Link
-                        href={`/category/${subcategory.slug}`}
+                        href={`/category/${hoveredCategorySlug}/${subcategory.slug}`}
                         className="flex items-center gap-2.5 group"
                       >
                         {/* Small Icon/Image */}
@@ -235,7 +236,7 @@ export default function MegaMenuNavbar() {
                           {subSubcats.map((subSubcat) => (
                             <li key={subSubcat._id}>
                               <Link
-                                href={`/category/${subSubcat.slug}`}
+                                href={`/category/${subcategory.slug}/${subSubcat.slug}`}
                                 className="text-xs text-gray-600 hover:text-red-600 hover:underline transition-colors block"
                               >
                                 {subSubcat.name}

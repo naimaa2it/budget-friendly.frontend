@@ -83,6 +83,20 @@ const CategorySidebar = ({ onLinkClick }) => {
         style={{ scrollbarWidth: "none" }}
         onScroll={() => activeCategory && updateFlyoutTop(activeCategory)}
       >
+        {/* All Products — always at top */}
+        <div className="border-b border-gray-200">
+          <Link
+            href="/search"
+            className="w-full flex items-center gap-3 px-4 py-2 transition-colors duration-200 hover:bg-pink-50 group"
+            onClick={handleLinkClick}
+          >
+            <span className="text-xl">🛍️</span>
+            <span className="font-medium text-sm text-gray-800 group-hover:text-rose-600 transition-colors whitespace-nowrap">
+              All Products
+            </span>
+          </Link>
+        </div>
+
         {loading
           ? [...Array(6)].map((_, i) => (
               <div key={i} className="border-b border-gray-200 pt-4 pb-3">

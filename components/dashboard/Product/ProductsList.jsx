@@ -227,7 +227,16 @@ export default function ProductsList() {
             </thead>
             <tbody>
               {items.map((p) => (
-                <tr key={p._id} className="border-t">
+                <tr
+                  key={p._id}
+                  className="border-t"
+                  onMouseDown={(e) => {
+                    if (e.button === 1) {
+                      e.preventDefault();
+                      window.open(`/dashboard/products/${p._id}`, "_blank");
+                    }
+                  }}
+                >
                   <td className="py-3">
                     <div className="flex items-center gap-3">
                       {p.images?.[0]?.url ? (

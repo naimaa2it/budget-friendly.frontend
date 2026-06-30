@@ -10,6 +10,17 @@ DirectoryIndex index.html
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
 
+  # ── RSC / flight data payloads (.txt) ──────────────────────────────────
+  # Next.js client-side navigation fetches "<path>.txt" (or "<path>/index.txt")
+  # for the React Server Component payload. For routes that aren't pre-built
+  # (or when the URL has no trailing slash so the file lives at /index.txt),
+  # that exact .txt does NOT exist. We must let it 404 cleanly here — if it
+  # instead fell through to the SPA-shell rewrite below it would return an
+  # HTML document, and the router would hang trying to parse HTML as flight
+  # data (the "click freezes the page" bug). A 404 makes the router fall back
+  # to a normal full-page navigation, which the rules below handle correctly.
+  RewriteRule \.txt$ - [R=404,L]
+
   # ── Public dynamic routes ──────────────────────────────────────────────
   # New products, blogs, categories added after build are served via
   # the __placeholder__ shell; the client component reads the real ID from

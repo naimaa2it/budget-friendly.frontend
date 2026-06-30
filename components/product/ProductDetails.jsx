@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 import ProductInfoTabs from "@/components/product/ProductInfoTabs";
 import {
   FaChevronLeft,
@@ -217,8 +217,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
   // Inject Product JSON-LD schema for SEO
   useEffect(() => {
     if (!product) return;
-    const SITE_URL =
-      process.env.NEXT_PUBLIC_SITE_URL || "https://pickob.com";
+    const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://pickob.com";
     const schema = {
       "@context": "https://schema.org",
       "@type": "Product",
@@ -277,8 +276,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
   useEffect(() => {
     if (!product) return;
 
-    const SITE_URL =
-      process.env.NEXT_PUBLIC_SITE_URL || "https://pickob.com";
+    const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://pickob.com";
 
     const seoTitle = product.seo?.title || product.title;
     const seoDesc =

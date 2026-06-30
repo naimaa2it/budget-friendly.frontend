@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 function Toggle({ checked, onChange }) {
   return (
@@ -20,9 +20,23 @@ function Toggle({ checked, onChange }) {
 }
 
 const DEFAULT = {
-  phoneOrder: { enabled: true, limitDuration: 5, limitDurationUnit: 'minutes', blocklist: "" },
-  ipOrder: { enabled: true, limitDuration: 5, limitDurationUnit: 'minutes', blocklist: "" },
-  deviceOrder: { enabled: true, limitDuration: 5, limitDurationUnit: 'minutes' },
+  phoneOrder: {
+    enabled: true,
+    limitDuration: 5,
+    limitDurationUnit: "minutes",
+    blocklist: "",
+  },
+  ipOrder: {
+    enabled: true,
+    limitDuration: 5,
+    limitDurationUnit: "minutes",
+    blocklist: "",
+  },
+  deviceOrder: {
+    enabled: true,
+    limitDuration: 5,
+    limitDurationUnit: "minutes",
+  },
   active: false,
   installed: true,
 };
@@ -129,12 +143,24 @@ export default function FakeOrderProtectionForm() {
                   min="1"
                   max="9999"
                   value={cfg.phoneOrder.limitDuration}
-                  onChange={(e) => setSection("phoneOrder", "limitDuration", Number(e.target.value))}
+                  onChange={(e) =>
+                    setSection(
+                      "phoneOrder",
+                      "limitDuration",
+                      Number(e.target.value),
+                    )
+                  }
                   className="flex-1 rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-100"
                 />
                 <select
-                  value={cfg.phoneOrder.limitDurationUnit || 'minutes'}
-                  onChange={(e) => setSection("phoneOrder", "limitDurationUnit", e.target.value)}
+                  value={cfg.phoneOrder.limitDurationUnit || "minutes"}
+                  onChange={(e) =>
+                    setSection(
+                      "phoneOrder",
+                      "limitDurationUnit",
+                      e.target.value,
+                    )
+                  }
                   className="rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-100 bg-white"
                 >
                   <option value="minutes">মিনিট</option>
@@ -151,7 +177,9 @@ export default function FakeOrderProtectionForm() {
               </label>
               <textarea
                 value={cfg.phoneOrder.blocklist}
-                onChange={(e) => setSection("phoneOrder", "blocklist", e.target.value)}
+                onChange={(e) =>
+                  setSection("phoneOrder", "blocklist", e.target.value)
+                }
                 rows={3}
                 placeholder="01711111111, 01722222222"
                 className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-100 resize-y"
@@ -166,7 +194,9 @@ export default function FakeOrderProtectionForm() {
             <h2 className="font-semibold text-gray-900">IP Order</h2>
             <Toggle
               checked={cfg.ipOrder.enabled}
-              onChange={(e) => setSection("ipOrder", "enabled", e.target.checked)}
+              onChange={(e) =>
+                setSection("ipOrder", "enabled", e.target.checked)
+              }
             />
           </div>
           <div className="space-y-4">
@@ -180,12 +210,20 @@ export default function FakeOrderProtectionForm() {
                   min="1"
                   max="9999"
                   value={cfg.ipOrder.limitDuration}
-                  onChange={(e) => setSection("ipOrder", "limitDuration", Number(e.target.value))}
+                  onChange={(e) =>
+                    setSection(
+                      "ipOrder",
+                      "limitDuration",
+                      Number(e.target.value),
+                    )
+                  }
                   className="flex-1 rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-100"
                 />
                 <select
-                  value={cfg.ipOrder.limitDurationUnit || 'minutes'}
-                  onChange={(e) => setSection("ipOrder", "limitDurationUnit", e.target.value)}
+                  value={cfg.ipOrder.limitDurationUnit || "minutes"}
+                  onChange={(e) =>
+                    setSection("ipOrder", "limitDurationUnit", e.target.value)
+                  }
                   className="rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-100 bg-white"
                 >
                   <option value="minutes">মিনিট</option>
@@ -202,7 +240,9 @@ export default function FakeOrderProtectionForm() {
               </label>
               <textarea
                 value={cfg.ipOrder.blocklist}
-                onChange={(e) => setSection("ipOrder", "blocklist", e.target.value)}
+                onChange={(e) =>
+                  setSection("ipOrder", "blocklist", e.target.value)
+                }
                 rows={3}
                 placeholder="192.168.0.1, 192.168.0.2"
                 className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-100 resize-y"
@@ -217,7 +257,9 @@ export default function FakeOrderProtectionForm() {
             <h2 className="font-semibold text-gray-900">Device Order</h2>
             <Toggle
               checked={cfg.deviceOrder.enabled}
-              onChange={(e) => setSection("deviceOrder", "enabled", e.target.checked)}
+              onChange={(e) =>
+                setSection("deviceOrder", "enabled", e.target.checked)
+              }
             />
           </div>
           <div>
@@ -230,12 +272,20 @@ export default function FakeOrderProtectionForm() {
                 min="1"
                 max="9999"
                 value={cfg.deviceOrder.limitDuration}
-                onChange={(e) => setSection("deviceOrder", "limitDuration", Number(e.target.value))}
+                onChange={(e) =>
+                  setSection(
+                    "deviceOrder",
+                    "limitDuration",
+                    Number(e.target.value),
+                  )
+                }
                 className="flex-1 rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-100"
               />
               <select
-                value={cfg.deviceOrder.limitDurationUnit || 'minutes'}
-                onChange={(e) => setSection("deviceOrder", "limitDurationUnit", e.target.value)}
+                value={cfg.deviceOrder.limitDurationUnit || "minutes"}
+                onChange={(e) =>
+                  setSection("deviceOrder", "limitDurationUnit", e.target.value)
+                }
                 className="rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-100 bg-white"
               >
                 <option value="minutes">মিনিট</option>

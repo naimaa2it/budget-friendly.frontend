@@ -5,7 +5,7 @@ import Link from "next/link";
 import JsBarcode from "jsbarcode";
 import { FaPrint, FaRedo, FaThLarge, FaThList } from "react-icons/fa";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 function BarcodeSvg({ code, height = 46 }) {
   const ref = React.useRef(null);

@@ -12,13 +12,17 @@ import Image from "next/image";
 import { getDisplayPrice } from "@/lib/pricing";
 import AdSlot from "@/components/ui/AdSlot";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 const PRODUCTS_PER_PAGE = 20;
 
 export default function CategoryPageClient({ slug, parentSlug = null }) {
   const router = useRouter();
-  const { getCategoryBySlug, getCategoryBySlugAndParentSlug, categoriesMap, getSubcategories } =
-    useCategories();
+  const {
+    getCategoryBySlug,
+    getCategoryBySlugAndParentSlug,
+    categoriesMap,
+    getSubcategories,
+  } = useCategories();
   const [category, setCategory] = useState(null);
   const [parentCategory, setParentCategory] = useState(null);
   const [subcategories, setSubcategories] = useState([]);
@@ -194,7 +198,14 @@ export default function CategoryPageClient({ slug, parentSlug = null }) {
         }
       }
     })();
-  }, [slug, parentSlug, getCategoryBySlug, getCategoryBySlugAndParentSlug, categoriesMap, getSubcategories]);
+  }, [
+    slug,
+    parentSlug,
+    getCategoryBySlug,
+    getCategoryBySlugAndParentSlug,
+    categoriesMap,
+    getSubcategories,
+  ]);
 
   // Update document title, meta description, canonical link, and inject
   // BreadcrumbList JSON-LD client-side — the static export ships a generic
@@ -216,8 +227,7 @@ export default function CategoryPageClient({ slug, parentSlug = null }) {
     }
     metaDesc.setAttribute("content", descContent);
 
-    const SITE_URL =
-      process.env.NEXT_PUBLIC_SITE_URL || "https://pickob.com";
+    const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://pickob.com";
     let canonical = document.querySelector('link[rel="canonical"]');
     if (!canonical) {
       canonical = document.createElement("link");

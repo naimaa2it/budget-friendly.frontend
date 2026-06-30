@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 const TIER_STYLE = {
   silver: {
@@ -53,12 +53,22 @@ export default function UserLoyaltySection() {
     return (
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-xl font-semibold mb-2">Loyalty Tier</h2>
-        <p className="text-gray-600">Please log in to view your loyalty tier.</p>
+        <p className="text-gray-600">
+          Please log in to view your loyalty tier.
+        </p>
       </div>
     );
   }
 
-  const { tier, nextTier, amountToNextTier, tierProgressPct, lifetimeSpend, deliveredOrders, allTiers } = data;
+  const {
+    tier,
+    nextTier,
+    amountToNextTier,
+    tierProgressPct,
+    lifetimeSpend,
+    deliveredOrders,
+    allTiers,
+  } = data;
   const style = TIER_STYLE[tier.key] || TIER_STYLE.silver;
 
   return (
@@ -69,16 +79,26 @@ export default function UserLoyaltySection() {
           Your tier is based on lifetime spend across delivered orders.
         </p>
 
-        <div className={`rounded-2xl border bg-gradient-to-br ${style.card} p-5 flex items-center gap-4`}>
-          <div className={`w-16 h-16 rounded-full ${style.badge} flex items-center justify-center text-3xl shrink-0 shadow`}>
+        <div
+          className={`rounded-2xl border bg-gradient-to-br ${style.card} p-5 flex items-center gap-4`}
+        >
+          <div
+            className={`w-16 h-16 rounded-full ${style.badge} flex items-center justify-center text-3xl shrink-0 shadow`}
+          >
             {style.icon}
           </div>
           <div className="flex-1 min-w-0">
-            <p className={`text-2xl font-bold ${style.text}`}>{tier.label} Member</p>
+            <p className={`text-2xl font-bold ${style.text}`}>
+              {tier.label} Member
+            </p>
             <p className="text-sm text-gray-600 mt-0.5">
-              Lifetime spend: <span className="font-semibold">৳{lifetimeSpend.toLocaleString()}</span>
+              Lifetime spend:{" "}
+              <span className="font-semibold">
+                ৳{lifetimeSpend.toLocaleString()}
+              </span>
               {" · "}
-              {deliveredOrders} delivered order{deliveredOrders !== 1 ? "s" : ""}
+              {deliveredOrders} delivered order
+              {deliveredOrders !== 1 ? "s" : ""}
             </p>
           </div>
         </div>
@@ -98,13 +118,22 @@ export default function UserLoyaltySection() {
             </div>
             <p className="text-sm text-gray-600 mt-2">
               Spend{" "}
-              <span className="font-semibold text-gray-800">৳{amountToNextTier.toLocaleString()}</span>{" "}
-              more to reach <span className={`font-semibold ${TIER_STYLE[nextTier.key]?.text}`}>{nextTier.label}</span>.
+              <span className="font-semibold text-gray-800">
+                ৳{amountToNextTier.toLocaleString()}
+              </span>{" "}
+              more to reach{" "}
+              <span
+                className={`font-semibold ${TIER_STYLE[nextTier.key]?.text}`}
+              >
+                {nextTier.label}
+              </span>
+              .
             </p>
           </div>
         ) : (
           <p className="text-sm text-gray-600 mt-5 font-medium">
-            🎉 You&apos;ve reached our highest tier — thank you for being a loyal customer!
+            🎉 You&apos;ve reached our highest tier — thank you for being a
+            loyal customer!
           </p>
         )}
       </div>
@@ -116,7 +145,8 @@ export default function UserLoyaltySection() {
           {allTiers.map((t) => {
             const tStyle = TIER_STYLE[t.key] || TIER_STYLE.silver;
             const isCurrent = t.key === tier.key;
-            const fullTier = [tier, nextTier].find((x) => x && x.key === t.key) || t;
+            const fullTier =
+              [tier, nextTier].find((x) => x && x.key === t.key) || t;
             return (
               <div
                 key={t.key}
@@ -124,7 +154,11 @@ export default function UserLoyaltySection() {
               >
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-xl">{tStyle.icon}</span>
-                  <p className={`font-bold ${isCurrent ? tStyle.text : "text-gray-700"}`}>{t.label}</p>
+                  <p
+                    className={`font-bold ${isCurrent ? tStyle.text : "text-gray-700"}`}
+                  >
+                    {t.label}
+                  </p>
                   {isCurrent && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/70 font-semibold text-gray-600 ml-auto">
                       Current
@@ -132,12 +166,17 @@ export default function UserLoyaltySection() {
                   )}
                 </div>
                 <p className="text-xs text-gray-500 mb-2">
-                  {t.minSpend === 0 ? "Starting tier" : `৳${t.minSpend.toLocaleString()}+ lifetime spend`}
+                  {t.minSpend === 0
+                    ? "Starting tier"
+                    : `৳${t.minSpend.toLocaleString()}+ lifetime spend`}
                 </p>
                 {tier.key === t.key && (
                   <ul className="space-y-1">
                     {tier.perks.map((p, i) => (
-                      <li key={i} className="text-xs text-gray-600 flex items-start gap-1.5">
+                      <li
+                        key={i}
+                        className="text-xs text-gray-600 flex items-start gap-1.5"
+                      >
                         <span className="text-green-600 mt-0.5">✓</span>
                         <span>{p}</span>
                       </li>

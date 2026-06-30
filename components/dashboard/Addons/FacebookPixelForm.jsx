@@ -3,12 +3,17 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 function Toggle({ checked, onChange }) {
   return (
     <label className="relative inline-flex cursor-pointer items-center">
-      <input type="checkbox" className="sr-only peer" checked={checked} onChange={onChange} />
+      <input
+        type="checkbox"
+        className="sr-only peer"
+        checked={checked}
+        onChange={onChange}
+      />
       <div className="h-6 w-11 rounded-full bg-gray-200 transition-colors peer-checked:bg-gray-900 after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-5" />
     </label>
   );
@@ -33,7 +38,11 @@ export default function FacebookPixelForm() {
       .then((r) => r.json())
       .then((b) => {
         if (b.settings?.facebookPixel) {
-          setCfg((prev) => ({ ...prev, ...b.settings.facebookPixel, installed: true }));
+          setCfg((prev) => ({
+            ...prev,
+            ...b.settings.facebookPixel,
+            installed: true,
+          }));
         }
       })
       .catch(console.error)
@@ -61,7 +70,8 @@ export default function FacebookPixelForm() {
     }
   };
 
-  if (loading) return <div className="py-16 text-center text-gray-400">Loading…</div>;
+  if (loading)
+    return <div className="py-16 text-center text-gray-400">Loading…</div>;
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -72,7 +82,13 @@ export default function FacebookPixelForm() {
             onClick={() => router.push("/dashboard/addons")}
             className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition"
           >
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              className="h-4 w-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M15 18l-6-6 6-6" />
             </svg>
             Back
@@ -113,7 +129,9 @@ export default function FacebookPixelForm() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Access Token</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            Access Token
+          </label>
           <textarea
             value={cfg.accessToken}
             onChange={(e) => set("accessToken", e.target.value)}
@@ -124,7 +142,9 @@ export default function FacebookPixelForm() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Test Event Code</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            Test Event Code
+          </label>
           <input
             type="text"
             value={cfg.testEventCode}
@@ -135,18 +155,33 @@ export default function FacebookPixelForm() {
         </div>
 
         <div className="flex items-center justify-between pt-1">
-          <span className="text-sm text-blue-600 font-medium">Browser Side Tracking</span>
-          <Toggle checked={cfg.browserSideTracking} onChange={(e) => set("browserSideTracking", e.target.checked)} />
+          <span className="text-sm text-blue-600 font-medium">
+            Browser Side Tracking
+          </span>
+          <Toggle
+            checked={cfg.browserSideTracking}
+            onChange={(e) => set("browserSideTracking", e.target.checked)}
+          />
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-sm text-blue-600 font-medium">Server Side Tracking</span>
-          <Toggle checked={cfg.serverSideTracking} onChange={(e) => set("serverSideTracking", e.target.checked)} />
+          <span className="text-sm text-blue-600 font-medium">
+            Server Side Tracking
+          </span>
+          <Toggle
+            checked={cfg.serverSideTracking}
+            onChange={(e) => set("serverSideTracking", e.target.checked)}
+          />
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-sm text-blue-600 font-medium">Active Status</span>
-          <Toggle checked={cfg.active} onChange={(e) => set("active", e.target.checked)} />
+          <span className="text-sm text-blue-600 font-medium">
+            Active Status
+          </span>
+          <Toggle
+            checked={cfg.active}
+            onChange={(e) => set("active", e.target.checked)}
+          />
         </div>
       </div>
     </div>

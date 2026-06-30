@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 
 export default function TagInput({ tags = [], onChange }) {
-  const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-  const [inputValue, setInputValue] = useState('');
+  const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
+  const [inputValue, setInputValue] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [allTags, setAllTags] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -17,14 +17,14 @@ export default function TagInput({ tags = [], onChange }) {
   const fetchAllTags = async () => {
     try {
       const r = await fetch(`${API}/api/admin/blog/tags`, {
-        credentials: 'include'
+        credentials: "include",
       });
       const b = await r.json();
       if (r.ok) {
         setAllTags(b.tags || []);
       }
     } catch (err) {
-      console.error('Error fetching tags:', err);
+      console.error("Error fetching tags:", err);
     }
   };
 
@@ -34,9 +34,9 @@ export default function TagInput({ tags = [], onChange }) {
 
     if (value.trim()) {
       const filtered = allTags.filter(
-        tag => 
+        (tag) =>
           tag.toLowerCase().includes(value.toLowerCase()) &&
-          !tags.includes(tag)
+          !tags.includes(tag),
       );
       setSuggestions(filtered);
       setShowSuggestions(true);
@@ -50,26 +50,26 @@ export default function TagInput({ tags = [], onChange }) {
     const trimmedTag = tag.trim();
     if (trimmedTag && !tags.includes(trimmedTag)) {
       onChange([...tags, trimmedTag]);
-      setInputValue('');
+      setInputValue("");
       setSuggestions([]);
       setShowSuggestions(false);
     }
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       if (inputValue.trim()) {
         addTag(inputValue);
       }
-    } else if (e.key === 'Backspace' && !inputValue && tags.length > 0) {
+    } else if (e.key === "Backspace" && !inputValue && tags.length > 0) {
       // Remove last tag on backspace when input is empty
       onChange(tags.slice(0, -1));
     }
   };
 
   const removeTag = (tagToRemove) => {
-    onChange(tags.filter(tag => tag !== tagToRemove));
+    onChange(tags.filter((tag) => tag !== tagToRemove));
   };
 
   const handleSuggestionClick = (tag) => {
@@ -79,9 +79,7 @@ export default function TagInput({ tags = [], onChange }) {
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-700">
-        Tags
-      </label>
+      <label className="block text-sm font-medium text-gray-700">Tags</label>
 
       <div className="border rounded-md p-2 bg-white">
         {/* Selected tags as chips */}
@@ -114,7 +112,11 @@ export default function TagInput({ tags = [], onChange }) {
             onFocus={() => inputValue && setShowSuggestions(true)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             className="w-full px-3 py-2 border-0 focus:outline-none focus:ring-0"
-            placeholder={tags.length === 0 ? "Type and press Enter to add tags..." : "Add more tags..."}
+            placeholder={
+              tags.length === 0
+                ? "Type and press Enter to add tags..."
+                : "Add more tags..."
+            }
           />
 
           {/* Suggestions dropdown */}
@@ -136,7 +138,8 @@ export default function TagInput({ tags = [], onChange }) {
       </div>
 
       <p className="text-xs text-gray-500">
-        Type a tag and press Enter. Select from existing tags or create new ones.
+        Type a tag and press Enter. Select from existing tags or create new
+        ones.
       </p>
     </div>
   );

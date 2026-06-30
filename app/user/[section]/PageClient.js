@@ -1384,7 +1384,7 @@ export default function UserSectionPage() {
 
   const handleLogout = async () => {
     try {
-      const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
       await fetch(`${API}/api/auth/logout`, {
         method: "POST",
         credentials: "include",
@@ -1398,7 +1398,7 @@ export default function UserSectionPage() {
   };
 
   const handleSaveProfile = async () => {
-    const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
     try {
       const formData = new FormData();
       formData.append("name", editForm.name);
@@ -1920,7 +1920,9 @@ export default function UserSectionPage() {
 
             {section === "orders" && (
               <OrdersSection
-                API={process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}
+                API={
+                  process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com"
+                }
               />
             )}
 
@@ -1945,7 +1947,9 @@ export default function UserSectionPage() {
 
             {section === "reviews" && (
               <MyReviewsSection
-                API={process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}
+                API={
+                  process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com"
+                }
               />
             )}
 

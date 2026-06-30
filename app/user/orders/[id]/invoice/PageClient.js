@@ -3,7 +3,7 @@
 import OrderPrintView from "@/components/dashboard/Order/OrderPrintView";
 import { useUrlParam } from "@/hooks/useUrlParam";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 export default function UserOrderInvoicePage() {
   const id = useUrlParam(1); // .../user/orders/<id>/invoice

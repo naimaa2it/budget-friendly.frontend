@@ -48,7 +48,7 @@ export default function AddToCartSection({
     setNotifyLoading(true);
     setNotifyError("");
     try {
-      const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
       const body = {
         productId: product._id,
         productTitle: product.title || product.name,

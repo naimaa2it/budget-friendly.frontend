@@ -6,10 +6,12 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FaBarcode, FaEdit, FaExternalLinkAlt, FaSearch } from "react-icons/fa";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 function normalizeCode(value) {
-  return String(value || "").trim().replace(/\s+/g, "");
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, "");
 }
 
 function formatMoney(value) {
@@ -113,8 +115,8 @@ export default function BarcodeLookup() {
               Scan or search product by barcode
             </h1>
             <p className="mt-1 max-w-2xl text-sm text-gray-500">
-              Use a USB/Bluetooth scanner (it types the number and sends Enter) or
-              type the barcode manually, then press Enter or click Look up.
+              Use a USB/Bluetooth scanner (it types the number and sends Enter)
+              or type the barcode manually, then press Enter or click Look up.
             </p>
           </div>
           <Link

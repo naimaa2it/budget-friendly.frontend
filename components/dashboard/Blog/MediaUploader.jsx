@@ -14,7 +14,7 @@ export default function MediaUploader({
   allowUrlPaste = false,
   urlPlaceholder = "Paste video link (YouTube, Facebook, MP4, etc.)",
 }) {
-  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState("");
   const [showLibrary, setShowLibrary] = useState(false);

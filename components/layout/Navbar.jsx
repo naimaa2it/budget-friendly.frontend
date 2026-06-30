@@ -20,7 +20,7 @@ function ProfileMenu() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [imgError, setImgError] = useState(false);
   const ref = useRef(null);
-  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
   useEffect(() => {
     function handleClick(e) {

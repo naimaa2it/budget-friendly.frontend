@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, useRef, useLayoutEffect } from "react";
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  useLayoutEffect,
+} from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useUser } from "@/components/context/UserContext";
@@ -8,31 +14,36 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { formatOrderId } from "@/lib/orderId";
 import CourierScorePanel from "@/components/dashboard/Customer/CourierScorePanel";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 function useCourierLifetime(phone) {
   const [lifetime, setLifetime] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const load = useCallback(async (refresh = false) => {
-    if (!phone) return;
-    setLoading(true);
-    try {
-      const params = refresh ? "?refresh=1" : "";
-      const r = await fetch(
-        `${API}/api/admin/phones/${encodeURIComponent(phone)}/lifetime-stats${params}`,
-        { credentials: "include" },
-      );
-      const body = await r.json();
-      setLifetime(r.ok ? body : { error: body.error || "Failed to load" });
-    } catch {
-      setLifetime({ error: "Failed to load" });
-    } finally {
-      setLoading(false);
-    }
-  }, [phone]);
+  const load = useCallback(
+    async (refresh = false) => {
+      if (!phone) return;
+      setLoading(true);
+      try {
+        const params = refresh ? "?refresh=1" : "";
+        const r = await fetch(
+          `${API}/api/admin/phones/${encodeURIComponent(phone)}/lifetime-stats${params}`,
+          { credentials: "include" },
+        );
+        const body = await r.json();
+        setLifetime(r.ok ? body : { error: body.error || "Failed to load" });
+      } catch {
+        setLifetime({ error: "Failed to load" });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [phone],
+  );
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   return { lifetime, loading, refresh: () => load(true) };
 }
@@ -65,16 +76,28 @@ const PAYMENT_STATUS_STYLE = {
   cancelled: "bg-gray-50 text-gray-500",
 };
 
-const METHOD_LABEL = { "cash-on-delivery": "COD", online: "Online", bkash: "bKash" };
+const METHOD_LABEL = {
+  "cash-on-delivery": "COD",
+  online: "Online",
+  bkash: "bKash",
+};
 
 function fmt(date) {
   return new Date(date).toLocaleString("en-GB", {
-    day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
 function fmtDate(date) {
-  return new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+  return new Date(date).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 function itemSummary(items) {
@@ -87,9 +110,18 @@ function itemSummary(items) {
 function dateFromPreset(preset) {
   if (!preset || preset === "all") return null;
   const d = new Date();
-  if (preset === "today") { d.setHours(0, 0, 0, 0); return d.toISOString(); }
-  if (preset === "7d") { d.setDate(d.getDate() - 7); return d.toISOString(); }
-  if (preset === "30d") { d.setDate(d.getDate() - 30); return d.toISOString(); }
+  if (preset === "today") {
+    d.setHours(0, 0, 0, 0);
+    return d.toISOString();
+  }
+  if (preset === "7d") {
+    d.setDate(d.getDate() - 7);
+    return d.toISOString();
+  }
+  if (preset === "30d") {
+    d.setDate(d.getDate() - 30);
+    return d.toISOString();
+  }
   return null;
 }
 
@@ -98,9 +130,14 @@ function orderAge(createdAt) {
   const ms = Date.now() - new Date(createdAt).getTime();
   const hours = ms / 3_600_000;
   if (hours < 24) return null;
-  if (hours < 48) return { label: "24h+", color: "bg-amber-100 text-amber-700" };
-  if (hours < 72) return { label: "2d+", color: "bg-orange-100 text-orange-700" };
-  return { label: `${Math.floor(hours / 24)}d`, color: "bg-red-100 text-red-600" };
+  if (hours < 48)
+    return { label: "24h+", color: "bg-amber-100 text-amber-700" };
+  if (hours < 72)
+    return { label: "2d+", color: "bg-orange-100 text-orange-700" };
+  return {
+    label: `${Math.floor(hours / 24)}d`,
+    color: "bg-red-100 text-red-600",
+  };
 }
 
 const DATE_PRESETS = [
@@ -137,7 +174,9 @@ function OrderActionsMenu({ order, onDelete }) {
   const btnRef = useRef(null);
   const menuRef = useRef(null);
   const detailsHref = `/dashboard/orders/${order._id}`;
-  const scoreHref = order.customerUserId ? `/dashboard/customers/${order.customerUserId}/profile` : null;
+  const scoreHref = order.customerUserId
+    ? `/dashboard/customers/${order.customerUserId}/profile`
+    : null;
 
   const updatePosition = useCallback(() => {
     const btn = btnRef.current;
@@ -147,7 +186,10 @@ function OrderActionsMenu({ order, onDelete }) {
     const spaceBelow = window.innerHeight - rect.bottom;
     const openUp = spaceBelow < menuHeight + 8 && rect.top > menuHeight + 8;
     const top = openUp ? rect.top - menuHeight - 4 : rect.bottom + 4;
-    const left = Math.min(Math.max(8, rect.right - 160), window.innerWidth - 168);
+    const left = Math.min(
+      Math.max(8, rect.right - 160),
+      window.innerWidth - 168,
+    );
     setMenuPos({ top, left });
   }, []);
 
@@ -170,11 +212,20 @@ function OrderActionsMenu({ order, onDelete }) {
         ref={btnRef}
         type="button"
         onClick={() => {
-          if (open) { setOpen(false); return; }
+          if (open) {
+            setOpen(false);
+            return;
+          }
           const btn = btnRef.current;
           if (btn) {
             const rect = btn.getBoundingClientRect();
-            setMenuPos({ top: rect.bottom + 4, left: Math.min(Math.max(8, rect.right - 160), window.innerWidth - 168) });
+            setMenuPos({
+              top: rect.bottom + 4,
+              left: Math.min(
+                Math.max(8, rect.right - 160),
+                window.innerWidth - 168,
+              ),
+            });
           }
           setOpen(true);
         }}
@@ -182,29 +233,74 @@ function OrderActionsMenu({ order, onDelete }) {
       >
         Actions ▾
       </button>
-      {open && typeof document !== "undefined" && createPortal(
-        <>
-          <div className="fixed inset-0 z-[100]" onClick={() => setOpen(false)} aria-hidden="true" />
-          <div
-            ref={menuRef}
-            style={menuPos ? { position: "fixed", top: menuPos.top, left: menuPos.left } : undefined}
-            className="z-[101] min-w-40 bg-white border border-gray-200 rounded-lg shadow-xl py-1 text-xs"
-          >
-            <Link href={`${detailsHref}/invoice`} className="block px-3 py-2 hover:bg-gray-50 text-gray-700" onClick={() => setOpen(false)}>Print invoice</Link>
-            <Link href={`${detailsHref}/slip`} className="block px-3 py-2 hover:bg-gray-50 text-gray-700" onClick={() => setOpen(false)}>Print slip</Link>
-            {scoreHref ? (
-              <Link href={scoreHref} className="block px-3 py-2 hover:bg-gray-50 text-gray-700" onClick={() => setOpen(false)}>Courier score</Link>
-            ) : (
-              <span className="block px-3 py-2 text-gray-300 cursor-not-allowed">Courier score</span>
-            )}
-            <Link href={detailsHref} className="block px-3 py-2 hover:bg-gray-50 text-gray-700" onClick={() => setOpen(false)}>Edit</Link>
-            {canDelete && (
-              <button type="button" onClick={(e) => { setOpen(false); onDelete(e, order._id); }} className="w-full text-left px-3 py-2 hover:bg-red-50 text-red-600">Delete</button>
-            )}
-          </div>
-        </>,
-        document.body,
-      )}
+      {open &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <>
+            <div
+              className="fixed inset-0 z-[100]"
+              onClick={() => setOpen(false)}
+              aria-hidden="true"
+            />
+            <div
+              ref={menuRef}
+              style={
+                menuPos
+                  ? { position: "fixed", top: menuPos.top, left: menuPos.left }
+                  : undefined
+              }
+              className="z-[101] min-w-40 bg-white border border-gray-200 rounded-lg shadow-xl py-1 text-xs"
+            >
+              <Link
+                href={`${detailsHref}/invoice`}
+                className="block px-3 py-2 hover:bg-gray-50 text-gray-700"
+                onClick={() => setOpen(false)}
+              >
+                Print invoice
+              </Link>
+              <Link
+                href={`${detailsHref}/slip`}
+                className="block px-3 py-2 hover:bg-gray-50 text-gray-700"
+                onClick={() => setOpen(false)}
+              >
+                Print slip
+              </Link>
+              {scoreHref ? (
+                <Link
+                  href={scoreHref}
+                  className="block px-3 py-2 hover:bg-gray-50 text-gray-700"
+                  onClick={() => setOpen(false)}
+                >
+                  Courier score
+                </Link>
+              ) : (
+                <span className="block px-3 py-2 text-gray-300 cursor-not-allowed">
+                  Courier score
+                </span>
+              )}
+              <Link
+                href={detailsHref}
+                className="block px-3 py-2 hover:bg-gray-50 text-gray-700"
+                onClick={() => setOpen(false)}
+              >
+                Edit
+              </Link>
+              {canDelete && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    setOpen(false);
+                    onDelete(e, order._id);
+                  }}
+                  className="w-full text-left px-3 py-2 hover:bg-red-50 text-red-600"
+                >
+                  Delete
+                </button>
+              )}
+            </div>
+          </>,
+          document.body,
+        )}
     </div>
   );
 }
@@ -229,41 +325,76 @@ function OrdersTable({ orders, onDelete, onRowClick, onCustomerClick }) {
         </thead>
         <tbody className="divide-y divide-gray-100">
           {orders.map((order) => (
-            <tr key={order._id} onClick={() => onRowClick(order._id)} className="hover:bg-rose-50 transition cursor-pointer">
+            <tr
+              key={order._id}
+              onClick={() => onRowClick(order._id)}
+              className="hover:bg-rose-50 transition cursor-pointer"
+            >
               <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                <Link href={`/dashboard/orders/${order._id}`} className="font-mono text-xs bg-gray-100 rounded px-1.5 py-0.5 text-rose-600 hover:bg-rose-50 hover:underline">
+                <Link
+                  href={`/dashboard/orders/${order._id}`}
+                  className="font-mono text-xs bg-gray-100 rounded px-1.5 py-0.5 text-rose-600 hover:bg-rose-50 hover:underline"
+                >
                   {formatOrderId(order._id)}
                 </Link>
               </td>
-              <td className="px-4 py-3" onClick={(e) => onCustomerClick && e.stopPropagation()}>
+              <td
+                className="px-4 py-3"
+                onClick={(e) => onCustomerClick && e.stopPropagation()}
+              >
                 {onCustomerClick ? (
-                  <button type="button" className="text-left" onClick={() => onCustomerClick(order)}>
-                    <p className="font-medium text-gray-800 hover:text-indigo-600 hover:underline">{order.billingDetails?.name || "—"}</p>
-                    <p className="text-xs text-gray-400">{order.billingDetails?.phone}</p>
+                  <button
+                    type="button"
+                    className="text-left"
+                    onClick={() => onCustomerClick(order)}
+                  >
+                    <p className="font-medium text-gray-800 hover:text-indigo-600 hover:underline">
+                      {order.billingDetails?.name || "—"}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {order.billingDetails?.phone}
+                    </p>
                   </button>
                 ) : (
                   <>
-                    <p className="font-medium text-gray-800">{order.billingDetails?.name || "—"}</p>
-                    <p className="text-xs text-gray-400">{order.billingDetails?.phone}</p>
+                    <p className="font-medium text-gray-800">
+                      {order.billingDetails?.name || "—"}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {order.billingDetails?.phone}
+                    </p>
                   </>
                 )}
               </td>
-              <td className="px-4 py-3 text-gray-600 max-w-[12rem] truncate">{itemSummary(order.items)}</td>
-              <td className="px-4 py-3 font-semibold text-gray-800">৳{order.total?.toLocaleString()}</td>
+              <td className="px-4 py-3 text-gray-600 max-w-[12rem] truncate">
+                {itemSummary(order.items)}
+              </td>
+              <td className="px-4 py-3 font-semibold text-gray-800">
+                ৳{order.total?.toLocaleString()}
+              </td>
               <td className="px-4 py-3">
                 <div className="space-y-0.5">
-                  <span className="block text-xs font-medium text-gray-700">{METHOD_LABEL[order.paymentMethod] || order.paymentMethod}</span>
-                  <span className={`inline-block text-xs px-1.5 py-0.5 rounded-full ${PAYMENT_STATUS_STYLE[order.paymentStatus] || ""}`}>
+                  <span className="block text-xs font-medium text-gray-700">
+                    {METHOD_LABEL[order.paymentMethod] || order.paymentMethod}
+                  </span>
+                  <span
+                    className={`inline-block text-xs px-1.5 py-0.5 rounded-full ${PAYMENT_STATUS_STYLE[order.paymentStatus] || ""}`}
+                  >
                     {order.paymentStatus?.toUpperCase()}
                   </span>
                 </div>
               </td>
               <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                <Link href={`/dashboard/orders/${order._id}`} className={`inline-block text-xs font-medium px-2 py-1 rounded-full capitalize hover:underline ${STATUS_STYLE[order.status] || ""}`}>
+                <Link
+                  href={`/dashboard/orders/${order._id}`}
+                  className={`inline-block text-xs font-medium px-2 py-1 rounded-full capitalize hover:underline ${STATUS_STYLE[order.status] || ""}`}
+                >
                   {order.status}
                 </Link>
               </td>
-              <td className="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">{fmt(order.createdAt)}</td>
+              <td className="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
+                {fmt(order.createdAt)}
+              </td>
               <td className="px-4 py-3">
                 <OrderActionsMenu order={order} onDelete={onDelete} />
               </td>
@@ -277,12 +408,19 @@ function OrdersTable({ orders, onDelete, onRowClick, onCustomerClick }) {
 
 // ─── Cancelled Orders Table ───────────────────────────────────────────────────
 
-function CancelledOrdersTable({ orders, onDelete, onRowClick, onCustomerClick }) {
+function CancelledOrdersTable({
+  orders,
+  onDelete,
+  onRowClick,
+  onCustomerClick,
+}) {
   const { user } = useUser();
   const canDelete = user?.role === "admin";
   const getCancelReason = (order) => {
     const history = order.statusHistory || [];
-    const entry = [...history].reverse().find((h) => h.newStatus === "cancelled");
+    const entry = [...history]
+      .reverse()
+      .find((h) => h.newStatus === "cancelled");
     return entry?.reason?.trim() || null;
   };
 
@@ -320,16 +458,31 @@ function CancelledOrdersTable({ orders, onDelete, onRowClick, onCustomerClick })
                 </td>
 
                 {/* Customer */}
-                <td className="px-4 py-3" onClick={(e) => onCustomerClick && e.stopPropagation()}>
+                <td
+                  className="px-4 py-3"
+                  onClick={(e) => onCustomerClick && e.stopPropagation()}
+                >
                   {onCustomerClick ? (
-                    <button type="button" className="text-left" onClick={() => onCustomerClick(order)}>
-                      <p className="font-medium text-gray-800 hover:text-indigo-600 hover:underline">{order.billingDetails?.name || "—"}</p>
-                      <p className="text-xs text-gray-400">{order.billingDetails?.phone}</p>
+                    <button
+                      type="button"
+                      className="text-left"
+                      onClick={() => onCustomerClick(order)}
+                    >
+                      <p className="font-medium text-gray-800 hover:text-indigo-600 hover:underline">
+                        {order.billingDetails?.name || "—"}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {order.billingDetails?.phone}
+                      </p>
                     </button>
                   ) : (
                     <>
-                      <p className="font-medium text-gray-800">{order.billingDetails?.name || "—"}</p>
-                      <p className="text-xs text-gray-400">{order.billingDetails?.phone}</p>
+                      <p className="font-medium text-gray-800">
+                        {order.billingDetails?.name || "—"}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {order.billingDetails?.phone}
+                      </p>
                     </>
                   )}
                 </td>
@@ -348,13 +501,23 @@ function CancelledOrdersTable({ orders, onDelete, onRowClick, onCustomerClick })
                 <td className="px-4 py-3 max-w-[200px]">
                   {reason ? (
                     <span className="inline-flex items-start gap-1.5 text-xs text-red-700 bg-red-50 border border-red-100 rounded-lg px-2.5 py-1.5 leading-snug">
-                      <svg className="w-3 h-3 mt-0.5 shrink-0 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10A8 8 0 11 2 10a8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      <svg
+                        className="w-3 h-3 mt-0.5 shrink-0 text-red-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10A8 8 0 11 2 10a8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 002 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                       {reason}
                     </span>
                   ) : (
-                    <span className="text-xs text-gray-300 italic">কারণ দেওয়া হয়নি</span>
+                    <span className="text-xs text-gray-300 italic">
+                      কারণ দেওয়া হয়নি
+                    </span>
                   )}
                 </td>
 
@@ -400,9 +563,23 @@ function Pagination({ page, totalPages, onPage }) {
   if (totalPages <= 1) return null;
   return (
     <div className="flex items-center justify-center gap-2 px-5 py-4 border-t">
-      <button onClick={() => onPage(Math.max(1, page - 1))} disabled={page === 1} className="px-3 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40">← Prev</button>
-      <span className="text-sm text-gray-600">Page {page} of {totalPages}</span>
-      <button onClick={() => onPage(Math.min(totalPages, page + 1))} disabled={page === totalPages} className="px-3 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40">Next →</button>
+      <button
+        onClick={() => onPage(Math.max(1, page - 1))}
+        disabled={page === 1}
+        className="px-3 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40"
+      >
+        ← Prev
+      </button>
+      <span className="text-sm text-gray-600">
+        Page {page} of {totalPages}
+      </span>
+      <button
+        onClick={() => onPage(Math.min(totalPages, page + 1))}
+        disabled={page === totalPages}
+        className="px-3 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40"
+      >
+        Next →
+      </button>
     </div>
   );
 }
@@ -419,7 +596,9 @@ function FeatureGate({ icon, title, description, whatItDoes, mockRows }) {
             <thead>
               <tr className="text-xs text-gray-400 uppercase border-b bg-gray-50/60">
                 {mockRows.headers.map((h) => (
-                  <th key={h} className="px-4 py-3 font-medium">{h}</th>
+                  <th key={h} className="px-4 py-3 font-medium">
+                    {h}
+                  </th>
                 ))}
               </tr>
             </thead>
@@ -427,7 +606,9 @@ function FeatureGate({ icon, title, description, whatItDoes, mockRows }) {
               {mockRows.rows.map((row, i) => (
                 <tr key={i} className="opacity-30">
                   {row.map((cell, j) => (
-                    <td key={j} className="px-4 py-3 text-gray-700">{cell}</td>
+                    <td key={j} className="px-4 py-3 text-gray-700">
+                      {cell}
+                    </td>
                   ))}
                 </tr>
               ))}
@@ -439,29 +620,45 @@ function FeatureGate({ icon, title, description, whatItDoes, mockRows }) {
 
       {/* Main message */}
       <div className="px-8 py-10 flex flex-col items-center text-center">
-        <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center text-3xl mb-4 shadow-sm">{icon}</div>
+        <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center text-3xl mb-4 shadow-sm">
+          {icon}
+        </div>
         <h2 className="text-lg font-semibold text-gray-800 mb-1">{title}</h2>
         <p className="text-sm text-gray-500 max-w-sm">{description}</p>
 
         <div className="mt-6 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 max-w-md text-left">
-          <svg className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10" /><path d="M12 8v4m0 4h.01" />
+          <svg
+            className="w-5 h-5 text-amber-500 shrink-0 mt-0.5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 8v4m0 4h.01" />
           </svg>
           <div>
-            <p className="text-sm font-semibold text-amber-800 mb-0.5">এই ফিচারটি এখনো চালু হয়নি</p>
+            <p className="text-sm font-semibold text-amber-800 mb-0.5">
+              এই ফিচারটি এখনো চালু হয়নি
+            </p>
             <p className="text-xs text-amber-700">
-              এই পেজে ডেটা দেখতে হলে আপনার store admin-কে এই ফিচারটি চালু করতে বলুন।
-              চালু হলে এখানে সব তথ্য দেখা যাবে।
+              এই পেজে ডেটা দেখতে হলে আপনার store admin-কে এই ফিচারটি চালু করতে
+              বলুন। চালু হলে এখানে সব তথ্য দেখা যাবে।
             </p>
           </div>
         </div>
 
         {whatItDoes && (
           <div className="mt-4 max-w-md text-left">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">এই পেজে কী দেখা যাবে</p>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+              এই পেজে কী দেখা যাবে
+            </p>
             <ul className="space-y-1.5">
               {whatItDoes.map((item, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
+                <li
+                  key={i}
+                  className="flex items-start gap-2 text-sm text-gray-600"
+                >
                   <span className="text-green-500 mt-0.5 shrink-0">✓</span>
                   {item}
                 </li>
@@ -483,69 +680,120 @@ const RETURN_STATUS_STYLE = {
 };
 
 function ReturnActionModal({ modal, onClose, onSave }) {
-  const [refundAmount, setRefundAmount] = useState(modal.order?.returnRequest?.refundAmount ?? modal.order?.total ?? 0);
-  const [adminNote, setAdminNote] = useState(modal.order?.returnRequest?.adminNote || "");
+  const [refundAmount, setRefundAmount] = useState(
+    modal.order?.returnRequest?.refundAmount ?? modal.order?.total ?? 0,
+  );
+  const [adminNote, setAdminNote] = useState(
+    modal.order?.returnRequest?.adminNote || "",
+  );
   const [saving, setSaving] = useState(false);
 
   const isApprove = modal.action === "approve";
 
   const handleSave = async () => {
     setSaving(true);
-    await onSave({ status: isApprove ? "approved" : "rejected", refundAmount: isApprove ? refundAmount : 0, adminNote });
+    await onSave({
+      status: isApprove ? "approved" : "rejected",
+      refundAmount: isApprove ? refundAmount : 0,
+      adminNote,
+    });
     setSaving(false);
   };
 
   return createPortal(
     <>
-      <div className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm"
+        onClick={onClose}
+      />
       <div className="fixed inset-0 z-[201] flex items-center justify-center p-4 pointer-events-none">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md pointer-events-auto">
           <div className="px-6 py-4 border-b flex items-center justify-between">
             <h3 className="font-semibold text-gray-800">
               {isApprove ? "✅ Approve Return" : "❌ Reject Return"}
             </h3>
-            <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+            >
+              ×
+            </button>
           </div>
           <div className="px-6 py-4 space-y-4">
             <div className="bg-gray-50 rounded-xl px-4 py-3 text-sm">
               <span className="text-gray-500">Order:</span>{" "}
-              <span className="font-mono font-semibold text-rose-600">{formatOrderId(modal.order._id)}</span>
-              <span className="ml-3 text-gray-500">{modal.order.billingDetails?.name}</span>
+              <span className="font-mono font-semibold text-rose-600">
+                {formatOrderId(modal.order._id)}
+              </span>
+              <span className="ml-3 text-gray-500">
+                {modal.order.billingDetails?.name}
+              </span>
             </div>
             {modal.order.returnRequest?.reason && (
               <div className="bg-amber-50 rounded-xl px-4 py-3 text-sm border border-amber-100">
-                <p className="text-xs text-amber-600 font-medium mb-0.5">Return reason</p>
-                <p className="text-gray-700">"{modal.order.returnRequest.reason}"</p>
+                <p className="text-xs text-amber-600 font-medium mb-0.5">
+                  Return reason
+                </p>
+                <p className="text-gray-700">
+                  "{modal.order.returnRequest.reason}"
+                </p>
               </div>
             )}
             {isApprove && (
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Refund Amount (৳)</label>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Refund Amount (৳)
+                </label>
                 <input
                   type="number"
                   value={refundAmount}
-                  onChange={(e) => setRefundAmount(Math.max(0, Number(e.target.value)))}
+                  onChange={(e) =>
+                    setRefundAmount(Math.max(0, Number(e.target.value)))
+                  }
                   className="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
                 />
-                <p className="text-xs text-gray-400 mt-1">Order total: ৳{modal.order.total?.toLocaleString()}</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Order total: ৳{modal.order.total?.toLocaleString()}
+                </p>
               </div>
             )}
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Admin Note {isApprove ? "(optional)" : "(reason for rejection)"}</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Admin Note {isApprove ? "(optional)" : "(reason for rejection)"}
+              </label>
               <textarea
                 value={adminNote}
                 onChange={(e) => setAdminNote(e.target.value)}
                 rows={3}
-                placeholder={isApprove ? "Internal note…" : "Explain why the return is rejected…"}
+                placeholder={
+                  isApprove
+                    ? "Internal note…"
+                    : "Explain why the return is rejected…"
+                }
                 className="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 resize-none"
               />
             </div>
           </div>
           <div className="px-6 py-4 border-t flex justify-end gap-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-gray-600 border rounded-xl hover:bg-gray-50">Cancel</button>
-            <button type="button" onClick={handleSave} disabled={saving}
-              className={`px-4 py-2 text-sm font-semibold text-white rounded-xl transition disabled:opacity-60 ${isApprove ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600"}`}>
-              {saving ? "Saving…" : isApprove ? "Approve & Refund" : "Reject Return"}
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm text-gray-600 border rounded-xl hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              className={`px-4 py-2 text-sm font-semibold text-white rounded-xl transition disabled:opacity-60 ${isApprove ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600"}`}
+            >
+              {saving
+                ? "Saving…"
+                : isApprove
+                  ? "Approve & Refund"
+                  : "Reject Return"}
             </button>
           </div>
         </div>
@@ -566,14 +814,22 @@ function AddReturnModal({ onClose, onSave }) {
   const debounceRef = useRef(null);
 
   const doSearch = useCallback(async (q) => {
-    if (!q.trim()) { setResults([]); return; }
+    if (!q.trim()) {
+      setResults([]);
+      return;
+    }
     setSearching(true);
     try {
-      const r = await fetch(`${API}/api/admin/orders?q=${encodeURIComponent(q)}&limit=8&status=delivered`, { credentials: "include" });
+      const r = await fetch(
+        `${API}/api/admin/orders?q=${encodeURIComponent(q)}&limit=8&status=delivered`,
+        { credentials: "include" },
+      );
       const body = await r.json();
       setResults(body.orders || []);
-    } catch {}
-    finally { setSearching(false); }
+    } catch {
+    } finally {
+      setSearching(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -589,26 +845,44 @@ function AddReturnModal({ onClose, onSave }) {
     setErr("");
     const ok = await onSave(selected._id, reason.trim());
     setSaving(false);
-    if (!ok) setErr("This order already has a return request, or it could not be found.");
+    if (!ok)
+      setErr(
+        "This order already has a return request, or it could not be found.",
+      );
   };
 
   return createPortal(
     <>
-      <div className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm"
+        onClick={onClose}
+      />
       <div className="fixed inset-0 z-[201] flex items-center justify-center p-4 pointer-events-none">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg pointer-events-auto">
           <div className="px-6 py-4 border-b flex items-center justify-between">
             <div>
-              <h3 className="font-semibold text-gray-800">New Return Request</h3>
-              <p className="text-xs text-gray-400 mt-0.5">Search a delivered order, then add a return reason</p>
+              <h3 className="font-semibold text-gray-800">
+                New Return Request
+              </h3>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Search a delivered order, then add a return reason
+              </p>
             </div>
-            <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+            >
+              ×
+            </button>
           </div>
           <div className="px-6 py-4 space-y-4">
             {/* Order search */}
             {!selected ? (
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Search Order (customer name, phone, or order ID)</label>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Search Order (customer name, phone, or order ID)
+                </label>
                 <div className="relative">
                   <input
                     value={search}
@@ -618,7 +892,13 @@ function AddReturnModal({ onClose, onSave }) {
                     className="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 pr-8"
                   />
                   {searching && (
-                    <svg className="absolute right-2.5 top-2.5 w-4 h-4 animate-spin text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg
+                      className="absolute right-2.5 top-2.5 w-4 h-4 animate-spin text-gray-400"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
                       <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
                     </svg>
                   )}
@@ -626,39 +906,71 @@ function AddReturnModal({ onClose, onSave }) {
                 {results.length > 0 && (
                   <div className="mt-2 border rounded-xl overflow-hidden shadow-sm">
                     {results.map((o) => (
-                      <button key={o._id} type="button" onClick={() => { setSelected(o); setSearch(""); setResults([]); }}
-                        className="w-full text-left px-4 py-3 hover:bg-rose-50 border-b last:border-0 transition">
+                      <button
+                        key={o._id}
+                        type="button"
+                        onClick={() => {
+                          setSelected(o);
+                          setSearch("");
+                          setResults([]);
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-rose-50 border-b last:border-0 transition"
+                      >
                         <div className="flex items-center gap-3">
-                          <span className="font-mono text-xs text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded">{formatOrderId(o._id)}</span>
-                          <span className="text-sm font-medium text-gray-800 flex-1">{o.billingDetails?.name}</span>
-                          <span className="text-xs text-gray-400">{o.billingDetails?.phone}</span>
-                          <span className="text-xs font-semibold text-gray-700">৳{o.total?.toLocaleString()}</span>
+                          <span className="font-mono text-xs text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded">
+                            {formatOrderId(o._id)}
+                          </span>
+                          <span className="text-sm font-medium text-gray-800 flex-1">
+                            {o.billingDetails?.name}
+                          </span>
+                          <span className="text-xs text-gray-400">
+                            {o.billingDetails?.phone}
+                          </span>
+                          <span className="text-xs font-semibold text-gray-700">
+                            ৳{o.total?.toLocaleString()}
+                          </span>
                         </div>
                       </button>
                     ))}
                   </div>
                 )}
                 {search.trim() && !searching && results.length === 0 && (
-                  <p className="text-xs text-gray-400 mt-2">No delivered orders match "{search}"</p>
+                  <p className="text-xs text-gray-400 mt-2">
+                    No delivered orders match "{search}"
+                  </p>
                 )}
               </div>
             ) : (
               <div className="flex items-center gap-3 bg-rose-50 border border-rose-200 rounded-xl px-4 py-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className="font-mono text-xs text-rose-600 bg-white border border-rose-200 px-1.5 py-0.5 rounded">{formatOrderId(selected._id)}</span>
-                    <span className="text-sm font-medium text-gray-800">{selected.billingDetails?.name}</span>
+                    <span className="font-mono text-xs text-rose-600 bg-white border border-rose-200 px-1.5 py-0.5 rounded">
+                      {formatOrderId(selected._id)}
+                    </span>
+                    <span className="text-sm font-medium text-gray-800">
+                      {selected.billingDetails?.name}
+                    </span>
                   </div>
-                  <p className="text-xs text-gray-500">{selected.billingDetails?.phone} · ৳{selected.total?.toLocaleString()}</p>
+                  <p className="text-xs text-gray-500">
+                    {selected.billingDetails?.phone} · ৳
+                    {selected.total?.toLocaleString()}
+                  </p>
                 </div>
-                <button type="button" onClick={() => setSelected(null)}
-                  className="text-xs text-rose-600 hover:underline shrink-0">Change</button>
+                <button
+                  type="button"
+                  onClick={() => setSelected(null)}
+                  className="text-xs text-rose-600 hover:underline shrink-0"
+                >
+                  Change
+                </button>
               </div>
             )}
 
             {/* Reason */}
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Return Reason</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Return Reason
+              </label>
               <textarea
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
@@ -667,12 +979,26 @@ function AddReturnModal({ onClose, onSave }) {
                 className="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 resize-none"
               />
             </div>
-            {err && <p className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">{err}</p>}
+            {err && (
+              <p className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">
+                {err}
+              </p>
+            )}
           </div>
           <div className="px-6 py-4 border-t flex justify-end gap-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-gray-600 border rounded-xl hover:bg-gray-50">Cancel</button>
-            <button type="button" onClick={handleSave} disabled={saving || !selected}
-              className="px-4 py-2 text-sm font-semibold text-white bg-rose-500 hover:bg-rose-600 rounded-xl transition disabled:opacity-60">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm text-gray-600 border rounded-xl hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving || !selected}
+              className="px-4 py-2 text-sm font-semibold text-white bg-rose-500 hover:bg-rose-600 rounded-xl transition disabled:opacity-60"
+            >
               {saving ? "Creating…" : "Create Request"}
             </button>
           </div>
@@ -696,9 +1022,13 @@ function ReturnsActionsMenu({ order, onAction, onDelete }) {
     if (!btn) return;
     const rect = btn.getBoundingClientRect();
     const menuH = menuRef.current?.offsetHeight || 180;
-    const openUp = window.innerHeight - rect.bottom < menuH + 8 && rect.top > menuH + 8;
+    const openUp =
+      window.innerHeight - rect.bottom < menuH + 8 && rect.top > menuH + 8;
     const top = openUp ? rect.top - menuH - 4 : rect.bottom + 4;
-    const left = Math.min(Math.max(8, rect.right - 168), window.innerWidth - 176);
+    const left = Math.min(
+      Math.max(8, rect.right - 168),
+      window.innerWidth - 176,
+    );
     setMenuPos({ top, left });
   }, []);
 
@@ -708,43 +1038,119 @@ function ReturnsActionsMenu({ order, onAction, onDelete }) {
     const raf = requestAnimationFrame(updatePos);
     window.addEventListener("scroll", updatePos, true);
     window.addEventListener("resize", updatePos);
-    return () => { cancelAnimationFrame(raf); window.removeEventListener("scroll", updatePos, true); window.removeEventListener("resize", updatePos); };
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", updatePos, true);
+      window.removeEventListener("resize", updatePos);
+    };
   }, [open, updatePos]);
 
   const status = order.returnRequest?.status ?? "pending";
 
   return (
     <div onClick={(e) => e.stopPropagation()}>
-      <button ref={btnRef} type="button"
-        onClick={() => { if (open) { setOpen(false); return; } const r = btnRef.current?.getBoundingClientRect(); if (r) setMenuPos({ top: r.bottom + 4, left: Math.min(Math.max(8, r.right - 168), window.innerWidth - 176) }); setOpen(true); }}
-        className="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-50">
+      <button
+        ref={btnRef}
+        type="button"
+        onClick={() => {
+          if (open) {
+            setOpen(false);
+            return;
+          }
+          const r = btnRef.current?.getBoundingClientRect();
+          if (r)
+            setMenuPos({
+              top: r.bottom + 4,
+              left: Math.min(
+                Math.max(8, r.right - 168),
+                window.innerWidth - 176,
+              ),
+            });
+          setOpen(true);
+        }}
+        className="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-50"
+      >
         Actions ▾
       </button>
-      {open && typeof document !== "undefined" && createPortal(
-        <>
-          <div className="fixed inset-0 z-[100]" onClick={() => setOpen(false)} />
-          <div ref={menuRef} style={menuPos ? { position: "fixed", top: menuPos.top, left: menuPos.left } : undefined}
-            className="z-[101] min-w-44 bg-white border border-gray-200 rounded-xl shadow-xl py-1 text-xs">
-            <Link href={`/dashboard/orders/${order._id}`} className="block px-3 py-2 hover:bg-gray-50 text-gray-700" onClick={() => setOpen(false)}>View Order</Link>
-            {status === "pending" && (
-              <>
-                <button type="button" onClick={() => { setOpen(false); onAction("approve", order); }} className="w-full text-left px-3 py-2 hover:bg-green-50 text-green-700">Approve Return</button>
-                <button type="button" onClick={() => { setOpen(false); onAction("reject", order); }} className="w-full text-left px-3 py-2 hover:bg-red-50 text-red-600">Reject Return</button>
-              </>
-            )}
-            {status !== "pending" && (
-              <button type="button" onClick={() => { setOpen(false); onAction("pending", order); }} className="w-full text-left px-3 py-2 hover:bg-amber-50 text-amber-700">Reset to Pending</button>
-            )}
-            {canDelete && (
-              <>
-                <div className="my-1 border-t border-gray-100" />
-                <button type="button" onClick={() => { setOpen(false); onDelete(order._id); }} className="w-full text-left px-3 py-2 hover:bg-red-50 text-red-500">Remove</button>
-              </>
-            )}
-          </div>
-        </>,
-        document.body,
-      )}
+      {open &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <>
+            <div
+              className="fixed inset-0 z-[100]"
+              onClick={() => setOpen(false)}
+            />
+            <div
+              ref={menuRef}
+              style={
+                menuPos
+                  ? { position: "fixed", top: menuPos.top, left: menuPos.left }
+                  : undefined
+              }
+              className="z-[101] min-w-44 bg-white border border-gray-200 rounded-xl shadow-xl py-1 text-xs"
+            >
+              <Link
+                href={`/dashboard/orders/${order._id}`}
+                className="block px-3 py-2 hover:bg-gray-50 text-gray-700"
+                onClick={() => setOpen(false)}
+              >
+                View Order
+              </Link>
+              {status === "pending" && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpen(false);
+                      onAction("approve", order);
+                    }}
+                    className="w-full text-left px-3 py-2 hover:bg-green-50 text-green-700"
+                  >
+                    Approve Return
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpen(false);
+                      onAction("reject", order);
+                    }}
+                    className="w-full text-left px-3 py-2 hover:bg-red-50 text-red-600"
+                  >
+                    Reject Return
+                  </button>
+                </>
+              )}
+              {status !== "pending" && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    onAction("pending", order);
+                  }}
+                  className="w-full text-left px-3 py-2 hover:bg-amber-50 text-amber-700"
+                >
+                  Reset to Pending
+                </button>
+              )}
+              {canDelete && (
+                <>
+                  <div className="my-1 border-t border-gray-100" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpen(false);
+                      onDelete(order._id);
+                    }}
+                    className="w-full text-left px-3 py-2 hover:bg-red-50 text-red-500"
+                  >
+                    Remove
+                  </button>
+                </>
+              )}
+            </div>
+          </>,
+          document.body,
+        )}
     </div>
   );
 }
@@ -754,7 +1160,12 @@ const RETURN_TABS = ["all", "pending", "approved", "rejected"];
 function ReturnsRefundsSection() {
   const router = useRouter();
   const [orders, setOrders] = useState([]);
-  const [stats, setStats] = useState({ pending: 0, approved: 0, rejected: 0, totalRefund: 0 });
+  const [stats, setStats] = useState({
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+    totalRefund: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
   const [query, setQuery] = useState("");
@@ -770,7 +1181,9 @@ function ReturnsRefundsSection() {
       const params = new URLSearchParams({ page: pg, limit: 20 });
       if (tab !== "all") params.set("status", tab);
       if (q) params.set("q", q);
-      const r = await fetch(`${API}/api/admin/orders/returns?${params}`, { credentials: "include" });
+      const r = await fetch(`${API}/api/admin/orders/returns?${params}`, {
+        credentials: "include",
+      });
       const body = await r.json();
       if (r.ok) {
         setOrders(body.orders || []);
@@ -778,11 +1191,15 @@ function ReturnsRefundsSection() {
         setTotalPages(body.pages || 1);
         setTotal(body.total || 0);
       }
-    } catch {}
-    finally { setLoading(false); }
+    } catch {
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  useEffect(() => { load(activeTab, page, query); }, [activeTab, page, query, load]);
+  useEffect(() => {
+    load(activeTab, page, query);
+  }, [activeTab, page, query, load]);
 
   const handleAction = async ({ status, refundAmount, adminNote }) => {
     const order = actionModal.order;
@@ -813,14 +1230,20 @@ function ReturnsRefundsSection() {
   };
 
   const handleMenuAction = (action, order) => {
-    if (action === "pending") { handleResetToPending(order); return; }
+    if (action === "pending") {
+      handleResetToPending(order);
+      return;
+    }
     setActionModal({ action, order });
   };
 
   const handleDelete = async (orderId) => {
     if (!confirm("Remove this return request?")) return;
     try {
-      const r = await fetch(`${API}/api/admin/orders/${orderId}/return`, { method: "DELETE", credentials: "include" });
+      const r = await fetch(`${API}/api/admin/orders/${orderId}/return`, {
+        method: "DELETE",
+        credentials: "include",
+      });
       if (r.ok) load(activeTab, page, query);
     } catch {}
   };
@@ -833,9 +1256,15 @@ function ReturnsRefundsSection() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reason }),
       });
-      if (r.ok) { setAddModal(false); load(activeTab, page); return true; }
+      if (r.ok) {
+        setAddModal(false);
+        load(activeTab, page);
+        return true;
+      }
       return false;
-    } catch { return false; }
+    } catch {
+      return false;
+    }
   };
 
   return (
@@ -843,13 +1272,37 @@ function ReturnsRefundsSection() {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: "Pending", val: stats.pending, color: "text-amber-600", bg: "bg-amber-50 border-amber-100" },
-          { label: "Approved", val: stats.approved, color: "text-green-600", bg: "bg-green-50 border-green-100" },
-          { label: "Rejected", val: stats.rejected, color: "text-red-500", bg: "bg-red-50 border-red-100" },
-          { label: "Total Refunded", val: `৳${(stats.totalRefund || 0).toLocaleString()}`, color: "text-indigo-600", bg: "bg-indigo-50 border-indigo-100" },
+          {
+            label: "Pending",
+            val: stats.pending,
+            color: "text-amber-600",
+            bg: "bg-amber-50 border-amber-100",
+          },
+          {
+            label: "Approved",
+            val: stats.approved,
+            color: "text-green-600",
+            bg: "bg-green-50 border-green-100",
+          },
+          {
+            label: "Rejected",
+            val: stats.rejected,
+            color: "text-red-500",
+            bg: "bg-red-50 border-red-100",
+          },
+          {
+            label: "Total Refunded",
+            val: `৳${(stats.totalRefund || 0).toLocaleString()}`,
+            color: "text-indigo-600",
+            bg: "bg-indigo-50 border-indigo-100",
+          },
         ].map(({ label, val, color, bg }) => (
           <div key={label} className={`rounded-xl p-4 shadow-sm border ${bg}`}>
-            <p className={`text-xs uppercase tracking-wide ${color} opacity-70`}>{label}</p>
+            <p
+              className={`text-xs uppercase tracking-wide ${color} opacity-70`}
+            >
+              {label}
+            </p>
             <p className={`text-2xl font-bold mt-1 ${color}`}>{val ?? 0}</p>
           </div>
         ))}
@@ -860,21 +1313,41 @@ function ReturnsRefundsSection() {
         <div className="px-5 py-4 border-b flex flex-col gap-3">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="min-w-0">
-              <h2 className="text-base font-semibold text-gray-800">Returned Orders</h2>
-              <p className="text-xs text-gray-400 mt-0.5">Orders marked as returned — approve or reject each return</p>
+              <h2 className="text-base font-semibold text-gray-800">
+                Returned Orders
+              </h2>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Orders marked as returned — approve or reject each return
+              </p>
             </div>
             <div className="sm:ml-auto flex items-center gap-2 shrink-0">
-              <span className="text-xs text-gray-400">{total} request{total !== 1 ? "s" : ""}</span>
-              <button type="button" onClick={() => setAddModal(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold rounded-lg transition">
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14" /></svg>
+              <span className="text-xs text-gray-400">
+                {total} request{total !== 1 ? "s" : ""}
+              </span>
+              <button
+                type="button"
+                onClick={() => setAddModal(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold rounded-lg transition"
+              >
+                <svg
+                  className="w-3.5 h-3.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
                 New Request
               </button>
             </div>
           </div>
           <input
             value={query}
-            onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setPage(1);
+            }}
             placeholder="Search by customer name, phone, or order ID…"
             className="border rounded-lg px-3 py-1.5 text-sm w-full sm:w-72 focus:outline-none focus:ring-2 focus:ring-rose-300"
           />
@@ -883,21 +1356,39 @@ function ReturnsRefundsSection() {
         {/* Filter tabs */}
         <div className="flex overflow-x-auto gap-1 px-5 py-2 border-b scrollbar-hide">
           {RETURN_TABS.map((tab) => (
-            <button key={tab} onClick={() => { setActiveTab(tab); setPage(1); }}
-              className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium capitalize transition ${activeTab === tab ? "bg-rose-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
-              {tab === "all" ? "All" : tab.charAt(0).toUpperCase() + tab.slice(1)}
-              {tab !== "all" && stats[tab] != null && <span className="ml-1 opacity-70">({stats[tab]})</span>}
+            <button
+              key={tab}
+              onClick={() => {
+                setActiveTab(tab);
+                setPage(1);
+              }}
+              className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium capitalize transition ${activeTab === tab ? "bg-rose-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+            >
+              {tab === "all"
+                ? "All"
+                : tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {tab !== "all" && stats[tab] != null && (
+                <span className="ml-1 opacity-70">({stats[tab]})</span>
+              )}
             </button>
           ))}
         </div>
 
         {loading ? (
-          <div className="py-16 text-center text-gray-400 text-sm">Loading…</div>
+          <div className="py-16 text-center text-gray-400 text-sm">
+            Loading…
+          </div>
         ) : orders.length === 0 ? (
           <div className="py-16 text-center">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-gray-100 flex items-center justify-center text-3xl mb-3">↩</div>
-            <p className="text-sm font-medium text-gray-600">No returned orders</p>
-            <p className="text-xs text-gray-400 mt-1">Orders with status "returned" will appear here for processing.</p>
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-gray-100 flex items-center justify-center text-3xl mb-3">
+              ↩
+            </div>
+            <p className="text-sm font-medium text-gray-600">
+              No returned orders
+            </p>
+            <p className="text-xs text-gray-400 mt-1">
+              Orders with status "returned" will appear here for processing.
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -916,36 +1407,68 @@ function ReturnsRefundsSection() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {orders.map((order) => (
-                  <tr key={order._id} onClick={() => router.push(`/dashboard/orders/${order._id}`)} className="hover:bg-rose-50 transition cursor-pointer">
-                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                      <Link href={`/dashboard/orders/${order._id}`} className="font-mono text-xs bg-gray-100 rounded px-1.5 py-0.5 text-rose-600 hover:underline">
+                  <tr
+                    key={order._id}
+                    onClick={() =>
+                      router.push(`/dashboard/orders/${order._id}`)
+                    }
+                    className="hover:bg-rose-50 transition cursor-pointer"
+                  >
+                    <td
+                      className="px-4 py-3"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Link
+                        href={`/dashboard/orders/${order._id}`}
+                        className="font-mono text-xs bg-gray-100 rounded px-1.5 py-0.5 text-rose-600 hover:underline"
+                      >
                         {formatOrderId(order._id)}
                       </Link>
                     </td>
                     <td className="px-4 py-3">
-                      <p className="font-medium text-gray-800">{order.billingDetails?.name || "—"}</p>
-                      <p className="text-xs text-gray-400">{order.billingDetails?.phone}</p>
+                      <p className="font-medium text-gray-800">
+                        {order.billingDetails?.name || "—"}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {order.billingDetails?.phone}
+                      </p>
                     </td>
                     <td className="px-4 py-3 max-w-[14rem]">
-                      <p className="text-sm text-gray-700 line-clamp-2">{order.returnRequest?.reason || "—"}</p>
+                      <p className="text-sm text-gray-700 line-clamp-2">
+                        {order.returnRequest?.reason || "—"}
+                      </p>
                       {order.returnRequest?.adminNote && (
-                        <p className="text-xs text-gray-400 mt-0.5 italic">Note: {order.returnRequest.adminNote}</p>
+                        <p className="text-xs text-gray-400 mt-0.5 italic">
+                          Note: {order.returnRequest.adminNote}
+                        </p>
                       )}
                     </td>
-                    <td className="px-4 py-3 font-semibold text-gray-800">৳{order.total?.toLocaleString()}</td>
+                    <td className="px-4 py-3 font-semibold text-gray-800">
+                      ৳{order.total?.toLocaleString()}
+                    </td>
                     <td className="px-4 py-3 font-semibold text-green-700">
-                      {order.returnRequest?.status === "approved" ? `৳${(order.returnRequest.refundAmount || 0).toLocaleString()}` : "—"}
+                      {order.returnRequest?.status === "approved"
+                        ? `৳${(order.returnRequest.refundAmount || 0).toLocaleString()}`
+                        : "—"}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-block text-xs font-medium px-2 py-1 rounded-full capitalize ${RETURN_STATUS_STYLE[order.returnRequest?.status ?? "pending"] || ""}`}>
+                      <span
+                        className={`inline-block text-xs font-medium px-2 py-1 rounded-full capitalize ${RETURN_STATUS_STYLE[order.returnRequest?.status ?? "pending"] || ""}`}
+                      >
                         {order.returnRequest?.status ?? "pending"}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
-                      {order.returnRequest?.requestedAt ? fmtDate(order.returnRequest.requestedAt) : fmtDate(order.updatedAt || order.createdAt)}
+                      {order.returnRequest?.requestedAt
+                        ? fmtDate(order.returnRequest.requestedAt)
+                        : fmtDate(order.updatedAt || order.createdAt)}
                     </td>
                     <td className="px-4 py-3">
-                      <ReturnsActionsMenu order={order} onAction={handleMenuAction} onDelete={handleDelete} />
+                      <ReturnsActionsMenu
+                        order={order}
+                        onAction={handleMenuAction}
+                        onDelete={handleDelete}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -957,10 +1480,17 @@ function ReturnsRefundsSection() {
       </div>
 
       {actionModal && (
-        <ReturnActionModal modal={actionModal} onClose={() => setActionModal(null)} onSave={handleAction} />
+        <ReturnActionModal
+          modal={actionModal}
+          onClose={() => setActionModal(null)}
+          onSave={handleAction}
+        />
       )}
       {addModal && (
-        <AddReturnModal onClose={() => setAddModal(false)} onSave={handleAddReturn} />
+        <AddReturnModal
+          onClose={() => setAddModal(false)}
+          onSave={handleAddReturn}
+        />
       )}
     </div>
   );
@@ -968,8 +1498,28 @@ function ReturnsRefundsSection() {
 
 // ─── All Orders section ───────────────────────────────────────────────────────
 
-const ALL_ORDERS_TABS = ["all", "pending", "accepted", "confirmed", "delivered", "rejected", "returned", "cancelled", "failed"];
-const ALL_ORDERS_LABELS = { all: "All", pending: "Pending", accepted: "Accepted", confirmed: "Confirmed", delivered: "Delivered", rejected: "Rejected", returned: "Returned", cancelled: "Cancelled", failed: "Failed" };
+const ALL_ORDERS_TABS = [
+  "all",
+  "pending",
+  "accepted",
+  "confirmed",
+  "delivered",
+  "rejected",
+  "returned",
+  "cancelled",
+  "failed",
+];
+const ALL_ORDERS_LABELS = {
+  all: "All",
+  pending: "Pending",
+  accepted: "Accepted",
+  confirmed: "Confirmed",
+  delivered: "Delivered",
+  rejected: "Rejected",
+  returned: "Returned",
+  cancelled: "Cancelled",
+  failed: "Failed",
+};
 
 function AllOrdersSection() {
   const router = useRouter();
@@ -992,7 +1542,9 @@ function AllOrdersSection() {
       if (q) params.set("q", q);
       const from = dateFromPreset(preset);
       if (from) params.set("dateFrom", from);
-      const r = await fetch(`${API}/api/admin/orders?${params}`, { credentials: "include" });
+      const r = await fetch(`${API}/api/admin/orders?${params}`, {
+        credentials: "include",
+      });
       const body = await r.json();
       if (r.ok) {
         setOrders(body.orders || []);
@@ -1000,18 +1552,29 @@ function AllOrdersSection() {
         setTotalPages(body.pages || 1);
         setTotal(body.total || 0);
       }
-    } catch (err) { console.error(err); }
-    finally { setLoading(false); }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  useEffect(() => { fetchOrders(activeTab, query, page, datePreset); }, [activeTab, query, page, datePreset, fetchOrders]);
+  useEffect(() => {
+    fetchOrders(activeTab, query, page, datePreset);
+  }, [activeTab, query, page, datePreset, fetchOrders]);
 
   const handleDelete = async (e, orderId) => {
     e.stopPropagation();
     if (!confirm("Permanently delete this order?")) return;
     try {
-      const r = await fetch(`${API}/api/admin/orders/${orderId}`, { method: "DELETE", credentials: "include" });
-      if (r.ok) { setOrders((p) => p.filter((o) => o._id !== orderId)); setTotal((p) => p - 1); }
+      const r = await fetch(`${API}/api/admin/orders/${orderId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (r.ok) {
+        setOrders((p) => p.filter((o) => o._id !== orderId));
+        setTotal((p) => p - 1);
+      }
     } catch {}
   };
 
@@ -1023,10 +1586,21 @@ function AllOrdersSection() {
           { label: "Total Orders", val: stats.all, color: "text-gray-800" },
           { label: "Pending", val: stats.pending, color: "text-yellow-600" },
           { label: "Delivered", val: stats.delivered, color: "text-green-600" },
-          { label: "Revenue", val: stats.revenue != null ? `৳${stats.revenue.toLocaleString()}` : "—", color: "text-indigo-600" },
+          {
+            label: "Revenue",
+            val:
+              stats.revenue != null
+                ? `৳${stats.revenue.toLocaleString()}`
+                : "—",
+            color: "text-indigo-600",
+          },
         ].map(({ label, val, color }) => (
           <div key={label} className="bg-white rounded-xl p-4 shadow-sm border">
-            <p className={`text-xs uppercase tracking-wide ${color} opacity-70`}>{label}</p>
+            <p
+              className={`text-xs uppercase tracking-wide ${color} opacity-70`}
+            >
+              {label}
+            </p>
             <p className={`text-2xl font-bold mt-1 ${color}`}>{val ?? "—"}</p>
           </div>
         ))}
@@ -1036,49 +1610,80 @@ function AllOrdersSection() {
         {/* Header */}
         <div className="px-5 py-4 border-b flex flex-col gap-3">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <h2 className="text-base font-semibold text-gray-800 shrink-0">Orders</h2>
-            <input value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+            <h2 className="text-base font-semibold text-gray-800 shrink-0">
+              Orders
+            </h2>
+            <input
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setPage(1);
+              }}
               placeholder="Search by name, phone, order ID…"
               className="border rounded-lg px-3 py-1.5 text-sm w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-rose-300"
             />
-            <span className="text-xs text-gray-400 sm:ml-auto shrink-0">{total} result{total !== 1 ? "s" : ""}</span>
+            <span className="text-xs text-gray-400 sm:ml-auto shrink-0">
+              {total} result{total !== 1 ? "s" : ""}
+            </span>
           </div>
-          <DateFilter value={datePreset} onChange={(v) => { setDatePreset(v); setPage(1); }} />
+          <DateFilter
+            value={datePreset}
+            onChange={(v) => {
+              setDatePreset(v);
+              setPage(1);
+            }}
+          />
         </div>
 
         {/* Sub-tabs */}
         <div className="flex overflow-x-auto gap-1 px-5 py-2 border-b scrollbar-hide">
           {ALL_ORDERS_TABS.map((tab) => (
-            <button key={tab} onClick={() => { setActiveTab(tab); setPage(1); }}
+            <button
+              key={tab}
+              onClick={() => {
+                setActiveTab(tab);
+                setPage(1);
+              }}
               className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium capitalize transition ${activeTab === tab ? "bg-rose-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
             >
               {ALL_ORDERS_LABELS[tab]}
-              {stats[tab] != null && <span className="ml-1 opacity-70">({stats[tab]})</span>}
+              {stats[tab] != null && (
+                <span className="ml-1 opacity-70">({stats[tab]})</span>
+              )}
             </button>
           ))}
         </div>
 
         {loading ? (
-          <div className="py-16 text-center text-gray-400 text-sm">Loading orders…</div>
+          <div className="py-16 text-center text-gray-400 text-sm">
+            Loading orders…
+          </div>
         ) : orders.length === 0 ? (
-          <div className="py-16 text-center text-gray-400 text-sm">No orders found.</div>
+          <div className="py-16 text-center text-gray-400 text-sm">
+            No orders found.
+          </div>
         ) : (
           <OrdersTable
             orders={orders}
             onDelete={handleDelete}
             onRowClick={(id) => router.push(`/dashboard/orders/${id}`)}
-            onCustomerClick={(order) => setSelectedCustomer({
-              name: order.billingDetails?.name,
-              phone: order.billingDetails?.phone,
-              email: order.billingDetails?.email,
-              userId: order.userId,
-            })}
+            onCustomerClick={(order) =>
+              setSelectedCustomer({
+                name: order.billingDetails?.name,
+                phone: order.billingDetails?.phone,
+                email: order.billingDetails?.email,
+                userId: order.userId,
+              })
+            }
           />
         )}
         <Pagination page={page} totalPages={totalPages} onPage={setPage} />
       </div>
       {selectedCustomer && (
-        <OrderCustomerModal {...selectedCustomer} onClose={() => setSelectedCustomer(null)} />
+        <OrderCustomerModal
+          {...selectedCustomer}
+          onClose={() => setSelectedCustomer(null)}
+        />
       )}
     </div>
   );
@@ -1086,7 +1691,13 @@ function AllOrdersSection() {
 
 // ─── Filtered orders section (Incomplete / Cancelled) ────────────────────────
 
-function FilteredOrdersSection({ statusFilter, title, emptyMsg, showAging = false, showCancelReason = false }) {
+function FilteredOrdersSection({
+  statusFilter,
+  title,
+  emptyMsg,
+  showAging = false,
+  showCancelReason = false,
+}) {
   const router = useRouter();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -1097,54 +1708,90 @@ function FilteredOrdersSection({ statusFilter, title, emptyMsg, showAging = fals
   const [total, setTotal] = useState(0);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
 
-  const openCustomer = (order) => setSelectedCustomer({
-    name: order.billingDetails?.name,
-    phone: order.billingDetails?.phone,
-    email: order.billingDetails?.email,
-    userId: order.userId,
-  });
+  const openCustomer = (order) =>
+    setSelectedCustomer({
+      name: order.billingDetails?.name,
+      phone: order.billingDetails?.phone,
+      email: order.billingDetails?.email,
+      userId: order.userId,
+    });
 
-  const fetch_ = useCallback(async (q, pg, preset) => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({ page: pg, limit: 20, status: statusFilter });
-      if (q) params.set("q", q);
-      const from = dateFromPreset(preset);
-      if (from) params.set("dateFrom", from);
-      const r = await fetch(`${API}/api/admin/orders?${params}`, { credentials: "include" });
-      const body = await r.json();
-      if (r.ok) { setOrders(body.orders || []); setTotalPages(body.pages || 1); setTotal(body.total || 0); }
-    } catch {}
-    finally { setLoading(false); }
-  }, [statusFilter]);
+  const fetch_ = useCallback(
+    async (q, pg, preset) => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams({
+          page: pg,
+          limit: 20,
+          status: statusFilter,
+        });
+        if (q) params.set("q", q);
+        const from = dateFromPreset(preset);
+        if (from) params.set("dateFrom", from);
+        const r = await fetch(`${API}/api/admin/orders?${params}`, {
+          credentials: "include",
+        });
+        const body = await r.json();
+        if (r.ok) {
+          setOrders(body.orders || []);
+          setTotalPages(body.pages || 1);
+          setTotal(body.total || 0);
+        }
+      } catch {
+      } finally {
+        setLoading(false);
+      }
+    },
+    [statusFilter],
+  );
 
-  useEffect(() => { fetch_(query, page, datePreset); }, [query, page, datePreset, fetch_]);
+  useEffect(() => {
+    fetch_(query, page, datePreset);
+  }, [query, page, datePreset, fetch_]);
 
   const handleDelete = async (e, orderId) => {
     e.stopPropagation();
     if (!confirm("Permanently delete this order?")) return;
     try {
-      const r = await fetch(`${API}/api/admin/orders/${orderId}`, { method: "DELETE", credentials: "include" });
+      const r = await fetch(`${API}/api/admin/orders/${orderId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
       if (r.ok) setOrders((p) => p.filter((o) => o._id !== orderId));
     } catch {}
   };
 
   // Aging summary counts (for Incomplete)
-  const agingCounts = showAging ? orders.reduce((acc, o) => {
-    const age = orderAge(o.createdAt);
-    if (age) acc[age.label] = (acc[age.label] || 0) + 1;
-    return acc;
-  }, {}) : {};
+  const agingCounts = showAging
+    ? orders.reduce((acc, o) => {
+        const age = orderAge(o.createdAt);
+        if (age) acc[age.label] = (acc[age.label] || 0) + 1;
+        return acc;
+      }, {})
+    : {};
 
   return (
     <div className="space-y-4">
       {/* Aging warning banner for Incomplete */}
       {showAging && Object.keys(agingCounts).length > 0 && (
         <div className="flex flex-wrap gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 items-center">
-          <svg className="w-4 h-4 text-amber-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>
-          <span className="text-xs font-semibold text-amber-700">Orders waiting attention:</span>
+          <svg
+            className="w-4 h-4 text-amber-600 shrink-0"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+          </svg>
+          <span className="text-xs font-semibold text-amber-700">
+            Orders waiting attention:
+          </span>
           {Object.entries(agingCounts).map(([label, count]) => (
-            <span key={label} className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">
+            <span
+              key={label}
+              className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200"
+            >
               {count} order{count > 1 ? "s" : ""} {label} old
             </span>
           ))}
@@ -1154,20 +1801,39 @@ function FilteredOrdersSection({ statusFilter, title, emptyMsg, showAging = fals
       <div className="bg-white rounded-xl shadow-sm border">
         <div className="px-5 py-4 border-b flex flex-col gap-3">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <h2 className="text-base font-semibold text-gray-800 shrink-0">{title}</h2>
-            <input value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+            <h2 className="text-base font-semibold text-gray-800 shrink-0">
+              {title}
+            </h2>
+            <input
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setPage(1);
+              }}
               placeholder="Search by name, phone, order ID…"
               className="border rounded-lg px-3 py-1.5 text-sm w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-rose-300"
             />
-            <span className="text-xs text-gray-400 sm:ml-auto shrink-0">{total} result{total !== 1 ? "s" : ""}</span>
+            <span className="text-xs text-gray-400 sm:ml-auto shrink-0">
+              {total} result{total !== 1 ? "s" : ""}
+            </span>
           </div>
-          <DateFilter value={datePreset} onChange={(v) => { setDatePreset(v); setPage(1); }} />
+          <DateFilter
+            value={datePreset}
+            onChange={(v) => {
+              setDatePreset(v);
+              setPage(1);
+            }}
+          />
         </div>
 
         {loading ? (
-          <div className="py-16 text-center text-gray-400 text-sm">Loading…</div>
+          <div className="py-16 text-center text-gray-400 text-sm">
+            Loading…
+          </div>
         ) : orders.length === 0 ? (
-          <div className="py-16 text-center text-gray-400 text-sm">{emptyMsg}</div>
+          <div className="py-16 text-center text-gray-400 text-sm">
+            {emptyMsg}
+          </div>
         ) : showAging ? (
           /* Incomplete orders table with aging column */
           <div className="overflow-x-auto">
@@ -1189,41 +1855,86 @@ function FilteredOrdersSection({ statusFilter, title, emptyMsg, showAging = fals
                 {orders.map((order) => {
                   const age = orderAge(order.createdAt);
                   return (
-                    <tr key={order._id} onClick={() => router.push(`/dashboard/orders/${order._id}`)}
-                      className={`hover:bg-rose-50 transition cursor-pointer ${age?.color?.includes("red") ? "bg-red-50/30" : ""}`}>
-                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                        <Link href={`/dashboard/orders/${order._id}`} className="font-mono text-xs bg-gray-100 rounded px-1.5 py-0.5 text-rose-600 hover:underline">
+                    <tr
+                      key={order._id}
+                      onClick={() =>
+                        router.push(`/dashboard/orders/${order._id}`)
+                      }
+                      className={`hover:bg-rose-50 transition cursor-pointer ${age?.color?.includes("red") ? "bg-red-50/30" : ""}`}
+                    >
+                      <td
+                        className="px-4 py-3"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Link
+                          href={`/dashboard/orders/${order._id}`}
+                          className="font-mono text-xs bg-gray-100 rounded px-1.5 py-0.5 text-rose-600 hover:underline"
+                        >
                           {formatOrderId(order._id)}
                         </Link>
                       </td>
-                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                        <button type="button" className="text-left" onClick={() => openCustomer(order)}>
-                          <p className="font-medium text-gray-800 hover:text-indigo-600 hover:underline">{order.billingDetails?.name || "—"}</p>
-                          <p className="text-xs text-gray-400">{order.billingDetails?.phone}</p>
+                      <td
+                        className="px-4 py-3"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          type="button"
+                          className="text-left"
+                          onClick={() => openCustomer(order)}
+                        >
+                          <p className="font-medium text-gray-800 hover:text-indigo-600 hover:underline">
+                            {order.billingDetails?.name || "—"}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {order.billingDetails?.phone}
+                          </p>
                         </button>
                       </td>
-                      <td className="px-4 py-3 text-gray-600 max-w-[12rem] truncate">{itemSummary(order.items)}</td>
-                      <td className="px-4 py-3 font-semibold text-gray-800">৳{order.total?.toLocaleString()}</td>
-                      <td className="px-4 py-3">
-                        <span className="block text-xs font-medium text-gray-700">{METHOD_LABEL[order.paymentMethod] || order.paymentMethod}</span>
-                        <span className={`inline-block text-xs px-1.5 py-0.5 rounded-full ${PAYMENT_STATUS_STYLE[order.paymentStatus] || ""}`}>{order.paymentStatus?.toUpperCase()}</span>
+                      <td className="px-4 py-3 text-gray-600 max-w-[12rem] truncate">
+                        {itemSummary(order.items)}
+                      </td>
+                      <td className="px-4 py-3 font-semibold text-gray-800">
+                        ৳{order.total?.toLocaleString()}
                       </td>
                       <td className="px-4 py-3">
-                        <Link href={`/dashboard/orders/${order._id}`} onClick={(e) => e.stopPropagation()}
-                          className={`inline-block text-xs font-medium px-2 py-1 rounded-full capitalize hover:underline ${STATUS_STYLE[order.status] || ""}`}>
+                        <span className="block text-xs font-medium text-gray-700">
+                          {METHOD_LABEL[order.paymentMethod] ||
+                            order.paymentMethod}
+                        </span>
+                        <span
+                          className={`inline-block text-xs px-1.5 py-0.5 rounded-full ${PAYMENT_STATUS_STYLE[order.paymentStatus] || ""}`}
+                        >
+                          {order.paymentStatus?.toUpperCase()}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <Link
+                          href={`/dashboard/orders/${order._id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className={`inline-block text-xs font-medium px-2 py-1 rounded-full capitalize hover:underline ${STATUS_STYLE[order.status] || ""}`}
+                        >
                           {order.status}
                         </Link>
                       </td>
                       <td className="px-4 py-3">
                         {age ? (
-                          <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full ${age.color}`}>{age.label}</span>
+                          <span
+                            className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full ${age.color}`}
+                          >
+                            {age.label}
+                          </span>
                         ) : (
                           <span className="text-xs text-gray-300">—</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">{fmt(order.createdAt)}</td>
+                      <td className="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
+                        {fmt(order.createdAt)}
+                      </td>
                       <td className="px-4 py-3">
-                        <OrderActionsMenu order={order} onDelete={handleDelete} />
+                        <OrderActionsMenu
+                          order={order}
+                          onDelete={handleDelete}
+                        />
                       </td>
                     </tr>
                   );
@@ -1249,7 +1960,10 @@ function FilteredOrdersSection({ statusFilter, title, emptyMsg, showAging = fals
         <Pagination page={page} totalPages={totalPages} onPage={setPage} />
       </div>
       {selectedCustomer && (
-        <OrderCustomerModal {...selectedCustomer} onClose={() => setSelectedCustomer(null)} />
+        <OrderCustomerModal
+          {...selectedCustomer}
+          onClose={() => setSelectedCustomer(null)}
+        />
       )}
     </div>
   );
@@ -1261,7 +1975,11 @@ function CustomerNoteModal({ order, onClose }) {
   const [prevOrders, setPrevOrders] = useState([]);
   const [prevLoading, setPrevLoading] = useState(false);
   const phone = order.billingDetails?.phone;
-  const { lifetime, loading: lifetimeLoading, refresh: refreshLifetime } = useCourierLifetime(phone);
+  const {
+    lifetime,
+    loading: lifetimeLoading,
+    refresh: refreshLifetime,
+  } = useCourierLifetime(phone);
 
   useEffect(() => {
     const uid = order.userId;
@@ -1271,8 +1989,10 @@ function CustomerNoteModal({ order, onClose }) {
       ? new URLSearchParams({ userId: uid, limit: 10, page: 1 })
       : new URLSearchParams({ q: phone, limit: 10, page: 1 });
     fetch(`${API}/api/admin/orders?${params}`, { credentials: "include" })
-      .then((r) => r.ok ? r.json() : { orders: [] })
-      .then((data) => setPrevOrders((data.orders || []).filter((o) => o._id !== order._id)))
+      .then((r) => (r.ok ? r.json() : { orders: [] }))
+      .then((data) =>
+        setPrevOrders((data.orders || []).filter((o) => o._id !== order._id)),
+      )
       .catch(() => {})
       .finally(() => setPrevLoading(false));
   }, [order._id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -1289,36 +2009,52 @@ function CustomerNoteModal({ order, onClose }) {
       >
         <div className="flex items-center justify-between px-6 py-4 border-b">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">{order.billingDetails?.name || "—"}</h3>
-            <p className="text-xs text-gray-400 mt-0.5">{fmtDate(order.createdAt)}</p>
+            <h3 className="text-lg font-bold text-gray-900">
+              {order.billingDetails?.name || "—"}
+            </h3>
+            <p className="text-xs text-gray-400 mt-0.5">
+              {fmtDate(order.createdAt)}
+            </p>
           </div>
           <button
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-700 text-xl leading-none"
-          >×</button>
+          >
+            ×
+          </button>
         </div>
 
         <div className="overflow-y-auto flex-1">
           {/* Contact */}
           <div className="px-6 py-4 border-b">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Contact Info</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+              Contact Info
+            </p>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <p className="text-xs text-gray-400 mb-0.5">নাম</p>
-                <p className="font-medium text-gray-800">{order.billingDetails?.name || "—"}</p>
+                <p className="font-medium text-gray-800">
+                  {order.billingDetails?.name || "—"}
+                </p>
               </div>
               <div>
                 <p className="text-xs text-gray-400 mb-0.5">ফোন</p>
-                <p className="font-medium text-gray-800">{order.billingDetails?.phone || "—"}</p>
+                <p className="font-medium text-gray-800">
+                  {order.billingDetails?.phone || "—"}
+                </p>
               </div>
               <div className="col-span-2">
                 <p className="text-xs text-gray-400 mb-0.5">ইমেইল</p>
-                <p className="font-medium text-gray-800">{order.billingDetails?.email || "—"}</p>
+                <p className="font-medium text-gray-800">
+                  {order.billingDetails?.email || "—"}
+                </p>
               </div>
               {order.billingDetails?.address && (
                 <div className="col-span-2">
                   <p className="text-xs text-gray-400 mb-0.5">ঠিকানা</p>
-                  <p className="font-medium text-gray-800">{order.billingDetails.address}</p>
+                  <p className="font-medium text-gray-800">
+                    {order.billingDetails.address}
+                  </p>
                 </div>
               )}
             </div>
@@ -1326,9 +2062,13 @@ function CustomerNoteModal({ order, onClose }) {
 
           {/* Note */}
           <div className="px-6 py-4 border-b">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Customer Note</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+              Customer Note
+            </p>
             <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-              <p className="text-sm text-gray-800 leading-relaxed">"{order.billingDetails?.note}"</p>
+              <p className="text-sm text-gray-800 leading-relaxed">
+                "{order.billingDetails?.note}"
+              </p>
             </div>
             <div className="mt-3 flex items-center gap-2">
               <a
@@ -1339,7 +2079,9 @@ function CustomerNoteModal({ order, onClose }) {
               >
                 #{String(order._id).slice(-8).toUpperCase()} →
               </a>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${ORDER_STATUS_COLOR[order.status] || "bg-gray-100 text-gray-500"}`}>
+              <span
+                className={`text-xs px-2 py-0.5 rounded-full font-medium ${ORDER_STATUS_COLOR[order.status] || "bg-gray-100 text-gray-500"}`}
+              >
                 {ORDER_STATUS_LABEL[order.status] || order.status}
               </span>
               <span className="text-sm font-semibold text-gray-800 ml-auto">
@@ -1369,9 +2111,13 @@ function CustomerNoteModal({ order, onClose }) {
               )}
             </p>
             {prevLoading ? (
-              <p className="text-xs text-gray-400 py-3 text-center">লোড হচ্ছে…</p>
+              <p className="text-xs text-gray-400 py-3 text-center">
+                লোড হচ্ছে…
+              </p>
             ) : prevOrders.length === 0 ? (
-              <p className="text-xs text-gray-400 py-3 text-center italic">অন্য কোনো order নেই</p>
+              <p className="text-xs text-gray-400 py-3 text-center italic">
+                অন্য কোনো order নেই
+              </p>
             ) : (
               <div className="space-y-2">
                 {prevOrders.map((o) => (
@@ -1386,7 +2132,9 @@ function CustomerNoteModal({ order, onClose }) {
                       <span className="text-xs font-mono text-gray-500 shrink-0">
                         #{String(o._id).slice(-8).toUpperCase()}
                       </span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${ORDER_STATUS_COLOR[o.status] || "bg-gray-100 text-gray-500"}`}>
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${ORDER_STATUS_COLOR[o.status] || "bg-gray-100 text-gray-500"}`}
+                      >
                         {ORDER_STATUS_LABEL[o.status] || o.status}
                       </span>
                     </div>
@@ -1395,7 +2143,13 @@ function CustomerNoteModal({ order, onClose }) {
                         ৳{Number(o.total || 0).toLocaleString("en-BD")}
                       </span>
                       <span className="text-xs text-gray-400">
-                        {o.createdAt ? new Date(o.createdAt).toLocaleDateString("en-BD", { day: "numeric", month: "short", year: "numeric" }) : ""}
+                        {o.createdAt
+                          ? new Date(o.createdAt).toLocaleDateString("en-BD", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })
+                          : ""}
                       </span>
                     </div>
                   </a>
@@ -1406,7 +2160,7 @@ function CustomerNoteModal({ order, onClose }) {
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
 
@@ -1425,23 +2179,36 @@ function CustomerNotesSection() {
   const load = useCallback(async (pg) => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ page: pg, limit: PAGE_SIZE, hasNote: "1" });
-      const r = await fetch(`${API}/api/admin/orders?${params}`, { credentials: "include" });
+      const params = new URLSearchParams({
+        page: pg,
+        limit: PAGE_SIZE,
+        hasNote: "1",
+      });
+      const r = await fetch(`${API}/api/admin/orders?${params}`, {
+        credentials: "include",
+      });
       const body = r.ok ? await r.json() : {};
       setOrders(body.orders || []);
       setTotalPages(body.pages || 1);
       setTotal(body.total || 0);
-    } catch {}
-    finally { setLoading(false); }
+    } catch {
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  useEffect(() => { load(page); }, [page, load]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    load(page);
+  }, [page, load]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const deleteOrder = async (id) => {
     if (!window.confirm("এই order টি মুছে ফেলবেন?")) return;
     setDeletingId(id);
     try {
-      await fetch(`${API}/api/admin/orders/${id}`, { method: "DELETE", credentials: "include" });
+      await fetch(`${API}/api/admin/orders/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
       setOrders((prev) => prev.filter((o) => o._id !== id));
       setTotal((t) => Math.max(0, t - 1));
     } finally {
@@ -1452,14 +2219,22 @@ function CustomerNotesSection() {
   const goPage = (p) => setPage(p);
 
   const pageNumbers = () => {
-    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    if (totalPages <= 7)
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
     const pages = new Set([1, totalPages, page]);
-    for (let i = Math.max(2, page - 1); i <= Math.min(totalPages - 1, page + 1); i++) pages.add(i);
-    return [...pages].sort((a, b) => a - b).reduce((acc, n, i, arr) => {
-      if (i > 0 && n - arr[i - 1] > 1) acc.push("…");
-      acc.push(n);
-      return acc;
-    }, []);
+    for (
+      let i = Math.max(2, page - 1);
+      i <= Math.min(totalPages - 1, page + 1);
+      i++
+    )
+      pages.add(i);
+    return [...pages]
+      .sort((a, b) => a - b)
+      .reduce((acc, n, i, arr) => {
+        if (i > 0 && n - arr[i - 1] > 1) acc.push("…");
+        acc.push(n);
+        return acc;
+      }, []);
   };
 
   return (
@@ -1473,13 +2248,20 @@ function CustomerNotesSection() {
 
       <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
         {loading ? (
-          <div className="py-16 text-center text-gray-400 text-sm">লোড হচ্ছে…</div>
+          <div className="py-16 text-center text-gray-400 text-sm">
+            লোড হচ্ছে…
+          </div>
         ) : orders.length === 0 ? (
-          <div className="py-16 text-center text-gray-400 text-sm">কোনো customer note নেই।</div>
+          <div className="py-16 text-center text-gray-400 text-sm">
+            কোনো customer note নেই।
+          </div>
         ) : (
           <div className="divide-y divide-gray-100">
             {orders.map((order, idx) => (
-              <div key={order._id} className="px-5 py-4 hover:bg-amber-50/40 transition">
+              <div
+                key={order._id}
+                className="px-5 py-4 hover:bg-amber-50/40 transition"
+              >
                 <div className="flex items-start gap-4">
                   {/* Row number */}
                   <span className="text-xs text-gray-300 pt-0.5 shrink-0 w-5 text-right">
@@ -1494,7 +2276,9 @@ function CustomerNotesSection() {
                       >
                         {formatOrderId(order._id)}
                       </Link>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${STATUS_STYLE[order.status] || ""}`}>
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${STATUS_STYLE[order.status] || ""}`}
+                      >
                         {order.status}
                       </span>
                       {/* Customer name — clickable */}
@@ -1504,20 +2288,30 @@ function CustomerNotesSection() {
                       >
                         {order.billingDetails?.name || "—"}
                       </button>
-                      <span className="text-xs text-gray-400">{order.billingDetails?.phone}</span>
+                      <span className="text-xs text-gray-400">
+                        {order.billingDetails?.phone}
+                      </span>
                     </div>
 
                     {/* Note box */}
                     <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                      <p className="text-xs text-gray-500 mb-0.5 font-medium">Note from customer</p>
-                      <p className="text-sm text-gray-800">"{order.billingDetails?.note}"</p>
+                      <p className="text-xs text-gray-500 mb-0.5 font-medium">
+                        Note from customer
+                      </p>
+                      <p className="text-sm text-gray-800">
+                        "{order.billingDetails?.note}"
+                      </p>
                     </div>
                   </div>
 
                   {/* Right side */}
                   <div className="text-right shrink-0 flex flex-col items-end gap-1.5">
-                    <p className="font-semibold text-gray-800">৳{order.total?.toLocaleString()}</p>
-                    <p className="text-xs text-gray-400">{fmtDate(order.createdAt)}</p>
+                    <p className="font-semibold text-gray-800">
+                      ৳{order.total?.toLocaleString()}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {fmtDate(order.createdAt)}
+                    </p>
                     {user?.role === "admin" && (
                       <button
                         onClick={() => deleteOrder(order._id)}
@@ -1537,11 +2331,28 @@ function CustomerNotesSection() {
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-1.5 flex-wrap">
-          <button onClick={() => goPage(1)} disabled={page === 1} className="px-2.5 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40">«</button>
-          <button onClick={() => goPage(page - 1)} disabled={page === 1} className="px-3 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40">‹ Prev</button>
+          <button
+            onClick={() => goPage(1)}
+            disabled={page === 1}
+            className="px-2.5 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40"
+          >
+            «
+          </button>
+          <button
+            onClick={() => goPage(page - 1)}
+            disabled={page === 1}
+            className="px-3 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40"
+          >
+            ‹ Prev
+          </button>
           {pageNumbers().map((n, i) =>
             n === "…" ? (
-              <span key={`ellipsis-${i}`} className="px-2 text-gray-400 text-sm">…</span>
+              <span
+                key={`ellipsis-${i}`}
+                className="px-2 text-gray-400 text-sm"
+              >
+                …
+              </span>
             ) : (
               <button
                 key={n}
@@ -1550,15 +2361,30 @@ function CustomerNotesSection() {
               >
                 {n}
               </button>
-            )
+            ),
           )}
-          <button onClick={() => goPage(page + 1)} disabled={page === totalPages} className="px-3 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40">Next ›</button>
-          <button onClick={() => goPage(totalPages)} disabled={page === totalPages} className="px-2.5 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40">»</button>
+          <button
+            onClick={() => goPage(page + 1)}
+            disabled={page === totalPages}
+            className="px-3 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40"
+          >
+            Next ›
+          </button>
+          <button
+            onClick={() => goPage(totalPages)}
+            disabled={page === totalPages}
+            className="px-2.5 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40"
+          >
+            »
+          </button>
         </div>
       )}
 
       {selectedOrder && (
-        <CustomerNoteModal order={selectedOrder} onClose={() => setSelectedOrder(null)} />
+        <CustomerNoteModal
+          order={selectedOrder}
+          onClose={() => setSelectedOrder(null)}
+        />
       )}
     </div>
   );
@@ -1602,7 +2428,9 @@ function OrderTimelineSection() {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`${API}/api/admin/orders/timeline?limit=60`, { credentials: "include" })
+    fetch(`${API}/api/admin/orders/timeline?limit=60`, {
+      credentials: "include",
+    })
       .then((r) => r.json())
       .then((d) => setEvents(d.events || []))
       .catch(() => {})
@@ -1618,13 +2446,19 @@ function OrderTimelineSection() {
     });
   };
 
-  if (loading) return <div className="bg-white rounded-xl shadow-sm border py-20 text-center text-gray-400 text-sm">Loading timeline…</div>;
+  if (loading)
+    return (
+      <div className="bg-white rounded-xl shadow-sm border py-20 text-center text-gray-400 text-sm">
+        Loading timeline…
+      </div>
+    );
 
-  if (!events.length) return (
-    <div className="bg-white rounded-xl shadow-sm border py-20 text-center text-gray-400 text-sm">
-      No timeline events yet. Status changes will appear here.
-    </div>
-  );
+  if (!events.length)
+    return (
+      <div className="bg-white rounded-xl shadow-sm border py-20 text-center text-gray-400 text-sm">
+        No timeline events yet. Status changes will appear here.
+      </div>
+    );
 
   // Group events by orderId, preserving order of first occurrence
   const orderMap = {};
@@ -1649,8 +2483,12 @@ function OrderTimelineSection() {
   return (
     <div className="bg-white rounded-xl shadow-sm border">
       <div className="px-5 py-4 border-b">
-        <h2 className="text-base font-semibold text-gray-800">Order Timeline</h2>
-        <p className="text-xs text-gray-400 mt-0.5">Recent status changes across all orders — click an order to expand</p>
+        <h2 className="text-base font-semibold text-gray-800">
+          Order Timeline
+        </h2>
+        <p className="text-xs text-gray-400 mt-0.5">
+          Recent status changes across all orders — click an order to expand
+        </p>
       </div>
       <div className="divide-y divide-gray-100">
         {orders.map((order) => {
@@ -1664,13 +2502,14 @@ function OrderTimelineSection() {
               >
                 <svg
                   className={`w-3.5 h-3.5 text-gray-400 shrink-0 transition-transform duration-150 ${isOpen ? "rotate-90" : ""}`}
-                  viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
                 >
                   <path d="M9 18l6-6-6-6" />
                 </svg>
-                <span
-                  onClick={(e) => e.stopPropagation()}
-                >
+                <span onClick={(e) => e.stopPropagation()}>
                   <Link
                     href={`/dashboard/orders/${order.orderId}`}
                     className="font-mono text-xs text-rose-600 hover:underline bg-rose-50 px-1.5 py-0.5 rounded"
@@ -1678,16 +2517,22 @@ function OrderTimelineSection() {
                     #{order.orderIdShort}
                   </Link>
                 </span>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${STATUS_STYLE[order.latestStatus] || ""}`}>
+                <span
+                  className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${STATUS_STYLE[order.latestStatus] || ""}`}
+                >
                   {timelineStatusLabel(order.latestStatus)}
                 </span>
                 <span className="text-xs text-gray-600 flex-1 min-w-0 truncate">
-                  {order.customerName}{order.customerPhone ? ` · ${order.customerPhone}` : ""}
+                  {order.customerName}
+                  {order.customerPhone ? ` · ${order.customerPhone}` : ""}
                 </span>
                 <span className="text-xs text-gray-300 shrink-0">
-                  {order.events.length} event{order.events.length !== 1 ? "s" : ""}
+                  {order.events.length} event
+                  {order.events.length !== 1 ? "s" : ""}
                 </span>
-                <span className="text-xs text-gray-400 shrink-0">{fmtDate(order.latestAt)}</span>
+                <span className="text-xs text-gray-400 shrink-0">
+                  {fmtDate(order.latestAt)}
+                </span>
               </button>
 
               {isOpen && (
@@ -1696,29 +2541,52 @@ function OrderTimelineSection() {
                     <div className="absolute left-1.5 top-0 bottom-0 w-px bg-gray-200" />
                     {order.events.map((ev, i) => (
                       <div key={i} className="relative flex items-start gap-3">
-                        <div className={`absolute -left-4.5 w-3 h-3 rounded-full mt-0.5 shrink-0 ${TIMELINE_STATUS_STYLE[ev.newStatus] || "bg-gray-300"}`} />
+                        <div
+                          className={`absolute -left-4.5 w-3 h-3 rounded-full mt-0.5 shrink-0 ${TIMELINE_STATUS_STYLE[ev.newStatus] || "bg-gray-300"}`}
+                        />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_STYLE[ev.newStatus] || ""}`}>{timelineStatusLabel(ev.newStatus)}</span>
+                            <span
+                              className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_STYLE[ev.newStatus] || ""}`}
+                            >
+                              {timelineStatusLabel(ev.newStatus)}
+                            </span>
                             {ev.previousStatus && (
-                              <span className="text-xs text-gray-400">← {timelineStatusLabel(ev.previousStatus)}</span>
+                              <span className="text-xs text-gray-400">
+                                ← {timelineStatusLabel(ev.previousStatus)}
+                              </span>
                             )}
                             <span className="text-xs text-gray-400 ml-auto">
-                              {new Date(ev.at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+                              {new Date(ev.at).toLocaleTimeString("en-GB", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
                             </span>
                           </div>
                           {ev.customerName && (
                             <button
                               type="button"
                               className="text-xs text-gray-500 hover:text-indigo-600 hover:underline mt-0.5"
-                              onClick={() => setSelectedCustomer({ name: ev.customerName, phone: ev.customerPhone })}
+                              onClick={() =>
+                                setSelectedCustomer({
+                                  name: ev.customerName,
+                                  phone: ev.customerPhone,
+                                })
+                              }
                             >
-                              {ev.customerName}{ev.customerPhone ? ` · ${ev.customerPhone}` : ""}
+                              {ev.customerName}
+                              {ev.customerPhone ? ` · ${ev.customerPhone}` : ""}
                             </button>
                           )}
-                          {ev.reason && <p className="text-xs text-gray-400 italic mt-0.5">"{ev.reason}"</p>}
+                          {ev.reason && (
+                            <p className="text-xs text-gray-400 italic mt-0.5">
+                              "{ev.reason}"
+                            </p>
+                          )}
                           {ev.changedBy && ev.changedBy !== "system" && (
-                            <p className="text-xs text-gray-400">by {ev.changedBy}</p>
+                            <p className="text-xs text-gray-400">
+                              by {ev.changedBy}
+                            </p>
                           )}
                         </div>
                       </div>
@@ -1731,7 +2599,10 @@ function OrderTimelineSection() {
         })}
       </div>
       {selectedCustomer && (
-        <OrderCustomerModal {...selectedCustomer} onClose={() => setSelectedCustomer(null)} />
+        <OrderCustomerModal
+          {...selectedCustomer}
+          onClose={() => setSelectedCustomer(null)}
+        />
       )}
     </div>
   );
@@ -1742,10 +2613,15 @@ function OrderTimelineSection() {
 function AbandonedCartModal({ user, onClose }) {
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
-  const { lifetime, loading: lifetimeLoading, refresh: refreshLifetime } = useCourierLifetime(user.mobile);
+  const {
+    lifetime,
+    loading: lifetimeLoading,
+    refresh: refreshLifetime,
+  } = useCourierLifetime(user.mobile);
 
   const cartValue = (user.savedCart?.items || []).reduce(
-    (s, i) => s + (i.price || 0) * (i.quantity || 1), 0
+    (s, i) => s + (i.price || 0) * (i.quantity || 1),
+    0,
   );
 
   const timeAgo = (date) => {
@@ -1761,10 +2637,13 @@ function AbandonedCartModal({ user, onClose }) {
   useEffect(() => {
     if (!user._id) return;
     setOrdersLoading(true);
-    fetch(`${API}/api/admin/orders?${new URLSearchParams({ userId: user._id, limit: 10, page: 1 })}`, {
-      credentials: "include",
-    })
-      .then((r) => r.ok ? r.json() : { orders: [] })
+    fetch(
+      `${API}/api/admin/orders?${new URLSearchParams({ userId: user._id, limit: 10, page: 1 })}`,
+      {
+        credentials: "include",
+      },
+    )
+      .then((r) => (r.ok ? r.json() : { orders: [] }))
       .then((data) => setOrders(data.orders || []))
       .catch(() => {})
       .finally(() => setOrdersLoading(false));
@@ -1783,10 +2662,14 @@ function AbandonedCartModal({ user, onClose }) {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">{user.name || "—"}</h3>
+            <h3 className="text-lg font-bold text-gray-900">
+              {user.name || "—"}
+            </h3>
             <p className="text-xs text-gray-400 mt-0.5">
               Cart last updated{" "}
-              {user.savedCart?.updatedAt ? timeAgo(user.savedCart.updatedAt) : ""}
+              {user.savedCart?.updatedAt
+                ? timeAgo(user.savedCart.updatedAt)
+                : ""}
             </p>
           </div>
           <button
@@ -1800,7 +2683,9 @@ function AbandonedCartModal({ user, onClose }) {
         <div className="overflow-y-auto flex-1">
           {/* Contact */}
           <div className="px-6 py-4 border-b">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Contact Info</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+              Contact Info
+            </p>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <p className="text-xs text-gray-400 mb-0.5">নাম</p>
@@ -1808,7 +2693,9 @@ function AbandonedCartModal({ user, onClose }) {
               </div>
               <div>
                 <p className="text-xs text-gray-400 mb-0.5">ফোন</p>
-                <p className="font-medium text-gray-800">{user.mobile || "—"}</p>
+                <p className="font-medium text-gray-800">
+                  {user.mobile || "—"}
+                </p>
               </div>
               <div className="col-span-2">
                 <p className="text-xs text-gray-400 mb-0.5">ইমেইল</p>
@@ -1848,20 +2735,28 @@ function AbandonedCartModal({ user, onClose }) {
                     </p>
                     <p className="text-xs text-gray-400 mt-0.5">
                       ৳{Number(item.price || 0).toLocaleString("en-BD")}
-                      {item.color && <span className="ml-1">· {item.color}</span>}
+                      {item.color && (
+                        <span className="ml-1">· {item.color}</span>
+                      )}
                       {item.size && <span className="ml-1">· {item.size}</span>}
-                      {" × "}{item.quantity}
+                      {" × "}
+                      {item.quantity}
                     </p>
                   </div>
                   <p className="text-sm font-semibold text-gray-700 shrink-0">
-                    ৳{((item.price || 0) * (item.quantity || 1)).toLocaleString("en-BD")}
+                    ৳
+                    {((item.price || 0) * (item.quantity || 1)).toLocaleString(
+                      "en-BD",
+                    )}
                   </p>
                 </a>
               ))}
             </div>
             <div className="flex justify-between items-center mt-3 pt-3 border-t">
               <span className="text-sm text-gray-500">মোট Cart Value</span>
-              <span className="font-bold text-gray-900">৳{cartValue.toLocaleString("en-BD")}</span>
+              <span className="font-bold text-gray-900">
+                ৳{cartValue.toLocaleString("en-BD")}
+              </span>
             </div>
           </div>
 
@@ -1886,7 +2781,9 @@ function AbandonedCartModal({ user, onClose }) {
               )}
             </p>
             {ordersLoading ? (
-              <p className="text-xs text-gray-400 py-3 text-center">লোড হচ্ছে…</p>
+              <p className="text-xs text-gray-400 py-3 text-center">
+                লোড হচ্ছে…
+              </p>
             ) : orders.length === 0 ? (
               <p className="text-xs text-gray-400 py-3 text-center italic">
                 এই customer-এর কোনো আগের order নেই
@@ -1905,7 +2802,9 @@ function AbandonedCartModal({ user, onClose }) {
                       <span className="text-xs font-mono text-gray-500 shrink-0">
                         #{String(o._id).slice(-8).toUpperCase()}
                       </span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${ORDER_STATUS_COLOR[o.status] || "bg-gray-100 text-gray-500"}`}>
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${ORDER_STATUS_COLOR[o.status] || "bg-gray-100 text-gray-500"}`}
+                      >
                         {ORDER_STATUS_LABEL[o.status] || o.status}
                       </span>
                     </div>
@@ -1914,7 +2813,13 @@ function AbandonedCartModal({ user, onClose }) {
                         ৳{Number(o.total || 0).toLocaleString("en-BD")}
                       </span>
                       <span className="text-xs text-gray-400">
-                        {o.createdAt ? new Date(o.createdAt).toLocaleDateString("en-BD", { day: "numeric", month: "short", year: "numeric" }) : ""}
+                        {o.createdAt
+                          ? new Date(o.createdAt).toLocaleDateString("en-BD", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })
+                          : ""}
                       </span>
                     </div>
                   </a>
@@ -1925,7 +2830,7 @@ function AbandonedCartModal({ user, onClose }) {
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
 
@@ -1947,7 +2852,9 @@ function AbandonedCartSection() {
     try {
       const params = new URLSearchParams({ page: pg, limit: PAGE_SIZE });
       if (query) params.set("q", query);
-      const r = await fetch(`${API}/api/admin/abandoned-carts?${params}`, { credentials: "include" });
+      const r = await fetch(`${API}/api/admin/abandoned-carts?${params}`, {
+        credentials: "include",
+      });
       const data = r.ok ? await r.json() : {};
       setRows(data.users || []);
       setTotal(data.total || 0);
@@ -1957,11 +2864,16 @@ function AbandonedCartSection() {
     }
   }, []);
 
-  useEffect(() => { load(1, ""); }, [load]);
+  useEffect(() => {
+    load(1, "");
+  }, [load]);
 
   useEffect(() => {
     clearTimeout(searchRef.current);
-    searchRef.current = setTimeout(() => { setPage(1); load(1, q); }, 300);
+    searchRef.current = setTimeout(() => {
+      setPage(1);
+      load(1, q);
+    }, 300);
     return () => clearTimeout(searchRef.current);
   }, [q, load]);
 
@@ -1988,7 +2900,10 @@ function AbandonedCartSection() {
     }
   };
 
-  const goPage = (p) => { setPage(p); load(p, q); };
+  const goPage = (p) => {
+    setPage(p);
+    load(p, q);
+  };
 
   return (
     <div className="space-y-5">
@@ -2012,8 +2927,9 @@ function AbandonedCartSection() {
       <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
         <span className="text-base mt-0.5">ℹ️</span>
         <span>
-          শুধুমাত্র <strong>account-এ login করা</strong> customer-দের abandoned cart দেখা যাবে।{" "}
-          Customer-এর নামে click করলে full details ও order history দেখা যাবে, item-এ click করলে product page।
+          শুধুমাত্র <strong>account-এ login করা</strong> customer-দের abandoned
+          cart দেখা যাবে। Customer-এর নামে click করলে full details ও order
+          history দেখা যাবে, item-এ click করলে product page।
         </span>
       </div>
 
@@ -2037,7 +2953,8 @@ function AbandonedCartSection() {
             <tbody className="divide-y">
               {rows.map((u, idx) => {
                 const cartValue = (u.savedCart?.items || []).reduce(
-                  (s, i) => s + (i.price || 0) * (i.quantity || 1), 0
+                  (s, i) => s + (i.price || 0) * (i.quantity || 1),
+                  0,
                 );
                 return (
                   <tr key={u._id} className="hover:bg-gray-50/50">
@@ -2052,14 +2969,22 @@ function AbandonedCartSection() {
                         onClick={() => setSelectedUser(u)}
                         className="font-medium text-indigo-600 hover:text-indigo-800 hover:underline text-left"
                       >
-                        {u.name || <span className="text-gray-400 italic font-normal">—</span>}
+                        {u.name || (
+                          <span className="text-gray-400 italic font-normal">
+                            —
+                          </span>
+                        )}
                       </button>
                     </td>
 
                     {/* Contact */}
                     <td className="px-4 py-3 text-gray-500 text-xs space-y-0.5">
                       {u.mobile && <div>{u.mobile}</div>}
-                      {u.email && <div className="text-gray-400 truncate max-w-[140px]">{u.email}</div>}
+                      {u.email && (
+                        <div className="text-gray-400 truncate max-w-[140px]">
+                          {u.email}
+                        </div>
+                      )}
                     </td>
 
                     {/* Items → pill chips linking to product */}
@@ -2075,11 +3000,19 @@ function AbandonedCartSection() {
                             className="inline-flex items-center gap-1 text-xs bg-gray-100 hover:bg-indigo-100 hover:text-indigo-700 text-gray-700 rounded-full px-2.5 py-1 transition-colors max-w-[140px]"
                           >
                             {item.image && (
-                              <img src={item.image} alt="" className="w-4 h-4 rounded-full object-cover shrink-0" />
+                              <img
+                                src={item.image}
+                                alt=""
+                                className="w-4 h-4 rounded-full object-cover shrink-0"
+                              />
                             )}
-                            <span className="truncate">{item.title || "পণ্য"}</span>
+                            <span className="truncate">
+                              {item.title || "পণ্য"}
+                            </span>
                             {item.quantity > 1 && (
-                              <span className="text-gray-400 shrink-0">×{item.quantity}</span>
+                              <span className="text-gray-400 shrink-0">
+                                ×{item.quantity}
+                              </span>
                             )}
                           </a>
                         ))}
@@ -2093,7 +3026,9 @@ function AbandonedCartSection() {
 
                     {/* Time ago */}
                     <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">
-                      {u.savedCart?.updatedAt ? timeAgo(u.savedCart.updatedAt) : "—"}
+                      {u.savedCart?.updatedAt
+                        ? timeAgo(u.savedCart.updatedAt)
+                        : "—"}
                     </td>
 
                     {/* Delete */}
@@ -2113,7 +3048,10 @@ function AbandonedCartSection() {
               })}
               {!rows.length && !loading && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-gray-400">
+                  <td
+                    colSpan={7}
+                    className="px-4 py-12 text-center text-gray-400"
+                  >
                     কোনো abandoned cart নেই
                   </td>
                 </tr>
@@ -2126,31 +3064,59 @@ function AbandonedCartSection() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-1.5">
-          <button onClick={() => goPage(1)} disabled={page === 1}
-            className="px-2.5 py-1.5 text-xs rounded-lg border hover:bg-gray-50 disabled:opacity-40">«</button>
-          <button onClick={() => goPage(page - 1)} disabled={page === 1}
-            className="px-3 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40">← Prev</button>
+          <button
+            onClick={() => goPage(1)}
+            disabled={page === 1}
+            className="px-2.5 py-1.5 text-xs rounded-lg border hover:bg-gray-50 disabled:opacity-40"
+          >
+            «
+          </button>
+          <button
+            onClick={() => goPage(page - 1)}
+            disabled={page === 1}
+            className="px-3 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40"
+          >
+            ← Prev
+          </button>
           {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
             const start = Math.max(1, Math.min(page - 2, totalPages - 4));
             const p = start + i;
             return (
-              <button key={p} onClick={() => goPage(p)}
-                className={`w-9 h-9 text-sm rounded-lg border transition-colors ${p === page ? "bg-indigo-600 text-white border-indigo-600 font-semibold" : "hover:bg-gray-50"}`}>
+              <button
+                key={p}
+                onClick={() => goPage(p)}
+                className={`w-9 h-9 text-sm rounded-lg border transition-colors ${p === page ? "bg-indigo-600 text-white border-indigo-600 font-semibold" : "hover:bg-gray-50"}`}
+              >
                 {p}
               </button>
             );
           })}
-          <button onClick={() => goPage(page + 1)} disabled={page === totalPages}
-            className="px-3 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40">Next →</button>
-          <button onClick={() => goPage(totalPages)} disabled={page === totalPages}
-            className="px-2.5 py-1.5 text-xs rounded-lg border hover:bg-gray-50 disabled:opacity-40">»</button>
-          <span className="text-xs text-gray-400 ml-2">Page {page} of {totalPages} · {total} users</span>
+          <button
+            onClick={() => goPage(page + 1)}
+            disabled={page === totalPages}
+            className="px-3 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40"
+          >
+            Next →
+          </button>
+          <button
+            onClick={() => goPage(totalPages)}
+            disabled={page === totalPages}
+            className="px-2.5 py-1.5 text-xs rounded-lg border hover:bg-gray-50 disabled:opacity-40"
+          >
+            »
+          </button>
+          <span className="text-xs text-gray-400 ml-2">
+            Page {page} of {totalPages} · {total} users
+          </span>
         </div>
       )}
 
       {/* Customer detail modal */}
       {selectedUser && (
-        <AbandonedCartModal user={selectedUser} onClose={() => setSelectedUser(null)} />
+        <AbandonedCartModal
+          user={selectedUser}
+          onClose={() => setSelectedUser(null)}
+        />
       )}
     </div>
   );
@@ -2159,9 +3125,14 @@ function AbandonedCartSection() {
 // ─── Abandoned Checkouts ──────────────────────────────────────────────────────
 
 const ORDER_STATUS_LABEL = {
-  pending: "Pending", accepted: "Accepted", confirmed: "Confirmed",
-  processing: "Processing", shipped: "Shipped", delivered: "Delivered",
-  cancelled: "Cancelled", failed: "Failed",
+  pending: "Pending",
+  accepted: "Accepted",
+  confirmed: "Confirmed",
+  processing: "Processing",
+  shipped: "Shipped",
+  delivered: "Delivered",
+  cancelled: "Cancelled",
+  failed: "Failed",
 };
 const ORDER_STATUS_COLOR = {
   pending: "bg-yellow-100 text-yellow-700",
@@ -2179,7 +3150,11 @@ const ORDER_STATUS_COLOR = {
 function OrderCustomerModal({ name, phone, email, userId, onClose }) {
   const [prevOrders, setPrevOrders] = useState([]);
   const [prevLoading, setPrevLoading] = useState(false);
-  const { lifetime, loading: lifetimeLoading, refresh: refreshLifetime } = useCourierLifetime(phone);
+  const {
+    lifetime,
+    loading: lifetimeLoading,
+    refresh: refreshLifetime,
+  } = useCourierLifetime(phone);
 
   useEffect(() => {
     if (!userId && !phone) return;
@@ -2188,7 +3163,7 @@ function OrderCustomerModal({ name, phone, email, userId, onClose }) {
       ? new URLSearchParams({ userId, limit: 10, page: 1 })
       : new URLSearchParams({ q: phone, limit: 10, page: 1 });
     fetch(`${API}/api/admin/orders?${params}`, { credentials: "include" })
-      .then((r) => r.ok ? r.json() : { orders: [] })
+      .then((r) => (r.ok ? r.json() : { orders: [] }))
       .then((data) => setPrevOrders(data.orders || []))
       .catch(() => {})
       .finally(() => setPrevLoading(false));
@@ -2208,18 +3183,24 @@ function OrderCustomerModal({ name, phone, email, userId, onClose }) {
         <div className="flex items-center justify-between px-6 py-4 border-b">
           <div>
             <h3 className="text-lg font-bold text-gray-900">{name || "—"}</h3>
-            {phone && <p className="text-xs font-mono text-gray-400 mt-0.5">{phone}</p>}
+            {phone && (
+              <p className="text-xs font-mono text-gray-400 mt-0.5">{phone}</p>
+            )}
           </div>
           <button
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-700 text-xl leading-none"
-          >×</button>
+          >
+            ×
+          </button>
         </div>
 
         <div className="overflow-y-auto flex-1">
           {/* Contact */}
           <div className="px-6 py-4 border-b">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Contact Info</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+              Contact Info
+            </p>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <p className="text-xs text-gray-400 mb-0.5">নাম</p>
@@ -2259,9 +3240,13 @@ function OrderCustomerModal({ name, phone, email, userId, onClose }) {
               )}
             </p>
             {prevLoading ? (
-              <p className="text-xs text-gray-400 py-3 text-center">লোড হচ্ছে…</p>
+              <p className="text-xs text-gray-400 py-3 text-center">
+                লোড হচ্ছে…
+              </p>
             ) : prevOrders.length === 0 ? (
-              <p className="text-xs text-gray-400 py-3 text-center italic">কোনো আগের order নেই</p>
+              <p className="text-xs text-gray-400 py-3 text-center italic">
+                কোনো আগের order নেই
+              </p>
             ) : (
               <div className="space-y-2">
                 {prevOrders.map((o) => (
@@ -2276,7 +3261,9 @@ function OrderCustomerModal({ name, phone, email, userId, onClose }) {
                       <span className="text-xs font-mono text-gray-500 shrink-0">
                         #{String(o._id).slice(-8).toUpperCase()}
                       </span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${ORDER_STATUS_COLOR[o.status] || "bg-gray-100 text-gray-500"}`}>
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${ORDER_STATUS_COLOR[o.status] || "bg-gray-100 text-gray-500"}`}
+                      >
                         {ORDER_STATUS_LABEL[o.status] || o.status}
                       </span>
                     </div>
@@ -2285,7 +3272,13 @@ function OrderCustomerModal({ name, phone, email, userId, onClose }) {
                         ৳{Number(o.total || 0).toLocaleString("en-BD")}
                       </span>
                       <span className="text-xs text-gray-400">
-                        {o.createdAt ? new Date(o.createdAt).toLocaleDateString("en-BD", { day: "numeric", month: "short", year: "numeric" }) : ""}
+                        {o.createdAt
+                          ? new Date(o.createdAt).toLocaleDateString("en-BD", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })
+                          : ""}
                       </span>
                     </div>
                   </a>
@@ -2296,17 +3289,22 @@ function OrderCustomerModal({ name, phone, email, userId, onClose }) {
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
 
 function CheckoutSessionModal({ session, onClose }) {
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
-  const { lifetime, loading: lifetimeLoading, refresh: refreshLifetime } = useCourierLifetime(session.userPhone);
+  const {
+    lifetime,
+    loading: lifetimeLoading,
+    refresh: refreshLifetime,
+  } = useCourierLifetime(session.userPhone);
 
   const itemTotal = (session.items || []).reduce(
-    (sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0
+    (sum, i) => sum + (i.price || 0) * (i.quantity || 1),
+    0,
   );
 
   const timeAgo = (date) => {
@@ -2331,7 +3329,7 @@ function CheckoutSessionModal({ session, onClose }) {
       params.set("q", session.userPhone || session.userEmail);
     }
     fetch(`${API}/api/admin/orders?${params}`, { credentials: "include" })
-      .then((r) => r.ok ? r.json() : { orders: [] })
+      .then((r) => (r.ok ? r.json() : { orders: [] }))
       .then((data) => setOrders(data.orders || []))
       .catch(() => {})
       .finally(() => setOrdersLoading(false));
@@ -2355,18 +3353,23 @@ function CheckoutSessionModal({ session, onClose }) {
             </h3>
             <p className="text-xs text-gray-400 mt-0.5">
               {(() => {
-              const mins = session.createdAt
-                ? Math.floor((Date.now() - new Date(session.createdAt)) / 60000)
-                : null;
-              return mins !== null && mins < 5 ? (
-                <span className="inline-flex items-center gap-1 text-orange-600 font-medium text-xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-                  Possibly still active
-                </span>
-              ) : (
-                <span>Abandoned {session.createdAt ? timeAgo(session.createdAt) : ""}</span>
-              );
-            })()}
+                const mins = session.createdAt
+                  ? Math.floor(
+                      (Date.now() - new Date(session.createdAt)) / 60000,
+                    )
+                  : null;
+                return mins !== null && mins < 5 ? (
+                  <span className="inline-flex items-center gap-1 text-orange-600 font-medium text-xs">
+                    <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+                    Possibly still active
+                  </span>
+                ) : (
+                  <span>
+                    Abandoned{" "}
+                    {session.createdAt ? timeAgo(session.createdAt) : ""}
+                  </span>
+                );
+              })()}
             </p>
           </div>
           <button
@@ -2380,19 +3383,27 @@ function CheckoutSessionModal({ session, onClose }) {
         <div className="overflow-y-auto flex-1">
           {/* Contact info */}
           <div className="px-6 py-4 border-b">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Contact Info</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+              Contact Info
+            </p>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <p className="text-xs text-gray-400 mb-0.5">নাম</p>
-                <p className="font-medium text-gray-800">{session.userName || "—"}</p>
+                <p className="font-medium text-gray-800">
+                  {session.userName || "—"}
+                </p>
               </div>
               <div>
                 <p className="text-xs text-gray-400 mb-0.5">ফোন</p>
-                <p className="font-medium text-gray-800">{session.userPhone || "—"}</p>
+                <p className="font-medium text-gray-800">
+                  {session.userPhone || "—"}
+                </p>
               </div>
               <div className="col-span-2">
                 <p className="text-xs text-gray-400 mb-0.5">ইমেইল</p>
-                <p className="font-medium text-gray-800">{session.userEmail || "—"}</p>
+                <p className="font-medium text-gray-800">
+                  {session.userEmail || "—"}
+                </p>
               </div>
             </div>
           </div>
@@ -2427,18 +3438,24 @@ function CheckoutSessionModal({ session, onClose }) {
                       {item.title || "—"}
                     </p>
                     <p className="text-xs text-gray-400 mt-0.5">
-                      ৳{Number(item.price || 0).toLocaleString("en-BD")} × {item.quantity}
+                      ৳{Number(item.price || 0).toLocaleString("en-BD")} ×{" "}
+                      {item.quantity}
                     </p>
                   </div>
                   <p className="text-sm font-semibold text-gray-700 shrink-0">
-                    ৳{((item.price || 0) * (item.quantity || 1)).toLocaleString("en-BD")}
+                    ৳
+                    {((item.price || 0) * (item.quantity || 1)).toLocaleString(
+                      "en-BD",
+                    )}
                   </p>
                 </a>
               ))}
             </div>
             <div className="flex justify-between items-center mt-3 pt-3 border-t">
               <span className="text-sm text-gray-500">মোট Cart Value</span>
-              <span className="font-bold text-gray-900">৳{itemTotal.toLocaleString("en-BD")}</span>
+              <span className="font-bold text-gray-900">
+                ৳{itemTotal.toLocaleString("en-BD")}
+              </span>
             </div>
           </div>
 
@@ -2464,7 +3481,9 @@ function CheckoutSessionModal({ session, onClose }) {
             </p>
 
             {ordersLoading ? (
-              <p className="text-xs text-gray-400 py-3 text-center">লোড হচ্ছে…</p>
+              <p className="text-xs text-gray-400 py-3 text-center">
+                লোড হচ্ছে…
+              </p>
             ) : !session.userId && !session.userPhone && !session.userEmail ? (
               <p className="text-xs text-gray-400 py-3 text-center italic">
                 Customer-এর contact info নেই — order history দেখা সম্ভব নয়
@@ -2489,7 +3508,8 @@ function CheckoutSessionModal({ session, onClose }) {
                       </span>
                       <span
                         className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${
-                          ORDER_STATUS_COLOR[o.status] || "bg-gray-100 text-gray-500"
+                          ORDER_STATUS_COLOR[o.status] ||
+                          "bg-gray-100 text-gray-500"
                         }`}
                       >
                         {ORDER_STATUS_LABEL[o.status] || o.status}
@@ -2500,7 +3520,13 @@ function CheckoutSessionModal({ session, onClose }) {
                         ৳{Number(o.total || 0).toLocaleString("en-BD")}
                       </span>
                       <span className="text-xs text-gray-400">
-                        {o.createdAt ? new Date(o.createdAt).toLocaleDateString("en-BD", { day: "numeric", month: "short", year: "numeric" }) : ""}
+                        {o.createdAt
+                          ? new Date(o.createdAt).toLocaleDateString("en-BD", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })
+                          : ""}
                       </span>
                     </div>
                   </a>
@@ -2511,7 +3537,7 @@ function CheckoutSessionModal({ session, onClose }) {
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
 
@@ -2548,7 +3574,9 @@ function AbandonCheckoutSection() {
     try {
       const params = new URLSearchParams({ page: pg, limit: PAGE_SIZE });
       if (query) params.set("q", query);
-      const r = await fetch(`${API}/api/admin/abandoned-checkouts?${params}`, { credentials: "include" });
+      const r = await fetch(`${API}/api/admin/abandoned-checkouts?${params}`, {
+        credentials: "include",
+      });
       const data = r.ok ? await r.json() : {};
       setRows(data.sessions || []);
       setTotal(data.total || 0);
@@ -2558,11 +3586,16 @@ function AbandonCheckoutSection() {
     }
   }, []);
 
-  useEffect(() => { load(1, ""); }, [load]);
+  useEffect(() => {
+    load(1, "");
+  }, [load]);
 
   useEffect(() => {
     clearTimeout(searchRef.current);
-    searchRef.current = setTimeout(() => { setPage(1); load(1, q); }, 300);
+    searchRef.current = setTimeout(() => {
+      setPage(1);
+      load(1, q);
+    }, 300);
     return () => clearTimeout(searchRef.current);
   }, [q, load]);
 
@@ -2574,14 +3607,19 @@ function AbandonCheckoutSection() {
     return `${Math.floor(hrs / 24)} দিন আগে`;
   };
 
-  const goPage = (p) => { setPage(p); load(p, q); };
+  const goPage = (p) => {
+    setPage(p);
+    load(p, q);
+  };
 
   return (
     <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Abandoned Checkouts</h2>
+          <h2 className="text-xl font-bold text-gray-900">
+            Abandoned Checkouts
+          </h2>
           <p className="text-sm text-gray-500 mt-0.5">
             {total} জন customer checkout শুরু করে order দেননি
           </p>
@@ -2598,11 +3636,12 @@ function AbandonCheckoutSection() {
       <div className="flex items-start gap-2 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-sm text-blue-800">
         <span className="text-base mt-0.5">✓</span>
         <span>
-          Guest user-রাও এখানে track হয় — checkout page খোলার সাথে সাথে record তৈরি হয়,
-          এবং নাম ও ফোন টাইপ করলে সেই তথ্য automatically আপডেট হয়।{" "}
+          Guest user-রাও এখানে track হয় — checkout page খোলার সাথে সাথে record
+          তৈরি হয়, এবং নাম ও ফোন টাইপ করলে সেই তথ্য automatically আপডেট হয়।{" "}
           <strong>শেষ ৩০ দিনের সব incomplete sessions দেখানো হচ্ছে।</strong>{" "}
-          <span className="text-orange-600 font-medium">🟡 Active</span> মানে customer এখনো checkout-এ থাকতে পারে।{" "}
-          Customer-এর নামে click করলে full details, item-এ click করলে product page।
+          <span className="text-orange-600 font-medium">🟡 Active</span> মানে
+          customer এখনো checkout-এ থাকতে পারে। Customer-এর নামে click করলে full
+          details, item-এ click করলে product page।
         </span>
       </div>
 
@@ -2626,7 +3665,8 @@ function AbandonCheckoutSection() {
             <tbody className="divide-y">
               {rows.map((s, idx) => {
                 const itemTotal = (s.items || []).reduce(
-                  (sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0
+                  (sum, i) => sum + (i.price || 0) * (i.quantity || 1),
+                  0,
                 );
                 return (
                   <tr key={s._id} className="hover:bg-gray-50/50">
@@ -2642,7 +3682,9 @@ function AbandonCheckoutSection() {
                         className="font-medium text-indigo-600 hover:text-indigo-800 hover:underline text-left"
                       >
                         {s.userName || (
-                          <span className="text-gray-400 italic font-normal">Guest</span>
+                          <span className="text-gray-400 italic font-normal">
+                            Guest
+                          </span>
                         )}
                       </button>
                     </td>
@@ -2650,8 +3692,12 @@ function AbandonCheckoutSection() {
                     {/* Contact */}
                     <td className="px-4 py-3 text-gray-500 text-xs space-y-0.5">
                       {s.userPhone && <div>{s.userPhone}</div>}
-                      {s.userEmail && <div className="text-gray-400">{s.userEmail}</div>}
-                      {!s.userPhone && !s.userEmail && <span className="text-gray-300">—</span>}
+                      {s.userEmail && (
+                        <div className="text-gray-400">{s.userEmail}</div>
+                      )}
+                      {!s.userPhone && !s.userEmail && (
+                        <span className="text-gray-300">—</span>
+                      )}
                     </td>
 
                     {/* Items — each item is a link to product page */}
@@ -2667,11 +3713,19 @@ function AbandonCheckoutSection() {
                             className="inline-flex items-center gap-1 text-xs bg-gray-100 hover:bg-indigo-100 hover:text-indigo-700 text-gray-700 rounded-full px-2.5 py-1 transition-colors max-w-[140px]"
                           >
                             {item.image && (
-                              <img src={item.image} alt="" className="w-4 h-4 rounded-full object-cover shrink-0" />
+                              <img
+                                src={item.image}
+                                alt=""
+                                className="w-4 h-4 rounded-full object-cover shrink-0"
+                              />
                             )}
-                            <span className="truncate">{item.title || "পণ্য"}</span>
+                            <span className="truncate">
+                              {item.title || "পণ্য"}
+                            </span>
                             {item.quantity > 1 && (
-                              <span className="text-gray-400 shrink-0">×{item.quantity}</span>
+                              <span className="text-gray-400 shrink-0">
+                                ×{item.quantity}
+                              </span>
                             )}
                           </a>
                         ))}
@@ -2685,19 +3739,23 @@ function AbandonCheckoutSection() {
 
                     {/* Time ago */}
                     <td className="px-4 py-3 text-xs whitespace-nowrap">
-                      {s.createdAt ? (
-                        (() => {
-                          const mins = Math.floor((Date.now() - new Date(s.createdAt)) / 60000);
-                          return mins < 5 ? (
-                            <span className="inline-flex items-center gap-1 bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium">
-                              <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-                              Active
-                            </span>
-                          ) : (
-                            <span className="text-gray-400">{timeAgo(s.createdAt)}</span>
-                          );
-                        })()
-                      ) : "—"}
+                      {s.createdAt
+                        ? (() => {
+                            const mins = Math.floor(
+                              (Date.now() - new Date(s.createdAt)) / 60000,
+                            );
+                            return mins < 5 ? (
+                              <span className="inline-flex items-center gap-1 bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium">
+                                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+                                Active
+                              </span>
+                            ) : (
+                              <span className="text-gray-400">
+                                {timeAgo(s.createdAt)}
+                              </span>
+                            );
+                          })()
+                        : "—"}
                     </td>
 
                     {/* Delete */}
@@ -2718,7 +3776,10 @@ function AbandonCheckoutSection() {
               })}
               {!rows.length && !loading && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-14 text-center text-gray-400">
+                  <td
+                    colSpan={7}
+                    className="px-4 py-14 text-center text-gray-400"
+                  >
                     কোনো abandoned checkout নেই
                   </td>
                 </tr>
@@ -2735,12 +3796,16 @@ function AbandonCheckoutSection() {
             onClick={() => goPage(1)}
             disabled={page === 1}
             className="px-2.5 py-1.5 text-xs rounded-lg border hover:bg-gray-50 disabled:opacity-40"
-          >«</button>
+          >
+            «
+          </button>
           <button
             onClick={() => goPage(page - 1)}
             disabled={page === 1}
             className="px-3 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40"
-          >← Prev</button>
+          >
+            ← Prev
+          </button>
 
           {/* Page numbers */}
           {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -2765,12 +3830,16 @@ function AbandonCheckoutSection() {
             onClick={() => goPage(page + 1)}
             disabled={page === totalPages}
             className="px-3 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40"
-          >Next →</button>
+          >
+            Next →
+          </button>
           <button
             onClick={() => goPage(totalPages)}
             disabled={page === totalPages}
             className="px-2.5 py-1.5 text-xs rounded-lg border hover:bg-gray-50 disabled:opacity-40"
-          >»</button>
+          >
+            »
+          </button>
 
           <span className="text-xs text-gray-400 ml-2">
             Page {page} of {totalPages} · {total} sessions
@@ -2795,15 +3864,22 @@ function WishlistCustomerModal({ customer, productId, onClose }) {
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const customerId = customer.id || customer._id;
-  const { lifetime, loading: lifetimeLoading, refresh: refreshLifetime } = useCourierLifetime(customer.mobile);
+  const {
+    lifetime,
+    loading: lifetimeLoading,
+    refresh: refreshLifetime,
+  } = useCourierLifetime(customer.mobile);
 
   useEffect(() => {
     if (!customerId) return;
     setOrdersLoading(true);
-    fetch(`${API}/api/admin/orders?${new URLSearchParams({ userId: String(customerId), limit: 10, page: 1 })}`, {
-      credentials: "include",
-    })
-      .then((r) => r.ok ? r.json() : { orders: [] })
+    fetch(
+      `${API}/api/admin/orders?${new URLSearchParams({ userId: String(customerId), limit: 10, page: 1 })}`,
+      {
+        credentials: "include",
+      },
+    )
+      .then((r) => (r.ok ? r.json() : { orders: [] }))
       .then((data) => setOrders(data.orders || []))
       .catch(() => {})
       .finally(() => setOrdersLoading(false));
@@ -2822,8 +3898,12 @@ function WishlistCustomerModal({ customer, productId, onClose }) {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">{customer.name || "—"}</h3>
-            <p className="text-xs text-gray-400 mt-0.5">Wishlist customer profile</p>
+            <h3 className="text-lg font-bold text-gray-900">
+              {customer.name || "—"}
+            </h3>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Wishlist customer profile
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -2836,19 +3916,27 @@ function WishlistCustomerModal({ customer, productId, onClose }) {
         <div className="overflow-y-auto flex-1">
           {/* Contact */}
           <div className="px-6 py-4 border-b">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Contact Info</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+              Contact Info
+            </p>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <p className="text-xs text-gray-400 mb-0.5">নাম</p>
-                <p className="font-medium text-gray-800">{customer.name || "—"}</p>
+                <p className="font-medium text-gray-800">
+                  {customer.name || "—"}
+                </p>
               </div>
               <div>
                 <p className="text-xs text-gray-400 mb-0.5">ফোন</p>
-                <p className="font-medium text-gray-800">{customer.mobile || "—"}</p>
+                <p className="font-medium text-gray-800">
+                  {customer.mobile || "—"}
+                </p>
               </div>
               <div className="col-span-2">
                 <p className="text-xs text-gray-400 mb-0.5">ইমেইল</p>
-                <p className="font-medium text-gray-800">{customer.email || "—"}</p>
+                <p className="font-medium text-gray-800">
+                  {customer.email || "—"}
+                </p>
               </div>
             </div>
           </div>
@@ -2874,7 +3962,9 @@ function WishlistCustomerModal({ customer, productId, onClose }) {
               )}
             </p>
             {ordersLoading ? (
-              <p className="text-xs text-gray-400 py-3 text-center">লোড হচ্ছে…</p>
+              <p className="text-xs text-gray-400 py-3 text-center">
+                লোড হচ্ছে…
+              </p>
             ) : orders.length === 0 ? (
               <p className="text-xs text-gray-400 py-3 text-center italic">
                 এই customer-এর কোনো আগের order নেই
@@ -2893,7 +3983,9 @@ function WishlistCustomerModal({ customer, productId, onClose }) {
                       <span className="text-xs font-mono text-gray-500 shrink-0">
                         #{String(o._id).slice(-8).toUpperCase()}
                       </span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${ORDER_STATUS_COLOR[o.status] || "bg-gray-100 text-gray-500"}`}>
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${ORDER_STATUS_COLOR[o.status] || "bg-gray-100 text-gray-500"}`}
+                      >
                         {ORDER_STATUS_LABEL[o.status] || o.status}
                       </span>
                     </div>
@@ -2902,7 +3994,13 @@ function WishlistCustomerModal({ customer, productId, onClose }) {
                         ৳{Number(o.total || 0).toLocaleString("en-BD")}
                       </span>
                       <span className="text-xs text-gray-400">
-                        {o.createdAt ? new Date(o.createdAt).toLocaleDateString("en-BD", { day: "numeric", month: "short", year: "numeric" }) : ""}
+                        {o.createdAt
+                          ? new Date(o.createdAt).toLocaleDateString("en-BD", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })
+                          : ""}
                       </span>
                     </div>
                   </a>
@@ -2913,7 +4011,7 @@ function WishlistCustomerModal({ customer, productId, onClose }) {
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
 
@@ -2933,7 +4031,9 @@ function AllWishlistSection() {
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: pg, limit: PAGE_SIZE });
-      const r = await fetch(`${API}/api/admin/wishlists?${params}`, { credentials: "include" });
+      const r = await fetch(`${API}/api/admin/wishlists?${params}`, {
+        credentials: "include",
+      });
       const data = r.ok ? await r.json() : {};
       setRows(data.items || []);
       setTotal(data.total || 0);
@@ -2943,10 +4043,13 @@ function AllWishlistSection() {
     }
   }, []);
 
-  useEffect(() => { load(1); }, [load]);
+  useEffect(() => {
+    load(1);
+  }, [load]);
 
   const deleteProduct = async (productId) => {
-    if (!window.confirm("এই পণ্যটি সব customer-এর wishlist থেকে সরিয়ে দেবেন?")) return;
+    if (!window.confirm("এই পণ্যটি সব customer-এর wishlist থেকে সরিয়ে দেবেন?"))
+      return;
     setDeletingProductId(productId);
     try {
       await fetch(`${API}/api/admin/wishlists/${productId}`, {
@@ -2969,28 +4072,43 @@ function AllWishlistSection() {
         credentials: "include",
       });
       setRows((prev) =>
-        prev.map((r) => {
-          if (r.productId !== productId) return r;
-          const customers = r.customers.filter((c) => String(c.id) !== String(userId));
-          return { ...r, customers, count: customers.length };
-        }).filter((r) => r.count > 0)
+        prev
+          .map((r) => {
+            if (r.productId !== productId) return r;
+            const customers = r.customers.filter(
+              (c) => String(c.id) !== String(userId),
+            );
+            return { ...r, customers, count: customers.length };
+          })
+          .filter((r) => r.count > 0),
       );
     } finally {
       setDeletingCustomerKey(null);
     }
   };
 
-  const goPage = (p) => { setPage(p); load(p); };
+  const goPage = (p) => {
+    setPage(p);
+    load(p);
+  };
 
   const pageNumbers = () => {
-    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    if (totalPages <= 7)
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
     const pages = new Set([1, totalPages, page]);
-    for (let i = Math.max(2, page - 1); i <= Math.min(totalPages - 1, page + 1); i++) pages.add(i);
-    return [...pages].sort((a, b) => a - b).reduce((acc, n, i, arr) => {
-      if (i > 0 && n - arr[i - 1] > 1) acc.push("…");
-      acc.push(n);
-      return acc;
-    }, []);
+    for (
+      let i = Math.max(2, page - 1);
+      i <= Math.min(totalPages - 1, page + 1);
+      i++
+    )
+      pages.add(i);
+    return [...pages]
+      .sort((a, b) => a - b)
+      .reduce((acc, n, i, arr) => {
+        if (i > 0 && n - arr[i - 1] > 1) acc.push("…");
+        acc.push(n);
+        return acc;
+      }, []);
   };
 
   return (
@@ -3048,7 +4166,10 @@ function AllWishlistSection() {
                           </p>
                           {item.product?.price != null && (
                             <p className="text-xs text-gray-400">
-                              ৳{Number(item.product.price).toLocaleString("en-BD")}
+                              ৳
+                              {Number(item.product.price).toLocaleString(
+                                "en-BD",
+                              )}
                             </p>
                           )}
                         </div>
@@ -3066,8 +4187,8 @@ function AllWishlistSection() {
                             item.product.status === "published"
                               ? "bg-green-100 text-green-700"
                               : item.product.status === "draft"
-                              ? "bg-yellow-100 text-yellow-700"
-                              : "bg-gray-100 text-gray-500"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : "bg-gray-100 text-gray-500"
                           }`}
                         >
                           {item.product.status || "—"}
@@ -3086,14 +4207,21 @@ function AllWishlistSection() {
                               className="inline-flex items-center gap-1.5 text-xs bg-white border rounded-full pl-3 pr-1.5 py-1"
                             >
                               <button
-                                onClick={() => setSelectedCustomer({ customer: c, productId: item.productId })}
+                                onClick={() =>
+                                  setSelectedCustomer({
+                                    customer: c,
+                                    productId: item.productId,
+                                  })
+                                }
                                 className="text-indigo-600 hover:underline font-medium"
                               >
                                 {c.name || c.email || "Unknown"}
                               </button>
                               {user?.role === "admin" && (
                                 <button
-                                  onClick={() => deleteCustomer(item.productId, String(c.id))}
+                                  onClick={() =>
+                                    deleteCustomer(item.productId, String(c.id))
+                                  }
                                   disabled={deletingCustomerKey === key}
                                   className="w-4 h-4 flex items-center justify-center rounded-full bg-gray-100 hover:bg-red-100 text-gray-400 hover:text-red-500 text-xs disabled:opacity-40 transition-colors leading-none"
                                   title="Remove from wishlist"
@@ -3113,7 +4241,9 @@ function AllWishlistSection() {
                           disabled={deletingProductId === item.productId}
                           className="text-xs text-red-500 hover:text-red-700 hover:underline disabled:opacity-40"
                         >
-                          {deletingProductId === item.productId ? "…" : "Delete"}
+                          {deletingProductId === item.productId
+                            ? "…"
+                            : "Delete"}
                         </button>
                       )}
                     </td>
@@ -3122,7 +4252,10 @@ function AllWishlistSection() {
               ))}
               {!rows.length && !loading && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-gray-400">
+                  <td
+                    colSpan={6}
+                    className="px-4 py-12 text-center text-gray-400"
+                  >
                     কোনো wishlist data নেই
                   </td>
                 </tr>
@@ -3138,15 +4271,24 @@ function AllWishlistSection() {
             onClick={() => goPage(1)}
             disabled={page === 1}
             className="px-2.5 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40"
-          >«</button>
+          >
+            «
+          </button>
           <button
             onClick={() => goPage(page - 1)}
             disabled={page === 1}
             className="px-3 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40"
-          >‹ Prev</button>
+          >
+            ‹ Prev
+          </button>
           {pageNumbers().map((n, i) =>
             n === "…" ? (
-              <span key={`ellipsis-${i}`} className="px-2 text-gray-400 text-sm">…</span>
+              <span
+                key={`ellipsis-${i}`}
+                className="px-2 text-gray-400 text-sm"
+              >
+                …
+              </span>
             ) : (
               <button
                 key={n}
@@ -3159,18 +4301,22 @@ function AllWishlistSection() {
               >
                 {n}
               </button>
-            )
+            ),
           )}
           <button
             onClick={() => goPage(page + 1)}
             disabled={page === totalPages}
             className="px-3 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40"
-          >Next ›</button>
+          >
+            Next ›
+          </button>
           <button
             onClick={() => goPage(totalPages)}
             disabled={page === totalPages}
             className="px-2.5 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40"
-          >»</button>
+          >
+            »
+          </button>
         </div>
       )}
 
@@ -3192,7 +4338,9 @@ export default function OrdersList() {
   const searchParams = useSearchParams();
   const activeSection = searchParams?.get("tab") || "all-orders";
 
-  useEffect(() => { if (!user) refreshUser(); }, [user, refreshUser]);
+  useEffect(() => {
+    if (!user) refreshUser();
+  }, [user, refreshUser]);
 
   return (
     <div className="max-w-7xl mx-auto space-y-4">

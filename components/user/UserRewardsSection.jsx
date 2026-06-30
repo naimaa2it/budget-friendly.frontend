@@ -5,7 +5,7 @@ import Link from "next/link";
 import { formatOrderId } from "@/lib/orderId";
 import { useLanguage } from "@/components/context/LanguageContext";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 function fmt(date) {
   return new Date(date).toLocaleDateString("en-GB", {
@@ -51,33 +51,53 @@ export default function UserRewardsSection() {
   return (
     <div className="space-y-4">
       <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl md:text-2xl font-semibold mb-1">{t("rewards.title")}</h2>
+        <h2 className="text-xl md:text-2xl font-semibold mb-1">
+          {t("rewards.title")}
+        </h2>
         <p className="text-sm text-gray-500 mb-6">
           {t("rewards.desc_prefix")} {pointsPerTk} {t("rewards.points_rate")}
         </p>
 
         <div className="grid sm:grid-cols-3 gap-4">
           <div className="rounded-xl bg-rose-50 border border-rose-100 p-4">
-            <p className="text-xs text-rose-600 uppercase font-semibold">{t("rewards.available")}</p>
+            <p className="text-xs text-rose-600 uppercase font-semibold">
+              {t("rewards.available")}
+            </p>
             <p className="text-3xl font-bold text-rose-700 mt-1">{balance}</p>
-            <p className="text-sm text-rose-600 mt-0.5">≈ ৳{balanceValueTk} off</p>
+            <p className="text-sm text-rose-600 mt-0.5">
+              ≈ ৳{balanceValueTk} off
+            </p>
           </div>
           <div className="rounded-xl bg-green-50 border border-green-100 p-4">
-            <p className="text-xs text-green-700 uppercase font-semibold">{t("rewards.earned")}</p>
-            <p className="text-3xl font-bold text-green-800 mt-1">{totals.earned}</p>
-            <p className="text-sm text-green-700 mt-0.5">{t("rewards.earned_desc")}</p>
+            <p className="text-xs text-green-700 uppercase font-semibold">
+              {t("rewards.earned")}
+            </p>
+            <p className="text-3xl font-bold text-green-800 mt-1">
+              {totals.earned}
+            </p>
+            <p className="text-sm text-green-700 mt-0.5">
+              {t("rewards.earned_desc")}
+            </p>
           </div>
           <div className="rounded-xl bg-amber-50 border border-amber-100 p-4">
-            <p className="text-xs text-amber-700 uppercase font-semibold">{t("rewards.pending")}</p>
-            <p className="text-3xl font-bold text-amber-800 mt-1">{totals.pending}</p>
-            <p className="text-sm text-amber-700 mt-0.5">{t("rewards.pending_desc")}</p>
+            <p className="text-xs text-amber-700 uppercase font-semibold">
+              {t("rewards.pending")}
+            </p>
+            <p className="text-3xl font-bold text-amber-800 mt-1">
+              {totals.pending}
+            </p>
+            <p className="text-sm text-amber-700 mt-0.5">
+              {t("rewards.pending_desc")}
+            </p>
           </div>
         </div>
       </div>
 
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="px-6 py-4 border-b">
-          <h3 className="font-semibold text-gray-800">{t("rewards.orders_title")}</h3>
+          <h3 className="font-semibold text-gray-800">
+            {t("rewards.orders_title")}
+          </h3>
           <p className="text-xs text-gray-500 mt-0.5">
             {t("rewards.orders_desc")}
           </p>

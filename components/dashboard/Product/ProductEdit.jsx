@@ -162,7 +162,7 @@ function ImageDragGrid({ images, onReorder, onRemove }) {
 export default function ProductEdit({ productId }) {
   const router = useRouter();
   const { user, refreshUser } = useUser();
-  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
   const [product, setProduct] = useState({
     title: "",
@@ -216,7 +216,9 @@ export default function ProductEdit({ productId }) {
 
   const trackUpload = (asset) => {
     setRecentUploads((prev) =>
-      prev.some((r) => r.public_id === asset.public_id) ? prev : [asset, ...prev],
+      prev.some((r) => r.public_id === asset.public_id)
+        ? prev
+        : [asset, ...prev],
     );
   };
   const [newReview, setNewReview] = useState({
@@ -226,7 +228,12 @@ export default function ProductEdit({ productId }) {
     body: "",
   });
   const [editingReviewIdx, setEditingReviewIdx] = useState(null);
-  const [editReviewForm, setEditReviewForm] = useState({ authorName: "", rating: "", title: "", body: "" });
+  const [editReviewForm, setEditReviewForm] = useState({
+    authorName: "",
+    rating: "",
+    title: "",
+    body: "",
+  });
   const [lastSaved, setLastSaved] = useState(null); // Track last auto-save time
   const [fbtSearch, setFbtSearch] = useState("");
   const [fbtSearchResults, setFbtSearchResults] = useState([]);
@@ -519,8 +526,9 @@ export default function ProductEdit({ productId }) {
           if (!p.sku) {
             const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             const rand = (n) =>
-              Array.from({ length: n }, () =>
-                chars[Math.floor(Math.random() * chars.length)],
+              Array.from(
+                { length: n },
+                () => chars[Math.floor(Math.random() * chars.length)],
               ).join("");
             const d = new Date();
             const ymd =
@@ -2019,7 +2027,10 @@ export default function ProductEdit({ productId }) {
                     ...p,
                     images: [
                       ...(p.images || []),
-                      ...assets.map((a) => ({ url: a.url, public_id: a.public_id })),
+                      ...assets.map((a) => ({
+                        url: a.url,
+                        public_id: a.public_id,
+                      })),
                     ],
                   }));
                   setShowPicker(false);
@@ -2804,7 +2815,12 @@ export default function ProductEdit({ productId }) {
                               <input
                                 type="text"
                                 value={editReviewForm.authorName}
-                                onChange={(e) => setEditReviewForm((f) => ({ ...f, authorName: e.target.value }))}
+                                onChange={(e) =>
+                                  setEditReviewForm((f) => ({
+                                    ...f,
+                                    authorName: e.target.value,
+                                  }))
+                                }
                                 className={inputClass}
                                 placeholder="Reviewer name"
                               />
@@ -2817,7 +2833,12 @@ export default function ProductEdit({ productId }) {
                                 max={5}
                                 step={0.1}
                                 value={editReviewForm.rating}
-                                onChange={(e) => setEditReviewForm((f) => ({ ...f, rating: e.target.value }))}
+                                onChange={(e) =>
+                                  setEditReviewForm((f) => ({
+                                    ...f,
+                                    rating: e.target.value,
+                                  }))
+                                }
                                 className={inputClass}
                                 placeholder="e.g. 4.5"
                               />
@@ -2828,7 +2849,12 @@ export default function ProductEdit({ productId }) {
                             <input
                               type="text"
                               value={editReviewForm.title}
-                              onChange={(e) => setEditReviewForm((f) => ({ ...f, title: e.target.value }))}
+                              onChange={(e) =>
+                                setEditReviewForm((f) => ({
+                                  ...f,
+                                  title: e.target.value,
+                                }))
+                              }
                               className={inputClass}
                               placeholder="e.g. Great product!"
                             />
@@ -2837,7 +2863,12 @@ export default function ProductEdit({ productId }) {
                             <label className={labelClass}>Review Content</label>
                             <textarea
                               value={editReviewForm.body}
-                              onChange={(e) => setEditReviewForm((f) => ({ ...f, body: e.target.value }))}
+                              onChange={(e) =>
+                                setEditReviewForm((f) => ({
+                                  ...f,
+                                  body: e.target.value,
+                                }))
+                              }
                               rows={4}
                               className={`${inputClass} resize-none`}
                               placeholder="Review body…"
@@ -2847,9 +2878,13 @@ export default function ProductEdit({ productId }) {
                             <button
                               type="button"
                               onClick={() => {
-                                const rating = parseFloat(editReviewForm.rating);
+                                const rating = parseFloat(
+                                  editReviewForm.rating,
+                                );
                                 if (isNaN(rating) || rating < 1 || rating > 5)
-                                  return alert("Rating must be between 1 and 5");
+                                  return alert(
+                                    "Rating must be between 1 and 5",
+                                  );
                                 updateReviewAt(i, {
                                   authorName: editReviewForm.authorName,
                                   rating,
@@ -2885,11 +2920,14 @@ export default function ProductEdit({ productId }) {
                                 </span>
                               </div>
                               <p className="text-sm text-gray-500">
-                                {new Date(r.createdAt).toLocaleDateString("en-US", {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                })}
+                                {new Date(r.createdAt).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric",
+                                  },
+                                )}
                               </p>
                             </div>
                             <div className="flex gap-2">

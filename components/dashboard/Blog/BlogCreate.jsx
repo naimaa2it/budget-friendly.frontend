@@ -10,7 +10,7 @@ import TagInput from "./TagInput";
 import DynamicSectionBuilder from "./DynamicSectionBuilder";
 
 export default function BlogCreate() {
-  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
   const router = useRouter();
   const { user } = useUser();
 

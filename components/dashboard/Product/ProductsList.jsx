@@ -9,7 +9,7 @@ import { FaBell, FaStar, FaQuestionCircle, FaClone } from "react-icons/fa";
 export default function ProductsList() {
   const { user, refreshUser } = useUser();
   const router = useRouter();
-  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -308,24 +308,33 @@ export default function ProductsList() {
                       )}
                       <button
                         title="View waitlist for product"
-                        onClick={() => router.push(`/dashboard/waitlist?productId=${p._id}`)}
+                        onClick={() =>
+                          router.push(`/dashboard/waitlist?productId=${p._id}`)
+                        }
                         className="px-2 py-1 border rounded text-xs text-gray-600 hover:text-pink-600"
                       >
-                        <FaBell className="inline-block mr-1" />Waitlist
+                        <FaBell className="inline-block mr-1" />
+                        Waitlist
                       </button>
                       <button
                         title="View reviews for product"
-                        onClick={() => router.push(`/dashboard/reviews?productId=${p._id}`)}
+                        onClick={() =>
+                          router.push(`/dashboard/reviews?productId=${p._id}`)
+                        }
                         className="px-2 py-1 border rounded text-xs text-gray-600 hover:text-pink-600"
                       >
-                        <FaStar className="inline-block mr-1" />Reviews
+                        <FaStar className="inline-block mr-1" />
+                        Reviews
                       </button>
                       <button
                         title="View questions for product"
-                        onClick={() => router.push(`/dashboard/questions?productId=${p._id}`)}
+                        onClick={() =>
+                          router.push(`/dashboard/questions?productId=${p._id}`)
+                        }
                         className="px-2 py-1 border rounded text-xs text-gray-600 hover:text-pink-600"
                       >
-                        <FaQuestionCircle className="inline-block mr-1" />Q&A
+                        <FaQuestionCircle className="inline-block mr-1" />
+                        Q&A
                       </button>
                     </div>
                   </td>

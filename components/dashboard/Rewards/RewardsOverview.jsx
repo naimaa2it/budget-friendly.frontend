@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatOrderId } from "@/lib/orderId";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 function fmt(date) {
   return new Date(date).toLocaleString("en-GB", {
@@ -28,10 +28,16 @@ export default function RewardsOverview() {
   }, []);
 
   if (loading) {
-    return <div className="text-center py-16 text-gray-400">Loading rewards…</div>;
+    return (
+      <div className="text-center py-16 text-gray-400">Loading rewards…</div>
+    );
   }
   if (!data) {
-    return <div className="text-center py-16 text-red-500">Failed to load rewards.</div>;
+    return (
+      <div className="text-center py-16 text-red-500">
+        Failed to load rewards.
+      </div>
+    );
   }
 
   const { stats, users, orders, pointsPerTk } = data;
@@ -48,7 +54,9 @@ export default function RewardsOverview() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl border p-4">
           <p className="text-xs text-gray-500 uppercase">Total balance</p>
-          <p className="text-2xl font-bold text-rose-600">{stats.totalBalance}</p>
+          <p className="text-2xl font-bold text-rose-600">
+            {stats.totalBalance}
+          </p>
           <p className="text-xs text-gray-400">≈ ৳{stats.totalBalanceTk}</p>
         </div>
         <div className="bg-white rounded-xl border p-4">
@@ -56,12 +64,18 @@ export default function RewardsOverview() {
           <p className="text-2xl font-bold">{stats.usersWithBalance}</p>
         </div>
         <div className="bg-white rounded-xl border p-4">
-          <p className="text-xs text-gray-500 uppercase">Points earned (orders)</p>
-          <p className="text-2xl font-bold text-green-600">{stats.totalEarned}</p>
+          <p className="text-xs text-gray-500 uppercase">
+            Points earned (orders)
+          </p>
+          <p className="text-2xl font-bold text-green-600">
+            {stats.totalEarned}
+          </p>
         </div>
         <div className="bg-white rounded-xl border p-4">
           <p className="text-xs text-gray-500 uppercase">Points redeemed</p>
-          <p className="text-2xl font-bold text-amber-600">{stats.totalRedeemed}</p>
+          <p className="text-2xl font-bold text-amber-600">
+            {stats.totalRedeemed}
+          </p>
         </div>
       </div>
 
@@ -70,7 +84,9 @@ export default function RewardsOverview() {
           type="button"
           onClick={() => setTab("orders")}
           className={`px-4 py-2 rounded-full text-sm font-medium ${
-            tab === "orders" ? "bg-rose-500 text-white" : "bg-gray-100 text-gray-600"
+            tab === "orders"
+              ? "bg-rose-500 text-white"
+              : "bg-gray-100 text-gray-600"
           }`}
         >
           Orders ({orders.length})
@@ -79,7 +95,9 @@ export default function RewardsOverview() {
           type="button"
           onClick={() => setTab("users")}
           className={`px-4 py-2 rounded-full text-sm font-medium ${
-            tab === "users" ? "bg-rose-500 text-white" : "bg-gray-100 text-gray-600"
+            tab === "users"
+              ? "bg-rose-500 text-white"
+              : "bg-gray-100 text-gray-600"
           }`}
         >
           Users ({users.length})
@@ -89,7 +107,9 @@ export default function RewardsOverview() {
       <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
         {tab === "orders" ? (
           orders.length === 0 ? (
-            <p className="text-center py-12 text-gray-400">No reward activity yet.</p>
+            <p className="text-center py-12 text-gray-400">
+              No reward activity yet.
+            </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
@@ -134,7 +154,9 @@ export default function RewardsOverview() {
             </div>
           )
         ) : users.length === 0 ? (
-          <p className="text-center py-12 text-gray-400">No users with reward balance.</p>
+          <p className="text-center py-12 text-gray-400">
+            No users with reward balance.
+          </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">

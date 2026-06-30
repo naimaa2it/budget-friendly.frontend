@@ -1,27 +1,30 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
-export default function CategorySelector({ selectedCategories = [], onChange }) {
-  const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+export default function CategorySelector({
+  selectedCategories = [],
+  onChange,
+}) {
+  const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [newCategoryDesc, setNewCategoryDesc] = useState('');
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newCategoryDesc, setNewCategoryDesc] = useState("");
   const [creating, setCreating] = useState(false);
 
   const fetchCategories = async () => {
     try {
       const r = await fetch(`${API}/api/admin/blog-categories`, {
-        credentials: 'include'
+        credentials: "include",
       });
       const b = await r.json();
       if (r.ok) {
         setCategories(b.categories || []);
       }
     } catch (err) {
-      console.error('Error fetching categories:', err);
+      console.error("Error fetching categories:", err);
     } finally {
       setLoading(false);
     }
@@ -34,7 +37,7 @@ export default function CategorySelector({ selectedCategories = [], onChange }) 
   const handleToggleCategory = (categoryId) => {
     const isSelected = selectedCategories.includes(categoryId);
     if (isSelected) {
-      onChange(selectedCategories.filter(id => id !== categoryId));
+      onChange(selectedCategories.filter((id) => id !== categoryId));
     } else {
       onChange([...selectedCategories, categoryId]);
     }
@@ -47,28 +50,28 @@ export default function CategorySelector({ selectedCategories = [], onChange }) 
     setCreating(true);
     try {
       const r = await fetch(`${API}/api/admin/blog-categories`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           name: newCategoryName,
-          description: newCategoryDesc
-        })
+          description: newCategoryDesc,
+        }),
       });
 
       const b = await r.json();
       if (r.ok) {
         setCategories([...categories, b.category]);
         onChange([...selectedCategories, b.category._id]);
-        setNewCategoryName('');
-        setNewCategoryDesc('');
+        setNewCategoryName("");
+        setNewCategoryDesc("");
         setShowCreateModal(false);
       } else {
-        alert(b.error || 'Failed to create category');
+        alert(b.error || "Failed to create category");
       }
     } catch (err) {
-      console.error('Error creating category:', err);
-      alert('Failed to create category');
+      console.error("Error creating category:", err);
+      alert("Failed to create category");
     } finally {
       setCreating(false);
     }
@@ -94,7 +97,9 @@ export default function CategorySelector({ selectedCategories = [], onChange }) 
       </div>
 
       {categories.length === 0 ? (
-        <p className="text-sm text-gray-500 italic">No categories available. Create one!</p>
+        <p className="text-sm text-gray-500 italic">
+          No categories available. Create one!
+        </p>
       ) : (
         <div className="flex flex-wrap gap-2">
           {categories.map((cat) => {
@@ -106,8 +111,8 @@ export default function CategorySelector({ selectedCategories = [], onChange }) 
                 onClick={() => handleToggleCategory(cat._id)}
                 className={`px-3 py-1.5 text-sm rounded-full border transition ${
                   isSelected
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white text-gray-700 border-gray-300 hover:border-blue-400"
                 }`}
               >
                 {cat.name}
@@ -122,7 +127,7 @@ export default function CategorySelector({ selectedCategories = [], onChange }) 
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
             <h3 className="text-lg font-semibold mb-4">Create New Category</h3>
-            
+
             <form onSubmit={handleCreateCategory} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -157,8 +162,8 @@ export default function CategorySelector({ selectedCategories = [], onChange }) 
                   type="button"
                   onClick={() => {
                     setShowCreateModal(false);
-                    setNewCategoryName('');
-                    setNewCategoryDesc('');
+                    setNewCategoryName("");
+                    setNewCategoryDesc("");
                   }}
                   className="px-4 py-2 text-gray-700 border rounded-md hover:bg-gray-50"
                   disabled={creating}
@@ -170,7 +175,7 @@ export default function CategorySelector({ selectedCategories = [], onChange }) 
                   className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                   disabled={creating}
                 >
-                  {creating ? 'Creating...' : 'Create Category'}
+                  {creating ? "Creating..." : "Create Category"}
                 </button>
               </div>
             </form>

@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { formatOrderId } from "@/lib/orderId";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 const PICKED_STATUSES = ["accepted", "picked", "approved"];
 
@@ -42,9 +42,15 @@ export default function OrderPickManager() {
   const loadOrders = useCallback(async (pg, q) => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ page: pg, limit: PAGE_SIZE, status: "all" });
+      const params = new URLSearchParams({
+        page: pg,
+        limit: PAGE_SIZE,
+        status: "all",
+      });
       if (q) params.set("q", q);
-      const r = await fetch(`${API}/api/admin/orders?${params}`, { credentials: "include" });
+      const r = await fetch(`${API}/api/admin/orders?${params}`, {
+        credentials: "include",
+      });
       const data = r.ok ? await r.json() : { orders: [], pages: 1, total: 0 };
       setOrders(data.orders || []);
       setTotalPages(data.pages || 1);
@@ -94,10 +100,14 @@ export default function OrderPickManager() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">All New Orders</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Turn on Pick to accept an order and view its details. The person who picks is auto-assigned.
+            Turn on Pick to accept an order and view its details. The person who
+            picks is auto-assigned.
           </p>
         </div>
-        <Link href="/dashboard/orders" className="text-sm text-rose-600 hover:underline">
+        <Link
+          href="/dashboard/orders"
+          className="text-sm text-rose-600 hover:underline"
+        >
           ← All Orders
         </Link>
       </div>
@@ -109,7 +119,9 @@ export default function OrderPickManager() {
           placeholder="Search order, customer, phone…"
           className="text-sm border border-gray-200 rounded-lg px-3 py-2 w-full sm:w-64"
         />
-        <span className="text-xs text-gray-400">{total} order{total !== 1 ? "s" : ""}</span>
+        <span className="text-xs text-gray-400">
+          {total} order{total !== 1 ? "s" : ""}
+        </span>
       </div>
 
       <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
@@ -117,104 +129,123 @@ export default function OrderPickManager() {
           <div className="py-16 text-center text-gray-400">Loading orders…</div>
         ) : (
           <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b text-xs text-gray-500 uppercase">
-              <tr>
-                <th className="px-4 py-3 text-left w-10">
-                  <input type="checkbox" disabled className="rounded opacity-40" />
-                </th>
-                <th className="px-4 py-3 text-left">Order #</th>
-                <th className="px-4 py-3 text-left">Customer</th>
-                <th className="px-4 py-3 text-left">Total Amount</th>
-                <th className="px-4 py-3 text-left">Date &amp; Time</th>
-                <th className="px-4 py-3 text-left">Status</th>
-                <th className="px-4 py-3 text-left">Pickup</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {orders.map((order) => {
-                const isPicked =
-                  PICKED_STATUSES.includes(order.status) || Boolean(order.pickedBy?.name);
-                return (
-                  <tr
-                    key={order._id}
-                    className={`hover:bg-gray-50/60 ${isPicked ? "cursor-pointer" : ""}`}
-                    onClick={() => {
-                      if (isPicked) {
-                        window.location.href = `/dashboard/orders/${order._id}`;
-                      }
-                    }}
-                  >
-                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                      <input type="checkbox" className="rounded" disabled />
-                    </td>
-                    <td className="px-4 py-3 font-mono text-gray-700">
-                      {isPicked ? (
-                        <Link
-                          href={`/dashboard/orders/${order._id}`}
-                          className="text-rose-600 hover:underline font-semibold"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {formatOrderId(order._id)}
-                        </Link>
-                      ) : (
-                        <span className="text-gray-500">{formatOrderId(order._id)}</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-gray-800">
-                      {order.billingDetails?.name || "—"}
-                    </td>
-                    <td className="px-4 py-3 font-medium">
-                      ৳ {Number(order.total || 0).toLocaleString("en-BD", { minimumFractionDigits: 2 })}
-                    </td>
-                    <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
-                      {fmt(order.createdAt)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`inline-block text-xs font-medium px-2.5 py-1 rounded-full capitalize ${STATUS_STYLE[order.status] || "bg-gray-100 text-gray-600"}`}
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 border-b text-xs text-gray-500 uppercase">
+                <tr>
+                  <th className="px-4 py-3 text-left w-10">
+                    <input
+                      type="checkbox"
+                      disabled
+                      className="rounded opacity-40"
+                    />
+                  </th>
+                  <th className="px-4 py-3 text-left">Order #</th>
+                  <th className="px-4 py-3 text-left">Customer</th>
+                  <th className="px-4 py-3 text-left">Total Amount</th>
+                  <th className="px-4 py-3 text-left">Date &amp; Time</th>
+                  <th className="px-4 py-3 text-left">Status</th>
+                  <th className="px-4 py-3 text-left">Pickup</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {orders.map((order) => {
+                  const isPicked =
+                    PICKED_STATUSES.includes(order.status) ||
+                    Boolean(order.pickedBy?.name);
+                  return (
+                    <tr
+                      key={order._id}
+                      className={`hover:bg-gray-50/60 ${isPicked ? "cursor-pointer" : ""}`}
+                      onClick={() => {
+                        if (isPicked) {
+                          window.location.href = `/dashboard/orders/${order._id}`;
+                        }
+                      }}
+                    >
+                      <td
+                        className="px-4 py-3"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        {order.status}
-                      </span>
-                      {order.pickedBy?.name && (
-                        <p className="text-[10px] text-gray-400 mt-1">
-                          Picked by {order.pickedBy.name}
-                        </p>
-                      )}
-                    </td>
-                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                      <label className="inline-flex items-center gap-2 cursor-pointer">
-                        <span className="text-xs text-gray-600">Pick</span>
-                        <button
-                          type="button"
-                          role="switch"
-                          aria-checked={isPicked}
-                          disabled={picking === order._id}
-                          onClick={() => togglePick(order, !isPicked)}
-                          className={`relative w-10 h-5 rounded-full transition-colors ${
-                            isPicked ? "bg-rose-500" : "bg-gray-300"
-                          } disabled:opacity-50`}
+                        <input type="checkbox" className="rounded" disabled />
+                      </td>
+                      <td className="px-4 py-3 font-mono text-gray-700">
+                        {isPicked ? (
+                          <Link
+                            href={`/dashboard/orders/${order._id}`}
+                            className="text-rose-600 hover:underline font-semibold"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {formatOrderId(order._id)}
+                          </Link>
+                        ) : (
+                          <span className="text-gray-500">
+                            {formatOrderId(order._id)}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-gray-800">
+                        {order.billingDetails?.name || "—"}
+                      </td>
+                      <td className="px-4 py-3 font-medium">
+                        ৳{" "}
+                        {Number(order.total || 0).toLocaleString("en-BD", {
+                          minimumFractionDigits: 2,
+                        })}
+                      </td>
+                      <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+                        {fmt(order.createdAt)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-block text-xs font-medium px-2.5 py-1 rounded-full capitalize ${STATUS_STYLE[order.status] || "bg-gray-100 text-gray-600"}`}
                         >
-                          <span
-                            className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
-                              isPicked ? "translate-x-5" : ""
-                            }`}
-                          />
-                        </button>
-                      </label>
+                          {order.status}
+                        </span>
+                        {order.pickedBy?.name && (
+                          <p className="text-[10px] text-gray-400 mt-1">
+                            Picked by {order.pickedBy.name}
+                          </p>
+                        )}
+                      </td>
+                      <td
+                        className="px-4 py-3"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <label className="inline-flex items-center gap-2 cursor-pointer">
+                          <span className="text-xs text-gray-600">Pick</span>
+                          <button
+                            type="button"
+                            role="switch"
+                            aria-checked={isPicked}
+                            disabled={picking === order._id}
+                            onClick={() => togglePick(order, !isPicked)}
+                            className={`relative w-10 h-5 rounded-full transition-colors ${
+                              isPicked ? "bg-rose-500" : "bg-gray-300"
+                            } disabled:opacity-50`}
+                          >
+                            <span
+                              className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                                isPicked ? "translate-x-5" : ""
+                              }`}
+                            />
+                          </button>
+                        </label>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {!orders.length && !loading && (
+                  <tr>
+                    <td
+                      colSpan={7}
+                      className="px-4 py-12 text-center text-gray-400"
+                    >
+                      No orders found.
                     </td>
                   </tr>
-                );
-              })}
-              {!orders.length && !loading && (
-                <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-gray-400">
-                    No orders found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
@@ -222,11 +253,23 @@ export default function OrderPickManager() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
-          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
-            className="px-3 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40">← Prev</button>
-          <span className="text-sm text-gray-600">Page {page} of {totalPages}</span>
-          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-            className="px-3 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40">Next →</button>
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-3 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40"
+          >
+            ← Prev
+          </button>
+          <span className="text-sm text-gray-600">
+            Page {page} of {totalPages}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="px-3 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40"
+          >
+            Next →
+          </button>
         </div>
       )}
     </div>

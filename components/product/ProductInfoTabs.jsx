@@ -6,7 +6,7 @@ import AuthModal from "@/components/auth/AuthModal";
 import Image from "next/image";
 import { FaCamera, FaTimes } from "react-icons/fa";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 function StarRating({ value, onChange }) {
   const [hovered, setHovered] = useState(0);
@@ -81,7 +81,11 @@ export default function ProductInfoTabs({ product }) {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
-  const [reviewForm, setReviewForm] = useState({ name: "", rating: 0, body: "" });
+  const [reviewForm, setReviewForm] = useState({
+    name: "",
+    rating: 0,
+    body: "",
+  });
   const [reviewImages, setReviewImages] = useState([]);
   const [reviewImageUploading, setReviewImageUploading] = useState(false);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
@@ -362,13 +366,27 @@ export default function ProductInfoTabs({ product }) {
                 {(() => {
                   const d = product?.description;
                   if (!d) return "No description available for this product.";
-                  if (typeof d === 'string') return d;
+                  if (typeof d === "string") return d;
                   if (Array.isArray(d))
-                    return d.map(b => typeof b === 'string' ? b : (b?.content || b?.text || '').replace(/<[^>]+>/g, '')).filter(Boolean).join(' ') || "No description available for this product.";
+                    return (
+                      d
+                        .map((b) =>
+                          typeof b === "string"
+                            ? b
+                            : (b?.content || b?.text || "").replace(
+                                /<[^>]+>/g,
+                                "",
+                              ),
+                        )
+                        .filter(Boolean)
+                        .join(" ") ||
+                      "No description available for this product."
+                    );
                   return "No description available for this product.";
                 })()}
               </p>
-              {typeof product?.detailedDescription === 'string' && product.detailedDescription ? (
+              {typeof product?.detailedDescription === "string" &&
+              product.detailedDescription ? (
                 <div
                   className="mt-4 prose prose-sm max-w-none text-gray-700
                     [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1
@@ -376,7 +394,9 @@ export default function ProductInfoTabs({ product }) {
                     [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-3
                     [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-2
                     [&_strong]:font-semibold [&_em]:italic"
-                  dangerouslySetInnerHTML={{ __html: product.detailedDescription }}
+                  dangerouslySetInnerHTML={{
+                    __html: product.detailedDescription,
+                  }}
                 />
               ) : null}
             </div>
@@ -386,13 +406,17 @@ export default function ProductInfoTabs({ product }) {
             <div className="animate-fadeIn space-y-6">
               {/* Specifications – flat key-value pairs with optional group headers */}
               {Array.isArray(product?.specifications) &&
-                product.specifications.filter((s) => s.type === "header" ? s.label : (s.key || s.value)).length > 0 && (
+                product.specifications.filter((s) =>
+                  s.type === "header" ? s.label : s.key || s.value,
+                ).length > 0 && (
                   <table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
                     <tbody>
                       {(() => {
                         let rowIndex = 0;
                         return product.specifications
-                          .filter((s) => s.type === "header" ? s.label : (s.key || s.value))
+                          .filter((s) =>
+                            s.type === "header" ? s.label : s.key || s.value,
+                          )
                           .map((spec, i) => {
                             if (spec.type === "header") {
                               return (
@@ -413,10 +437,14 @@ export default function ProductInfoTabs({ product }) {
                                 className={`border-b border-gray-100 ${stripe ? "bg-white" : "bg-gray-50"}`}
                               >
                                 <td className="px-4 py-2.5 font-medium text-gray-600 w-2/5">
-                                  {typeof spec.key === "object" ? JSON.stringify(spec.key) : String(spec.key ?? "")}
+                                  {typeof spec.key === "object"
+                                    ? JSON.stringify(spec.key)
+                                    : String(spec.key ?? "")}
                                 </td>
                                 <td className="px-4 py-2.5 text-gray-800">
-                                  {typeof spec.value === "object" ? JSON.stringify(spec.value) : String(spec.value ?? "")}
+                                  {typeof spec.value === "object"
+                                    ? JSON.stringify(spec.value)
+                                    : String(spec.value ?? "")}
                                 </td>
                               </tr>
                             );
@@ -453,7 +481,12 @@ export default function ProductInfoTabs({ product }) {
                           {product.variants.some(
                             (v) =>
                               v.attributes &&
-                              Object.values(v.attributes).some(val => val !== null && val !== undefined && typeof val !== "object"),
+                              Object.values(v.attributes).some(
+                                (val) =>
+                                  val !== null &&
+                                  val !== undefined &&
+                                  typeof val !== "object",
+                              ),
                           ) && (
                             <th className="px-4 py-2 text-left font-medium">
                               Attributes
@@ -502,15 +535,27 @@ export default function ProductInfoTabs({ product }) {
                             {product.variants.some(
                               (x) =>
                                 x.attributes &&
-                                Object.values(x.attributes).some(val => val !== null && val !== undefined && typeof val !== "object"),
+                                Object.values(x.attributes).some(
+                                  (val) =>
+                                    val !== null &&
+                                    val !== undefined &&
+                                    typeof val !== "object",
+                                ),
                             ) && (
                               <td className="px-4 py-2 text-gray-600">
                                 {v.attributes &&
                                   Object.entries(v.attributes)
-                                    .filter(([, val]) => val !== null && val !== undefined && typeof val !== "object")
+                                    .filter(
+                                      ([, val]) =>
+                                        val !== null &&
+                                        val !== undefined &&
+                                        typeof val !== "object",
+                                    )
                                     .map(([k, val]) => (
                                       <span key={k} className="mr-2 capitalize">
-                                        <span className="font-medium">{k}:</span>{" "}
+                                        <span className="font-medium">
+                                          {k}:
+                                        </span>{" "}
                                         {String(val)}
                                       </span>
                                     ))}
@@ -527,7 +572,9 @@ export default function ProductInfoTabs({ product }) {
               {/* Fallback */}
               {!(
                 Array.isArray(product?.specifications) &&
-                product.specifications.filter((s) => s.type === "header" ? s.label : (s.key || s.value)).length > 0
+                product.specifications.filter((s) =>
+                  s.type === "header" ? s.label : s.key || s.value,
+                ).length > 0
               ) &&
                 !product?.variants?.length && (
                   <div className="text-center py-12 border border-dashed border-gray-200 rounded-xl">
@@ -689,7 +736,10 @@ export default function ProductInfoTabs({ product }) {
                         <textarea
                           value={reviewForm.body}
                           onChange={(e) =>
-                            setReviewForm((f) => ({ ...f, body: e.target.value }))
+                            setReviewForm((f) => ({
+                              ...f,
+                              body: e.target.value,
+                            }))
                           }
                           className="block w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white"
                           rows={4}
@@ -704,11 +754,23 @@ export default function ProductInfoTabs({ product }) {
                         </label>
                         <div className="flex flex-wrap gap-2">
                           {reviewImages.map((url, i) => (
-                            <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200">
-                              <Image src={url} alt={`review-img-${i}`} fill className="object-cover" />
+                            <div
+                              key={i}
+                              className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200"
+                            >
+                              <Image
+                                src={url}
+                                alt={`review-img-${i}`}
+                                fill
+                                className="object-cover"
+                              />
                               <button
                                 type="button"
-                                onClick={() => setReviewImages((prev) => prev.filter((_, idx) => idx !== i))}
+                                onClick={() =>
+                                  setReviewImages((prev) =>
+                                    prev.filter((_, idx) => idx !== i),
+                                  )
+                                }
                                 className="absolute top-0.5 right-0.5 w-4 h-4 bg-black/60 rounded-full flex items-center justify-center hover:bg-red-600 transition"
                               >
                                 <FaTimes className="w-2 h-2 text-white" />
@@ -738,7 +800,9 @@ export default function ProductInfoTabs({ product }) {
                             accept="image/*"
                             multiple
                             className="hidden"
-                            onChange={(e) => handleReviewImageUpload(e.target.files)}
+                            onChange={(e) =>
+                              handleReviewImageUpload(e.target.files)
+                            }
                           />
                         </div>
                       </div>
@@ -847,9 +911,19 @@ export default function ProductInfoTabs({ product }) {
                           {r.images?.length > 0 && (
                             <div className="flex flex-wrap gap-2 mt-2">
                               {r.images.map((imgUrl, imgIdx) => (
-                                <a key={imgIdx} href={imgUrl} target="_blank" rel="noopener noreferrer"
-                                  className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 hover:opacity-90 transition">
-                                  <Image src={imgUrl} alt={`review-photo-${imgIdx + 1}`} fill className="object-cover" />
+                                <a
+                                  key={imgIdx}
+                                  href={imgUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 hover:opacity-90 transition"
+                                >
+                                  <Image
+                                    src={imgUrl}
+                                    alt={`review-photo-${imgIdx + 1}`}
+                                    fill
+                                    className="object-cover"
+                                  />
                                 </a>
                               ))}
                             </div>

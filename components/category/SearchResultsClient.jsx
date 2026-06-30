@@ -9,7 +9,7 @@ import SortDropdown from "@/components/product/SortDropdown";
 import Link from "next/link";
 import { getDisplayPrice } from "@/lib/pricing";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 export default function SearchResultsClient() {
   const router = useRouter();

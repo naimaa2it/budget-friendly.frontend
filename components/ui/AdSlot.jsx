@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from "react";
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 let _cache = null;
 let _promise = null;
@@ -11,19 +11,19 @@ async function getAdConfig() {
   if (_cache) return _cache;
   if (_promise) return _promise;
   _promise = fetch(`${API}/api/admin/tracking-config`)
-    .then(r => r.json())
-    .then(d => {
+    .then((r) => r.json())
+    .then((d) => {
       const ga = d.googleAdsense;
       _cache = {
         active: !!(ga?.publisherId && ga?.adSlotId),
-        publisherId: ga?.publisherId || '',
-        slot: ga?.adSlotId || '',
+        publisherId: ga?.publisherId || "",
+        slot: ga?.adSlotId || "",
         pageSettings: ga?.pageSettings || {},
       };
       return _cache;
     })
     .catch(() => {
-      _cache = { active: false, publisherId: '', slot: '', pageSettings: {} };
+      _cache = { active: false, publisherId: "", slot: "", pageSettings: {} };
       return _cache;
     });
   return _promise;
@@ -37,7 +37,11 @@ async function getAdConfig() {
  *   format    – AdSense data-ad-format (default: 'auto')
  *   className – wrapper classes
  */
-export default function AdSlot({ page = 'homepage', format = 'auto', className = '' }) {
+export default function AdSlot({
+  page = "homepage",
+  format = "auto",
+  className = "",
+}) {
   const [cfg, setCfg] = useState(null);
   const insRef = useRef(null);
   const pushed = useRef(false);
@@ -54,7 +58,7 @@ export default function AdSlot({ page = 'homepage', format = 'auto', className =
     } catch (_) {}
   }, [cfg]);
 
-  const IS_DEV = process.env.NODE_ENV === 'development';
+  const IS_DEV = process.env.NODE_ENV === "development";
 
   if (!cfg) return null;
 
@@ -85,7 +89,7 @@ export default function AdSlot({ page = 'homepage', format = 'auto', className =
       <ins
         ref={insRef}
         className="adsbygoogle"
-        style={{ display: 'block' }}
+        style={{ display: "block" }}
         data-ad-client={cfg.publisherId}
         data-ad-slot={cfg.slot}
         data-ad-format={format}

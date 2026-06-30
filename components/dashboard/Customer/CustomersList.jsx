@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useUser } from "@/components/context/UserContext";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 const RISK_BADGE = {
   low: "bg-emerald-50 text-emerald-700 border-emerald-200",

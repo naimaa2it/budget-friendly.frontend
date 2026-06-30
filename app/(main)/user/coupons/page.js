@@ -17,7 +17,7 @@ import {
 } from "react-icons/fa";
 import { useLanguage } from "@/components/context/LanguageContext";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 const COLOR_THEMES = {
   pink: {
@@ -157,7 +157,8 @@ function CouponCard({ coupon, cartSubtotal = 0 }) {
           {coupon.expiresAt && (
             <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full flex items-center gap-1">
               <FaClock className="w-2.5 h-2.5" />
-              {tr("coupons.expires")} {new Date(coupon.expiresAt).toLocaleDateString()}
+              {tr("coupons.expires")}{" "}
+              {new Date(coupon.expiresAt).toLocaleDateString()}
             </span>
           )}
         </div>
@@ -333,7 +334,8 @@ export default function CouponsPage() {
             <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-sm">
               <FaShoppingCart />
               <span>
-                {t("coupons.cart_subtotal")} <strong>৳{cartSubtotal.toFixed(0)}</strong>
+                {t("coupons.cart_subtotal")}{" "}
+                <strong>৳{cartSubtotal.toFixed(0)}</strong>
               </span>
             </div>
           )}
@@ -383,9 +385,7 @@ export default function CouponsPage() {
           {allCoupons.length === 0 ? (
             <div className="text-center py-20 border-2 border-dashed border-gray-200 rounded-xl text-gray-400">
               <FaTicketAlt className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium">
-                {t("coupons.no_coupons")}
-              </p>
+              <p className="text-lg font-medium">{t("coupons.no_coupons")}</p>
               <p className="text-sm mt-1">{t("coupons.check_back")}</p>
             </div>
           ) : (
@@ -484,9 +484,7 @@ export default function CouponsPage() {
           {data.eligible?.length === 0 && data.other?.length === 0 && (
             <div className="text-center py-20 border-2 border-dashed border-gray-200 rounded-xl text-gray-400">
               <FaTicketAlt className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium">
-                {t("coupons.no_coupons")}
-              </p>
+              <p className="text-lg font-medium">{t("coupons.no_coupons")}</p>
               <p className="text-sm mt-1">{t("coupons.check_back")}</p>
             </div>
           )}

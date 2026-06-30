@@ -6,7 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@/components/context/UserContext";
 import { useStoreSettings } from "@/components/context/StoreSettingsContext";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 const STORAGE_KEY = "Pickob-dashboard-sidebar-collapsed";
 
 // Mirrors backend lib/permissions.js: admins always have full access, and a

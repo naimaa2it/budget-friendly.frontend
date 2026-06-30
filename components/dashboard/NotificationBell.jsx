@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@/components/context/UserContext";
 import { FaBell } from "react-icons/fa";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 const STORAGE_KEY = "Pickob-dashboard-notif-last-seen";
 const POLL_INTERVAL_MS = 30000;
 

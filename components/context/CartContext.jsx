@@ -10,7 +10,7 @@ import React, {
 } from "react";
 import UserContext from "@/components/context/UserContext";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 const CartContext = createContext(null);
 

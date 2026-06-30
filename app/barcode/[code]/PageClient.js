@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useUrlParam } from '@/hooks/useUrlParam';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useUrlParam } from "@/hooks/useUrlParam";
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 export default function BarcodeLookupPage() {
   const code = useUrlParam();
@@ -12,12 +12,17 @@ export default function BarcodeLookupPage() {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    const barcodeCode = String(code || '').trim().replace(/\s+/g, '');
-    if (!barcodeCode) { setNotFound(true); return; }
+    const barcodeCode = String(code || "")
+      .trim()
+      .replace(/\s+/g, "");
+    if (!barcodeCode) {
+      setNotFound(true);
+      return;
+    }
 
     fetch(`${API}/api/products/barcode/${encodeURIComponent(barcodeCode)}`)
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
         const productId = data?.product?._id || data?.product?.id;
         if (productId) {
           router.replace(`/product/${productId}`);
@@ -33,7 +38,8 @@ export default function BarcodeLookupPage() {
       <div className="py-24 text-center">
         <p className="text-lg font-semibold text-gray-900">Barcode not found</p>
         <p className="mt-2 text-sm text-gray-500">
-          No product is linked to barcode <span className="font-semibold">{code}</span>.
+          No product is linked to barcode{" "}
+          <span className="font-semibold">{code}</span>.
         </p>
       </div>
     );

@@ -181,7 +181,7 @@ function OccasionSlider({ section }) {
 }
 
 export default function OccasionSections() {
-  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
   const { t, lang } = useLanguage();
   const [sections, setSections] = useState([]);
 

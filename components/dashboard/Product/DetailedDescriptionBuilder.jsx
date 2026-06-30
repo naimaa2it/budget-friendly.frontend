@@ -3,7 +3,7 @@ import { useRef, useCallback, useState } from "react";
 import RichTextEditor from "@/components/dashboard/RichTextEditor";
 import MediaPicker from "@/components/dashboard/MediaPicker";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 const uid = () =>
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
@@ -66,7 +66,9 @@ function ImageSlot({
     return (
       <div
         className={`relative group rounded-lg overflow-hidden border-2 transition-all cursor-grab ${
-          isDragOver ? "border-indigo-500 scale-95 opacity-60" : "border-transparent"
+          isDragOver
+            ? "border-indigo-500 scale-95 opacity-60"
+            : "border-transparent"
         }`}
         style={{ aspectRatio: "4/3" }}
         draggable={draggable}
@@ -84,7 +86,12 @@ function ImageSlot({
         />
         {/* drag hint */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-start justify-end p-2">
-          <span className="text-white text-lg opacity-0 group-hover:opacity-80 transition-opacity select-none" title="Drag to reorder">⠿</span>
+          <span
+            className="text-white text-lg opacity-0 group-hover:opacity-80 transition-opacity select-none"
+            title="Drag to reorder"
+          >
+            ⠿
+          </span>
         </div>
         <button
           type="button"
@@ -103,7 +110,10 @@ function ImageSlot({
         isDragOver ? "border-indigo-500 bg-indigo-50" : "border-gray-300"
       } ${uploading ? "pointer-events-none opacity-60" : ""}`}
       style={{ aspectRatio: "4/3", minHeight: 120 }}
-      onDragOver={(e) => { e.preventDefault(); onDragOver?.(e); }}
+      onDragOver={(e) => {
+        e.preventDefault();
+        onDragOver?.(e);
+      }}
       onDrop={(e) => {
         e.preventDefault();
         if (e.dataTransfer.files?.length) handleFiles(e.dataTransfer.files);
@@ -121,8 +131,18 @@ function ImageSlot({
         <div className="text-sm text-indigo-600 font-medium">Uploading…</div>
       ) : (
         <div className="flex flex-col items-center gap-2 px-2">
-          <svg className="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          <svg
+            className="w-7 h-7 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
           </svg>
           <button
             type="button"
@@ -140,7 +160,9 @@ function ImageSlot({
               🖼 Media Library
             </button>
           )}
-          <p className="text-xs text-gray-400 text-center">or drag &amp; drop</p>
+          <p className="text-xs text-gray-400 text-center">
+            or drag &amp; drop
+          </p>
         </div>
       )}
     </div>
@@ -148,7 +170,13 @@ function ImageSlot({
 }
 
 /* ── Image Row block (2/3/4 cols, draggable to reorder) ── */
-function ImageRowBlock({ block, onPatch, onPickFromLibrary, onPickAllFromLibrary, onImageUploaded }) {
+function ImageRowBlock({
+  block,
+  onPatch,
+  onPickFromLibrary,
+  onPickAllFromLibrary,
+  onImageUploaded,
+}) {
   const dragSrc = useRef(null);
   const bulkInputRef = useRef();
   const [dragOverIdx, setDragOverIdx] = useState(null);
@@ -179,7 +207,8 @@ function ImageRowBlock({ block, onPatch, onPickFromLibrary, onPickAllFromLibrary
       try {
         const results = await Promise.all(fileArr.map((f) => uploadFile(f)));
         const newImgs = [...images];
-        while (newImgs.length < cols) newImgs.push({ url: "", public_id: "", alt: "" });
+        while (newImgs.length < cols)
+          newImgs.push({ url: "", public_id: "", alt: "" });
         results.forEach((asset, i) => {
           newImgs[i] = { ...(newImgs[i] || {}), ...asset, alt: "" };
         });
@@ -254,21 +283,39 @@ function ImageRowBlock({ block, onPatch, onPickFromLibrary, onPickAllFromLibrary
             image={img}
             isDragOver={dragOverIdx === idx}
             draggable={!!img.url}
-            onDragStart={() => { dragSrc.current = idx; }}
-            onDragOver={(e) => { e.preventDefault(); setDragOverIdx(idx); }}
+            onDragStart={() => {
+              dragSrc.current = idx;
+            }}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragOverIdx(idx);
+            }}
             onDrop={(e) => {
               e.preventDefault();
               setDragOverIdx(null);
               if (dragSrc.current === null || dragSrc.current === idx) return;
               const imgs = [...images];
-              [imgs[dragSrc.current], imgs[idx]] = [imgs[idx], imgs[dragSrc.current]];
+              [imgs[dragSrc.current], imgs[idx]] = [
+                imgs[idx],
+                imgs[dragSrc.current],
+              ];
               dragSrc.current = null;
               onPatch({ images: imgs });
             }}
-            onDragEnd={() => { dragSrc.current = null; setDragOverIdx(null); }}
-            onUpload={(asset) => { patchImage(idx, asset); onImageUploaded?.(asset); }}
-            onRemove={() => patchImage(idx, { url: "", public_id: "", alt: "" })}
-            onPickFromLibrary={onPickFromLibrary ? () => onPickFromLibrary(idx) : undefined}
+            onDragEnd={() => {
+              dragSrc.current = null;
+              setDragOverIdx(null);
+            }}
+            onUpload={(asset) => {
+              patchImage(idx, asset);
+              onImageUploaded?.(asset);
+            }}
+            onRemove={() =>
+              patchImage(idx, { url: "", public_id: "", alt: "" })
+            }
+            onPickFromLibrary={
+              onPickFromLibrary ? () => onPickFromLibrary(idx) : undefined
+            }
           />
         ))}
       </div>
@@ -277,18 +324,48 @@ function ImageRowBlock({ block, onPatch, onPickFromLibrary, onPickAllFromLibrary
 }
 
 /* ── Block wrapper ── */
-function BlockWrapper({ index, total, onMoveUp, onMoveDown, onRemove, label, children }) {
+function BlockWrapper({
+  index,
+  total,
+  onMoveUp,
+  onMoveDown,
+  onRemove,
+  label,
+  children,
+}) {
   return (
     <div className="border border-gray-200 rounded-xl bg-white shadow-sm overflow-hidden">
       <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-b border-gray-200">
-        <span className="text-xs font-bold uppercase tracking-widest text-gray-400">{label}</span>
+        <span className="text-xs font-bold uppercase tracking-widest text-gray-400">
+          {label}
+        </span>
         <div className="flex gap-1">
-          <button type="button" onClick={onMoveUp} disabled={index === 0}
-            className="p-1.5 rounded text-gray-400 hover:text-gray-700 disabled:opacity-25 transition" title="Move up">▲</button>
-          <button type="button" onClick={onMoveDown} disabled={index === total - 1}
-            className="p-1.5 rounded text-gray-400 hover:text-gray-700 disabled:opacity-25 transition" title="Move down">▼</button>
-          <button type="button" onClick={onRemove}
-            className="p-1.5 rounded text-red-400 hover:text-red-600 transition ml-1" title="Remove block">🗑</button>
+          <button
+            type="button"
+            onClick={onMoveUp}
+            disabled={index === 0}
+            className="p-1.5 rounded text-gray-400 hover:text-gray-700 disabled:opacity-25 transition"
+            title="Move up"
+          >
+            ▲
+          </button>
+          <button
+            type="button"
+            onClick={onMoveDown}
+            disabled={index === total - 1}
+            className="p-1.5 rounded text-gray-400 hover:text-gray-700 disabled:opacity-25 transition"
+            title="Move down"
+          >
+            ▼
+          </button>
+          <button
+            type="button"
+            onClick={onRemove}
+            className="p-1.5 rounded text-red-400 hover:text-red-600 transition ml-1"
+            title="Remove block"
+          >
+            🗑
+          </button>
         </div>
       </div>
       <div className="p-4">{children}</div>
@@ -297,16 +374,32 @@ function BlockWrapper({ index, total, onMoveUp, onMoveDown, onRemove, label, chi
 }
 
 /* ── Main builder ── */
-export default function DetailedDescriptionBuilder({ value, onChange, onImageUploaded }) {
+export default function DetailedDescriptionBuilder({
+  value,
+  onChange,
+  onImageUploaded,
+}) {
   const blocks = normalizeBlocks(value);
   const update = (b) => onChange(b);
   const [pickerTarget, setPickerTarget] = useState(null);
 
   const addBlock = (type, extra = {}) => {
     let block;
-    if (type === "text") block = { id: uid(), type: "text", content: "", align: "left" };
-    else if (type === "image") block = { id: uid(), type: "image", url: "", public_id: "", alt: "" };
-    else if (type === "image-row") block = { id: uid(), type: "image-row", cols: extra.cols || 2, images: Array.from({ length: extra.cols || 2 }, () => ({ url: "", public_id: "", alt: "" })) };
+    if (type === "text")
+      block = { id: uid(), type: "text", content: "", align: "left" };
+    else if (type === "image")
+      block = { id: uid(), type: "image", url: "", public_id: "", alt: "" };
+    else if (type === "image-row")
+      block = {
+        id: uid(),
+        type: "image-row",
+        cols: extra.cols || 2,
+        images: Array.from({ length: extra.cols || 2 }, () => ({
+          url: "",
+          public_id: "",
+          alt: "",
+        })),
+      };
     update([...blocks, block]);
   };
 
@@ -339,22 +432,35 @@ export default function DetailedDescriptionBuilder({ value, onChange, onImageUpl
     if (!block) return;
 
     if (block.type === "image") {
-      const asset = Array.isArray(assetOrAssets) ? assetOrAssets[0] : assetOrAssets;
-      if (asset) patchBlock(blockIdx, { url: asset.url, public_id: asset.public_id });
+      const asset = Array.isArray(assetOrAssets)
+        ? assetOrAssets[0]
+        : assetOrAssets;
+      if (asset)
+        patchBlock(blockIdx, { url: asset.url, public_id: asset.public_id });
     } else if (block.type === "image-row") {
       if (multi && Array.isArray(assetOrAssets)) {
         const imgs = [...(block.images || [])];
         assetOrAssets.forEach((asset, i) => {
           if (i < imgs.length) {
-            imgs[i] = { ...(imgs[i] || {}), url: asset.url, public_id: asset.public_id };
+            imgs[i] = {
+              ...(imgs[i] || {}),
+              url: asset.url,
+              public_id: asset.public_id,
+            };
           }
         });
         patchBlock(blockIdx, { images: imgs });
       } else if (imageIdx !== undefined) {
-        const asset = Array.isArray(assetOrAssets) ? assetOrAssets[0] : assetOrAssets;
+        const asset = Array.isArray(assetOrAssets)
+          ? assetOrAssets[0]
+          : assetOrAssets;
         if (asset) {
           const imgs = [...(block.images || [])];
-          imgs[imageIdx] = { ...(imgs[imageIdx] || {}), url: asset.url, public_id: asset.public_id };
+          imgs[imageIdx] = {
+            ...(imgs[imageIdx] || {}),
+            url: asset.url,
+            public_id: asset.public_id,
+          };
           patchBlock(blockIdx, { images: imgs });
         }
       }
@@ -367,13 +473,28 @@ export default function DetailedDescriptionBuilder({ value, onChange, onImageUpl
       {blocks.map((block, i) => {
         if (block.type === "text") {
           return (
-            <BlockWrapper key={block.id} index={i} total={blocks.length} label="Text Block"
-              onMoveUp={() => moveBlock(i, -1)} onMoveDown={() => moveBlock(i, 1)} onRemove={() => removeBlock(i)}>
+            <BlockWrapper
+              key={block.id}
+              index={i}
+              total={blocks.length}
+              label="Text Block"
+              onMoveUp={() => moveBlock(i, -1)}
+              onMoveDown={() => moveBlock(i, 1)}
+              onRemove={() => removeBlock(i)}
+            >
               <div className="flex gap-1.5 mb-2">
                 {["left", "center", "right"].map((a) => (
-                  <button key={a} type="button" onClick={() => patchBlock(i, { align: a })}
-                    className={`px-2.5 py-1 text-xs rounded border transition ${block.align === a ? "bg-indigo-600 text-white border-indigo-600" : "border-gray-300 text-gray-600 hover:border-indigo-400"}`}>
-                    {a === "left" ? "⬅ Left" : a === "center" ? "↔ Center" : "➡ Right"}
+                  <button
+                    key={a}
+                    type="button"
+                    onClick={() => patchBlock(i, { align: a })}
+                    className={`px-2.5 py-1 text-xs rounded border transition ${block.align === a ? "bg-indigo-600 text-white border-indigo-600" : "border-gray-300 text-gray-600 hover:border-indigo-400"}`}
+                  >
+                    {a === "left"
+                      ? "⬅ Left"
+                      : a === "center"
+                        ? "↔ Center"
+                        : "➡ Right"}
                   </button>
                 ))}
               </div>
@@ -390,19 +511,33 @@ export default function DetailedDescriptionBuilder({ value, onChange, onImageUpl
 
         if (block.type === "image") {
           return (
-            <BlockWrapper key={block.id} index={i} total={blocks.length} label="Full-Width Image"
-              onMoveUp={() => moveBlock(i, -1)} onMoveDown={() => moveBlock(i, 1)} onRemove={() => removeBlock(i)}>
+            <BlockWrapper
+              key={block.id}
+              index={i}
+              total={blocks.length}
+              label="Full-Width Image"
+              onMoveUp={() => moveBlock(i, -1)}
+              onMoveDown={() => moveBlock(i, 1)}
+              onRemove={() => removeBlock(i)}
+            >
               <div className="max-w-xl mx-auto">
                 <ImageSlot
                   image={block}
-                  onUpload={(asset) => { patchBlock(i, asset); onImageUploaded?.(asset); }}
+                  onUpload={(asset) => {
+                    patchBlock(i, asset);
+                    onImageUploaded?.(asset);
+                  }}
                   onRemove={() => patchBlock(i, { url: "", public_id: "" })}
                   onPickFromLibrary={() => setPickerTarget({ blockIdx: i })}
                 />
                 {block.url && (
-                  <input type="text" value={block.alt || ""} onChange={(e) => patchBlock(i, { alt: e.target.value })}
+                  <input
+                    type="text"
+                    value={block.alt || ""}
+                    onChange={(e) => patchBlock(i, { alt: e.target.value })}
                     className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm"
-                    placeholder="Alt text (optional)" />
+                    placeholder="Alt text (optional)"
+                  />
                 )}
               </div>
             </BlockWrapper>
@@ -411,13 +546,24 @@ export default function DetailedDescriptionBuilder({ value, onChange, onImageUpl
 
         if (block.type === "image-row") {
           return (
-            <BlockWrapper key={block.id} index={i} total={blocks.length} label="Image Row"
-              onMoveUp={() => moveBlock(i, -1)} onMoveDown={() => moveBlock(i, 1)} onRemove={() => removeBlock(i)}>
+            <BlockWrapper
+              key={block.id}
+              index={i}
+              total={blocks.length}
+              label="Image Row"
+              onMoveUp={() => moveBlock(i, -1)}
+              onMoveDown={() => moveBlock(i, 1)}
+              onRemove={() => removeBlock(i)}
+            >
               <ImageRowBlock
                 block={block}
                 onPatch={(patch) => patchBlock(i, patch)}
-                onPickFromLibrary={(imageIdx) => setPickerTarget({ blockIdx: i, imageIdx })}
-                onPickAllFromLibrary={() => setPickerTarget({ blockIdx: i, multi: true })}
+                onPickFromLibrary={(imageIdx) =>
+                  setPickerTarget({ blockIdx: i, imageIdx })
+                }
+                onPickAllFromLibrary={() =>
+                  setPickerTarget({ blockIdx: i, multi: true })
+                }
                 onImageUploaded={onImageUploaded}
               />
             </BlockWrapper>
@@ -429,17 +575,27 @@ export default function DetailedDescriptionBuilder({ value, onChange, onImageUpl
 
       {/* Add buttons */}
       <div className="flex flex-wrap gap-2 pt-1">
-        <button type="button" onClick={() => addBlock("text")}
-          className="flex items-center gap-1.5 rounded-lg border-2 border-dashed border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 hover:border-indigo-400 hover:text-indigo-700 transition">
+        <button
+          type="button"
+          onClick={() => addBlock("text")}
+          className="flex items-center gap-1.5 rounded-lg border-2 border-dashed border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 hover:border-indigo-400 hover:text-indigo-700 transition"
+        >
           T&nbsp; Add Text
         </button>
-        <button type="button" onClick={() => addBlock("image")}
-          className="flex items-center gap-1.5 rounded-lg border-2 border-dashed border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 hover:border-indigo-400 hover:text-indigo-700 transition">
+        <button
+          type="button"
+          onClick={() => addBlock("image")}
+          className="flex items-center gap-1.5 rounded-lg border-2 border-dashed border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 hover:border-indigo-400 hover:text-indigo-700 transition"
+        >
           🖼 Full-Width Image
         </button>
         {[2, 3, 4].map((n) => (
-          <button key={n} type="button" onClick={() => addBlock("image-row", { cols: n })}
-            className="flex items-center gap-1.5 rounded-lg border-2 border-dashed border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 hover:border-indigo-400 hover:text-indigo-700 transition">
+          <button
+            key={n}
+            type="button"
+            onClick={() => addBlock("image-row", { cols: n })}
+            className="flex items-center gap-1.5 rounded-lg border-2 border-dashed border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 hover:border-indigo-400 hover:text-indigo-700 transition"
+          >
             ⊞ {n} Images
           </button>
         ))}

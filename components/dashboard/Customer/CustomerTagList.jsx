@@ -7,7 +7,7 @@ const emptyForm = { name: "", color: "#3B82F6", description: "" };
 
 export default function CustomerTagList() {
   const { user } = useUser();
-  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
   const [items, setItems] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
@@ -90,7 +90,10 @@ export default function CustomerTagList() {
         </p>
       </div>
 
-      <form onSubmit={saveTag} className="grid gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 md:grid-cols-[1fr_9rem_1fr_auto]">
+      <form
+        onSubmit={saveTag}
+        className="grid gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 md:grid-cols-[1fr_9rem_1fr_auto]"
+      >
         <input
           value={form.name}
           onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
@@ -137,68 +140,70 @@ export default function CustomerTagList() {
       ) : (
         <div className="overflow-hidden rounded-lg border border-gray-200">
           <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-gray-50 text-gray-600">
-              <tr>
-                <th className="px-4 py-3">Tag</th>
-                <th className="px-4 py-3">Description</th>
-                <th className="px-4 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 bg-white">
-              {items.map((tag) => (
-                <tr key={tag._id}>
-                  <td className="px-4 py-3">
-                    <span
-                      className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold text-white"
-                      style={{ backgroundColor: tag.color || "#3B82F6" }}
-                    >
-                      {tag.name}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {tag.description || "-"}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingId(tag._id);
-                        setForm({
-                          name: tag.name || "",
-                          color: tag.color || "#3B82F6",
-                          description: tag.description || "",
-                        });
-                      }}
-                      className="mr-2 rounded border border-gray-300 px-3 py-1.5 text-sm"
-                    >
-                      Edit
-                    </button>
-                    {user?.role === "admin" && (
+            <table className="w-full text-left text-sm">
+              <thead className="bg-gray-50 text-gray-600">
+                <tr>
+                  <th className="px-4 py-3">Tag</th>
+                  <th className="px-4 py-3">Description</th>
+                  <th className="px-4 py-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 bg-white">
+                {items.map((tag) => (
+                  <tr key={tag._id}>
+                    <td className="px-4 py-3">
+                      <span
+                        className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold text-white"
+                        style={{ backgroundColor: tag.color || "#3B82F6" }}
+                      >
+                        {tag.name}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {tag.description || "-"}
+                    </td>
+                    <td className="px-4 py-3 text-right">
                       <button
                         type="button"
-                        onClick={() => deleteTag(tag._id)}
-                        className="rounded border border-red-300 px-3 py-1.5 text-sm text-red-600"
+                        onClick={() => {
+                          setEditingId(tag._id);
+                          setForm({
+                            name: tag.name || "",
+                            color: tag.color || "#3B82F6",
+                            description: tag.description || "",
+                          });
+                        }}
+                        className="mr-2 rounded border border-gray-300 px-3 py-1.5 text-sm"
                       >
-                        Delete
+                        Edit
                       </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {!items.length && (
-                <tr>
-                  <td colSpan={3} className="px-4 py-8 text-center text-gray-500">
-                    No customer tags yet.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                      {user?.role === "admin" && (
+                        <button
+                          type="button"
+                          onClick={() => deleteTag(tag._id)}
+                          className="rounded border border-red-300 px-3 py-1.5 text-sm text-red-600"
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {!items.length && (
+                  <tr>
+                    <td
+                      colSpan={3}
+                      className="px-4 py-8 text-center text-gray-500"
+                    >
+                      No customer tags yet.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
     </div>
   );
 }
-

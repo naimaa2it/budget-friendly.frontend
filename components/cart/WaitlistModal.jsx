@@ -1,32 +1,34 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
-import { FaTimes, FaBell } from 'react-icons/fa';
+import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
+import { FaTimes, FaBell } from "react-icons/fa";
 
 export default function WaitlistModal({ product, onClose }) {
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email.trim() && !phone.trim()) {
-      setError('Please provide at least an email or phone number.');
+      setError("Please provide at least an email or phone number.");
       return;
     }
     setLoading(true);
-    setError('');
+    setError("");
     try {
-      const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
       const res = await fetch(`${API}/api/waitlist`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           productId: product._id,
           productTitle: product.title || product.name,
@@ -34,10 +36,10 @@ export default function WaitlistModal({ product, onClose }) {
           phone: phone.trim() || undefined,
         }),
       });
-      if (!res.ok) throw new Error('Failed');
+      if (!res.ok) throw new Error("Failed");
       setSuccess(true);
     } catch {
-      setError('Something went wrong. Please try again.');
+      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -65,10 +67,15 @@ export default function WaitlistModal({ product, onClose }) {
         {success ? (
           <div className="text-center py-6">
             <div className="text-5xl mb-4">🎉</div>
-            <h2 className="text-xl font-bold text-gray-800 mb-2">You&apos;re on the list!</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">
+              You&apos;re on the list!
+            </h2>
             <p className="text-gray-600 mb-5">
-              We&apos;ll notify you as soon as{' '}
-              <span className="font-semibold">{product.title || product.name}</span> is back in stock.
+              We&apos;ll notify you as soon as{" "}
+              <span className="font-semibold">
+                {product.title || product.name}
+              </span>{" "}
+              is back in stock.
             </p>
             <button
               onClick={onClose}
@@ -84,15 +91,23 @@ export default function WaitlistModal({ product, onClose }) {
                 <FaBell className="text-amber-600 text-xl" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-gray-800">Get Notified</h2>
-                <p className="text-sm text-gray-500">We will restock very soon!</p>
+                <h2 className="text-lg font-bold text-gray-800">
+                  Get Notified
+                </h2>
+                <p className="text-sm text-gray-500">
+                  We will restock very soon!
+                </p>
               </div>
             </div>
 
             <p className="text-gray-700 mb-5 bg-amber-50 border border-amber-100 rounded-lg p-3 text-sm leading-relaxed">
-              <span className="font-semibold">{product.title || product.name}</span> is currently{' '}
-              <span className="text-red-600 font-semibold">out of stock</span>. Leave your email or phone
-              number and we&apos;ll let you know the moment it&apos;s back!
+              <span className="font-semibold">
+                {product.title || product.name}
+              </span>{" "}
+              is currently{" "}
+              <span className="text-red-600 font-semibold">out of stock</span>.
+              Leave your email or phone number and we&apos;ll let you know the
+              moment it&apos;s back!
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -110,7 +125,7 @@ export default function WaitlistModal({ product, onClose }) {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone Number{' '}
+                  Phone Number{" "}
                   <span className="text-gray-400 font-normal">(optional)</span>
                 </label>
                 <input
@@ -127,13 +142,13 @@ export default function WaitlistModal({ product, onClose }) {
                 disabled={loading}
                 className="w-full bg-pink-600 text-white py-2.5 rounded-lg font-semibold hover:bg-pink-700 disabled:opacity-60 transition"
               >
-                {loading ? 'Joining...' : '🔔 Notify Me When Available'}
+                {loading ? "Joining..." : "🔔 Notify Me When Available"}
               </button>
             </form>
           </>
         )}
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

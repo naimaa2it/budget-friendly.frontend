@@ -5,10 +5,13 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { useCart } from "@/components/context/CartContext";
-import { resolveVariant, resolveVariantPrice } from "@/components/cart/VariantEditModal";
+import {
+  resolveVariant,
+  resolveVariantPrice,
+} from "@/components/cart/VariantEditModal";
 import { FaShoppingCart, FaUsers } from "react-icons/fa";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 export default function SharedCartView({ token }) {
   const router = useRouter();
@@ -24,17 +27,22 @@ export default function SharedCartView({ token }) {
       .then((r) => r.json().then((data) => ({ ok: r.ok, data })))
       .then(({ ok, data }) => {
         if (!ok) {
-          setError(data.error || "This shared cart link is invalid or expired.");
+          setError(
+            data.error || "This shared cart link is invalid or expired.",
+          );
           return;
         }
         setItems(data.items || []);
       })
-      .catch(() => setError("Could not load this shared cart. Please try again."))
+      .catch(() =>
+        setError("Could not load this shared cart. Please try again."),
+      )
       .finally(() => setLoading(false));
   }, [token]);
 
   const total = items.reduce((sum, i) => {
-    const price = resolveVariantPrice(i.product, i.color, i.size) || i.product.price || 0;
+    const price =
+      resolveVariantPrice(i.product, i.color, i.size) || i.product.price || 0;
     return sum + price * i.quantity;
   }, 0);
 
@@ -49,7 +57,9 @@ export default function SharedCartView({ token }) {
         silent: true,
       });
     });
-    toast.success(`Added ${items.length} item${items.length > 1 ? "s" : ""} to your cart!`);
+    toast.success(
+      `Added ${items.length} item${items.length > 1 ? "s" : ""} to your cart!`,
+    );
     setAdding(false);
     router.push("/cart");
   };
@@ -88,10 +98,17 @@ export default function SharedCartView({ token }) {
 
         <div className="bg-white rounded-lg shadow mb-6">
           {items.map((item, idx) => {
-            const price = resolveVariantPrice(item.product, item.color, item.size) || item.product.price || 0;
-            const image = item.product.images?.[0]?.url || "/assets/placeholder.svg";
+            const price =
+              resolveVariantPrice(item.product, item.color, item.size) ||
+              item.product.price ||
+              0;
+            const image =
+              item.product.images?.[0]?.url || "/assets/placeholder.svg";
             return (
-              <div key={idx} className="p-4 border-b last:border-b-0 flex items-center gap-4">
+              <div
+                key={idx}
+                className="p-4 border-b last:border-b-0 flex items-center gap-4"
+              >
                 <Image
                   src={encodeURI(image)}
                   alt={item.product.title}
@@ -100,7 +117,9 @@ export default function SharedCartView({ token }) {
                   className="object-contain rounded w-16 h-16 shrink-0"
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm md:text-base truncate">{item.product.title}</p>
+                  <p className="font-medium text-sm md:text-base truncate">
+                    {item.product.title}
+                  </p>
                   <div className="text-xs text-gray-500 mt-0.5">
                     Qty: {item.quantity}
                     {item.color ? ` · ${item.color}` : ""}
@@ -118,7 +137,9 @@ export default function SharedCartView({ token }) {
         <div className="bg-[#FFF5ED] rounded-lg shadow p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <p className="text-sm text-gray-600">Total</p>
-            <p className="text-2xl font-bold text-red-600">৳{total.toFixed(2)}</p>
+            <p className="text-2xl font-bold text-red-600">
+              ৳{total.toFixed(2)}
+            </p>
           </div>
           <button
             onClick={handleAddAll}

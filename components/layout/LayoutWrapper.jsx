@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
-import { usePathname } from 'next/navigation';
-import Script from 'next/script';
-import Navbar from '@/components/layout/Navbar';
-import MegaMenuNavbar from '@/components/layout/MegaMenuNavbar';
-import Footer from '@/components/layout/Footer';
-import { StoreSettingsProvider } from '@/components/context/StoreSettingsContext';
+import React, { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
+import Script from "next/script";
+import Navbar from "@/components/layout/Navbar";
+import MegaMenuNavbar from "@/components/layout/MegaMenuNavbar";
+import Footer from "@/components/layout/Footer";
+import { StoreSettingsProvider } from "@/components/context/StoreSettingsContext";
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 // ── Tracking Scripts Component ──────────────────────────────────────────────
 function TrackingScripts() {
@@ -16,7 +16,7 @@ function TrackingScripts() {
 
   useEffect(() => {
     fetch(`${API}/api/admin/tracking-config`)
-      .then(r => r.json())
+      .then((r) => r.json())
       .then(setConfig)
       .catch(() => {});
   }, []);
@@ -60,15 +60,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       )}
 
       {/* Facebook Pixel */}
-      {config.facebookPixel?.pixelId && config.facebookPixel?.browserSideTracking && (
-        <Script
-          id="facebook-pixel"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${config.facebookPixel.pixelId}');fbq('track','PageView');`,
-          }}
-        />
-      )}
+      {config.facebookPixel?.pixelId &&
+        config.facebookPixel?.browserSideTracking && (
+          <Script
+            id="facebook-pixel"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${config.facebookPixel.pixelId}');fbq('track','PageView');`,
+            }}
+          />
+        )}
 
       {/* TikTok Pixel */}
       {config.tiktokPixel?.pixelId && (
@@ -98,10 +99,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 // dangerouslySetInnerHTML does NOT execute <script> tags.
 // This helper recreates each script node so the browser runs it (needed for AdSense).
 function activateScripts(container) {
-  const scripts = container.querySelectorAll('script');
-  scripts.forEach(old => {
-    const fresh = document.createElement('script');
-    Array.from(old.attributes).forEach(a => fresh.setAttribute(a.name, a.value));
+  const scripts = container.querySelectorAll("script");
+  scripts.forEach((old) => {
+    const fresh = document.createElement("script");
+    Array.from(old.attributes).forEach((a) =>
+      fresh.setAttribute(a.name, a.value),
+    );
     fresh.textContent = old.textContent;
     old.parentNode.replaceChild(fresh, old);
   });
@@ -134,16 +137,16 @@ function TopBanner() {
 
   useEffect(() => {
     fetch(`${API}/api/admin/top-banner`)
-      .then(r => r.json())
-      .then(d => {
+      .then((r) => r.json())
+      .then((d) => {
         if (d.enabled) {
-          setHtml(d.html || '');
+          setHtml(d.html || "");
           setCfg(d.config || {});
         } else {
-          setHtml('');
+          setHtml("");
         }
       })
-      .catch(() => setHtml(''));
+      .catch(() => setHtml(""));
   }, []);
 
   if (html === null) return null;
@@ -151,21 +154,33 @@ function TopBanner() {
 
   if (cfg && (cfg.imageUrl || cfg.text)) {
     const style = {
-      backgroundColor: cfg.bgColor || 'transparent',
-      height: cfg.height || '50px',
+      backgroundColor: cfg.bgColor || "transparent",
+      height: cfg.height || "50px",
     };
     const content = cfg.imageUrl ? (
-      <img src={cfg.imageUrl} alt="banner" style={{ maxHeight: '100%', maxWidth: '100%' }} />
+      <img
+        src={cfg.imageUrl}
+        alt="banner"
+        style={{ maxHeight: "100%", maxWidth: "100%" }}
+      />
     ) : (
       <span className="text-sm font-medium">{cfg.text}</span>
     );
     const inner = (
-      <div className="w-full h-full flex items-center justify-center" style={style}>
+      <div
+        className="w-full h-full flex items-center justify-center"
+        style={style}
+      >
         {content}
       </div>
     );
     return cfg.linkUrl ? (
-      <a href={cfg.linkUrl} target="_blank" rel="noopener noreferrer" className="block w-full border-b border-gray-100">
+      <a
+        href={cfg.linkUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block w-full border-b border-gray-100"
+      >
         {inner}
       </a>
     ) : (
@@ -177,10 +192,10 @@ function TopBanner() {
 }
 
 export default function LayoutWrapper({ children }) {
-  const pathname = usePathname() || '';
+  const pathname = usePathname() || "";
   const hideNav =
-    pathname.startsWith('/dashboard') ||
-    (pathname.startsWith('/user/orders/') && pathname.endsWith('/invoice'));
+    pathname.startsWith("/dashboard") ||
+    (pathname.startsWith("/user/orders/") && pathname.endsWith("/invoice"));
 
   return (
     <StoreSettingsProvider>

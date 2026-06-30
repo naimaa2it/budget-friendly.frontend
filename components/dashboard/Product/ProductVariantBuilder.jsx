@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 const uid = () =>
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -401,10 +401,7 @@ export default function ProductVariantBuilder({
         ) {
           updated.color = { ...(v.color || {}), name: trimmed };
         }
-        if (
-          groupName.toLowerCase() === "size" &&
-          v.size === oldValue
-        ) {
+        if (groupName.toLowerCase() === "size" && v.size === oldValue) {
           updated.size = trimmed;
         }
         if (v.name === titleFromAttributes(v.attributes || {})) {
@@ -503,21 +500,27 @@ export default function ProductVariantBuilder({
                           value={editingName}
                           onChange={(e) => setEditingName(e.target.value)}
                           onKeyDown={(e) => {
-                            if (e.key === "Enter") renameVariation(group.name, editingName);
+                            if (e.key === "Enter")
+                              renameVariation(group.name, editingName);
                             if (e.key === "Escape") setEditingGroup(null);
                           }}
                           className="flex-1 rounded border border-indigo-300 px-2 py-0.5 text-sm font-semibold"
                         />
                         <button
                           type="button"
-                          onClick={() => renameVariation(group.name, editingName)}
+                          onClick={() =>
+                            renameVariation(group.name, editingName)
+                          }
                           className="shrink-0 rounded bg-indigo-600 px-2 py-0.5 text-xs text-white hover:bg-indigo-700"
                         >
                           Save
                         </button>
                         <button
                           type="button"
-                          onClick={(e) => { e.stopPropagation(); setEditingGroup(null); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingGroup(null);
+                          }}
                           className="shrink-0 rounded border border-gray-300 px-2 py-0.5 text-xs text-gray-600 hover:bg-gray-50"
                         >
                           ✕
@@ -528,11 +531,19 @@ export default function ProductVariantBuilder({
                         <span className="truncate">{group.name}</span>
                         <button
                           type="button"
-                          onClick={() => { setEditingGroup(group.name); setEditingName(group.name); }}
+                          onClick={() => {
+                            setEditingGroup(group.name);
+                            setEditingName(group.name);
+                          }}
                           className="shrink-0 text-gray-400 hover:text-indigo-600 transition-colors"
                           title="Rename"
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-3.5 w-3.5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
                             <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                           </svg>
                         </button>

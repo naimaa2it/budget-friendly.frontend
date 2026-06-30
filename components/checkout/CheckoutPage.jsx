@@ -120,7 +120,7 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (cartItems.length === 0) return;
-    const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
     fetch(`${API}/api/checkout-sessions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -153,7 +153,7 @@ export default function CheckoutPage() {
     clearTimeout(sessionPatchTimer.current);
     sessionPatchTimer.current = setTimeout(() => {
       if (!checkoutSessionId.current) return;
-      const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
       fetch(`${API}/api/checkout-sessions/${checkoutSessionId.current}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -183,7 +183,7 @@ export default function CheckoutPage() {
   const fetchQuote = useCallback(
     (couponCodes, pointsToRedeem = 0) => {
       if (!cartItems.length) return;
-      const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
       const city = currentCityRef.current?.trim() || null;
       return fetch(`${API}/api/orders/quote`, {
         method: "POST",
@@ -207,7 +207,7 @@ export default function CheckoutPage() {
 
   // Fetch progress indicators
   const fetchProgress = useCallback(async (subtotal) => {
-    const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
     try {
       const resp = await fetch(
         `${API}/api/coupons/progress?subtotal=${subtotal}`,
@@ -230,7 +230,7 @@ export default function CheckoutPage() {
 
     const fetchPreviousAddresses = async () => {
       try {
-        const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
         const resp = await fetch(`${API}/api/orders/my`, {
           credentials: "include",
         });
@@ -433,7 +433,7 @@ export default function CheckoutPage() {
     setCouponMsg(null);
     setQuoteLoading(true);
     try {
-      const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
       const newCoupons = [...appliedCoupons, code];
       const resp = await fetch(`${API}/api/orders/quote`, {
         method: "POST",
@@ -496,7 +496,7 @@ export default function CheckoutPage() {
     setCouponMsg(null);
     setQuoteLoading(true);
     try {
-      const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
       const resp = await fetch(`${API}/api/orders/quote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -533,7 +533,7 @@ export default function CheckoutPage() {
     setFormData((prev) => ({ ...prev, coupon: "" }));
     setQuoteLoading(true);
     try {
-      const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
       const resp = await fetch(`${API}/api/orders/quote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -633,7 +633,7 @@ export default function CheckoutPage() {
     };
 
     try {
-      const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
       const response = await fetch(`${API}/api/orders`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -749,16 +749,23 @@ export default function CheckoutPage() {
           <div className="mb-6 border border-purple-200 rounded-xl overflow-hidden">
             <button
               type="button"
-              onClick={() => setNudgeOpen(v => !v)}
+              onClick={() => setNudgeOpen((v) => !v)}
               className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 transition"
             >
               <div className="flex items-center gap-2">
                 <span className="text-lg">🎁</span>
-                <span className="font-semibold text-purple-900 text-sm">Login করুন — আরও সুবিধা পান!</span>
+                <span className="font-semibold text-purple-900 text-sm">
+                  Login করুন — আরও সুবিধা পান!
+                </span>
               </div>
               <svg
                 className={`w-4 h-4 text-purple-400 transition-transform duration-200 ${nudgeOpen ? "rotate-180" : ""}`}
-                viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
                 <path d="M6 9l6 6 6-6" />
               </svg>
@@ -766,10 +773,22 @@ export default function CheckoutPage() {
             {nudgeOpen && (
               <div className="px-4 py-3 bg-white">
                 <ul className="space-y-1.5 text-xs text-purple-700 mb-3">
-                  <li className="flex items-center gap-1.5"><span className="text-yellow-500">★</span> Reward Points earn করুন এবং পরের order এ discount পান</li>
-                  <li className="flex items-center gap-1.5"><span className="text-green-500">✓</span> আগের address auto-fill হবে</li>
-                  <li className="flex items-center gap-1.5"><span className="text-blue-500">📦</span> Order history ও tracking সহজে দেখুন</li>
-                  <li className="flex items-center gap-1.5"><span className="text-pink-500">🎟</span> Exclusive coupon ও special offer পাবেন</li>
+                  <li className="flex items-center gap-1.5">
+                    <span className="text-yellow-500">★</span> Reward Points
+                    earn করুন এবং পরের order এ discount পান
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <span className="text-green-500">✓</span> আগের address
+                    auto-fill হবে
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <span className="text-blue-500">📦</span> Order history ও
+                    tracking সহজে দেখুন
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <span className="text-pink-500">🎟</span> Exclusive coupon ও
+                    special offer পাবেন
+                  </li>
                 </ul>
                 <button
                   type="button"
@@ -777,7 +796,17 @@ export default function CheckoutPage() {
                   className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-full transition"
                 >
                   Login / Sign up
-                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                  <svg
+                    className="w-3 h-3"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
                 </button>
               </div>
             )}
@@ -796,8 +825,11 @@ export default function CheckoutPage() {
                   {t("checkout.new_user_welcome")}
                 </p>
                 <p className="text-sm text-blue-700 mt-0.5">
-                  {t("checkout.new_user_desc_prefix")} <strong>newUser26</strong> {t("checkout.new_user_desc_middle")}{" "}
-                  <strong>{t("checkout.new_user_desc_perk")}</strong> {t("checkout.new_user_desc_suffix")}
+                  {t("checkout.new_user_desc_prefix")}{" "}
+                  <strong>newUser26</strong>{" "}
+                  {t("checkout.new_user_desc_middle")}{" "}
+                  <strong>{t("checkout.new_user_desc_perk")}</strong>{" "}
+                  {t("checkout.new_user_desc_suffix")}
                 </p>
               </div>
             </div>
@@ -1216,7 +1248,9 @@ export default function CheckoutPage() {
                 )}
 
                 <div className="flex justify-between items-center pt-2 border-t border-dashed border-gray-200">
-                  <span className="text-sm font-bold text-gray-900">{t("checkout.total")}</span>
+                  <span className="text-sm font-bold text-gray-900">
+                    {t("checkout.total")}
+                  </span>
                   <span className="text-xl font-extrabold text-gray-900">
                     ৳{displayTotal.toFixed(0)}
                   </span>

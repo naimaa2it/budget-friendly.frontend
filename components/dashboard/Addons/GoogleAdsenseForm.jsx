@@ -3,12 +3,17 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 function Toggle({ checked, onChange }) {
   return (
     <label className="relative inline-flex cursor-pointer items-center">
-      <input type="checkbox" className="sr-only peer" checked={checked} onChange={onChange} />
+      <input
+        type="checkbox"
+        className="sr-only peer"
+        checked={checked}
+        onChange={onChange}
+      />
       <div className="h-6 w-11 rounded-full bg-gray-200 transition-colors peer-checked:bg-gray-900 after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-5" />
     </label>
   );
@@ -16,9 +21,21 @@ function Toggle({ checked, onChange }) {
 
 const PAGE_OPTIONS = [
   { key: "homepage", label: "Homepage", desc: "Main landing page (/)" },
-  { key: "productPage", label: "Product Pages", desc: "Individual product detail pages" },
-  { key: "categoryPage", label: "Category Pages", desc: "Product listing & category pages" },
-  { key: "blogPage", label: "Blog / Tag Pages", desc: "Blog posts and tag collection pages" },
+  {
+    key: "productPage",
+    label: "Product Pages",
+    desc: "Individual product detail pages",
+  },
+  {
+    key: "categoryPage",
+    label: "Category Pages",
+    desc: "Product listing & category pages",
+  },
+  {
+    key: "blogPage",
+    label: "Blog / Tag Pages",
+    desc: "Blog posts and tag collection pages",
+  },
 ];
 
 export default function GoogleAdsenseForm() {
@@ -88,7 +105,8 @@ export default function GoogleAdsenseForm() {
     }
   };
 
-  if (loading) return <div className="py-16 text-center text-gray-400">Loading…</div>;
+  if (loading)
+    return <div className="py-16 text-center text-gray-400">Loading…</div>;
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -99,7 +117,13 @@ export default function GoogleAdsenseForm() {
             onClick={() => router.push("/dashboard/addons")}
             className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition"
           >
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              className="h-4 w-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M15 18l-6-6 6-6" />
             </svg>
             Back
@@ -121,22 +145,44 @@ export default function GoogleAdsenseForm() {
         {/* Icon + title */}
         <div className="flex items-center gap-3 mb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 border border-green-100">
-            <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <svg
+              className="h-6 w-6"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
               <circle cx="12" cy="12" r="10" fill="#4285F4" opacity="0.15" />
-              <path d="M6 12a6 6 0 1112 0" stroke="#4285F4" strokeWidth="2" strokeLinecap="round" />
-              <path d="M12 6v12M6 12h12" stroke="#34A853" strokeWidth="1.5" strokeLinecap="round" opacity="0.7" />
+              <path
+                d="M6 12a6 6 0 1112 0"
+                stroke="#4285F4"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <path
+                d="M12 6v12M6 12h12"
+                stroke="#34A853"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                opacity="0.7"
+              />
               <circle cx="12" cy="12" r="2.5" fill="#FBBC05" />
             </svg>
           </div>
           <div>
-            <h2 className="font-semibold text-gray-900">AdSense Configuration</h2>
-            <p className="text-xs text-gray-400">Monetize your store with Google ads</p>
+            <h2 className="font-semibold text-gray-900">
+              AdSense Configuration
+            </h2>
+            <p className="text-xs text-gray-400">
+              Monetize your store with Google ads
+            </p>
           </div>
         </div>
 
         {/* Publisher ID */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Publisher ID</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            Publisher ID
+          </label>
           <input
             type="text"
             value={cfg.publisherId}
@@ -145,7 +191,11 @@ export default function GoogleAdsenseForm() {
             className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-100 font-mono"
           />
           <p className="mt-1.5 text-xs text-gray-400">
-            Format: <code className="bg-gray-100 px-1 rounded">ca-pub-XXXXXXXXXXXXXXXX</code> — Google AdSense dashboard থেকে পাবেন।
+            Format:{" "}
+            <code className="bg-gray-100 px-1 rounded">
+              ca-pub-XXXXXXXXXXXXXXXX
+            </code>{" "}
+            — Google AdSense dashboard থেকে পাবেন।
           </p>
         </div>
 
@@ -153,7 +203,9 @@ export default function GoogleAdsenseForm() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">
             Ad Slot ID
-            <span className="text-gray-400 font-normal ml-1">(in-page ad unit)</span>
+            <span className="text-gray-400 font-normal ml-1">
+              (in-page ad unit)
+            </span>
           </label>
           <input
             type="text"
@@ -163,7 +215,9 @@ export default function GoogleAdsenseForm() {
             className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-100 font-mono"
           />
           <p className="mt-1.5 text-xs text-gray-400">
-            AdSense → Ads → By ad unit → Display ads থেকে <code className="bg-gray-100 px-1 rounded">data-ad-slot</code> নম্বরটি কপি করুন।
+            AdSense → Ads → By ad unit → Display ads থেকে{" "}
+            <code className="bg-gray-100 px-1 rounded">data-ad-slot</code>{" "}
+            নম্বরটি কপি করুন।
           </p>
         </div>
 
@@ -175,12 +229,17 @@ export default function GoogleAdsenseForm() {
               Google নিজেই best জায়গায় ads রাখবে — Ad Slot ID ছাড়াও কাজ করে
             </p>
           </div>
-          <Toggle checked={cfg.autoAds} onChange={(e) => set("autoAds", e.target.checked)} />
+          <Toggle
+            checked={cfg.autoAds}
+            onChange={(e) => set("autoAds", e.target.checked)}
+          />
         </div>
 
         {/* Page Settings */}
         <div className="border-t border-gray-100 pt-4">
-          <p className="text-sm font-semibold text-gray-800 mb-3">Page Visibility</p>
+          <p className="text-sm font-semibold text-gray-800 mb-3">
+            Page Visibility
+          </p>
           <p className="text-xs text-gray-400 mb-3">
             কোন কোন page-এ in-page ads দেখাবে সেটি নিয়ন্ত্রণ করুন।
           </p>
@@ -204,11 +263,15 @@ export default function GoogleAdsenseForm() {
         <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-blue-900 text-xs">
           <p className="font-semibold mb-1.5">Publisher ID কীভাবে পাবেন:</p>
           <ol className="list-decimal pl-4 space-y-1">
-            <li><strong>adsense.google.com</strong>-এ sign in করুন</li>
+            <li>
+              <strong>adsense.google.com</strong>-এ sign in করুন
+            </li>
             <li>Account → Settings → Account information</li>
             <li>
               <strong>Publisher ID</strong> কপি করুন —{" "}
-              <code className="bg-blue-100 px-1 rounded">ca-pub-XXXXXXXXXXXXXXXX</code>
+              <code className="bg-blue-100 px-1 rounded">
+                ca-pub-XXXXXXXXXXXXXXXX
+              </code>
             </li>
             <li>এখানে paste করে Save করুন</li>
           </ol>
@@ -216,18 +279,26 @@ export default function GoogleAdsenseForm() {
 
         {/* Active toggle */}
         <div className="flex items-center justify-between pt-1 border-t border-gray-100">
-          <span className="text-sm text-blue-600 font-medium">Active Status</span>
-          <Toggle checked={cfg.active} onChange={(e) => set("active", e.target.checked)} />
+          <span className="text-sm text-blue-600 font-medium">
+            Active Status
+          </span>
+          <Toggle
+            checked={cfg.active}
+            onChange={(e) => set("active", e.target.checked)}
+          />
         </div>
       </div>
 
       {/* Script preview */}
       {cfg.publisherId && (
         <div className="mt-4 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
-          <p className="text-xs font-medium text-gray-600 mb-1.5">Script preview (injected in &lt;head&gt;):</p>
+          <p className="text-xs font-medium text-gray-600 mb-1.5">
+            Script preview (injected in &lt;head&gt;):
+          </p>
           <code className="text-xs text-gray-500 break-all whitespace-pre-wrap">
             {`<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${cfg.publisherId}" crossorigin="anonymous"></script>`}
-            {cfg.autoAds && `\n<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>`}
+            {cfg.autoAds &&
+              `\n<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>`}
           </code>
         </div>
       )}

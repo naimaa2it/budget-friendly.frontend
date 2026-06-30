@@ -36,25 +36,37 @@ const Twitter = () => (
 
 function ProductAddCardSuccess({ product, onAdd }) {
   const { t } = useLanguage();
-  const [selectedColor, setSelectedColor] = useState('');
-  const [selectedSize, setSelectedSize] = useState('');
+  const [selectedColor, setSelectedColor] = useState("");
+  const [selectedSize, setSelectedSize] = useState("");
   const [qty, setQty] = useState(1);
 
-  const colors = [...new Set(
-    (product.variants || []).map(v => v.color?.name || v.attributes?.color).filter(Boolean)
-  )];
-  const sizes = [...new Set(
-    (product.variants || [])
-      .map(v => v.size || v.attributes?.size).filter(Boolean)
-      .flatMap(s => s.split(',').map(x => x.trim())).filter(Boolean)
-  )];
+  const colors = [
+    ...new Set(
+      (product.variants || [])
+        .map((v) => v.color?.name || v.attributes?.color)
+        .filter(Boolean),
+    ),
+  ];
+  const sizes = [
+    ...new Set(
+      (product.variants || [])
+        .map((v) => v.size || v.attributes?.size)
+        .filter(Boolean)
+        .flatMap((s) => s.split(",").map((x) => x.trim()))
+        .filter(Boolean),
+    ),
+  ];
 
   const getPrice = () => {
-    if (!product.variants?.length || (!selectedColor && !selectedSize)) return product.price || 0;
-    const v = (product.variants || []).find(v => {
-      const vc = (v.color?.name || v.attributes?.color || '').toLowerCase();
-      const vs = (v.size || v.attributes?.size || '').toLowerCase();
-      return (!selectedColor || vc === selectedColor.toLowerCase()) && (!selectedSize || vs === selectedSize.toLowerCase());
+    if (!product.variants?.length || (!selectedColor && !selectedSize))
+      return product.price || 0;
+    const v = (product.variants || []).find((v) => {
+      const vc = (v.color?.name || v.attributes?.color || "").toLowerCase();
+      const vs = (v.size || v.attributes?.size || "").toLowerCase();
+      return (
+        (!selectedColor || vc === selectedColor.toLowerCase()) &&
+        (!selectedSize || vs === selectedSize.toLowerCase())
+      );
     });
     return v?.price || product.price || 0;
   };
@@ -63,43 +75,77 @@ function ProductAddCardSuccess({ product, onAdd }) {
     <div className="rounded-xl border border-gray-100 bg-gray-50 p-2.5 space-y-2">
       <div className="flex items-center gap-2">
         {product.images?.[0]?.url ? (
-          <Image src={product.images[0].url} alt={product.title} width={36} height={36} className="w-9 h-9 rounded-lg object-cover shrink-0 border border-gray-200" />
+          <Image
+            src={product.images[0].url}
+            alt={product.title}
+            width={36}
+            height={36}
+            className="w-9 h-9 rounded-lg object-cover shrink-0 border border-gray-200"
+          />
         ) : (
           <div className="w-9 h-9 rounded-lg bg-gray-200 shrink-0" />
         )}
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-gray-800 truncate">{product.title}</p>
+          <p className="text-xs font-semibold text-gray-800 truncate">
+            {product.title}
+          </p>
           <p className="text-xs text-orange-600 font-bold">৳{getPrice()}</p>
         </div>
         <div className="flex items-center gap-1 shrink-0">
-          <button type="button" onClick={() => setQty(q => Math.max(1, q - 1))} className="w-5 h-5 rounded bg-gray-200 text-xs font-bold flex items-center justify-center">−</button>
+          <button
+            type="button"
+            onClick={() => setQty((q) => Math.max(1, q - 1))}
+            className="w-5 h-5 rounded bg-gray-200 text-xs font-bold flex items-center justify-center"
+          >
+            −
+          </button>
           <span className="w-5 text-center text-xs font-bold">{qty}</span>
-          <button type="button" onClick={() => setQty(q => q + 1)} className="w-5 h-5 rounded bg-gray-200 text-xs font-bold flex items-center justify-center">+</button>
+          <button
+            type="button"
+            onClick={() => setQty((q) => q + 1)}
+            className="w-5 h-5 rounded bg-gray-200 text-xs font-bold flex items-center justify-center"
+          >
+            +
+          </button>
         </div>
       </div>
       {colors.length > 0 && (
         <div className="flex flex-wrap items-center gap-1">
           <span className="text-xs text-gray-400">Color:</span>
-          {colors.map(c => (
-            <button key={c} type="button" onClick={() => setSelectedColor(p => p === c ? '' : c)}
-              className={`px-2 py-0.5 rounded-full text-xs border transition ${selectedColor === c ? 'bg-orange-500 text-white border-orange-500' : 'border-gray-300 text-gray-600 hover:border-orange-400'}`}
-            >{c}</button>
+          {colors.map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => setSelectedColor((p) => (p === c ? "" : c))}
+              className={`px-2 py-0.5 rounded-full text-xs border transition ${selectedColor === c ? "bg-orange-500 text-white border-orange-500" : "border-gray-300 text-gray-600 hover:border-orange-400"}`}
+            >
+              {c}
+            </button>
           ))}
         </div>
       )}
       {sizes.length > 0 && (
         <div className="flex flex-wrap items-center gap-1">
           <span className="text-xs text-gray-400">Size:</span>
-          {sizes.map(s => (
-            <button key={s} type="button" onClick={() => setSelectedSize(p => p === s ? '' : s)}
-              className={`px-2 py-0.5 rounded-full text-xs border font-mono transition ${selectedSize === s ? 'bg-gray-800 text-white border-gray-800' : 'border-gray-300 text-gray-600 hover:border-gray-500'}`}
-            >{s}</button>
+          {sizes.map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setSelectedSize((p) => (p === s ? "" : s))}
+              className={`px-2 py-0.5 rounded-full text-xs border font-mono transition ${selectedSize === s ? "bg-gray-800 text-white border-gray-800" : "border-gray-300 text-gray-600 hover:border-gray-500"}`}
+            >
+              {s}
+            </button>
           ))}
         </div>
       )}
-      <button type="button" onClick={() => onAdd(selectedColor, selectedSize, qty, getPrice())}
+      <button
+        type="button"
+        onClick={() => onAdd(selectedColor, selectedSize, qty, getPrice())}
         className="w-full py-1.5 bg-orange-500 text-white rounded-lg text-xs font-semibold hover:bg-orange-600 transition"
-      >{t('orders.add_to_order')}</button>
+      >
+        {t("orders.add_to_order")}
+      </button>
     </div>
   );
 }
@@ -132,11 +178,11 @@ function SuccessContent() {
   const [editItems, setEditItems] = useState([]);
   const [productVariantsMap, setProductVariantsMap] = useState({});
   const [pendingNewItems, setPendingNewItems] = useState([]);
-  const [productSearch, setProductSearch] = useState('');
+  const [productSearch, setProductSearch] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
 
-  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
   const PHONE = process.env.NEXT_PUBLIC_STORE_PHONE || "+8801643007383";
   const { clearCart } = useCart();
 
@@ -195,7 +241,7 @@ function SuccessContent() {
   const handleConfirmCancel = async () => {
     const trimmed = cancelReason.trim();
     if (trimmed.length < 5) {
-      setCancelReasonError(t('orders.cancel_reason_min'));
+      setCancelReasonError(t("orders.cancel_reason_min"));
       return;
     }
     setCancelLoading(true);
@@ -224,19 +270,25 @@ function SuccessContent() {
   const openEdit = async () => {
     setIsEditing(true);
     setPendingNewItems([]);
-    setProductSearch('');
+    setProductSearch("");
     setSearchResults([]);
     if (!order) return;
-    const ids = [...new Set((order.items || []).map(i => i.productId).filter(Boolean))];
+    const ids = [
+      ...new Set((order.items || []).map((i) => i.productId).filter(Boolean)),
+    ];
     const map = {};
-    await Promise.all(ids.map(async (id) => {
-      try {
-        const r = await fetch(`${API}/api/products/${encodeURIComponent(id)}`);
-        const d = await r.json();
-        const prod = d.product || d;
-        if (prod?._id) map[String(id)] = prod;
-      } catch {}
-    }));
+    await Promise.all(
+      ids.map(async (id) => {
+        try {
+          const r = await fetch(
+            `${API}/api/products/${encodeURIComponent(id)}`,
+          );
+          const d = await r.json();
+          const prod = d.product || d;
+          if (prod?._id) map[String(id)] = prod;
+        } catch {}
+      }),
+    );
     setProductVariantsMap(map);
   };
 
@@ -256,7 +308,7 @@ function SuccessContent() {
             color: it.color ?? null,
             size: it.size ?? null,
           })),
-          addItems: pendingNewItems.map(ni => ({
+          addItems: pendingNewItems.map((ni) => ({
             productId: ni.product._id,
             quantity: ni.qty,
             color: ni.color || null,
@@ -269,7 +321,7 @@ function SuccessContent() {
         setOrder(data.order);
         setIsEditing(false);
         setPendingNewItems([]);
-        setProductSearch('');
+        setProductSearch("");
         setSearchResults([]);
       } else {
         alert(data.error || "Could not update order.");
@@ -294,36 +346,62 @@ function SuccessContent() {
   const getItemColors = (productId) => {
     const prod = productVariantsMap[String(productId)];
     if (!prod?.variants?.length) return [];
-    return [...new Set(prod.variants.map(v => v.color?.name || v.attributes?.color).filter(Boolean))];
+    return [
+      ...new Set(
+        prod.variants
+          .map((v) => v.color?.name || v.attributes?.color)
+          .filter(Boolean),
+      ),
+    ];
   };
 
   const getItemSizes = (productId) => {
     const prod = productVariantsMap[String(productId)];
     if (!prod?.variants?.length) return [];
-    const raw = prod.variants.map(v => v.size || v.attributes?.size).filter(Boolean);
-    return [...new Set(raw.flatMap(s => s.split(',').map(x => x.trim())).filter(Boolean))];
+    const raw = prod.variants
+      .map((v) => v.size || v.attributes?.size)
+      .filter(Boolean);
+    return [
+      ...new Set(
+        raw.flatMap((s) => s.split(",").map((x) => x.trim())).filter(Boolean),
+      ),
+    ];
   };
 
   const getVariantPrice = (productId, color, size) => {
     const prod = productVariantsMap[String(productId)];
     if (!prod) return null;
     if (!prod.variants?.length || (!color && !size)) return prod.price ?? null;
-    const v = prod.variants.find(v => {
-      const vc = (v.color?.name || v.attributes?.color || '').toLowerCase();
-      const vs = (v.size || v.attributes?.size || '').toLowerCase();
-      return (!(color) || vc === color.toLowerCase()) && (!(size) || vs === size.toLowerCase());
+    const v = prod.variants.find((v) => {
+      const vc = (v.color?.name || v.attributes?.color || "").toLowerCase();
+      const vs = (v.size || v.attributes?.size || "").toLowerCase();
+      return (
+        (!color || vc === color.toLowerCase()) &&
+        (!size || vs === size.toLowerCase())
+      );
     });
     return v?.price ?? prod.price ?? null;
   };
 
   const searchProducts = async (q) => {
     const trimmed = q.trim();
-    if (!trimmed) { setSearchResults([]); return; }
+    if (!trimmed) {
+      setSearchResults([]);
+      return;
+    }
     setSearchLoading(true);
     try {
-      const r = await fetch(`${API}/api/products?q=${encodeURIComponent(trimmed)}&limit=6&status=published`);
+      const r = await fetch(
+        `${API}/api/products?q=${encodeURIComponent(trimmed)}&limit=6&status=published`,
+      );
       const d = await r.json();
-      setSearchResults(Array.isArray(d.items) ? d.items : (Array.isArray(d.products) ? d.products : []));
+      setSearchResults(
+        Array.isArray(d.items)
+          ? d.items
+          : Array.isArray(d.products)
+            ? d.products
+            : [],
+      );
     } catch {
       setSearchResults([]);
     } finally {
@@ -414,7 +492,9 @@ function SuccessContent() {
               <h1 className="text-lg font-bold text-gray-900">
                 {t("success.order_placed")}
               </h1>
-              <p className="text-sm text-gray-500">{t("success.thanks_order")}</p>
+              <p className="text-sm text-gray-500">
+                {t("success.thanks_order")}
+              </p>
             </>
           )}
         </div>
@@ -424,19 +504,27 @@ function SuccessContent() {
           {/* Order ID + Delivery */}
           <div className="flex justify-between py-4 text-sm">
             <div>
-              <p className="text-gray-500 text-xs mb-1">{t("success.order_id")}</p>
+              <p className="text-gray-500 text-xs mb-1">
+                {t("success.order_id")}
+              </p>
               <p className="font-bold text-gray-900">{shortId(orderId)}</p>
             </div>
             <div className="text-right">
-              <p className="text-gray-500 text-xs mb-1">{t("success.estimated_delivery")}</p>
-              <p className="font-bold text-gray-900">{t("success.within_days")}</p>
+              <p className="text-gray-500 text-xs mb-1">
+                {t("success.estimated_delivery")}
+              </p>
+              <p className="font-bold text-gray-900">
+                {t("success.within_days")}
+              </p>
             </div>
           </div>
 
           {/* Shipping Address */}
           {!loading && addr && (
             <div className="py-4 text-sm">
-              <p className="text-gray-500 text-xs mb-1">{t("success.address")}</p>
+              <p className="text-gray-500 text-xs mb-1">
+                {t("success.address")}
+              </p>
               <p className="text-gray-800">
                 {billing.name}
                 {addr ? ", " + addr : ""}
@@ -513,7 +601,9 @@ function SuccessContent() {
           {/* Payment Status */}
           {!loading && order && (
             <div className="py-4 text-sm">
-              <p className="text-gray-500 text-xs mb-1">{t("success.payment_status")}</p>
+              <p className="text-gray-500 text-xs mb-1">
+                {t("success.payment_status")}
+              </p>
               <p
                 className={`font-semibold capitalize ${
                   order.paymentStatus === "paid"
@@ -533,7 +623,9 @@ function SuccessContent() {
           {/* Note */}
           {!loading && billing.note && (
             <div className="py-4 text-sm">
-              <p className="text-gray-500 text-xs mb-1">{t("success.order_note")}</p>
+              <p className="text-gray-500 text-xs mb-1">
+                {t("success.order_note")}
+              </p>
               <p className="text-gray-700">{billing.note}</p>
             </div>
           )}
@@ -550,11 +642,24 @@ function SuccessContent() {
                   <div className="mt-2 border border-orange-200 rounded-xl overflow-hidden">
                     {/* Sticky header */}
                     <div className="sticky top-0 z-10 bg-orange-100 border-b border-orange-200 px-3 py-2 flex items-center justify-between">
-                      <p className="text-xs font-bold text-orange-800">{t('orders.edit_title')}</p>
+                      <p className="text-xs font-bold text-orange-800">
+                        {t("orders.edit_title")}
+                      </p>
                       <div className="flex gap-1.5">
-                        <button onClick={() => setIsEditing(false)} className="px-2 py-1 border border-gray-300 rounded-lg text-xs hover:bg-white transition">{t('orders.edit_cancel')}</button>
-                        <button onClick={handleSaveEdit} disabled={editSaving} className="px-3 py-1 bg-orange-500 text-white rounded-lg text-xs font-semibold hover:bg-orange-600 disabled:opacity-60 transition">
-                          {editSaving ? t('orders.saving') : t('orders.edit_save')}
+                        <button
+                          onClick={() => setIsEditing(false)}
+                          className="px-2 py-1 border border-gray-300 rounded-lg text-xs hover:bg-white transition"
+                        >
+                          {t("orders.edit_cancel")}
+                        </button>
+                        <button
+                          onClick={handleSaveEdit}
+                          disabled={editSaving}
+                          className="px-3 py-1 bg-orange-500 text-white rounded-lg text-xs font-semibold hover:bg-orange-600 disabled:opacity-60 transition"
+                        >
+                          {editSaving
+                            ? t("orders.saving")
+                            : t("orders.edit_save")}
                         </button>
                       </div>
                     </div>
@@ -562,78 +667,190 @@ function SuccessContent() {
                     <div className="max-h-[60vh] overflow-y-auto p-2.5 space-y-2.5">
                       {/* Delivery address */}
                       <div className="bg-white rounded-xl border border-orange-100 p-2.5 space-y-1.5">
-                        <p className="text-xs font-semibold text-gray-500">{t('orders.edit_address')}</p>
+                        <p className="text-xs font-semibold text-gray-500">
+                          {t("orders.edit_address")}
+                        </p>
                         <div className="grid grid-cols-2 gap-1.5">
                           {[
-                            { key: 'name', ph: t('orders.name_ph') }, { key: 'phone', ph: t('orders.phone_ph') },
-                            { key: 'city', ph: t('orders.city_ph') }, { key: 'zone', ph: t('orders.zone_ph') },
-                            { key: 'area', ph: t('orders.area_ph') }, { key: 'email', ph: t('orders.email_ph') },
+                            { key: "name", ph: t("orders.name_ph") },
+                            { key: "phone", ph: t("orders.phone_ph") },
+                            { key: "city", ph: t("orders.city_ph") },
+                            { key: "zone", ph: t("orders.zone_ph") },
+                            { key: "area", ph: t("orders.area_ph") },
+                            { key: "email", ph: t("orders.email_ph") },
                           ].map(({ key, ph }) => (
-                            <input key={key}
+                            <input
+                              key={key}
                               value={editBilling[key]}
-                              onChange={(e) => setEditBilling(prev => ({ ...prev, [key]: e.target.value }))}
+                              onChange={(e) =>
+                                setEditBilling((prev) => ({
+                                  ...prev,
+                                  [key]: e.target.value,
+                                }))
+                              }
                               placeholder={ph}
                               className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none"
                             />
                           ))}
                         </div>
-                        <input value={editBilling.address} onChange={(e) => setEditBilling(prev => ({ ...prev, address: e.target.value }))} placeholder={t('orders.address_ph')} className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none" />
-                        <input value={editBilling.note} onChange={(e) => setEditBilling(prev => ({ ...prev, note: e.target.value }))} placeholder={t('orders.note_ph')} className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none" />
+                        <input
+                          value={editBilling.address}
+                          onChange={(e) =>
+                            setEditBilling((prev) => ({
+                              ...prev,
+                              address: e.target.value,
+                            }))
+                          }
+                          placeholder={t("orders.address_ph")}
+                          className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none"
+                        />
+                        <input
+                          value={editBilling.note}
+                          onChange={(e) =>
+                            setEditBilling((prev) => ({
+                              ...prev,
+                              note: e.target.value,
+                            }))
+                          }
+                          placeholder={t("orders.note_ph")}
+                          className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none"
+                        />
                       </div>
 
                       {/* Existing items */}
                       <div className="bg-white rounded-xl border border-orange-100 p-2.5 space-y-2">
-                        <p className="text-xs font-semibold text-gray-500">{t('orders.edit_items')}</p>
+                        <p className="text-xs font-semibold text-gray-500">
+                          {t("orders.edit_items")}
+                        </p>
                         {editItems.map((item, i) => {
                           const colors = getItemColors(item.productId);
                           const sizes = getItemSizes(item.productId);
                           return (
-                            <div key={i} className="rounded-xl border border-gray-100 bg-gray-50 p-2 space-y-1.5">
+                            <div
+                              key={i}
+                              className="rounded-xl border border-gray-100 bg-gray-50 p-2 space-y-1.5"
+                            >
                               <div className="flex items-center gap-2">
-                                {item.image && <Image src={item.image} alt={item.title} width={32} height={32} className="w-8 h-8 rounded-lg object-cover shrink-0" />}
+                                {item.image && (
+                                  <Image
+                                    src={item.image}
+                                    alt={item.title}
+                                    width={32}
+                                    height={32}
+                                    className="w-8 h-8 rounded-lg object-cover shrink-0"
+                                  />
+                                )}
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-xs font-medium truncate">{item.title}</p>
-                                  <p className="text-xs text-orange-600 font-semibold">৳{item.price}</p>
+                                  <p className="text-xs font-medium truncate">
+                                    {item.title}
+                                  </p>
+                                  <p className="text-xs text-orange-600 font-semibold">
+                                    ৳{item.price}
+                                  </p>
                                 </div>
                                 <div className="flex items-center gap-1 shrink-0">
-                                  <button onClick={() => updateQty(i, -1)} className="w-5 h-5 rounded bg-gray-200 text-xs font-bold flex items-center justify-center">−</button>
-                                  <span className="w-5 text-center text-xs font-bold">{item.quantity}</span>
-                                  <button onClick={() => updateQty(i, 1)} className="w-5 h-5 rounded bg-gray-200 text-xs font-bold flex items-center justify-center">+</button>
-                                  <button type="button"
-                                    onClick={() => { if (editItems.length <= 1) { alert(t('orders.at_least_one')); return; } setEditItems(prev => prev.filter((_, idx) => idx !== i)); }}
+                                  <button
+                                    onClick={() => updateQty(i, -1)}
+                                    className="w-5 h-5 rounded bg-gray-200 text-xs font-bold flex items-center justify-center"
+                                  >
+                                    −
+                                  </button>
+                                  <span className="w-5 text-center text-xs font-bold">
+                                    {item.quantity}
+                                  </span>
+                                  <button
+                                    onClick={() => updateQty(i, 1)}
+                                    className="w-5 h-5 rounded bg-gray-200 text-xs font-bold flex items-center justify-center"
+                                  >
+                                    +
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (editItems.length <= 1) {
+                                        alert(t("orders.at_least_one"));
+                                        return;
+                                      }
+                                      setEditItems((prev) =>
+                                        prev.filter((_, idx) => idx !== i),
+                                      );
+                                    }}
                                     className="w-5 h-5 rounded bg-red-100 text-red-500 hover:bg-red-200 text-xs font-bold flex items-center justify-center ml-0.5"
-                                  >✕</button>
+                                  >
+                                    ✕
+                                  </button>
                                 </div>
                               </div>
                               {colors.length > 0 && (
                                 <div className="flex flex-wrap items-center gap-1">
-                                  <span className="text-xs text-gray-400">Color:</span>
-                                  {colors.map(c => (
-                                    <button key={c} type="button"
-                                      onClick={() => setEditItems(prev => prev.map((it, idx) => {
-                                        if (idx !== i) return it;
-                                        const nc = it.color === c ? null : c;
-                                        const np = getVariantPrice(it.productId, nc, it.size);
-                                        return { ...it, color: nc, ...(np != null ? { price: np } : {}) };
-                                      }))}
-                                      className={`px-1.5 py-0.5 rounded-full text-xs border transition ${item.color === c ? 'bg-orange-500 text-white border-orange-500' : 'border-gray-300 text-gray-600 hover:border-orange-400'}`}
-                                    >{c}</button>
+                                  <span className="text-xs text-gray-400">
+                                    Color:
+                                  </span>
+                                  {colors.map((c) => (
+                                    <button
+                                      key={c}
+                                      type="button"
+                                      onClick={() =>
+                                        setEditItems((prev) =>
+                                          prev.map((it, idx) => {
+                                            if (idx !== i) return it;
+                                            const nc =
+                                              it.color === c ? null : c;
+                                            const np = getVariantPrice(
+                                              it.productId,
+                                              nc,
+                                              it.size,
+                                            );
+                                            return {
+                                              ...it,
+                                              color: nc,
+                                              ...(np != null
+                                                ? { price: np }
+                                                : {}),
+                                            };
+                                          }),
+                                        )
+                                      }
+                                      className={`px-1.5 py-0.5 rounded-full text-xs border transition ${item.color === c ? "bg-orange-500 text-white border-orange-500" : "border-gray-300 text-gray-600 hover:border-orange-400"}`}
+                                    >
+                                      {c}
+                                    </button>
                                   ))}
                                 </div>
                               )}
                               {sizes.length > 0 && (
                                 <div className="flex flex-wrap items-center gap-1">
-                                  <span className="text-xs text-gray-400">Size:</span>
-                                  {sizes.map(s => (
-                                    <button key={s} type="button"
-                                      onClick={() => setEditItems(prev => prev.map((it, idx) => {
-                                        if (idx !== i) return it;
-                                        const ns = it.size === s ? null : s;
-                                        const np = getVariantPrice(it.productId, it.color, ns);
-                                        return { ...it, size: ns, ...(np != null ? { price: np } : {}) };
-                                      }))}
-                                      className={`px-1.5 py-0.5 rounded-full text-xs border font-mono transition ${item.size === s ? 'bg-gray-800 text-white border-gray-800' : 'border-gray-300 text-gray-600 hover:border-gray-500'}`}
-                                    >{s}</button>
+                                  <span className="text-xs text-gray-400">
+                                    Size:
+                                  </span>
+                                  {sizes.map((s) => (
+                                    <button
+                                      key={s}
+                                      type="button"
+                                      onClick={() =>
+                                        setEditItems((prev) =>
+                                          prev.map((it, idx) => {
+                                            if (idx !== i) return it;
+                                            const ns = it.size === s ? null : s;
+                                            const np = getVariantPrice(
+                                              it.productId,
+                                              it.color,
+                                              ns,
+                                            );
+                                            return {
+                                              ...it,
+                                              size: ns,
+                                              ...(np != null
+                                                ? { price: np }
+                                                : {}),
+                                            };
+                                          }),
+                                        )
+                                      }
+                                      className={`px-1.5 py-0.5 rounded-full text-xs border font-mono transition ${item.size === s ? "bg-gray-800 text-white border-gray-800" : "border-gray-300 text-gray-600 hover:border-gray-500"}`}
+                                    >
+                                      {s}
+                                    </button>
                                   ))}
                                 </div>
                               )}
@@ -645,16 +862,51 @@ function SuccessContent() {
                       {/* Pending new items */}
                       {pendingNewItems.length > 0 && (
                         <div className="bg-white rounded-xl border border-green-100 p-2.5 space-y-1.5">
-                          <p className="text-xs font-semibold text-green-700">{t('orders.pending_adds')} ({pendingNewItems.length})</p>
+                          <p className="text-xs font-semibold text-green-700">
+                            {t("orders.pending_adds")} ({pendingNewItems.length}
+                            )
+                          </p>
                           {pendingNewItems.map((ni, idx) => (
-                            <div key={idx} className="flex items-center gap-2 p-1.5 rounded-lg bg-green-50">
-                              {ni.product.images?.[0]?.url && <Image src={ni.product.images[0].url} alt={ni.product.title} width={28} height={28} className="w-7 h-7 rounded object-cover shrink-0" />}
+                            <div
+                              key={idx}
+                              className="flex items-center gap-2 p-1.5 rounded-lg bg-green-50"
+                            >
+                              {ni.product.images?.[0]?.url && (
+                                <Image
+                                  src={ni.product.images[0].url}
+                                  alt={ni.product.title}
+                                  width={28}
+                                  height={28}
+                                  className="w-7 h-7 rounded object-cover shrink-0"
+                                />
+                              )}
                               <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium truncate">{ni.product.title}</p>
-                                {(ni.color || ni.size) && <p className="text-xs text-gray-400">{[ni.color, ni.size].filter(Boolean).join(' / ')}</p>}
-                                <p className="text-xs text-gray-500">Qty: {ni.qty} · ৳{(ni.price * ni.qty).toFixed(0)}</p>
+                                <p className="text-xs font-medium truncate">
+                                  {ni.product.title}
+                                </p>
+                                {(ni.color || ni.size) && (
+                                  <p className="text-xs text-gray-400">
+                                    {[ni.color, ni.size]
+                                      .filter(Boolean)
+                                      .join(" / ")}
+                                  </p>
+                                )}
+                                <p className="text-xs text-gray-500">
+                                  Qty: {ni.qty} · ৳
+                                  {(ni.price * ni.qty).toFixed(0)}
+                                </p>
                               </div>
-                              <button type="button" onClick={() => setPendingNewItems(prev => prev.filter((_, j) => j !== idx))} className="text-red-400 hover:text-red-600 text-xs font-bold">✕</button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setPendingNewItems((prev) =>
+                                    prev.filter((_, j) => j !== idx),
+                                  )
+                                }
+                                className="text-red-400 hover:text-red-600 text-xs font-bold"
+                              >
+                                ✕
+                              </button>
                             </div>
                           ))}
                         </div>
@@ -662,23 +914,43 @@ function SuccessContent() {
 
                       {/* Add products */}
                       <div className="bg-white rounded-xl border border-orange-100 p-2.5 space-y-2">
-                        <p className="text-xs font-semibold text-gray-500">Add New Product</p>
+                        <p className="text-xs font-semibold text-gray-500">
+                          Add New Product
+                        </p>
                         <input
                           className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none"
-                          placeholder={t('orders.search_placeholder')}
+                          placeholder={t("orders.search_placeholder")}
                           value={productSearch}
-                          onChange={(e) => { setProductSearch(e.target.value); searchProducts(e.target.value); }}
+                          onChange={(e) => {
+                            setProductSearch(e.target.value);
+                            searchProducts(e.target.value);
+                          }}
                         />
-                        {searchLoading && <p className="text-xs text-gray-400 text-center">{t('orders.searching')}</p>}
-                        {!searchLoading && productSearch && searchResults.length === 0 && <p className="text-xs text-gray-400 text-center">{t('orders.not_found')}</p>}
+                        {searchLoading && (
+                          <p className="text-xs text-gray-400 text-center">
+                            {t("orders.searching")}
+                          </p>
+                        )}
+                        {!searchLoading &&
+                          productSearch &&
+                          searchResults.length === 0 && (
+                            <p className="text-xs text-gray-400 text-center">
+                              {t("orders.not_found")}
+                            </p>
+                          )}
                         {searchResults.length > 0 && (
                           <div className="space-y-1.5 max-h-48 overflow-y-auto">
-                            {searchResults.map(product => (
-                              <ProductAddCardSuccess key={product._id} product={product}
+                            {searchResults.map((product) => (
+                              <ProductAddCardSuccess
+                                key={product._id}
+                                product={product}
                                 onAdd={(color, size, qty, price) => {
-                                  setPendingNewItems(prev => [...prev, { product, color, size, qty, price }]);
+                                  setPendingNewItems((prev) => [
+                                    ...prev,
+                                    { product, color, size, qty, price },
+                                  ]);
                                   setSearchResults([]);
-                                  setProductSearch('');
+                                  setProductSearch("");
                                 }}
                               />
                             ))}
@@ -693,14 +965,14 @@ function SuccessContent() {
                       onClick={openEdit}
                       className="flex-1 py-2 border border-orange-400 text-orange-700 rounded-lg text-xs font-semibold hover:bg-orange-100"
                     >
-                      {t('orders.edit_order')}
+                      {t("orders.edit_order")}
                     </button>
                     <button
                       onClick={openCancelModal}
                       disabled={cancelLoading}
                       className="flex-1 py-2 bg-red-500 text-white rounded-lg text-xs font-semibold hover:bg-red-600 disabled:opacity-60"
                     >
-                      {t('orders.cancel_order')}
+                      {t("orders.cancel_order")}
                     </button>
                   </div>
                 )}
@@ -802,15 +1074,22 @@ function SuccessContent() {
         {showCancelModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
-              <h3 className="text-base font-bold text-gray-900">{t('orders.cancel_reason_title')}</h3>
-              <p className="text-xs text-gray-500">{t('orders.cancel_confirm')}</p>
+              <h3 className="text-base font-bold text-gray-900">
+                {t("orders.cancel_reason_title")}
+              </h3>
+              <p className="text-xs text-gray-500">
+                {t("orders.cancel_confirm")}
+              </p>
               <textarea
                 autoFocus
                 rows={3}
                 className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-400 outline-none resize-none"
-                placeholder={t('orders.cancel_reason_placeholder')}
+                placeholder={t("orders.cancel_reason_placeholder")}
                 value={cancelReason}
-                onChange={(e) => { setCancelReason(e.target.value); setCancelReasonError(""); }}
+                onChange={(e) => {
+                  setCancelReason(e.target.value);
+                  setCancelReasonError("");
+                }}
               />
               {cancelReasonError && (
                 <p className="text-xs text-red-500">{cancelReasonError}</p>
@@ -820,12 +1099,18 @@ function SuccessContent() {
                   onClick={() => setShowCancelModal(false)}
                   disabled={cancelLoading}
                   className="flex-1 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition disabled:opacity-60"
-                >{t('orders.edit_cancel')}</button>
+                >
+                  {t("orders.edit_cancel")}
+                </button>
                 <button
                   onClick={handleConfirmCancel}
                   disabled={cancelLoading}
                   className="flex-1 py-2 bg-red-500 text-white rounded-lg text-sm font-semibold hover:bg-red-600 transition disabled:opacity-60"
-                >{cancelLoading ? t('orders.cancelling') : t('orders.cancel_reason_submit')}</button>
+                >
+                  {cancelLoading
+                    ? t("orders.cancelling")
+                    : t("orders.cancel_reason_submit")}
+                </button>
               </div>
             </div>
           </div>

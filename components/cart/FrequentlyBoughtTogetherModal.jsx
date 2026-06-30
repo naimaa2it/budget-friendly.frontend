@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/components/context/CartContext";
 import { FaStar } from "react-icons/fa";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 const VISIBLE = 4;
 
 async function fetchFbt(pid) {

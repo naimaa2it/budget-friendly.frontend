@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useUser } from "@/components/context/UserContext";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 const emptyForm = { name: "", optionsText: "" };
 
 const normalizeVariation = (item) => ({
@@ -40,7 +40,9 @@ export default function ProductVariationsManager() {
     const q = search.trim().toLowerCase();
     if (!q) return items;
     return items.filter((item) => {
-      const values = (item.options || []).map((option) => option.value).join(" ");
+      const values = (item.options || [])
+        .map((option) => option.value)
+        .join(" ");
       return `${item.name} ${values}`.toLowerCase().includes(q);
     });
   }, [items, search]);
@@ -55,7 +57,10 @@ export default function ProductVariationsManager() {
       const list = data.result?.data || data.variations || [];
       setItems(list.map(normalizeVariation));
     } catch (err) {
-      setMessage({ type: "error", text: err.message || "Failed to load variations." });
+      setMessage({
+        type: "error",
+        text: err.message || "Failed to load variations.",
+      });
     } finally {
       setLoading(false);
     }
@@ -75,7 +80,9 @@ export default function ProductVariationsManager() {
     setEditingId(item.id);
     setForm({
       name: item.name,
-      optionsText: (item.options || []).map((option) => option.value).join("\n"),
+      optionsText: (item.options || [])
+        .map((option) => option.value)
+        .join("\n"),
     });
     setFormOpen(true);
   };
@@ -107,7 +114,10 @@ export default function ProductVariationsManager() {
       );
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error || "Save failed.");
-      setMessage({ type: "success", text: editingId ? "Variation updated." : "Variation created." });
+      setMessage({
+        type: "success",
+        text: editingId ? "Variation updated." : "Variation created.",
+      });
       closeForm();
       fetchVariations();
     } catch (err) {
@@ -184,7 +194,9 @@ export default function ProductVariationsManager() {
                 </label>
                 <input
                   value={form.name}
-                  onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, name: e.target.value }))
+                  }
                   className="w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="Style"
                 />
@@ -195,11 +207,18 @@ export default function ProductVariationsManager() {
                 </label>
                 <textarea
                   value={form.optionsText}
-                  onChange={(e) => setForm((prev) => ({ ...prev, optionsText: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      optionsText: e.target.value,
+                    }))
+                  }
                   className="min-h-24 w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder={"Regular Fit\nSlim Fit\nOversized"}
                 />
-                <p className="mt-1 text-xs text-gray-500">One value per line.</p>
+                <p className="mt-1 text-xs text-gray-500">
+                  One value per line.
+                </p>
               </div>
               <button
                 type="submit"
@@ -214,7 +233,9 @@ export default function ProductVariationsManager() {
 
         <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 px-5 py-4">
-            <h2 className="text-base font-semibold text-gray-900">All Variations</h2>
+            <h2 className="text-base font-semibold text-gray-900">
+              All Variations
+            </h2>
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -235,22 +256,32 @@ export default function ProductVariationsManager() {
               <tbody className="divide-y divide-gray-100">
                 {loading ? (
                   <tr>
-                    <td colSpan={3} className="px-5 py-10 text-center text-gray-500">
+                    <td
+                      colSpan={3}
+                      className="px-5 py-10 text-center text-gray-500"
+                    >
                       Loading variations...
                     </td>
                   </tr>
                 ) : visibleItems.length === 0 ? (
                   <tr>
-                    <td colSpan={3} className="px-5 py-10 text-center text-gray-500">
+                    <td
+                      colSpan={3}
+                      className="px-5 py-10 text-center text-gray-500"
+                    >
                       No variations found.
                     </td>
                   </tr>
                 ) : (
                   visibleItems.map((item) => (
                     <tr key={item.id} className="hover:bg-gray-50">
-                      <td className="px-5 py-3 font-medium text-gray-900">{item.name}</td>
+                      <td className="px-5 py-3 font-medium text-gray-900">
+                        {item.name}
+                      </td>
                       <td className="px-5 py-3 text-gray-700">
-                        {(item.options || []).map((option) => option.value).join(", ")}
+                        {(item.options || [])
+                          .map((option) => option.value)
+                          .join(", ")}
                       </td>
                       <td className="px-5 py-3">
                         <div className="flex gap-2">
@@ -281,9 +312,12 @@ export default function ProductVariationsManager() {
 
           <div className="flex items-center justify-between border-t border-gray-200 px-5 py-4 text-sm text-gray-600">
             <span>
-              Showing {visibleItems.length ? 1 : 0} to {visibleItems.length} of {visibleItems.length}
+              Showing {visibleItems.length ? 1 : 0} to {visibleItems.length} of{" "}
+              {visibleItems.length}
             </span>
-            <span className="rounded-lg bg-gray-950 px-3 py-1 text-white">1</span>
+            <span className="rounded-lg bg-gray-950 px-3 py-1 text-white">
+              1
+            </span>
           </div>
         </div>
       </div>

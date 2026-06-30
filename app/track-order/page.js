@@ -5,7 +5,7 @@ import Link from "next/link";
 import OrderTrackingTimeline from "@/components/order/OrderTrackingTimeline";
 import { formatOrderId } from "@/lib/orderId";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 const STATUS_LABELS = {
   pending: "Pending",
@@ -33,7 +33,9 @@ function NotFoundHelp({ byPhone }) {
   return (
     <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-4 space-y-3">
       <div className="flex gap-3">
-        <span className="text-xl shrink-0" aria-hidden="true">🔍</span>
+        <span className="text-xl shrink-0" aria-hidden="true">
+          🔍
+        </span>
         <div>
           <p className="text-sm font-semibold text-amber-900">
             অর্ডার খুঁজে পাওয়া যায়নি
@@ -323,7 +325,10 @@ export default function TrackOrderPage() {
                 </p>
               )}
             </div>
-            <OrderTrackingTimeline order={order} courierLabels={courierLabels} />
+            <OrderTrackingTimeline
+              order={order}
+              courierLabels={courierLabels}
+            />
           </div>
         )}
 
@@ -331,7 +336,8 @@ export default function TrackOrderPage() {
         {mode === "phone" && phoneOrders.length > 0 && (
           <div className="mt-6 space-y-3">
             <p className="text-sm font-medium text-gray-600">
-              {phoneOrders.length}টি অর্ডার পাওয়া গেছে — বিস্তারিত দেখতে select করুন
+              {phoneOrders.length}টি অর্ডার পাওয়া গেছে — বিস্তারিত দেখতে select
+              করুন
             </p>
             <div className="space-y-2">
               {phoneOrders.map((o) => (
@@ -342,7 +348,10 @@ export default function TrackOrderPage() {
                   onSelect={(o) => {
                     setSelectedOrder(o);
                     setTimeout(() => {
-                      timelineRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      timelineRef.current?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                      });
                     }, 50);
                   }}
                   selected={selectedOrder?._id === o._id}

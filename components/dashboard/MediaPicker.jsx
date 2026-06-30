@@ -14,8 +14,14 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 
-export default function MediaPicker({ open, onSelect, onClose, multiple = false, recentUploads = [] }) {
-  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+export default function MediaPicker({
+  open,
+  onSelect,
+  onClose,
+  multiple = false,
+  recentUploads = [],
+}) {
+  const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
   const ROOT_FOLDER = process.env.NEXT_PUBLIC_CLOUDINARY_FOLDER || "Pickob";
 
@@ -84,7 +90,8 @@ export default function MediaPicker({ open, onSelect, onClose, multiple = false,
   if (!open) return null;
 
   const isSel = (item) => {
-    if (multiple) return (selected || []).some((s) => s.public_id === item.public_id);
+    if (multiple)
+      return (selected || []).some((s) => s.public_id === item.public_id);
     return selected?.public_id === item.public_id;
   };
 
@@ -98,7 +105,9 @@ export default function MediaPicker({ open, onSelect, onClose, multiple = false,
       setSelected((prev) => {
         const arr = prev || [];
         const exists = arr.find((s) => s.public_id === item.public_id);
-        return exists ? arr.filter((s) => s.public_id !== item.public_id) : [...arr, item];
+        return exists
+          ? arr.filter((s) => s.public_id !== item.public_id)
+          : [...arr, item];
       });
     } else {
       setSelected((prev) => (prev?.public_id === item.public_id ? null : item));
@@ -179,7 +188,9 @@ export default function MediaPicker({ open, onSelect, onClose, multiple = false,
         <div className="flex-1 overflow-y-auto p-4">
           {(() => {
             const recentIds = new Set(recentUploads.map((r) => r.public_id));
-            const dedupedItems = items.filter((i) => !recentIds.has(i.public_id));
+            const dedupedItems = items.filter(
+              (i) => !recentIds.has(i.public_id),
+            );
             const mergedItems = [...recentUploads, ...dedupedItems];
             return mergedItems.length === 0 && !loading ? (
               <div className="text-center py-16 text-gray-400">
@@ -252,19 +263,18 @@ export default function MediaPicker({ open, onSelect, onClose, multiple = false,
             {multiple ? (
               (selected || []).length > 0 ? (
                 <span className="text-gray-700 font-medium">
-                  {selected.length} image{selected.length !== 1 ? "s" : ""} selected
+                  {selected.length} image{selected.length !== 1 ? "s" : ""}{" "}
+                  selected
                 </span>
               ) : (
                 "Click images to select them"
               )
+            ) : selected ? (
+              <span className="text-gray-700 font-medium truncate max-w-xs inline-block">
+                {selected.public_id}
+              </span>
             ) : (
-              selected ? (
-                <span className="text-gray-700 font-medium truncate max-w-xs inline-block">
-                  {selected.public_id}
-                </span>
-              ) : (
-                "Click an image to select it"
-              )
+              "Click an image to select it"
             )}
           </p>
           <div className="flex gap-2">

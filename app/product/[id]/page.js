@@ -1,8 +1,7 @@
 import ProductPageClient from "./PageClient";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://pickob.com";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://pickob.com";
 
 export async function generateStaticParams() {
   const params = [{ id: "__placeholder__" }];

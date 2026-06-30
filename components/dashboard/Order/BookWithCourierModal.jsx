@@ -2,9 +2,14 @@
 
 import React, { useEffect, useState } from "react";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
-export default function BookWithCourierModal({ order, open, onClose, onBooked }) {
+export default function BookWithCourierModal({
+  order,
+  open,
+  onClose,
+  onBooked,
+}) {
   const [options, setOptions] = useState([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -26,13 +31,14 @@ export default function BookWithCourierModal({ order, open, onClose, onBooked })
     setForm((prev) => ({
       ...prev,
       codAmount: String(
-        prev.codAmount ||
-          (isCod ? Math.round(Number(order.total || 0)) : 0),
+        prev.codAmount || (isCod ? Math.round(Number(order.total || 0)) : 0),
       ),
       note: order.billingDetails?.note || "",
     }));
     setLoadingOptions(true);
-    fetch(`${API}/api/admin/couriers/booking-options`, { credentials: "include" })
+    fetch(`${API}/api/admin/couriers/booking-options`, {
+      credentials: "include",
+    })
       .then((r) => r.json())
       .then((data) => {
         const items = data.items || [];
@@ -52,24 +58,28 @@ export default function BookWithCourierModal({ order, open, onClose, onBooked })
     if (!form.courier) return alert("Select a courier");
     setSubmitting(true);
     try {
-      const r = await fetch(`${API}/api/admin/orders/${order._id}/book-courier`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          courier: form.courier,
-          weight: Number(form.weight) || 0.5,
-          codAmount: Number(form.codAmount) || 0,
-          note: form.note,
-          deliveryAreaId: form.deliveryAreaId
-            ? Number(form.deliveryAreaId)
-            : undefined,
-          deliveryAreaName: form.deliveryAreaName || undefined,
-        }),
-      });
+      const r = await fetch(
+        `${API}/api/admin/orders/${order._id}/book-courier`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            courier: form.courier,
+            weight: Number(form.weight) || 0.5,
+            codAmount: Number(form.codAmount) || 0,
+            note: form.note,
+            deliveryAreaId: form.deliveryAreaId
+              ? Number(form.deliveryAreaId)
+              : undefined,
+            deliveryAreaName: form.deliveryAreaName || undefined,
+          }),
+        },
+      );
       const data = await r.json();
       if (!r.ok) {
-        const msg = data.error || data.message || `Booking failed (${r.status})`;
+        const msg =
+          data.error || data.message || `Booking failed (${r.status})`;
         throw new Error(msg);
       }
       onBooked?.(data);
@@ -87,9 +97,12 @@ export default function BookWithCourierModal({ order, open, onClose, onBooked })
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
       <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border p-5 space-y-4 max-h-[90vh] overflow-y-auto">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Book with courier</h3>
+          <h3 className="text-lg font-semibold text-gray-900">
+            Book with courier
+          </h3>
           <p className="text-xs text-gray-500 mt-1">
-            Creates parcel in courier system — rider will be notified for pickup.
+            Creates parcel in courier system — rider will be notified for
+            pickup.
           </p>
         </div>
 
@@ -115,7 +128,9 @@ export default function BookWithCourierModal({ order, open, onClose, onBooked })
         ) : (
           <>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Courier</label>
+              <label className="block text-xs text-gray-500 mb-1">
+                Courier
+              </label>
               <select
                 value={form.courier}
                 onChange={(e) =>
@@ -133,7 +148,9 @@ export default function BookWithCourierModal({ order, open, onClose, onBooked })
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Weight (kg)</label>
+                <label className="block text-xs text-gray-500 mb-1">
+                  Weight (kg)
+                </label>
                 <input
                   type="number"
                   step="0.1"
@@ -146,7 +163,9 @@ export default function BookWithCourierModal({ order, open, onClose, onBooked })
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">COD amount (৳)</label>
+                <label className="block text-xs text-gray-500 mb-1">
+                  COD amount (৳)
+                </label>
                 <input
                   type="number"
                   min="0"
@@ -179,11 +198,16 @@ export default function BookWithCourierModal({ order, open, onClose, onBooked })
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Area name</label>
+                  <label className="block text-xs text-gray-500 mb-1">
+                    Area name
+                  </label>
                   <input
                     value={form.deliveryAreaName}
                     onChange={(e) =>
-                      setForm((p) => ({ ...p, deliveryAreaName: e.target.value }))
+                      setForm((p) => ({
+                        ...p,
+                        deliveryAreaName: e.target.value,
+                      }))
                     }
                     placeholder={order.billingDetails?.city || "Dhaka"}
                     className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2"
@@ -193,10 +217,14 @@ export default function BookWithCourierModal({ order, open, onClose, onBooked })
             )}
 
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Note / instruction</label>
+              <label className="block text-xs text-gray-500 mb-1">
+                Note / instruction
+              </label>
               <textarea
                 value={form.note}
-                onChange={(e) => setForm((p) => ({ ...p, note: e.target.value }))}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, note: e.target.value }))
+                }
                 rows={2}
                 className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2"
               />
@@ -233,9 +261,7 @@ export default function BookWithCourierModal({ order, open, onClose, onBooked })
           <button
             type="button"
             onClick={submit}
-            disabled={
-              submitting || options.length === 0 || alreadyBooked
-            }
+            disabled={submitting || options.length === 0 || alreadyBooked}
             className="px-4 py-2 text-sm rounded-lg bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
           >
             {submitting ? "Booking…" : "Book parcel"}

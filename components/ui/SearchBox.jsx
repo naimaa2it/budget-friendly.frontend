@@ -1,17 +1,22 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { getDisplayPrice } from '@/lib/pricing';
-import { useLanguage } from '@/components/context/LanguageContext';
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { getDisplayPrice } from "@/lib/pricing";
+import { useLanguage } from "@/components/context/LanguageContext";
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
-export default function SearchBox({ className = '', inputClassName = '', onClose, autoFocus = false }) {
+export default function SearchBox({
+  className = "",
+  inputClassName = "",
+  onClose,
+  autoFocus = false,
+}) {
   const router = useRouter();
   const { t } = useLanguage();
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [open, setOpen] = useState(false);
@@ -29,8 +34,8 @@ export default function SearchBox({ className = '', inputClassName = '', onClose
         setActiveIndex(-1);
       }
     }
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
   const fetchSuggestions = useCallback(async (term) => {
@@ -42,14 +47,16 @@ export default function SearchBox({ className = '', inputClassName = '', onClose
     }
     setLoading(true);
     try {
-      const res = await fetch(`${API}/api/products?q=${encodeURIComponent(term.trim())}&limit=8`);
+      const res = await fetch(
+        `${API}/api/products?q=${encodeURIComponent(term.trim())}&limit=8`,
+      );
       const json = await res.json();
       const items = json.items || [];
       setSuggestions(items);
       setTotalCount(json.total || items.length);
       setOpen(true);
     } catch (err) {
-      console.error('search suggestions error', err);
+      console.error("search suggestions error", err);
     } finally {
       setLoading(false);
     }
@@ -71,8 +78,8 @@ export default function SearchBox({ className = '', inputClassName = '', onClose
 
   const logSearch = (term) => {
     fetch(`${API}/api/analytics/search`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ term }),
     }).catch(() => {});
   };
@@ -93,19 +100,19 @@ export default function SearchBox({ className = '', inputClassName = '', onClose
 
   const handleKeyDown = (e) => {
     if (!open || suggestions.length === 0) return;
-    if (e.key === 'ArrowDown') {
+    if (e.key === "ArrowDown") {
       e.preventDefault();
-      setActiveIndex(prev => Math.min(prev + 1, suggestions.length - 1));
-    } else if (e.key === 'ArrowUp') {
+      setActiveIndex((prev) => Math.min(prev + 1, suggestions.length - 1));
+    } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setActiveIndex(prev => Math.max(prev - 1, -1));
-    } else if (e.key === 'Enter') {
+      setActiveIndex((prev) => Math.max(prev - 1, -1));
+    } else if (e.key === "Enter") {
       if (activeIndex >= 0 && suggestions[activeIndex]) {
         e.preventDefault();
         navigate(suggestions[activeIndex].title);
       }
       // else natural form submit handles it
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       setOpen(false);
       setActiveIndex(-1);
     }
@@ -117,10 +124,17 @@ export default function SearchBox({ className = '', inputClassName = '', onClose
         <div className="relative">
           <svg
             className="absolute left-3 top-1/2 -translate-y-1/2 text-red-500 pointer-events-none"
-            width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
-            <circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            <circle cx="11" cy="11" r="7" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
           <input
             ref={inputRef}
@@ -139,9 +153,24 @@ export default function SearchBox({ className = '', inputClassName = '', onClose
           />
           {loading && (
             <span className="absolute right-3 top-1/2 -translate-y-1/2">
-              <svg className="animate-spin w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+              <svg
+                className="animate-spin w-4 h-4 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"
+                />
               </svg>
             </span>
           )}
@@ -152,13 +181,17 @@ export default function SearchBox({ className = '', inputClassName = '', onClose
       {open && (
         <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-gray-200 rounded-xl shadow-2xl z-[999] overflow-hidden">
           {suggestions.length === 0 && !loading ? (
-            <div className="px-4 py-3 text-sm text-gray-500">No results for &ldquo;{query}&rdquo;</div>
+            <div className="px-4 py-3 text-sm text-gray-500">
+              No results for &ldquo;{query}&rdquo;
+            </div>
           ) : (
             <>
               <ul className="max-h-72 overflow-y-auto divide-y divide-gray-50">
                 {suggestions.map((product, idx) => {
-                  const image = product.images?.[0]?.url || '/assets/placeholder.svg';
-                  const { price, compareAtPrice: compareAt } = getDisplayPrice(product);
+                  const image =
+                    product.images?.[0]?.url || "/assets/placeholder.svg";
+                  const { price, compareAtPrice: compareAt } =
+                    getDisplayPrice(product);
                   const isActive = idx === activeIndex;
                   return (
                     <li key={product._id}>
@@ -166,7 +199,7 @@ export default function SearchBox({ className = '', inputClassName = '', onClose
                         type="button"
                         onMouseDown={() => navigate(product.title)}
                         onMouseEnter={() => setActiveIndex(idx)}
-                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${isActive ? 'bg-red-50' : 'hover:bg-gray-50'}`}
+                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${isActive ? "bg-red-50" : "hover:bg-gray-50"}`}
                       >
                         {/* thumbnail */}
                         <div className="w-10 h-10 flex-shrink-0 rounded-md border border-gray-100 overflow-hidden bg-gray-50">
@@ -176,24 +209,42 @@ export default function SearchBox({ className = '', inputClassName = '', onClose
                             width={40}
                             height={40}
                             className="w-full h-full object-contain"
-                            onError={(e) => { e.currentTarget.src = '/assets/placeholder.svg'; }}
+                            onError={(e) => {
+                              e.currentTarget.src = "/assets/placeholder.svg";
+                            }}
                           />
                         </div>
                         {/* title + price */}
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-gray-800 font-medium truncate">{product.title}</p>
+                          <p className="text-sm text-gray-800 font-medium truncate">
+                            {product.title}
+                          </p>
                           <div className="flex items-center gap-1.5 mt-0.5">
                             {price != null && (
-                              <span className="text-xs font-bold text-red-600">৳{Number(price).toLocaleString()}</span>
+                              <span className="text-xs font-bold text-red-600">
+                                ৳{Number(price).toLocaleString()}
+                              </span>
                             )}
                             {compareAt != null && compareAt > price && (
-                              <span className="text-xs text-gray-400 line-through">৳{Number(compareAt).toLocaleString()}</span>
+                              <span className="text-xs text-gray-400 line-through">
+                                ৳{Number(compareAt).toLocaleString()}
+                              </span>
                             )}
                           </div>
                         </div>
                         {/* search icon arrow */}
-                        <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
+                        <svg
+                          className="w-4 h-4 text-gray-400 flex-shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          strokeWidth="1.5"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"
+                          />
                         </svg>
                       </button>
                     </li>
@@ -207,8 +258,15 @@ export default function SearchBox({ className = '', inputClassName = '', onClose
                 onMouseDown={() => navigate(query)}
                 className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 transition-colors border-t border-gray-100"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-                  <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                >
+                  <circle cx="11" cy="11" r="7" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
                 View all products ({totalCount.toLocaleString()})
               </button>

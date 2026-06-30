@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 const PROVIDERS = [
   {
@@ -12,11 +12,36 @@ const PROVIDERS = [
     bg: "bg-[#fce8f3]",
     border: "border-[#E2136E]",
     fields: [
-      { key: "merchantNumber", label: "Merchant Number", placeholder: "01XXXXXXXXX", type: "text" },
-      { key: "appKey",         label: "App Key",         placeholder: "bKash App Key", type: "text" },
-      { key: "appSecret",      label: "App Secret",      placeholder: "bKash App Secret", type: "password" },
-      { key: "username",       label: "Username",        placeholder: "bKash Username", type: "text" },
-      { key: "password",       label: "Password",        placeholder: "bKash Password", type: "password" },
+      {
+        key: "merchantNumber",
+        label: "Merchant Number",
+        placeholder: "01XXXXXXXXX",
+        type: "text",
+      },
+      {
+        key: "appKey",
+        label: "App Key",
+        placeholder: "bKash App Key",
+        type: "text",
+      },
+      {
+        key: "appSecret",
+        label: "App Secret",
+        placeholder: "bKash App Secret",
+        type: "password",
+      },
+      {
+        key: "username",
+        label: "Username",
+        placeholder: "bKash Username",
+        type: "text",
+      },
+      {
+        key: "password",
+        label: "Password",
+        placeholder: "bKash Password",
+        type: "password",
+      },
     ],
   },
   {
@@ -26,9 +51,24 @@ const PROVIDERS = [
     bg: "bg-[#fef0e7]",
     border: "border-[#F16821]",
     fields: [
-      { key: "merchantNumber", label: "Merchant Number", placeholder: "01XXXXXXXXX", type: "text" },
-      { key: "merchantId",     label: "Merchant ID",     placeholder: "Nagad Merchant ID", type: "text" },
-      { key: "merchantKey",    label: "Merchant Key",    placeholder: "Nagad Merchant Key", type: "password" },
+      {
+        key: "merchantNumber",
+        label: "Merchant Number",
+        placeholder: "01XXXXXXXXX",
+        type: "text",
+      },
+      {
+        key: "merchantId",
+        label: "Merchant ID",
+        placeholder: "Nagad Merchant ID",
+        type: "text",
+      },
+      {
+        key: "merchantKey",
+        label: "Merchant Key",
+        placeholder: "Nagad Merchant Key",
+        type: "password",
+      },
     ],
   },
   {
@@ -38,8 +78,18 @@ const PROVIDERS = [
     bg: "bg-[#f3e8fd]",
     border: "border-[#8B2FC9]",
     fields: [
-      { key: "merchantNumber", label: "Merchant Number", placeholder: "01XXXXXXXXX", type: "text" },
-      { key: "apiKey",         label: "API Key",         placeholder: "Rocket API Key", type: "password" },
+      {
+        key: "merchantNumber",
+        label: "Merchant Number",
+        placeholder: "01XXXXXXXXX",
+        type: "text",
+      },
+      {
+        key: "apiKey",
+        label: "API Key",
+        placeholder: "Rocket API Key",
+        type: "password",
+      },
     ],
   },
 ];
@@ -47,14 +97,23 @@ const PROVIDERS = [
 function ProviderCard({ provider, data, onChange, onSave, saving, saved }) {
   const [show, setShow] = useState({});
 
-  const toggle = (fieldKey) => setShow((s) => ({ ...s, [fieldKey]: !s[fieldKey] }));
+  const toggle = (fieldKey) =>
+    setShow((s) => ({ ...s, [fieldKey]: !s[fieldKey] }));
 
   return (
-    <div className={`rounded-2xl border-2 ${provider.border} bg-white shadow-sm overflow-hidden`}>
+    <div
+      className={`rounded-2xl border-2 ${provider.border} bg-white shadow-sm overflow-hidden`}
+    >
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4" style={{ backgroundColor: provider.color + "18" }}>
+      <div
+        className="flex items-center justify-between px-5 py-4"
+        style={{ backgroundColor: provider.color + "18" }}
+      >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm" style={{ backgroundColor: provider.color }}>
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
+            style={{ backgroundColor: provider.color }}
+          >
             {provider.label[0]}
           </div>
           <div>
@@ -63,12 +122,16 @@ function ProviderCard({ provider, data, onChange, onSave, saving, saved }) {
           </div>
         </div>
         <label className="flex items-center gap-2 cursor-pointer">
-          <span className="text-sm text-gray-600">{data.enabled ? "Active" : "Inactive"}</span>
+          <span className="text-sm text-gray-600">
+            {data.enabled ? "Active" : "Inactive"}
+          </span>
           <div
             onClick={() => onChange(provider.key, "enabled", !data.enabled)}
             className={`relative w-11 h-6 rounded-full transition-colors ${data.enabled ? "bg-green-500" : "bg-gray-300"}`}
           >
-            <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${data.enabled ? "translate-x-5" : ""}`} />
+            <div
+              className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${data.enabled ? "translate-x-5" : ""}`}
+            />
           </div>
         </label>
       </div>
@@ -77,10 +140,14 @@ function ProviderCard({ provider, data, onChange, onSave, saving, saved }) {
       <div className="px-5 py-4 space-y-3">
         {provider.fields.map((f) => (
           <div key={f.key}>
-            <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">{f.label}</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">
+              {f.label}
+            </label>
             <div className="relative">
               <input
-                type={f.type === "password" && !show[f.key] ? "password" : "text"}
+                type={
+                  f.type === "password" && !show[f.key] ? "password" : "text"
+                }
                 value={data[f.key] || ""}
                 onChange={(e) => onChange(provider.key, f.key, e.target.value)}
                 placeholder={f.placeholder}
@@ -102,7 +169,9 @@ function ProviderCard({ provider, data, onChange, onSave, saving, saved }) {
 
         {/* Mode */}
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Mode</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">
+            Mode
+          </label>
           <div className="flex gap-2">
             {["sandbox", "live"].map((m) => (
               <button
@@ -114,7 +183,14 @@ function ProviderCard({ provider, data, onChange, onSave, saving, saved }) {
                     ? "text-white border-transparent"
                     : "text-gray-600 border-gray-200 bg-white"
                 }`}
-                style={data.mode === m ? { backgroundColor: provider.color, borderColor: provider.color } : {}}
+                style={
+                  data.mode === m
+                    ? {
+                        backgroundColor: provider.color,
+                        borderColor: provider.color,
+                      }
+                    : {}
+                }
               >
                 {m === "sandbox" ? "🧪 Sandbox" : "🚀 Live"}
               </button>
@@ -130,7 +206,11 @@ function ProviderCard({ provider, data, onChange, onSave, saving, saved }) {
           className="w-full py-2.5 rounded-lg text-sm font-semibold text-white transition disabled:opacity-60 mt-2"
           style={{ backgroundColor: provider.color }}
         >
-          {saving ? "Saving…" : saved ? "✓ Saved" : `Save ${provider.label} Settings`}
+          {saving
+            ? "Saving…"
+            : saved
+              ? "✓ Saved"
+              : `Save ${provider.label} Settings`}
         </button>
       </div>
     </div>
@@ -139,8 +219,22 @@ function ProviderCard({ provider, data, onChange, onSave, saving, saved }) {
 
 export default function PaymentSettingsPage() {
   const [settings, setSettings] = useState({
-    bkash:  { enabled: false, merchantNumber: "", appKey: "", appSecret: "", username: "", password: "", mode: "sandbox" },
-    nagad:  { enabled: false, merchantNumber: "", merchantId: "", merchantKey: "", mode: "sandbox" },
+    bkash: {
+      enabled: false,
+      merchantNumber: "",
+      appKey: "",
+      appSecret: "",
+      username: "",
+      password: "",
+      mode: "sandbox",
+    },
+    nagad: {
+      enabled: false,
+      merchantNumber: "",
+      merchantId: "",
+      merchantKey: "",
+      mode: "sandbox",
+    },
     rocket: { enabled: false, merchantNumber: "", apiKey: "", mode: "sandbox" },
   });
   const [loading, setLoading] = useState(true);
@@ -154,8 +248,8 @@ export default function PaymentSettingsPage() {
         const mb = d.settings?.mobileBanking;
         if (mb) {
           setSettings((prev) => ({
-            bkash:  { ...prev.bkash,  ...(mb.bkash  || {}) },
-            nagad:  { ...prev.nagad,  ...(mb.nagad  || {}) },
+            bkash: { ...prev.bkash, ...(mb.bkash || {}) },
+            nagad: { ...prev.nagad, ...(mb.nagad || {}) },
             rocket: { ...prev.rocket, ...(mb.rocket || {}) },
           }));
         }
@@ -179,7 +273,9 @@ export default function PaymentSettingsPage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ [`mobileBanking.${provider}`]: settings[provider] }),
+        body: JSON.stringify({
+          [`mobileBanking.${provider}`]: settings[provider],
+        }),
       });
       if (!res.ok) throw new Error("Save failed");
       setSaved((s) => ({ ...s, [provider]: true }));
@@ -193,17 +289,21 @@ export default function PaymentSettingsPage() {
 
   if (loading) {
     return (
-      <div className="py-12 text-center text-gray-500">Loading payment settings…</div>
+      <div className="py-12 text-center text-gray-500">
+        Loading payment settings…
+      </div>
     );
   }
 
   return (
     <div className="max-w-2xl mx-auto py-4">
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900">Mobile Banking Settings</h1>
+        <h1 className="text-xl font-bold text-gray-900">
+          Mobile Banking Settings
+        </h1>
         <p className="text-sm text-gray-500 mt-1">
-          Configure bKash, Nagad, and Rocket merchant credentials. The Merchant Number is shown
-          to customers on the payment page.
+          Configure bKash, Nagad, and Rocket merchant credentials. The Merchant
+          Number is shown to customers on the payment page.
         </p>
       </div>
 
@@ -222,8 +322,9 @@ export default function PaymentSettingsPage() {
       </div>
 
       <div className="mt-6 p-4 bg-blue-50 rounded-xl text-sm text-blue-700 border border-blue-200">
-        <strong>Note:</strong> Merchant Number দিলেই payment page কাজ করবে (manual verification)।
-        API credentials পরে দিলে automated payment flow চালু হবে।
+        <strong>Note:</strong> Merchant Number দিলেই payment page কাজ করবে
+        (manual verification)। API credentials পরে দিলে automated payment flow
+        চালু হবে।
       </div>
     </div>
   );

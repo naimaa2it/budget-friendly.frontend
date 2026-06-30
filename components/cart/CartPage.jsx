@@ -95,7 +95,7 @@ export default function CartPage() {
 
   // Fetch recommended products — tries popular_pics badge first, falls back to recent
   useEffect(() => {
-    const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
     setRecLoading(true);
     fetch(`${API}/api/products?badge=popular_pics&limit=12`)
       .then((r) => r.json())

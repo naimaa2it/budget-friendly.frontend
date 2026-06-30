@@ -4,16 +4,22 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 const ADDONS_META = [
   {
     key: "facebookPixel",
     name: "Facebook Pixel",
-    description: "Track conversions, optimize ads and build audiences for your Facebook campaigns.",
+    description:
+      "Track conversions, optimize ads and build audiences for your Facebook campaigns.",
     href: "/dashboard/addons/facebook-pixel",
     icon: (
-      <svg className="h-8 w-8" viewBox="0 0 24 24" fill="#1877F2" aria-hidden="true">
+      <svg
+        className="h-8 w-8"
+        viewBox="0 0 24 24"
+        fill="#1877F2"
+        aria-hidden="true"
+      >
         <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
       </svg>
     ),
@@ -22,10 +28,18 @@ const ADDONS_META = [
   {
     key: "googleTagManager",
     name: "Google Tag Manager",
-    description: "Manage all your marketing tags without editing code using Google Tag Manager.",
+    description:
+      "Manage all your marketing tags without editing code using Google Tag Manager.",
     href: "/dashboard/addons/google-tag-manager",
     icon: (
-      <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="#4285F4" strokeWidth="2" aria-hidden="true">
+      <svg
+        className="h-8 w-8"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#4285F4"
+        strokeWidth="2"
+        aria-hidden="true"
+      >
         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
       </svg>
     ),
@@ -34,10 +48,16 @@ const ADDONS_META = [
   {
     key: "googleAnalytics4",
     name: "Google Analytics 4",
-    description: "Get detailed insights into your store traffic and customer behavior with GA4.",
+    description:
+      "Get detailed insights into your store traffic and customer behavior with GA4.",
     href: "/dashboard/addons/google-analytics",
     icon: (
-      <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <svg
+        className="h-8 w-8"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+      >
         <rect x="3" y="12" width="4" height="9" fill="#F4B400" rx="1" />
         <rect x="10" y="6" width="4" height="15" fill="#0F9D58" rx="1" />
         <rect x="17" y="2" width="4" height="19" fill="#4285F4" rx="1" />
@@ -48,10 +68,18 @@ const ADDONS_META = [
   {
     key: "fakeOrderProtection",
     name: "Fake Order Protection",
-    description: "Protect your store from fraudulent orders using phone, IP and device fingerprinting.",
+    description:
+      "Protect your store from fraudulent orders using phone, IP and device fingerprinting.",
     href: "/dashboard/addons/fake-order-protection",
     icon: (
-      <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" aria-hidden="true">
+      <svg
+        className="h-8 w-8"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#F59E0B"
+        strokeWidth="2"
+        aria-hidden="true"
+      >
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
         <path d="M9 12l2 2 4-4" />
       </svg>
@@ -61,10 +89,16 @@ const ADDONS_META = [
   {
     key: "tiktokPixel",
     name: "TikTok Pixel",
-    description: "Track ad performance and optimize campaigns on TikTok with server-side events.",
+    description:
+      "Track ad performance and optimize campaigns on TikTok with server-side events.",
     href: "/dashboard/addons/tiktok-pixel",
     icon: (
-      <svg className="h-8 w-8" viewBox="0 0 24 24" fill="#010101" aria-hidden="true">
+      <svg
+        className="h-8 w-8"
+        viewBox="0 0 24 24"
+        fill="#010101"
+        aria-hidden="true"
+      >
         <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.87a8.17 8.17 0 004.79 1.52V6.94a4.85 4.85 0 01-1.02-.25z" />
       </svg>
     ),
@@ -73,13 +107,30 @@ const ADDONS_META = [
   {
     key: "googleAdsense",
     name: "Google AdSense",
-    description: "Monetize your store by displaying Google ads. Auto Ads support included.",
+    description:
+      "Monetize your store by displaying Google ads. Auto Ads support included.",
     href: "/dashboard/addons/google-adsense",
     icon: (
-      <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <svg
+        className="h-8 w-8"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+      >
         <circle cx="12" cy="12" r="10" fill="#4285F4" opacity="0.12" />
-        <path d="M6 12a6 6 0 1112 0" stroke="#4285F4" strokeWidth="2" strokeLinecap="round" />
-        <path d="M12 6v12M6 12h12" stroke="#34A853" strokeWidth="1.5" strokeLinecap="round" opacity="0.8" />
+        <path
+          d="M6 12a6 6 0 1112 0"
+          stroke="#4285F4"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <path
+          d="M12 6v12M6 12h12"
+          stroke="#34A853"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          opacity="0.8"
+        />
         <circle cx="12" cy="12" r="2.5" fill="#FBBC05" />
       </svg>
     ),
@@ -105,14 +156,19 @@ export default function AddonsPage() {
 
   const handleUninstall = async (key) => {
     if (!confirm("Uninstall this addon?")) return;
-    const updated = { [key]: { ...settings[key], installed: false, active: false } };
+    const updated = {
+      [key]: { ...settings[key], installed: false, active: false },
+    };
     await fetch(`${API}/api/admin/settings`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
       body: JSON.stringify(updated),
     });
-    setSettings((s) => ({ ...s, [key]: { ...s[key], installed: false, active: false } }));
+    setSettings((s) => ({
+      ...s,
+      [key]: { ...s[key], installed: false, active: false },
+    }));
   };
 
   const handleInstall = async (key, href) => {
@@ -134,14 +190,20 @@ export default function AddonsPage() {
   });
 
   if (loading) {
-    return <div className="flex items-center justify-center py-24 text-gray-400">Loading addons…</div>;
+    return (
+      <div className="flex items-center justify-center py-24 text-gray-400">
+        Loading addons…
+      </div>
+    );
   }
 
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Addons</h1>
-        <p className="text-sm text-gray-500 mt-1">Extend your store with powerful integrations</p>
+        <p className="text-sm text-gray-500 mt-1">
+          Extend your store with powerful integrations
+        </p>
       </div>
 
       {/* Tabs */}
@@ -168,13 +230,17 @@ export default function AddonsPage() {
       {/* Addon list */}
       <div className="bg-white rounded-2xl border border-gray-200 divide-y divide-gray-100">
         {visibleAddons.length === 0 && (
-          <div className="py-16 text-center text-gray-400 text-sm">No addons found.</div>
+          <div className="py-16 text-center text-gray-400 text-sm">
+            No addons found.
+          </div>
         )}
         {visibleAddons.map((addon) => {
           const installed = isInstalled(addon.key);
           return (
             <div key={addon.key} className="flex items-center gap-4 px-6 py-4">
-              <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border ${addon.color}`}>
+              <div
+                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border ${addon.color}`}
+              >
                 {addon.icon}
               </div>
               <div className="flex-1 min-w-0">
@@ -184,7 +250,9 @@ export default function AddonsPage() {
                 >
                   {addon.name}
                 </Link>
-                <p className="text-xs text-gray-500 mt-0.5 truncate">{addon.description}</p>
+                <p className="text-xs text-gray-500 mt-0.5 truncate">
+                  {addon.description}
+                </p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 {installed && (

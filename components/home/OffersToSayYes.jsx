@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useLanguage } from "@/components/context/LanguageContext";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 const COLOR_THEMES = {
   pink: {
@@ -58,7 +58,9 @@ function CouponCopy({ code }) {
       className="mt-1 flex items-center justify-between gap-1 w-full bg-white border border-dashed border-gray-400 rounded px-2 py-0.5 text-xs font-mono font-bold text-gray-700 hover:bg-gray-50 transition"
     >
       <span className="truncate">{code}</span>
-      <span className="shrink-0 text-gray-400">{copied ? t("offers.copied") : t("offers.copy")}</span>
+      <span className="shrink-0 text-gray-400">
+        {copied ? t("offers.copied") : t("offers.copy")}
+      </span>
     </button>
   );
 }
@@ -81,7 +83,9 @@ function OfferCard({ offer }) {
       <div className="flex h-full">
         {/* Left 2/3 */}
         <div className="w-2/3 pr-4 flex flex-col justify-center">
-          <p className="text-sm text-gray-600 mb-1">{tr("offers.spend_label")} {offer.spend}</p>
+          <p className="text-sm text-gray-600 mb-1">
+            {tr("offers.spend_label")} {offer.spend}
+          </p>
           {offer.highlightSecondary ? (
             <>
               <h2 className={`text-3xl font-bold ${t.textColor} mb-1`}>

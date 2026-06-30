@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { formatOrderId } from "@/lib/orderId";
 import BookWithCourierModal from "@/components/dashboard/Order/BookWithCourierModal";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 const STATUS_STYLE = {
   pending: "bg-yellow-100 text-yellow-700",

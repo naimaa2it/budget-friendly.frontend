@@ -2,9 +2,15 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
-const EMPTY_POLICY = { shipping: [], return: [], faq: [], privacy: [], terms: [] };
+const EMPTY_POLICY = {
+  shipping: [],
+  return: [],
+  faq: [],
+  privacy: [],
+  terms: [],
+};
 
 const StoreSettingsContext = createContext({
   storeName: "",
@@ -36,7 +42,7 @@ export function StoreSettingsProvider({ children }) {
           contactInfo: d.contactInfo || { phone: "", email: "", address: "" },
           socialLinks: d.socialLinks || {},
           policyContent: d.policyContent || EMPTY_POLICY,
-        })
+        }),
       )
       .catch(() => {});
   }, []);

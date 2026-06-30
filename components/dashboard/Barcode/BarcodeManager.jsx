@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import JsBarcode from "jsbarcode";
@@ -16,7 +22,7 @@ import {
 } from "react-icons/fa";
 import { useUser } from "@/components/context/UserContext";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 const EMPTY_FORM = {
   code: "",
@@ -286,7 +292,10 @@ export default function BarcodeManager() {
               <input
                 value={form.code}
                 onChange={(e) =>
-                  setForm((prev) => ({ ...prev, code: e.target.value.replace(/\s+/g, "") }))
+                  setForm((prev) => ({
+                    ...prev,
+                    code: e.target.value.replace(/\s+/g, ""),
+                  }))
                 }
                 className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm outline-none focus:border-indigo-500"
                 placeholder="123456789012"
@@ -395,7 +404,12 @@ export default function BarcodeManager() {
               disabled={saving || !form.code.trim()}
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <FaRegSave /> {saving ? "Saving..." : editingId ? "Update Barcode" : "Save Barcode"}
+              <FaRegSave />{" "}
+              {saving
+                ? "Saving..."
+                : editingId
+                  ? "Update Barcode"
+                  : "Save Barcode"}
             </button>
           </form>
         </section>
@@ -425,7 +439,9 @@ export default function BarcodeManager() {
             ) : (
               items.map((item) => {
                 const linkedProduct = item.product;
-                const isLinked = Boolean(linkedProduct?._id || linkedProduct?.id);
+                const isLinked = Boolean(
+                  linkedProduct?._id || linkedProduct?.id,
+                );
                 return (
                   <div
                     key={item._id}
@@ -433,7 +449,11 @@ export default function BarcodeManager() {
                   >
                     <div className="grid gap-4 xl:grid-cols-[240px_minmax(0,1fr)]">
                       <div className="rounded-xl border border-gray-100 bg-gray-50 p-3">
-                        <BarcodeSvg code={item.code} className="w-full overflow-hidden" height={52} />
+                        <BarcodeSvg
+                          code={item.code}
+                          className="w-full overflow-hidden"
+                          height={52}
+                        />
                       </div>
                       <div className="space-y-3">
                         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -451,7 +471,10 @@ export default function BarcodeManager() {
                               onClick={() => {
                                 navigator.clipboard?.writeText(item.code);
                                 setCopiedCode(item.code);
-                                window.setTimeout(() => setCopiedCode(""), 1200);
+                                window.setTimeout(
+                                  () => setCopiedCode(""),
+                                  1200,
+                                );
                               }}
                               className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50"
                             >
@@ -493,7 +516,9 @@ export default function BarcodeManager() {
                             Level:{" "}
                             <span className="font-medium text-gray-700">
                               {isLinked
-                                ? linkedProduct?.title || item.productTitle || "Linked"
+                                ? linkedProduct?.title ||
+                                  item.productTitle ||
+                                  "Linked"
                                 : "No level"}
                             </span>
                           </p>

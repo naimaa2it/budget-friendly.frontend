@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { formatOrderId } from "@/lib/orderId";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 const STATUS_STYLE = {
   pending: "bg-yellow-100 text-yellow-700",
@@ -81,7 +81,9 @@ export default function PreordersList() {
     return true;
   });
 
-  const statuses = Array.from(new Set(rows.map((r) => r.status))).filter(Boolean);
+  const statuses = Array.from(new Set(rows.map((r) => r.status))).filter(
+    Boolean,
+  );
 
   return (
     <div className="max-w-6xl mx-auto bg-white p-6 rounded shadow">
@@ -121,7 +123,9 @@ export default function PreordersList() {
       </div>
 
       {loading ? (
-        <div className="text-center py-16 text-gray-400">Loading pre-orders…</div>
+        <div className="text-center py-16 text-gray-400">
+          Loading pre-orders…
+        </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-16 text-gray-400">
           {filter || statusFilter

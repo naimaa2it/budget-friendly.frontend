@@ -149,7 +149,7 @@ export default function CartSidebar() {
                   <div className="flex items-center gap-2">
                     {thumb && (
                       <a
-                        href={`/product/${product._id}`}
+                        href={`/product/${product._id}/`}
                         onClick={toggleSidebar}
                         className="shrink-0"
                       >
@@ -164,7 +164,7 @@ export default function CartSidebar() {
                     )}
                     <div>
                       <a
-                        href={`/product/${product._id}`}
+                        href={`/product/${product._id}/`}
                         onClick={toggleSidebar}
                         className="font-medium text-sm hover:text-red-600 transition-colors line-clamp-2"
                       >

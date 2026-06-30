@@ -244,7 +244,7 @@ export default function FrequentlyBoughtTogetherModal() {
                           }}
                         >
                           {/* Image */}
-                          <Link href={`/product/${pid}`} onClick={close}>
+                          <Link href={`/product/${pid}/`} onClick={close}>
                             <div
                               className="relative bg-gradient-to-br from-gray-50 to-gray-100"
                               style={{ aspectRatio: "1" }}
@@ -305,7 +305,7 @@ export default function FrequentlyBoughtTogetherModal() {
                                 {fbtProduct.department}
                               </p>
                             )}
-                            <Link href={`/product/${pid}`} onClick={close}>
+                            <Link href={`/product/${pid}/`} onClick={close}>
                               <p className="text-[11px] font-medium text-gray-800 line-clamp-2 hover:text-rose-600 transition-colors leading-snug mb-1.5 min-h-[28px]">
                                 {fbtProduct.title}
                               </p>

@@ -411,7 +411,7 @@ export default function DealsOfDay() {
               {visibleBestsellers.map((product) => (
                 <div
                   key={product.id}
-                  onClick={() => router.push(`/product/${product.id}`)}
+                  onClick={() => router.push(`/product/${product.id}/`)}
                   className="flex gap-4 pb-4 border-b border-gray-200 last:border-b-0 cursor-pointer hover:bg-gray-50 transition"
                 >
                   <Image

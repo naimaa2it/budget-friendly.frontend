@@ -390,20 +390,20 @@ export default function Footer() {
                   </li>
                   <li>
                     <Link
-                      href="/category/electronics"
+                      href="/category/electronics/"
                       className="hover:text-red-600"
                     >
                       Electronics
                     </Link>
                   </li>
                   <li>
-                    <Link href="/category/gents" className="hover:text-red-600">
+                    <Link href="/category/gents/" className="hover:text-red-600">
                       Gents
                     </Link>
                   </li>
                   <li>
                     <Link
-                      href="/category/ladies"
+                      href="/category/ladies/"
                       className="hover:text-red-600"
                     >
                       Ladies

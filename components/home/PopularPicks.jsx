@@ -221,7 +221,7 @@ export default function PopularPicks() {
               </h1>
             </div>
             <Link
-              href="/tag/popular-pics"
+              href="/tag/popular-pics/"
               className="text-md text-rose-500 font-semibold hover:underline whitespace-nowrap"
             >
               {t("home.view_all")}
@@ -329,7 +329,7 @@ export default function PopularPicks() {
                   : visibleProducts.map((product, index) => (
                       <div
                         key={`${product.id}-${currentSlide}-${index}`}
-                        onClick={() => router.push(`/product/${product.id}`)}
+                        onClick={() => router.push(`/product/${product.id}/`)}
                         onMouseEnter={() => setHoveredId(product.id)}
                         onMouseLeave={() => setHoveredId(null)}
                         onMouseDown={() => setHoveredId(product.id)}
@@ -427,7 +427,7 @@ export default function PopularPicks() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                router.push(`/product/${product.id}`);
+                                router.push(`/product/${product.id}/`);
                               }}
                               className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 hover:text-white transition-colors"
                               title="View"

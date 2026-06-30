@@ -227,7 +227,7 @@ export default function CartPage() {
                 <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6 relative">
                   {/* Product Image */}
                   <div className="shrink-0 self-start">
-                    <a href={`/product/${product._id}`} className="block">
+                    <a href={`/product/${product._id}/`} className="block">
                       <Image
                         src={encodeURI(image)}
                         alt={title}
@@ -240,7 +240,7 @@ export default function CartPage() {
 
                   {/* Product Details */}
                   <div className="flex-1">
-                    <a href={`/product/${product._id}`} className="block">
+                    <a href={`/product/${product._id}/`} className="block">
                       <h3 className="text-base md:text-lg font-semibold mb-1 pr-10 md:pr-0 hover:text-red-600 transition-colors">
                         {title}
                       </h3>

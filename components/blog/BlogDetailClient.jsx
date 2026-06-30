@@ -154,7 +154,7 @@ export default function BlogDetailClient({ slug }) {
     if (!blog) return;
 
     const SITE_URL =
-      process.env.NEXT_PUBLIC_SITE_URL || "http://pickob.com";
+      process.env.NEXT_PUBLIC_SITE_URL || "https://smartproductbuy.com";
 
     const seoTitle = blog.seo?.title || blog.title;
     const seoDesc =

@@ -217,7 +217,7 @@ export default function CategoryPageClient({ slug, parentSlug = null }) {
     metaDesc.setAttribute("content", descContent);
 
     const SITE_URL =
-      process.env.NEXT_PUBLIC_SITE_URL || "http://pickob.com";
+      process.env.NEXT_PUBLIC_SITE_URL || "https://smartproductbuy.com";
     let canonical = document.querySelector('link[rel="canonical"]');
     if (!canonical) {
       canonical = document.createElement("link");

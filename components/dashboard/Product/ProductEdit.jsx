@@ -2012,13 +2012,14 @@ export default function ProductEdit({ productId }) {
 
               <MediaPicker
                 open={showPicker}
+                multiple
                 recentUploads={recentUploads}
-                onSelect={(asset) => {
+                onSelect={(assets) => {
                   setProduct((p) => ({
                     ...p,
                     images: [
                       ...(p.images || []),
-                      { url: asset.url, public_id: asset.public_id },
+                      ...assets.map((a) => ({ url: a.url, public_id: a.public_id })),
                     ],
                   }));
                   setShowPicker(false);

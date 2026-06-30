@@ -1,8 +1,8 @@
 ﻿export const dynamic = "force-static";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "http://pickob.com";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://pickob.com";
 
 // Flatten a category tree into a flat array
 function flattenCategories(cats) {

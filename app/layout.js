@@ -19,7 +19,7 @@ import CompareBar from "@/components/product/CompareBar";
 import GlobalScrollFix from "@/components/ui/GlobalScrollFix";
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "http://pickob.com";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://smartproductbuy.com";
 
 const workSans = Work_Sans({
   variable: "--font-work-sans",

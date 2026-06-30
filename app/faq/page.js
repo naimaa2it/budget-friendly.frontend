@@ -11,7 +11,7 @@ export async function generateMetadata() {
     title,
     description: `Get answers to common questions about ordering, shipping, payments, returns, and product authenticity at ${storeName} Bangladesh.`,
     alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_SITE_URL || "http://pickob.com"}/faq`,
+      canonical: `${process.env.NEXT_PUBLIC_SITE_URL || "https://smartproductbuy.com"}/faq`,
     },
   };
 }

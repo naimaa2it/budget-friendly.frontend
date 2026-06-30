@@ -93,7 +93,7 @@ const CategorySidebar = ({ onLinkClick }) => {
         {/* All Products — always at top */}
         <div className="border-b border-gray-200">
           <Link
-            href="/products"
+            href="/products/"
             className="w-full flex items-center gap-3 px-4 py-1 transition-colors duration-200 hover:bg-pink-50 group"
             onClick={handleLinkClick}
           >
@@ -132,7 +132,7 @@ const CategorySidebar = ({ onLinkClick }) => {
                     }`}
                   >
                     <Link
-                      href={`/category/${category.slug}`}
+                      href={`/category/${category.slug}/`}
                       className="flex items-center gap-3 flex-1 px-4 py-2"
                       onClick={handleLinkClick}
                     >
@@ -181,7 +181,7 @@ const CategorySidebar = ({ onLinkClick }) => {
                             (subcategory) => (
                               <Link
                                 key={subcategory._id}
-                                href={`/category/${category.slug}/${subcategory.slug}`}
+                                href={`/category/${category.slug}/${subcategory.slug}/`}
                                 className="flex items-center gap-1.5 py-1 text-xs text-gray-700 hover:text-rose-600 transition-colors duration-150 border-b border-gray-100"
                                 onClick={handleLinkClick}
                               >
@@ -217,7 +217,7 @@ const CategorySidebar = ({ onLinkClick }) => {
           {/* Category heading — bold */}
           <div className="px-5 py-2.5 border-b border-gray-100 bg-pink-50">
             <Link
-              href={`/category/${activeCategoryData.slug}`}
+              href={`/category/${activeCategoryData.slug}/`}
               className="font-bold text-sm text-rose-600 hover:underline"
               onClick={handleLinkClick}
             >
@@ -231,7 +231,7 @@ const CategorySidebar = ({ onLinkClick }) => {
               {getSubcategoriesLevel1(activeCategory).map((subcategory) => (
                 <Link
                   key={subcategory._id}
-                  href={`/category/${activeCategoryData.slug}/${subcategory.slug}`}
+                  href={`/category/${activeCategoryData.slug}/${subcategory.slug}/`}
                   className="block py-1.5 text-sm font-normal text-gray-600 whitespace-nowrap hover:text-rose-600 transition-colors"
                   onClick={handleLinkClick}
                 >
@@ -244,7 +244,7 @@ const CategorySidebar = ({ onLinkClick }) => {
           {/* View all */}
           <div className="px-5 py-2.5 border-t border-gray-100">
             <Link
-              href={`/category/${activeCategoryData.slug}`}
+              href={`/category/${activeCategoryData.slug}/`}
               className="text-xs font-semibold text-rose-600 hover:underline"
               onClick={handleLinkClick}
             >

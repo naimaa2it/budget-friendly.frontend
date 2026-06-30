@@ -101,7 +101,7 @@ export default function ShopByCategory() {
       name: displayName,
       image,
       icon: assets.icon || null,
-      link: `/category/${slug}`,
+      link: `/category/${slug}/`,
       _id: category._id,
     };
   });

@@ -342,7 +342,6 @@ export default function Navbar() {
           {/* hamburger menu */}
           <button
             onClick={() => setCatSidebarOpen((v) => !v)}
-            onMouseEnter={() => setCatSidebarOpen(true)}
             className="p-2 text-[#202020] hover:text-[#ac0ad1]"
             aria-label="Categories"
             title="Categories"

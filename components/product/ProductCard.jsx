@@ -141,15 +141,23 @@ export default function ProductCard({
 
   return (
     <>
-      <Link
-        href={href}
-        className="bg-white border border-[#F1E4D8] rounded-xl shadow-sm group hover:shadow-xl transition-all duration-300 flex flex-col cursor-pointer h-full"
+      <div
+        className="relative bg-white border border-[#F1E4D8] rounded-xl shadow-sm group hover:shadow-xl transition-all duration-300 flex flex-col cursor-pointer h-full"
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
       >
+        {/* Stretched link — full-card click target. Buttons below sit above it
+            (higher z-index) so they stay clickable without being nested in <a>. */}
+        <Link
+          href={href}
+          aria-label={product.title || product.slug}
+          className="absolute inset-0 z-[1]"
+        >
+          <span className="sr-only">{product.title || product.slug}</span>
+        </Link>
         <div
           className="relative bg-gray-50"
           style={{ height: imageHeight }}
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
         >
           <div className="absolute inset-0 px-2 flex items-center justify-center overflow-hidden">
             <Image
@@ -346,7 +354,7 @@ export default function ProductCard({
           </div>
 
           {isOutOfStock ? (
-            <div className="mt-auto flex gap-1.5">
+            <div className="relative z-[2] mt-auto flex gap-1.5">
               <button
                 disabled
                 className="bg-gray-100 text-red-500 py-2 px-2 rounded-md text-[10px] font-medium cursor-not-allowed whitespace-nowrap"
@@ -370,13 +378,13 @@ export default function ProductCard({
                 e.stopPropagation();
                 addToCart(product, 1);
               }}
-              className="w-full bg-red-600 text-white py-2 rounded-md font-medium hover:bg-red-700 transition mt-auto"
+              className="relative z-[2] w-full bg-red-600 text-white py-2 rounded-md font-medium hover:bg-red-700 transition mt-auto"
             >
               {t("home.add_to_cart")}
             </button>
           )}
         </div>
-      </Link>
+      </div>
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}

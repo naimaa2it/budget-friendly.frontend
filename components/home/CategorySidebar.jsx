@@ -126,13 +126,16 @@ const CategorySidebar = ({ onLinkClick }) => {
                   className="border-b border-gray-200"
                   onMouseEnter={() => hasSubs && handleMouseEnter(category._id)}
                 >
-                  <button
-                    onClick={() => toggleCategory(category._id)}
-                    className={`w-full flex items-center justify-between px-4 py-2 transition-colors duration-200 group ${
+                  <div
+                    className={`w-full flex items-center justify-between transition-colors duration-200 group ${
                       isActive ? "bg-pink-50" : "hover:bg-pink-50"
                     }`}
                   >
-                    <div className="flex items-center gap-3">
+                    <Link
+                      href={`/category/${category.slug}`}
+                      className="flex items-center gap-3 flex-1 px-4 py-2"
+                      onClick={handleLinkClick}
+                    >
                       <span className="text-xl">{category.icon}</span>
                       <span
                         className={`font-medium text-sm text-left transition-colors whitespace-nowrap truncate ${
@@ -143,25 +146,31 @@ const CategorySidebar = ({ onLinkClick }) => {
                       >
                         {category.name}
                       </span>
-                    </div>
+                    </Link>
                     {hasSubs && (
-                      <svg
-                        className={`w-3 h-3 shrink-0 transition-transform duration-200 ${
-                          isActive ? "text-rose-500" : "text-gray-400"
-                        } ${expandedCategory === category._id ? "rotate-90 md:rotate-0" : ""}`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                      <button
+                        onClick={() => toggleCategory(category._id)}
+                        className="px-3 py-2 shrink-0"
+                        aria-label="Expand subcategories"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
+                        <svg
+                          className={`w-3 h-3 shrink-0 transition-transform duration-200 ${
+                            isActive ? "text-rose-500" : "text-gray-400"
+                          } ${expandedCategory === category._id ? "rotate-90 md:rotate-0" : ""}`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </button>
                     )}
-                  </button>
+                  </div>
 
                   {/* Mobile accordion — 2-column grid, clear and readable */}
                   <div className="md:hidden">

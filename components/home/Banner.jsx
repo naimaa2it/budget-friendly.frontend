@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import CategorySidebar from "./CategorySidebar";
 
 const FALLBACK = [
@@ -19,6 +20,7 @@ const FALLBACK = [
 
 const Banner = () => {
   const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
+  const router = useRouter();
   const [slides, setSlides] = useState([]);
   const [current, setCurrent] = useState(0);
   const autoRef = useRef(null);
@@ -68,7 +70,7 @@ const Banner = () => {
             onMouseEnter={() => clearInterval(autoRef.current)}
             onMouseLeave={startAuto}
             onClick={() => {
-              if (slide?.buttonLink) window.location.href = slide.buttonLink;
+              if (slide?.buttonLink) router.push(slide.buttonLink);
             }}
           >
             {slide && (

@@ -10,16 +10,18 @@ DirectoryIndex index.html
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
 
-  # ── RSC / flight data payloads (.txt) ──────────────────────────────────
+  # ── RSC / flight data payloads (.txt / .rsc) ───────────────────────────
   # Next.js client-side navigation fetches "<path>.txt" (or "<path>/index.txt")
   # for the React Server Component payload. For routes that aren't pre-built
   # (or when the URL has no trailing slash so the file lives at /index.txt),
-  # that exact .txt does NOT exist. We must let it 404 cleanly here — if it
+  # that exact file does NOT exist. We must let it 404 cleanly here — if it
   # instead fell through to the SPA-shell rewrite below it would return an
   # HTML document, and the router would hang trying to parse HTML as flight
   # data (the "click freezes the page" bug). A 404 makes the router fall back
   # to a normal full-page navigation, which the rules below handle correctly.
-  RewriteRule \.txt$ - [R=404,L]
+  # NOTE: this rule only fires for files that do NOT exist — real payloads
+  # (and robots.txt / sitemap files) are already served by the -f rule above.
+  RewriteRule \.(txt|rsc)$ - [R=404,L]
 
   # ── Public dynamic routes ──────────────────────────────────────────────
   # New products, blogs, categories added after build are served via
@@ -84,6 +86,10 @@ DirectoryIndex index.html
   ExpiresByType application/javascript "access plus 1 month"
   ExpiresByType text/html "access plus 0 seconds"
   ExpiresByType application/json "access plus 0 seconds"
+  # RSC flight payloads are tied to the build id — never cache them, or a
+  # browser could soft-navigate using a stale payload after a redeploy and
+  # request JS chunks that no longer exist (broken/frozen navigation).
+  ExpiresByType text/plain "access plus 0 seconds"
 </IfModule>
 
 # Custom 404

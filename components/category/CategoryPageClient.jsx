@@ -385,7 +385,7 @@ export default function CategoryPageClient({ slug, parentSlug = null }) {
               {parentCategory ? (
                 <>
                   <Link
-                    href={`/category/${parentCategory.slug || (parentCategory.name || "").toLowerCase().replace(/\s+/g, "-")}`}
+                    href={`/category/${parentCategory.slug || (parentCategory.name || "").toLowerCase().replace(/\s+/g, "-")}/`}
                     className="hover:underline"
                   >
                     {parentCategory.name}
@@ -421,7 +421,7 @@ export default function CategoryPageClient({ slug, parentSlug = null }) {
                     className="relative flex flex-col items-center w-full max-w-[92px] md:max-w-[110px]"
                   >
                     <Link
-                      href={`/category/${category.slug}/${sslug}`}
+                      href={`/category/${category.slug}/${sslug}/`}
                       className="flex flex-col items-center group cursor-pointer w-full"
                     >
                       <div className="w-18 h-18 md:w-34 md:h-34 lg:w-38 lg:h-38 rounded-full bg-[#FFF5ED] border-4 border-white shadow-md flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform">

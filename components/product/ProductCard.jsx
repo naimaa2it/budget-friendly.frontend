@@ -137,7 +137,7 @@ export default function ProductCard({
   const id = product._id || product.id;
   const isOutOfStock =
     product.availability === "out_of_stock" || product.inventory === 0;
-  const href = `/product/${id}`;
+  const href = `/product/${id}/`;
 
   return (
     <>

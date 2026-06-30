@@ -218,7 +218,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
   useEffect(() => {
     if (!product) return;
     const SITE_URL =
-      process.env.NEXT_PUBLIC_SITE_URL || "https://smartproductbuy.com";
+      process.env.NEXT_PUBLIC_SITE_URL || "https://pickob.com";
     const schema = {
       "@context": "https://schema.org",
       "@type": "Product",
@@ -278,7 +278,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
     if (!product) return;
 
     const SITE_URL =
-      process.env.NEXT_PUBLIC_SITE_URL || "https://smartproductbuy.com";
+      process.env.NEXT_PUBLIC_SITE_URL || "https://pickob.com";
 
     const seoTitle = product.seo?.title || product.title;
     const seoDesc =

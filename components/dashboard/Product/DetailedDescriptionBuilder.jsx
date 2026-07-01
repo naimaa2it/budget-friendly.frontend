@@ -49,6 +49,10 @@ function ImageSlot({
     async (files) => {
       const file = files?.[0];
       if (!file || !file.type.startsWith("image/")) return;
+      if (file.size > 2 * 1024 * 1024) {
+        alert(`"${file.name}" সাইজ ${(file.size / 1024 / 1024).toFixed(1)}MB — সর্বোচ্চ ২MB অনুমোদিত।`);
+        return;
+      }
       setUploading(true);
       try {
         const asset = await uploadFile(file);
@@ -199,8 +203,18 @@ function ImageRowBlock({
 
   const handleBulkFiles = useCallback(
     async (files) => {
+      const oversized = Array.from(files).filter(
+        (f) => f.type.startsWith("image/") && f.size > 2 * 1024 * 1024,
+      );
+      if (oversized.length) {
+        alert(
+          oversized
+            .map((f) => `"${f.name}" (${(f.size / 1024 / 1024).toFixed(1)}MB)`)
+            .join("\n") + "\n\nসর্বোচ্চ ২MB অনুমোদিত — এই ছবিগুলো বাদ দেওয়া হয়েছে।",
+        );
+      }
       const fileArr = Array.from(files)
-        .filter((f) => f.type.startsWith("image/"))
+        .filter((f) => f.type.startsWith("image/") && f.size <= 2 * 1024 * 1024)
         .slice(0, cols);
       if (!fileArr.length) return;
       setBulkUploading(true);

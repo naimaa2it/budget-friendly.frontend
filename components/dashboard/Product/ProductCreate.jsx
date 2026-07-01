@@ -639,6 +639,10 @@ export default function ProductCreate() {
   };
 
   const handleFile = async (file) => {
+    if (file.size > 2 * 1024 * 1024) {
+      alert(`"${file.name}" সাইজ ${(file.size / 1024 / 1024).toFixed(1)}MB — সর্বোচ্চ ২MB অনুমোদিত।`);
+      return;
+    }
     const preview = URL.createObjectURL(file);
     setProduct((p) => ({
       ...p,

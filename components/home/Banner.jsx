@@ -59,7 +59,7 @@ const Banner = () => {
     <section className="bg-[#FFF5ED] ">
       <div className="relative flex flex-col md:flex-row md:items-start max-w-7xl mx-auto  md:h-[356px]">
         {/* Sidebar (desktop only) */}
-        <div className="hidden md:block md:w-[240px] min-w-[200px] overflow-visible z-10 relative md:h-full">
+        <div className="hidden md:block md:w-[240px] min-w-[200px] overflow-visible z-20 relative md:h-full">
           <CategorySidebar />
         </div>
 

@@ -11,9 +11,15 @@ import Image from "next/image";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
+function normalizeHref(href) {
+  if (!href) return "/";
+  if (href.startsWith("http://") || href.startsWith("https://") || href.startsWith("/")) return href;
+  return `/${href}`;
+}
+
 export default function Footer() {
   const { user, refreshUser } = useUser();
-  const { storeName, footerInfo, socialLinks } = useStoreSettings();
+  const { storeName, footerInfo, socialLinks, footerLinks } = useStoreSettings();
   const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [localToast, setLocalToast] = useState(null); // { type: 'success'|'error'|'warn', msg }
@@ -383,37 +389,22 @@ export default function Footer() {
                   {t("footer.quick_links")}
                 </h3>
                 <ul className="space-y-2 text-sm text-[#202020]">
-                  <li>
-                    <Link href="/" className="hover:text-red-600">
-                      {t("footer.home")}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/category/electronics/"
-                      className="hover:text-red-600"
-                    >
-                      Electronics
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/category/gents/" className="hover:text-red-600">
-                      Gents
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/category/ladies/"
-                      className="hover:text-red-600"
-                    >
-                      Ladies
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/blog" className="hover:text-red-600">
-                      {t("footer.blog")}
-                    </Link>
-                  </li>
+                  {(footerLinks?.quickLinks?.length
+                    ? footerLinks.quickLinks
+                    : [
+                        { label: t("footer.home"), href: "/" },
+                        { label: "Electronics", href: "/category/electronics/" },
+                        { label: "Gents", href: "/category/gents/" },
+                        { label: "Ladies", href: "/category/ladies/" },
+                        { label: t("footer.blog"), href: "/blog" },
+                      ]
+                  ).map((item, i) => (
+                    <li key={i}>
+                      <Link href={normalizeHref(item.href)} className="hover:text-red-600">
+                        {item.label}
+                      </Link>
+                    </li>
+                  ))}
                 </ul>
               </div>
 
@@ -423,31 +414,22 @@ export default function Footer() {
                   {t("footer.customer_service")}
                 </h3>
                 <ul className="space-y-2 text-sm text-[#202020]">
-                  <li>
-                    <Link href="/shipping" className="hover:text-red-600">
-                      {t("footer.shipping_returns")}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/returns" className="hover:text-red-600">
-                      {t("footer.return_policy")}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/faq" className="hover:text-red-600">
-                      {t("footer.faq")}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/contact" className="hover:text-red-600">
-                      {t("footer.contact")}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/about" className="hover:text-red-600">
-                      {t("footer.about")}
-                    </Link>
-                  </li>
+                  {(footerLinks?.customerService?.length
+                    ? footerLinks.customerService
+                    : [
+                        { label: t("footer.shipping_returns"), href: "/shipping" },
+                        { label: t("footer.return_policy"), href: "/returns" },
+                        { label: t("footer.faq"), href: "/faq" },
+                        { label: t("footer.contact"), href: "/contact" },
+                        { label: t("footer.about"), href: "/about" },
+                      ]
+                  ).map((item, i) => (
+                    <li key={i}>
+                      <Link href={normalizeHref(item.href)} className="hover:text-red-600">
+                        {item.label}
+                      </Link>
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>

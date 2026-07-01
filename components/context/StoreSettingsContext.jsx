@@ -12,6 +12,8 @@ const EMPTY_POLICY = {
   terms: [],
 };
 
+const EMPTY_FOOTER_LINKS = { quickLinks: [], customerService: [] };
+
 const StoreSettingsContext = createContext({
   storeName: "",
   logoUrl: "",
@@ -19,6 +21,7 @@ const StoreSettingsContext = createContext({
   contactInfo: { phone: "", email: "", address: "" },
   socialLinks: {},
   policyContent: EMPTY_POLICY,
+  footerLinks: EMPTY_FOOTER_LINKS,
 });
 
 export function StoreSettingsProvider({ children }) {
@@ -29,6 +32,7 @@ export function StoreSettingsProvider({ children }) {
     contactInfo: { phone: "", email: "", address: "" },
     socialLinks: {},
     policyContent: EMPTY_POLICY,
+    footerLinks: EMPTY_FOOTER_LINKS,
   });
 
   useEffect(() => {
@@ -42,6 +46,7 @@ export function StoreSettingsProvider({ children }) {
           contactInfo: d.contactInfo || { phone: "", email: "", address: "" },
           socialLinks: d.socialLinks || {},
           policyContent: d.policyContent || EMPTY_POLICY,
+          footerLinks: d.footerLinks || EMPTY_FOOTER_LINKS,
         }),
       )
       .catch(() => {});

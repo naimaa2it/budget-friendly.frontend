@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@/components/context/UserContext";
 import { FaBell, FaStar, FaQuestionCircle, FaClone } from "react-icons/fa";
 
+const LIMIT = 20;
+
 export default function ProductsList() {
   const { user, refreshUser } = useUser();
   const router = useRouter();
@@ -20,6 +22,10 @@ export default function ProductsList() {
   const [selectedSub, setSelectedSub] = useState(null);
   const [selectedChild, setSelectedChild] = useState(null);
   const [duplicatingId, setDuplicatingId] = useState(null);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+
+  const totalPages = Math.ceil(total / LIMIT);
 
   // helper to collect all descendant ids in tree node
   const collectIds = (node) => {
@@ -46,17 +52,21 @@ export default function ProductsList() {
       const statusParam = statusFilter
         ? `&status=${encodeURIComponent(statusFilter)}`
         : "";
-      const q = `${API}/api/admin/products?limit=50&q=${encodeURIComponent(query || "")}${catParam ? `&categoryId=${encodeURIComponent(catParam)}` : ""}${statusParam}`;
+      const q = `${API}/api/admin/products?limit=${LIMIT}&page=${page}&q=${encodeURIComponent(query || "")}${catParam ? `&categoryId=${encodeURIComponent(catParam)}` : ""}${statusParam}`;
       const resp = await fetch(q, { credentials: "include" });
       const body = await resp.json();
-      if (resp.ok) setItems(body.items || []);
-      else throw new Error(body.error || "Failed to load");
+      if (resp.ok) {
+        setItems(body.items || []);
+        setTotal(body.total ?? body.pagination?.total ?? 0);
+      } else {
+        throw new Error(body.error || "Failed to load");
+      }
     } catch (err) {
       console.error("Load products error", err);
     } finally {
       setLoading(false);
     }
-  }, [API, query, selectedMain, selectedSub, selectedChild, statusFilter]);
+  }, [API, query, selectedMain, selectedSub, selectedChild, statusFilter, page]);
 
   useEffect(() => {
     if (!user) refreshUser();
@@ -121,7 +131,14 @@ export default function ProductsList() {
   return (
     <div className="mx-auto mt-6 bg-white p-4 sm:p-6 rounded shadow">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-        <h2 className="text-lg font-semibold">Products</h2>
+        <h2 className="text-lg font-semibold">
+          Products
+          {total > 0 && (
+            <span className="ml-2 text-sm font-normal text-gray-500">
+              ({total} total)
+            </span>
+          )}
+        </h2>
         <Link
           href="/dashboard/products/new"
           className="px-3 py-2 bg-green-600 text-white rounded text-sm text-center shrink-0"
@@ -140,6 +157,7 @@ export default function ProductsList() {
             setSelectedMain(main);
             setSelectedSub(null);
             setSelectedChild(null);
+            setPage(1);
           }}
           className="border px-3 py-2 rounded"
         >
@@ -161,6 +179,7 @@ export default function ProductsList() {
               ) || null;
             setSelectedSub(sub);
             setSelectedChild(null);
+            setPage(1);
           }}
           className="border px-3 py-2 rounded"
         >
@@ -180,6 +199,7 @@ export default function ProductsList() {
               (selectedSub?.children || []).find((c) => String(c._id) === id) ||
               null;
             setSelectedChild(child);
+            setPage(1);
           }}
           className="border px-3 py-2 rounded"
         >
@@ -193,7 +213,10 @@ export default function ProductsList() {
 
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+          onChange={(e) => {
+            setStatusFilter(e.target.value);
+            setPage(1);
+          }}
           className="border px-3 py-2 rounded bg-white"
         >
           <option value="">All statuses</option>
@@ -205,7 +228,10 @@ export default function ProductsList() {
         <input
           aria-label="Search products"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setPage(1);
+          }}
           placeholder="Search products"
           className="border px-3 py-2 rounded flex-1 min-w-45"
         />
@@ -347,6 +373,29 @@ export default function ProductsList() {
               No products found
             </div>
           )}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4 pt-4 border-t">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-4 py-2 border rounded text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50"
+          >
+            ← Previous
+          </button>
+          <span className="text-sm text-gray-600">
+            Page {page} of {totalPages}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="px-4 py-2 border rounded text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50"
+          >
+            Next →
+          </button>
         </div>
       )}
     </div>

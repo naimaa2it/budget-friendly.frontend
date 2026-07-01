@@ -66,7 +66,7 @@ const Banner = () => {
         {/* Banner Section */}
         <div className="flex-1 flex flex-col gap-4 px-2 md:px-4 ">
           <div
-            className="relative mt-1 mb-1 h-47 sm:h-58.5 md:h-87 rounded-2xl overflow-hidden w-full mx-auto cursor-pointer"
+            className="relative mt-1 mb-1 aspect-5/2 sm:aspect-auto sm:h-58.5 md:h-87 rounded-2xl overflow-hidden w-full mx-auto cursor-pointer"
             onMouseEnter={() => clearInterval(autoRef.current)}
             onMouseLeave={startAuto}
             onClick={() => {
@@ -123,18 +123,22 @@ const Banner = () => {
                     e.stopPropagation();
                     go(-1);
                   }}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow text-gray-700 transition z-10"
+                  className="absolute left-2 md:left-3 top-1/2 -translate-y-1/2 w-7 h-7 md:w-9 md:h-9 bg-white/75 hover:bg-white rounded-full flex items-center justify-center shadow-md text-gray-700 backdrop-blur-sm transition z-10"
                 >
-                  ‹
+                  <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                  </svg>
                 </button>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     go(1);
                   }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow text-gray-700 transition z-10"
+                  className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 w-7 h-7 md:w-9 md:h-9 bg-white/75 hover:bg-white rounded-full flex items-center justify-center shadow-md text-gray-700 backdrop-blur-sm transition z-10"
                 >
-                  ›
+                  <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                  </svg>
                 </button>
               </>
             )}

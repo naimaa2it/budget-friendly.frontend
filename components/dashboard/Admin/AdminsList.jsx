@@ -1,21 +1,74 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useUser } from "@/components/context/UserContext";
 
-const PERMISSION_LABELS = {
-  catalog: "Catalog",
-  orders: "Orders",
-  customers: "Customers",
-  content: "Content",
-  addons: "Addons",
-};
+// Groups to display in the permission grid — mirrors backend PERMISSION_GROUPS structure.
+// `legacy` is the old broad section key that also grants access to this group.
+const GROUPS = [
+  { key: "dashboard", label: "Dashboard",  legacy: null },
+  { key: "orders",    label: "Orders",     legacy: "orders" },
+  { key: "products",  label: "Products",   legacy: "catalog" },
+  { key: "customers", label: "Customers",  legacy: "customers" },
+  { key: "content",   label: "Content",    legacy: "content" },
+  { key: "addons",    label: "Addons",     legacy: "addons" },
+  { key: "reports",   label: "Reports",    legacy: null },
+  { key: "system",    label: "System",     legacy: null },
+];
 
-function permissionSummary(a) {
-  if (a.role === "admin") return "Full access";
-  if (!Array.isArray(a.permissions) || a.permissions.length === 0)
-    return "Full access";
-  return a.permissions.map((key) => PERMISSION_LABELS[key] || key).join(", ");
+function groupGranted(permissions, group) {
+  if (group.legacy && permissions.includes(group.legacy)) return true;
+  return permissions.some((p) => p.startsWith(group.key + "."));
+}
+
+function PermissionGrid({ admin }) {
+  if (admin.role === "admin") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
+        Full access
+      </span>
+    );
+  }
+
+  const perms = Array.isArray(admin.permissions) ? admin.permissions : [];
+
+  if (perms.length === 0) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-600">
+        No access
+      </span>
+    );
+  }
+
+  return (
+    <div className="flex flex-wrap gap-1">
+      {GROUPS.map((g) => {
+        const granted = groupGranted(perms, g);
+        return (
+          <span
+            key={g.key}
+            title={granted ? `${g.label}: granted` : `${g.label}: not granted`}
+            className={`inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-medium transition-colors ${
+              granted
+                ? "bg-green-100 text-green-700"
+                : "bg-gray-100 text-gray-400 line-through"
+            }`}
+          >
+            {granted ? (
+              <svg className="h-3 w-3 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            ) : (
+              <svg className="h-3 w-3 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            )}
+            {g.label}
+          </span>
+        );
+      })}
+    </div>
+  );
 }
 
 export default function AdminsList() {
@@ -28,7 +81,7 @@ export default function AdminsList() {
     if (!user) refreshUser();
   }, [user, refreshUser]);
 
-  const fetchAdmins = async () => {
+  const fetchAdmins = useCallback(async () => {
     setLoading(true);
     try {
       const resp = await fetch(`${API}/api/admin/admins`, {
@@ -42,19 +95,11 @@ export default function AdminsList() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [API]);
 
-  useEffect(
-    () => {
-      const load = () => {
-        fetchAdmins();
-      };
-      load();
-    },
-    [
-      /* fetchAdmins intentionally stable */
-    ],
-  );
+  useEffect(() => {
+    fetchAdmins();
+  }, [fetchAdmins]);
 
   const parseJsonOrText = async (resp) => {
     const text = await resp.text();
@@ -105,7 +150,7 @@ export default function AdminsList() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto bg-white p-4 sm:p-6 rounded shadow">
+    <div className="max-w-6xl mx-auto bg-white p-4 sm:p-6 rounded shadow">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <h2 className="text-lg font-semibold">Authorized accounts</h2>
         <a
@@ -121,47 +166,59 @@ export default function AdminsList() {
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="text-gray-600">
+            <thead className="text-gray-600 border-b">
               <tr>
-                <th className="py-2">Name</th>
-                <th className="py-2">Email</th>
-                <th className="py-2">Role</th>
-                <th className="py-2">Access</th>
-                <th className="py-2">Status</th>
-                <th className="py-2">Actions</th>
+                <th className="py-2 pr-4 whitespace-nowrap">Name</th>
+                <th className="py-2 pr-4 whitespace-nowrap">Email</th>
+                <th className="py-2 pr-4 whitespace-nowrap">Role</th>
+                <th className="py-2 pr-4">Permissions</th>
+                <th className="py-2 pr-4 whitespace-nowrap">Status</th>
+                <th className="py-2 whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody>
               {items.map((a) => (
-                <tr key={a._id} className="border-t">
-                  <td className="py-3">{a.name}</td>
-                  <td className="py-3">{a.email}</td>
-                  <td className="py-3">{a.role}</td>
-                  <td className="py-3 text-gray-600">{permissionSummary(a)}</td>
-                  <td className="py-3">
+                <tr key={a._id} className="border-t align-top">
+                  <td className="py-3 pr-4 whitespace-nowrap font-medium">{a.name}</td>
+                  <td className="py-3 pr-4 text-gray-500 whitespace-nowrap">{a.email}</td>
+                  <td className="py-3 pr-4">
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        a.role === "admin"
+                          ? "bg-purple-100 text-purple-700"
+                          : "bg-blue-100 text-blue-700"
+                      }`}
+                    >
+                      {a.role}
+                    </span>
+                  </td>
+                  <td className="py-3 pr-4 max-w-xs">
+                    <PermissionGrid admin={a} />
+                  </td>
+                  <td className="py-3 pr-4 whitespace-nowrap">
                     {a.isActive ? (
-                      <span className="text-green-600">Active</span>
+                      <span className="text-green-600 font-medium">Active</span>
                     ) : (
-                      <span className="text-red-600">Disabled</span>
+                      <span className="text-red-500 font-medium">Disabled</span>
                     )}
                   </td>
                   <td className="py-3">
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-1.5">
                       <a
-                        className="px-2 py-1 border rounded text-sm"
+                        className="px-2 py-1 border rounded text-xs"
                         href={`/dashboard/authorized/${a._id}/profile`}
                       >
                         Profile
                       </a>
                       <a
-                        className="px-2 py-1 border rounded text-sm"
+                        className="px-2 py-1 border rounded text-xs"
                         href={`/dashboard/authorized/${a._id}`}
                       >
                         Edit
                       </a>
                       {a.isActive && (
                         <button
-                          className="px-2 py-1 border rounded text-sm text-red-600"
+                          className="px-2 py-1 border rounded text-xs text-red-600"
                           onClick={() => handleDeactivate(a._id)}
                         >
                           Deactivate
@@ -169,7 +226,7 @@ export default function AdminsList() {
                       )}
                       {user?.role === "admin" && (
                         <button
-                          className="px-2 py-1 border rounded text-sm text-red-600"
+                          className="px-2 py-1 border rounded text-xs text-red-600"
                           onClick={() => handleDelete(a._id)}
                         >
                           Delete

@@ -771,8 +771,8 @@ export default function ProductEdit({ productId }) {
   }, [product, tagStr, productId, API, sanitizeBadgeKeys]);
 
   const handleFile = async (file) => {
-    if (file.size > 2 * 1024 * 1024) {
-      alert(`"${file.name}" সাইজ ${(file.size / 1024 / 1024).toFixed(1)}MB — সর্বোচ্চ ২MB অনুমোদিত।`);
+    if (file.size > 5 * 1024 * 1024) {
+      alert(`"${file.name}" সাইজ ${(file.size / 1024 / 1024).toFixed(1)}MB — সর্বোচ্চ ৫MB অনুমোদিত।`);
       return;
     }
     const preview = URL.createObjectURL(file);
@@ -2009,7 +2009,7 @@ export default function ProductEdit({ productId }) {
                     Click to upload or drag and drop
                   </p>
                   <p className="text-xs text-gray-500">
-                    PNG, JPG, WebP up to 10MB
+                    PNG, JPG, WebP up to 5MB
                   </p>
                 </div>
               </label>

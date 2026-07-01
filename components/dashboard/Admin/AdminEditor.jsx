@@ -1,20 +1,120 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/components/context/UserContext";
 
-// Mirrors backend lib/permissions.js — kept in sync manually since the
-// backend module is ESM-only and not importable from the Next.js frontend.
-const PERMISSION_KEYS = ["catalog", "orders", "customers", "content", "addons"];
-const PERMISSION_LABELS = {
-  catalog:
-    "Catalog (Products, Variants, Discounts, Barcodes, Rewards, Waitlist…)",
-  orders: "Orders (incl. Returns, Abandoned Carts, Wishlist)",
-  customers: "Customers & Customer Tags",
-  content: "Marketing & Content (Banners, Popups, Blog, Media…)",
-  addons: "Addons (Pixels, Analytics…)",
-};
+// Mirrors backend lib/permissions.js PERMISSION_GROUPS
+const PERMISSION_GROUPS = [
+  {
+    groupKey: "dashboard",
+    label: "Dashboard",
+    permissions: [{ key: "dashboard.view", label: "View dashboard" }],
+  },
+  {
+    groupKey: "orders",
+    label: "Orders",
+    permissions: [
+      { key: "orders.view",      label: "View orders" },
+      { key: "orders.manage",    label: "Create & edit orders" },
+      { key: "orders.delete",    label: "Delete orders" },
+      { key: "orders.returns",   label: "Returns & refunds" },
+      { key: "orders.abandoned", label: "Abandoned carts & checkouts" },
+      { key: "orders.wishlist",  label: "View wishlist" },
+      { key: "orders.timeline",  label: "Order timeline" },
+      { key: "orders.notes",     label: "Customer notes" },
+      { key: "orders.pick",      label: "Order pick" },
+      { key: "orders.courier",   label: "Send orders to courier" },
+    ],
+  },
+  {
+    groupKey: "products",
+    label: "Products",
+    permissions: [
+      { key: "products.view",         label: "View products" },
+      { key: "products.buying_price", label: "View buying price" },
+      { key: "products.manage",       label: "Create & edit products" },
+      { key: "products.delete",       label: "Delete products" },
+      { key: "products.inventory",    label: "Manage inventory" },
+      { key: "products.variants",     label: "Product variants" },
+      { key: "products.categories",   label: "Categories" },
+      { key: "products.discounts",    label: "Discounts & coupons" },
+      { key: "products.tags",         label: "Tags & badges" },
+      { key: "products.barcodes",     label: "Barcodes" },
+      { key: "products.reviews",      label: "Reviews" },
+      { key: "products.rewards",      label: "Rewards" },
+      { key: "products.waitlist",     label: "Waitlist" },
+      { key: "products.questions",    label: "Q & A" },
+      { key: "products.preorders",    label: "Pre-orders" },
+    ],
+  },
+  {
+    groupKey: "customers",
+    label: "Customers",
+    permissions: [
+      { key: "customers.view",   label: "View customers" },
+      { key: "customers.manage", label: "Create & edit customers" },
+      { key: "customers.delete", label: "Delete customers" },
+      { key: "customers.tags",   label: "Customer tags" },
+    ],
+  },
+  {
+    groupKey: "content",
+    label: "Online Store & Content",
+    permissions: [
+      { key: "content.banners",  label: "Banners & popups" },
+      { key: "content.promo",    label: "Promo strip, occasions & panels" },
+      { key: "content.featured", label: "Featured sections" },
+      { key: "content.blog",     label: "Blog / content" },
+      { key: "content.media",    label: "Media library" },
+    ],
+  },
+  {
+    groupKey: "addons",
+    label: "Addons",
+    permissions: [
+      { key: "addons.manage",     label: "All addons overview" },
+      { key: "addons.pixels",     label: "Pixels (Facebook, TikTok)" },
+      { key: "addons.analytics",  label: "Analytics (GA4, GTM)" },
+      { key: "addons.adsense",    label: "Google AdSense" },
+      { key: "addons.protection", label: "Fake order protection" },
+    ],
+  },
+  {
+    groupKey: "reports",
+    label: "Reports",
+    permissions: [
+      { key: "reports.profit",    label: "Profit margin" },
+      { key: "reports.analytics", label: "Most searched & popular" },
+    ],
+  },
+  {
+    groupKey: "system",
+    label: "System",
+    permissions: [
+      { key: "system.settings", label: "Website settings" },
+      { key: "system.policies", label: "Policy pages" },
+    ],
+  },
+];
+
+const ALL_KEYS = PERMISSION_GROUPS.flatMap((g) => g.permissions.map((p) => p.key));
+
+function GroupCheckbox({ allChecked, someChecked, onChange }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (ref.current) ref.current.indeterminate = someChecked && !allChecked;
+  }, [someChecked, allChecked]);
+  return (
+    <input
+      ref={ref}
+      type="checkbox"
+      checked={allChecked}
+      onChange={onChange}
+      className="h-4 w-4 rounded border-gray-300 text-indigo-600 accent-indigo-600"
+    />
+  );
+}
 
 export default function AdminEditor({ adminId }) {
   const router = useRouter();
@@ -47,6 +147,31 @@ export default function AdminEditor({ adminId }) {
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));
   }, [adminId, API]);
+
+  const togglePermission = (key, checked) => {
+    setAdmin((a) => {
+      const current = a.permissions || [];
+      const permissions = checked
+        ? [...current, key]
+        : current.filter((k) => k !== key);
+      return { ...a, permissions };
+    });
+  };
+
+  const toggleGroup = (groupKeys, checked) => {
+    setAdmin((a) => {
+      const current = a.permissions || [];
+      const permissions = checked
+        ? [...new Set([...current, ...groupKeys])]
+        : current.filter((k) => !groupKeys.includes(k));
+      return { ...a, permissions };
+    });
+  };
+
+  const toggleAll = () => {
+    const hasAll = ALL_KEYS.every((k) => (admin.permissions || []).includes(k));
+    setAdmin((a) => ({ ...a, permissions: hasAll ? [] : ALL_KEYS }));
+  };
 
   const handleSave = async () => {
     if (!admin.name || !admin.email)
@@ -85,20 +210,21 @@ export default function AdminEditor({ adminId }) {
     }
   };
 
+  const checkedPermissions = admin.permissions || [];
+  const allChecked = ALL_KEYS.every((k) => checkedPermissions.includes(k));
+
   return (
     <div className="max-w-4xl mx-auto bg-white p-6 rounded shadow">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <h2 className="text-lg font-semibold">
           {adminId === "new" ? "Create admin / moderator" : "Edit account"}
         </h2>
-        <div>
-          <button
-            onClick={() => router.push("/dashboard/authorized")}
-            className="px-3 py-2 border rounded text-sm shrink-0"
-          >
-            Back
-          </button>
-        </div>
+        <button
+          onClick={() => router.push("/dashboard/authorized")}
+          className="px-3 py-2 border rounded text-sm shrink-0"
+        >
+          Back
+        </button>
       </div>
 
       {loading ? (
@@ -109,9 +235,7 @@ export default function AdminEditor({ adminId }) {
             <label className="block text-sm font-medium">Full name</label>
             <input
               value={admin.name || ""}
-              onChange={(e) =>
-                setAdmin((a) => ({ ...a, name: e.target.value }))
-              }
+              onChange={(e) => setAdmin((a) => ({ ...a, name: e.target.value }))}
               className="w-full border px-3 py-2 rounded"
             />
           </div>
@@ -119,9 +243,7 @@ export default function AdminEditor({ adminId }) {
             <label className="block text-sm font-medium">Email</label>
             <input
               value={admin.email || ""}
-              onChange={(e) =>
-                setAdmin((a) => ({ ...a, email: e.target.value }))
-              }
+              onChange={(e) => setAdmin((a) => ({ ...a, email: e.target.value }))}
               className="w-full border px-3 py-2 rounded"
             />
           </div>
@@ -130,9 +252,7 @@ export default function AdminEditor({ adminId }) {
               <label className="block text-sm font-medium">Role</label>
               <select
                 value={admin.role}
-                onChange={(e) =>
-                  setAdmin((a) => ({ ...a, role: e.target.value }))
-                }
+                onChange={(e) => setAdmin((a) => ({ ...a, role: e.target.value }))}
                 className="w-full border px-3 py-2 rounded"
               >
                 <option value="admin">Admin</option>
@@ -144,10 +264,7 @@ export default function AdminEditor({ adminId }) {
               <select
                 value={admin.isActive ? "active" : "disabled"}
                 onChange={(e) =>
-                  setAdmin((a) => ({
-                    ...a,
-                    isActive: e.target.value === "active",
-                  }))
+                  setAdmin((a) => ({ ...a, isActive: e.target.value === "active" }))
                 }
                 className="w-full border px-3 py-2 rounded"
               >
@@ -159,36 +276,60 @@ export default function AdminEditor({ adminId }) {
 
           {admin.role === "moderator" && (
             <div>
-              <label className="block text-sm font-medium">
-                Section access
-              </label>
-              <p className="text-xs text-gray-500 mb-2">
-                Leave all unchecked to give this moderator full access. Check
-                one or more to restrict them to only those sections.
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium">Permissions</label>
+                <button
+                  type="button"
+                  onClick={toggleAll}
+                  className="text-xs text-indigo-600 hover:underline"
+                >
+                  {allChecked ? "Deselect all" : "Select all"}
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mb-3">
+                Check the permissions you want to grant. Unchecked items will not be accessible.
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {PERMISSION_KEYS.map((key) => (
-                  <label
-                    key={key}
-                    className="flex items-start gap-2 text-sm border rounded px-3 py-2"
-                  >
-                    <input
-                      type="checkbox"
-                      className="mt-0.5"
-                      checked={(admin.permissions || []).includes(key)}
-                      onChange={(e) =>
-                        setAdmin((a) => {
-                          const current = a.permissions || [];
-                          const permissions = e.target.checked
-                            ? [...current, key]
-                            : current.filter((k) => k !== key);
-                          return { ...a, permissions };
-                        })
-                      }
-                    />
-                    <span>{PERMISSION_LABELS[key]}</span>
-                  </label>
-                ))}
+
+              <div className="border rounded-lg divide-y">
+                {PERMISSION_GROUPS.map((group) => {
+                  const groupKeys = group.permissions.map((p) => p.key);
+                  const groupAllChecked = groupKeys.every((k) => checkedPermissions.includes(k));
+                  const groupSomeChecked = groupKeys.some((k) => checkedPermissions.includes(k));
+
+                  return (
+                    <div key={group.groupKey} className="p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-semibold text-gray-800">
+                          {group.label}
+                        </span>
+                        <label className="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer select-none">
+                          <GroupCheckbox
+                            allChecked={groupAllChecked}
+                            someChecked={groupSomeChecked}
+                            onChange={(e) => toggleGroup(groupKeys, e.target.checked)}
+                          />
+                          Select all
+                        </label>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                        {group.permissions.map((perm) => (
+                          <label
+                            key={perm.key}
+                            className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checkedPermissions.includes(perm.key)}
+                              onChange={(e) => togglePermission(perm.key, e.target.checked)}
+                              className="h-4 w-4 rounded border-gray-300 text-indigo-600 accent-indigo-600"
+                            />
+                            {perm.label}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

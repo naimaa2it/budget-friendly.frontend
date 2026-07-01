@@ -92,14 +92,14 @@ function StockBadge({ inventory, availability }) {
   if (inventory != null && inventory <= 10) {
     return (
       <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-orange-600">
-        <span className="w-2 h-2 rounded-full bg-orange-500 inline-block" />
+        <span className="w-2 h-2 rounded-full bg-orange-500 inline-block " />
         Only {inventory} left in stock — order soon!
       </span>
     );
   }
   return (
     <span className=" items-center gap-1.5 text-xs font-semibold text-rose-600 hidden md:block">
-      <span className="w-2 h-2 rounded-full bg-rose-500 inline-block" />
+      <span className="w-2 h-2 rounded-full bg-rose-500 inline-block ml-1" />
       Only{inventory != null ? ` ${inventory}` : ""} items left in Stock
     </span>
   );

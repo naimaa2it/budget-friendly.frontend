@@ -10,6 +10,7 @@ import MediaPicker from "@/components/dashboard/MediaPicker";
 import Image from "next/image";
 import ProductVariantBuilder from "@/components/dashboard/Product/ProductVariantBuilder";
 import ProductAsideSections from "@/components/dashboard/Product/ProductAsideSections";
+import { uploadImageDirect } from "@/lib/uploadImage";
 
 const DEFAULT_BADGE_OPTIONS = [
   {
@@ -653,24 +654,7 @@ export default function ProductCreate() {
     }));
 
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("folder", "Pickob/products");
-      const resp = await fetch(`${API}/api/admin/upload`, {
-        method: "POST",
-        body: fd,
-        credentials: "include",
-      });
-      const body = await resp.json();
-      if (!resp.ok) throw new Error(body.error || "Upload failed");
-
-      const asset = {
-        public_id: body.asset.public_id,
-        url: body.asset.url,
-        width: body.asset.width,
-        height: body.asset.height,
-        format: body.asset.format,
-      };
+      const asset = await uploadImageDirect(file, "Pickob/products");
 
       setProduct((p) => {
         const imgs = (p.images || []).map((img) => {

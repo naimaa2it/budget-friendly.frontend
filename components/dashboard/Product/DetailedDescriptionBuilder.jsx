@@ -2,8 +2,7 @@
 import { useRef, useCallback, useState } from "react";
 import RichTextEditor from "@/components/dashboard/RichTextEditor";
 import MediaPicker from "@/components/dashboard/MediaPicker";
-
-const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
+import { uploadImageDirect } from "@/lib/uploadImage";
 
 const uid = () =>
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
@@ -16,17 +15,7 @@ const normalizeBlocks = (value) => {
 };
 
 async function uploadFile(file) {
-  const fd = new FormData();
-  fd.append("file", file);
-  fd.append("folder", "Pickob/products");
-  const resp = await fetch(`${API}/api/admin/upload`, {
-    method: "POST",
-    body: fd,
-    credentials: "include",
-  });
-  const body = await resp.json();
-  if (!resp.ok) throw new Error(body.error || "Upload failed");
-  return { url: body.asset.url, public_id: body.asset.public_id };
+  return uploadImageDirect(file, "Pickob/products");
 }
 
 /* ── Single image slot ── */

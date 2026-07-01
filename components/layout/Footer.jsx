@@ -17,12 +17,16 @@ function normalizeHref(href) {
   return `/${href}`;
 }
 
+const VISIBLE_LINKS = 5;
+
 export default function Footer() {
   const { user, refreshUser } = useUser();
   const { storeName, footerInfo, socialLinks, footerLinks } = useStoreSettings();
   const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [localToast, setLocalToast] = useState(null); // { type: 'success'|'error'|'warn', msg }
+  const [showAllQuick, setShowAllQuick] = useState(false);
+  const [showAllService, setShowAllService] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
   const [toggling, setToggling] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -388,8 +392,8 @@ export default function Footer() {
                 <h3 className="text-md font-semibold text-[#202020] mb-3">
                   {t("footer.quick_links")}
                 </h3>
-                <ul className="space-y-2 text-sm text-[#202020]">
-                  {(footerLinks?.quickLinks?.length
+                {(() => {
+                  const all = footerLinks?.quickLinks?.length
                     ? footerLinks.quickLinks
                     : [
                         { label: t("footer.home"), href: "/" },
@@ -397,15 +401,34 @@ export default function Footer() {
                         { label: "Gents", href: "/category/gents/" },
                         { label: "Ladies", href: "/category/ladies/" },
                         { label: t("footer.blog"), href: "/blog" },
-                      ]
-                  ).map((item, i) => (
-                    <li key={i}>
-                      <Link href={normalizeHref(item.href)} className="hover:text-red-600">
-                        {item.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+                      ];
+                  const visible = showAllQuick ? all : all.slice(0, VISIBLE_LINKS);
+                  const hasMore = all.length > VISIBLE_LINKS;
+                  return (
+                    <ul className="space-y-2 text-sm text-[#202020]">
+                      {visible.map((item, i) => (
+                        <li key={i}>
+                          <Link href={normalizeHref(item.href)} className="hover:text-red-600">
+                            {item.label}
+                          </Link>
+                        </li>
+                      ))}
+                      {hasMore && (
+                        <li>
+                          <button
+                            onClick={() => setShowAllQuick((v) => !v)}
+                            className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 mt-1 transition-colors"
+                          >
+                            <span className="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] font-bold">
+                              {showAllQuick ? "−" : "+"}
+                            </span>
+                            {showAllQuick ? "less" : `${all.length - VISIBLE_LINKS} more`}
+                          </button>
+                        </li>
+                      )}
+                    </ul>
+                  );
+                })()}
               </div>
 
               {/* Customer Service */}
@@ -413,8 +436,8 @@ export default function Footer() {
                 <h3 className="text-md font-semibold text-[#202020] mb-3">
                   {t("footer.customer_service")}
                 </h3>
-                <ul className="space-y-2 text-sm text-[#202020]">
-                  {(footerLinks?.customerService?.length
+                {(() => {
+                  const all = footerLinks?.customerService?.length
                     ? footerLinks.customerService
                     : [
                         { label: t("footer.shipping_returns"), href: "/shipping" },
@@ -422,15 +445,34 @@ export default function Footer() {
                         { label: t("footer.faq"), href: "/faq" },
                         { label: t("footer.contact"), href: "/contact" },
                         { label: t("footer.about"), href: "/about" },
-                      ]
-                  ).map((item, i) => (
-                    <li key={i}>
-                      <Link href={normalizeHref(item.href)} className="hover:text-red-600">
-                        {item.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+                      ];
+                  const visible = showAllService ? all : all.slice(0, VISIBLE_LINKS);
+                  const hasMore = all.length > VISIBLE_LINKS;
+                  return (
+                    <ul className="space-y-2 text-sm text-[#202020]">
+                      {visible.map((item, i) => (
+                        <li key={i}>
+                          <Link href={normalizeHref(item.href)} className="hover:text-red-600">
+                            {item.label}
+                          </Link>
+                        </li>
+                      ))}
+                      {hasMore && (
+                        <li>
+                          <button
+                            onClick={() => setShowAllService((v) => !v)}
+                            className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 mt-1 transition-colors"
+                          >
+                            <span className="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] font-bold">
+                              {showAllService ? "−" : "+"}
+                            </span>
+                            {showAllService ? "less" : `${all.length - VISIBLE_LINKS} more`}
+                          </button>
+                        </li>
+                      )}
+                    </ul>
+                  );
+                })()}
               </div>
             </div>
 

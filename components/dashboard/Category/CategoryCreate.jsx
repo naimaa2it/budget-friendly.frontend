@@ -26,9 +26,7 @@ export default function CategoryCreate({ onSuccess }) {
   const [description, setDescription] = useState("");
   const [images, setImages] = useState([]);
   const [tree, setTree] = useState([]);
-  const [selectedMain, setSelectedMain] = useState("");
-  const [selectedSub, setSelectedSub] = useState("");
-  const [selectedSubSub, setSelectedSubSub] = useState("");
+  const [selectedPath, setSelectedPath] = useState([]);
   const [saving, setSaving] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
 
@@ -88,10 +86,7 @@ export default function CategoryCreate({ onSuccess }) {
     if (!name.trim()) return alert("Category name is required");
     setSaving(true);
     try {
-      let parentId = "";
-      if (selectedSubSub) parentId = selectedSubSub;
-      else if (selectedSub) parentId = selectedSub;
-      else if (selectedMain) parentId = selectedMain;
+      const parentId = selectedPath.length > 0 ? selectedPath[selectedPath.length - 1] : "";
 
       const payload = {
         name: name.trim(),
@@ -220,12 +215,8 @@ export default function CategoryCreate({ onSuccess }) {
           </label>
           <div className="flex flex-col gap-2">
             <select
-              value={selectedMain}
-              onChange={(e) => {
-                setSelectedMain(e.target.value);
-                setSelectedSub("");
-                setSelectedSubSub("");
-              }}
+              value={selectedPath[0] || ""}
+              onChange={(e) => setSelectedPath(e.target.value ? [e.target.value] : [])}
               className="w-full border px-3 py-2 rounded"
             >
               <option value="">(no parent / top level)</option>
@@ -237,37 +228,29 @@ export default function CategoryCreate({ onSuccess }) {
                   </option>
                 ))}
             </select>
-            {selectedMain && (
-              <select
-                value={selectedSub}
-                onChange={(e) => {
-                  setSelectedSub(e.target.value);
-                  setSelectedSubSub("");
-                }}
-                className="w-full border px-3 py-2 rounded"
-              >
-                <option value="">(direct child of selected main)</option>
-                {(findNode(tree, selectedMain)?.children || []).map((n) => (
-                  <option key={n._id} value={n._id}>
-                    {n.name}
-                  </option>
-                ))}
-              </select>
-            )}
-            {selectedSub && (
-              <select
-                value={selectedSubSub}
-                onChange={(e) => setSelectedSubSub(e.target.value)}
-                className="w-full border px-3 py-2 rounded"
-              >
-                <option value="">(direct child of selected sub)</option>
-                {(findNode(tree, selectedSub)?.children || []).map((n) => (
-                  <option key={n._id} value={n._id}>
-                    {n.name}
-                  </option>
-                ))}
-              </select>
-            )}
+            {selectedPath.map((selectedId, idx) => {
+              const children = findNode(tree, selectedId)?.children || [];
+              if (children.length === 0) return null;
+              return (
+                <select
+                  key={selectedId}
+                  value={selectedPath[idx + 1] || ""}
+                  onChange={(e) => {
+                    const newPath = selectedPath.slice(0, idx + 1);
+                    if (e.target.value) newPath.push(e.target.value);
+                    setSelectedPath(newPath);
+                  }}
+                  className="w-full border px-3 py-2 rounded"
+                >
+                  <option value="">(direct child of selected)</option>
+                  {children.map((n) => (
+                    <option key={n._id} value={n._id}>
+                      {n.name}
+                    </option>
+                  ))}
+                </select>
+              );
+            })}
           </div>
         </div>
 

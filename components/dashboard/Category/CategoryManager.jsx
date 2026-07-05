@@ -89,7 +89,7 @@ export default function CategoryManager() {
     const hasChildren = cat.children && cat.children.length > 0;
     const isExpanded = expandedIds.has(cat._id);
     const levelLabel =
-      cat.level === 0 ? "Main" : cat.level === 1 ? "Sub" : "Sub-Sub";
+      cat.level === 0 ? "Main" : cat.level === 1 ? "Sub" : `L${cat.level}`;
 
     return (
       <div key={cat._id} style={{ paddingLeft: depth * 20 }}>
@@ -453,7 +453,7 @@ function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
     { name: "", description: "", images: [] },
   ]);
 
-  const canAddChildren = category.level < 2; // Main (0) and Sub (1) can add children
+  const canAddChildren = true;
 
   const handleFile = async (file, isParent = true, childIndex = null) => {
     const preview = URL.createObjectURL(file);
@@ -628,7 +628,7 @@ function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
               ? "Main"
               : category.level === 1
                 ? "Sub"
-                : "Sub-Sub"}{" "}
+                : `Level ${category.level}`}{" "}
             Category
           </h3>
 
@@ -716,12 +716,7 @@ function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
             {canAddChildren && (
               <div className="border rounded p-4 bg-blue-50">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-medium">
-                    Add{" "}
-                    {category.level === 0
-                      ? "Subcategories"
-                      : "Sub-Subcategories"}
-                  </h4>
+                  <h4 className="font-medium">Add Subcategories</h4>
                   <button
                     onClick={() =>
                       setNewChildren([
@@ -751,7 +746,7 @@ function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
                                 ),
                               )
                             }
-                            placeholder={`${category.level === 0 ? "Subcategory" : "Sub-subcategory"} name`}
+                            placeholder="Subcategory name"
                             className="w-full border px-3 py-2 rounded"
                           />
                           <textarea
@@ -848,9 +843,7 @@ function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
             {children.length > 0 && (
               <div className="border rounded p-4">
                 <h4 className="font-medium mb-3">
-                  Existing{" "}
-                  {category.level === 0 ? "Subcategories" : "Sub-Subcategories"}{" "}
-                  ({children.length})
+                  Existing Subcategories ({children.length})
                 </h4>
                 <div className="text-sm text-gray-600">
                   Click on child categories in the main list to edit them

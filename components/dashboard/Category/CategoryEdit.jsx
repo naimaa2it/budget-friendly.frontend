@@ -31,9 +31,7 @@ export default function CategoryEdit({ categoryId }) {
     return null;
   };
   const [tree, setTree] = useState([]);
-  const [selectedMain, setSelectedMain] = useState("");
-  const [selectedSub, setSelectedSub] = useState("");
-  const [selectedSubSub, setSelectedSubSub] = useState("");
+  const [selectedPath, setSelectedPath] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
@@ -93,9 +91,9 @@ export default function CategoryEdit({ categoryId }) {
         // compute ancestor chain for selects
         const computeAncestors = (nodes, id, path = []) => {
           for (const n of nodes || []) {
-            if (String(n._id) === String(id)) return [...path, n];
+            if (String(n._id) === String(id)) return [...path, String(n._id)];
             if (n.children) {
-              const res = computeAncestors(n.children, id, [...path, n]);
+              const res = computeAncestors(n.children, id, [...path, String(n._id)]);
               if (res) return res;
             }
           }
@@ -103,11 +101,7 @@ export default function CategoryEdit({ categoryId }) {
         };
         if (tree.length && parentIdVal) {
           const anc = computeAncestors(tree, parentIdVal);
-          if (anc && anc.length) {
-            setSelectedMain(anc[0]._id);
-            if (anc.length >= 2) setSelectedSub(anc[1]._id);
-            if (anc.length >= 3) setSelectedSubSub(anc[2]._id);
-          }
+          if (anc && anc.length) setSelectedPath(anc);
         }
       } catch (err) {
         console.error("Failed to load category for edit:", err);
@@ -187,10 +181,7 @@ export default function CategoryEdit({ categoryId }) {
     if (!category.name) return alert("Name is required");
     setSaving(true);
     try {
-      let parentId = "";
-      if (selectedSubSub) parentId = selectedSubSub;
-      else if (selectedSub) parentId = selectedSub;
-      else if (selectedMain) parentId = selectedMain;
+      const parentId = selectedPath.length > 0 ? selectedPath[selectedPath.length - 1] : "";
       const payload = {
         name: category.name,
         description: category.description || "",
@@ -328,12 +319,8 @@ export default function CategoryEdit({ categoryId }) {
             </label>
             <div className="flex flex-col gap-2">
               <select
-                value={selectedMain}
-                onChange={(e) => {
-                  setSelectedMain(e.target.value);
-                  setSelectedSub("");
-                  setSelectedSubSub("");
-                }}
+                value={selectedPath[0] || ""}
+                onChange={(e) => setSelectedPath(e.target.value ? [e.target.value] : [])}
                 className="w-full border px-3 py-2 rounded"
               >
                 <option value="">(no parent / top level)</option>
@@ -345,37 +332,29 @@ export default function CategoryEdit({ categoryId }) {
                     </option>
                   ))}
               </select>
-              {selectedMain && (
-                <select
-                  value={selectedSub}
-                  onChange={(e) => {
-                    setSelectedSub(e.target.value);
-                    setSelectedSubSub("");
-                  }}
-                  className="w-full border px-3 py-2 rounded"
-                >
-                  <option value="">(direct child of selected main)</option>
-                  {(findNode(tree, selectedMain)?.children || []).map((n) => (
-                    <option key={n._id} value={n._id}>
-                      {n.name}
-                    </option>
-                  ))}
-                </select>
-              )}
-              {selectedSub && (
-                <select
-                  value={selectedSubSub}
-                  onChange={(e) => setSelectedSubSub(e.target.value)}
-                  className="w-full border px-3 py-2 rounded"
-                >
-                  <option value="">(direct child of selected sub)</option>
-                  {(findNode(tree, selectedSub)?.children || []).map((n) => (
-                    <option key={n._id} value={n._id}>
-                      {n.name}
-                    </option>
-                  ))}
-                </select>
-              )}
+              {selectedPath.map((selectedId, idx) => {
+                const children = findNode(tree, selectedId)?.children || [];
+                if (children.length === 0) return null;
+                return (
+                  <select
+                    key={selectedId}
+                    value={selectedPath[idx + 1] || ""}
+                    onChange={(e) => {
+                      const newPath = selectedPath.slice(0, idx + 1);
+                      if (e.target.value) newPath.push(e.target.value);
+                      setSelectedPath(newPath);
+                    }}
+                    className="w-full border px-3 py-2 rounded"
+                  >
+                    <option value="">(direct child of selected)</option>
+                    {children.map((n) => (
+                      <option key={n._id} value={n._id}>
+                        {n.name}
+                      </option>
+                    ))}
+                  </select>
+                );
+              })}
             </div>
           </div>
 

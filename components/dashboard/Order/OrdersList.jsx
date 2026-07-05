@@ -3422,17 +3422,6 @@ function CheckoutSessionModal({ session, onClose }) {
                   rel="noreferrer"
                   className="flex items-center gap-3 p-2.5 rounded-xl border hover:border-indigo-300 hover:bg-indigo-50/40 transition-colors group"
                 >
-                  {item.image ? (
-                    <img
-                      src={item.image}
-                      alt={item.title}
-                      className="w-11 h-11 rounded-lg object-cover border shrink-0"
-                    />
-                  ) : (
-                    <div className="w-11 h-11 rounded-lg bg-gray-100 shrink-0 flex items-center justify-center text-gray-300 text-lg">
-                      📦
-                    </div>
-                  )}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-800 truncate group-hover:text-indigo-700">
                       {item.title || "—"}

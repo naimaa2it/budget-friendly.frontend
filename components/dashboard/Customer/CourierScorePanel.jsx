@@ -184,18 +184,18 @@ export default function CourierScorePanel({
                     : "bg-gray-300";
 
               const RATING_STYLE = {
-                new_customer:    "bg-gray-100 text-gray-600",
-                good_customer:   "bg-emerald-100 text-emerald-700",
-                regular_customer:"bg-blue-100 text-blue-700",
-                bad_customer:    "bg-red-100 text-red-700",
-                blocked:         "bg-red-200 text-red-800",
+                new_customer: "bg-gray-100 text-gray-600",
+                good_customer: "bg-emerald-100 text-emerald-700",
+                regular_customer: "bg-blue-100 text-blue-700",
+                bad_customer: "bg-red-100 text-red-700",
+                blocked: "bg-red-200 text-red-800",
               };
               const RATING_LABEL = {
-                new_customer:    "New customer",
-                good_customer:   "Good customer",
-                regular_customer:"Regular customer",
-                bad_customer:    "Bad customer",
-                blocked:         "Blocked",
+                new_customer: "New customer",
+                good_customer: "Good customer",
+                regular_customer: "Regular customer",
+                bad_customer: "Bad customer",
+                blocked: "Blocked",
               };
 
               return (
@@ -214,7 +214,9 @@ export default function CourierScorePanel({
                   </td>
                   <td className="py-3 px-4">
                     {!configured ? (
-                      <span className="text-xs text-gray-400">Not connected</span>
+                      <span className="text-xs text-gray-400">
+                        Not connected
+                      </span>
                     ) : row.error ? (
                       <span className="text-xs text-red-600">
                         Error
@@ -224,12 +226,15 @@ export default function CourierScorePanel({
                       </span>
                     ) : row.ratingBased ? (
                       <div className="flex flex-col gap-1">
-                        <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full w-fit ${RATING_STYLE[row.rating] ?? "bg-gray-100 text-gray-600"}`}>
+                        <span
+                          className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full w-fit ${RATING_STYLE[row.rating] ?? "bg-gray-100 text-gray-600"}`}
+                        >
                           {RATING_LABEL[row.rating] ?? row.rating}
                         </span>
                         {row.addressCount > 0 && (
                           <span className="text-[10px] text-gray-400">
-                            {row.addressCount} address{row.addressCount !== 1 ? "es" : ""} on record
+                            {row.addressCount} address
+                            {row.addressCount !== 1 ? "es" : ""} on record
                           </span>
                         )}
                       </div>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import MediaPicker from "@/components/dashboard/MediaPicker";
+import { uploadAdminImage } from "@/lib/uploadImage";
 
 const EMPTY_CARD = {
   image: { url: "", public_id: "" },
@@ -84,16 +85,7 @@ export default function OccasionEditor({
     });
 
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("folder", "Pickob/occasions");
-      const resp = await fetch(`${API}/api/admin/upload`, {
-        method: "POST",
-        body: fd,
-        credentials: "include",
-      });
-      const body = await resp.json();
-      if (!resp.ok) throw new Error(body.error || "Upload failed");
+      const body = await uploadAdminImage(file, "Pickob/occasions");
       updateCard(idx, "image", {
         url: body.asset.url,
         public_id: body.asset.public_id,

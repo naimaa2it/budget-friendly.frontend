@@ -8,6 +8,7 @@ import MediaUploader from "./MediaUploader";
 import CategorySelector from "./CategorySelector";
 import TagInput from "./TagInput";
 import DynamicSectionBuilder from "./DynamicSectionBuilder";
+import { uploadAdminImage } from "@/lib/uploadImage";
 
 export default function BlogEdit({ postId }) {
   const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
@@ -135,16 +136,7 @@ export default function BlogEdit({ postId }) {
 
   const insertImageFile = async (file) => {
     if (!file) return;
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("folder", "Pickob/blog/images");
-    const r = await fetch(`${API}/api/admin/upload`, {
-      method: "POST",
-      body: fd,
-      credentials: "include",
-    });
-    const b = await r.json();
-    if (!r.ok) throw new Error(b.error || "Upload failed");
+    const b = await uploadAdminImage(file, "Pickob/blog/images");
     const url = b.asset.url;
     exec("insertImage", url);
     setTimeout(() => {

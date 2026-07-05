@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/components/context/UserContext";
 import MediaPicker from "@/components/dashboard/MediaPicker";
+import { uploadAdminImage } from "@/lib/uploadImage";
 
 const findNode = (nodes, id) => {
   if (!id) return null;
@@ -48,16 +49,7 @@ export default function CategoryCreate({ onSuccess }) {
       { url: preview, __local: true, uploading: true },
     ]);
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("folder", "Pickob/categories");
-      const resp = await fetch(`${API}/api/admin/upload`, {
-        method: "POST",
-        body: fd,
-        credentials: "include",
-      });
-      const body = await resp.json();
-      if (!resp.ok) throw new Error(body.error || "Upload failed");
+      const body = await uploadAdminImage(file, "Pickob/categories");
       const asset = {
         public_id: body.asset.public_id,
         url: body.asset.url,

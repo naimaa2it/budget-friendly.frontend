@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import MediaPicker from "@/components/dashboard/MediaPicker";
 import { useUser } from "@/components/context/UserContext";
+import { uploadAdminImage } from "@/lib/uploadImage";
 
 export default function PopupManager() {
   const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
@@ -45,16 +46,7 @@ export default function PopupManager() {
     setImage({ url: preview, public_id: "", __uploading: true });
     setUploading(true);
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("folder", "Pickob/popups");
-      const resp = await fetch(`${API}/api/admin/upload`, {
-        method: "POST",
-        credentials: "include",
-        body: fd,
-      });
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error || "Upload failed");
+      const data = await uploadAdminImage(file, "Pickob/popups");
       setImage({ url: data.asset.url, public_id: data.asset.public_id });
     } catch (err) {
       alert("Image upload failed: " + err.message);

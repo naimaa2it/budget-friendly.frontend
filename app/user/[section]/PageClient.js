@@ -13,6 +13,7 @@ import UserRewardsSection from "@/components/user/UserRewardsSection";
 import UserLoyaltySection from "@/components/user/UserLoyaltySection";
 import OrderTrackingTimeline from "@/components/order/OrderTrackingTimeline";
 import { COUPONS, isNewUser } from "@/lib/coupons";
+import { uploadUserImage } from "@/lib/uploadImage";
 
 // ─── Orders Section ───────────────────────────────────────────────────────────
 const STATUS_COLORS = {
@@ -1406,7 +1407,11 @@ export default function UserSectionPage() {
       formData.append("mobile", editForm.mobile);
       formData.append("dob", editForm.dob);
       if (selectedImageFile) {
-        formData.append("image", selectedImageFile);
+        // Upload the avatar straight to Cloudinary (bypasses Vercel's 4.5MB body
+        // cap; anything up to 10MB works) and send just the resulting URL.
+        const asset = await uploadUserImage(selectedImageFile, "Pickob/profiles");
+        formData.append("imageUrl", asset.url);
+        if (asset.public_id) formData.append("imagePublicId", asset.public_id);
       }
       if (removeImage && !selectedImageFile) {
         formData.append("removeImage", "1");
@@ -1427,7 +1432,7 @@ export default function UserSectionPage() {
       }
     } catch (err) {
       console.error(err);
-      alert("Failed to save profile");
+      alert(err.message || "Failed to save profile");
     }
   };
 

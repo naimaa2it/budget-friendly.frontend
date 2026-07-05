@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import BlogMediaLibrary from "./BlogMediaLibrary";
+import { uploadAdminImage } from "@/lib/uploadImage";
 
 export default function MediaUploader({
   onUploadComplete,
@@ -14,7 +15,6 @@ export default function MediaUploader({
   allowUrlPaste = false,
   urlPlaceholder = "Paste video link (YouTube, Facebook, MP4, etc.)",
 }) {
-  const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState("");
   const [showLibrary, setShowLibrary] = useState(false);
@@ -43,19 +43,7 @@ export default function MediaUploader({
       setUploadProgress(`Uploading ${i + 1} of ${files.length}...`);
 
       try {
-        const fd = new FormData();
-        fd.append("file", file);
-        fd.append("folder", folder);
-
-        const r = await fetch(`${API}/api/admin/upload`, {
-          method: "POST",
-          body: fd,
-          credentials: "include",
-        });
-
-        const b = await r.json();
-        if (!r.ok) throw new Error(b.error || "Upload failed");
-
+        const b = await uploadAdminImage(file, folder);
         uploadedAssets.push(b.asset);
       } catch (err) {
         console.error("Upload error:", err);

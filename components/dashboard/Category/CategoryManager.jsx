@@ -9,6 +9,7 @@ import {
   FaTrash,
   FaPlus,
 } from "react-icons/fa";
+import { uploadAdminImage } from "@/lib/uploadImage";
 
 export default function CategoryManager() {
   const { user, refreshUser } = useUser();
@@ -275,16 +276,7 @@ function CreateMainModal({ API, onClose, onSuccess }) {
     ]);
 
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("folder", "Pickob/categories");
-      const resp = await fetch(`${API}/api/admin/upload`, {
-        method: "POST",
-        body: fd,
-        credentials: "include",
-      });
-      const body = await resp.json();
-      if (!resp.ok) throw new Error(body.error || "Upload failed");
+      const body = await uploadAdminImage(file, "Pickob/categories");
 
       const asset = {
         public_id: body.asset.public_id,
@@ -481,16 +473,7 @@ function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
     }
 
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("folder", "Pickob/categories");
-      const resp = await fetch(`${API}/api/admin/upload`, {
-        method: "POST",
-        body: fd,
-        credentials: "include",
-      });
-      const body = await resp.json();
-      if (!resp.ok) throw new Error(body.error);
+      const body = await uploadAdminImage(file, "Pickob/categories");
 
       const asset = {
         public_id: body.asset.public_id,

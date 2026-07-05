@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useUser } from "@/components/context/UserContext";
 import MediaPicker from "@/components/dashboard/MediaPicker";
+import { uploadAdminImage } from "@/lib/uploadImage";
 
 function Section({
   title,
@@ -117,16 +118,7 @@ export default function SettingsForm() {
     if (!file) return;
     setLogoUploading(true);
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("folder", "Pickob/settings");
-      const r = await fetch(`${API}/api/admin/upload`, {
-        method: "POST",
-        credentials: "include",
-        body: fd,
-      });
-      const b = await r.json();
-      if (!r.ok) throw new Error(b.error || "Upload failed");
+      const b = await uploadAdminImage(file, "Pickob/settings");
       const asset = b.asset || {};
       setSettings((s) => ({ ...s, websiteLogo: asset }));
       await saveLogo(asset);

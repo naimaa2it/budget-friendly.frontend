@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import AuthModal from "@/components/auth/AuthModal";
 import Image from "next/image";
 import { FaCamera, FaTimes } from "react-icons/fa";
+import { uploadUserImage } from "@/lib/uploadImage";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
@@ -116,16 +117,13 @@ export default function ProductInfoTabs({ product }) {
     const selected = Array.from(files).slice(0, remaining);
     setReviewImageUploading(true);
     try {
-      const formData = new FormData();
-      selected.forEach((f) => formData.append("images", f));
-      const res = await fetch(`${API}/api/products/review-images/upload`, {
-        method: "POST",
-        credentials: "include",
-        body: formData,
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Upload failed");
-      setReviewImages((prev) => [...prev, ...data.urls].slice(0, 4));
+      // Upload each image straight to Cloudinary (bypasses Vercel's 4.5MB body
+      // cap; anything up to 10MB works). The helper enforces the 10MB limit.
+      const assets = await Promise.all(
+        selected.map((f) => uploadUserImage(f, "Pickob/reviews")),
+      );
+      const urls = assets.map((a) => a.url).filter(Boolean);
+      setReviewImages((prev) => [...prev, ...urls].slice(0, 4));
     } catch (err) {
       toast.error(err.message || "Image upload failed");
     } finally {

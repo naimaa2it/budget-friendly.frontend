@@ -2,7 +2,7 @@
 import { useRef, useCallback, useState } from "react";
 import RichTextEditor from "@/components/dashboard/RichTextEditor";
 import MediaPicker from "@/components/dashboard/MediaPicker";
-import { uploadImageDirect } from "@/lib/uploadImage";
+import { uploadImageDirect, MAX_UPLOAD_BYTES } from "@/lib/uploadImage";
 
 const uid = () =>
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
@@ -38,8 +38,8 @@ function ImageSlot({
     async (files) => {
       const file = files?.[0];
       if (!file || !file.type.startsWith("image/")) return;
-      if (file.size > 5 * 1024 * 1024) {
-        alert(`"${file.name}" সাইজ ${(file.size / 1024 / 1024).toFixed(1)}MB — সর্বোচ্চ ৫MB অনুমোদিত।`);
+      if (file.size > MAX_UPLOAD_BYTES) {
+        alert(`"${file.name}" সাইজ ${(file.size / 1024 / 1024).toFixed(1)}MB — সর্বোচ্চ ১০MB অনুমোদিত।`);
         return;
       }
       setUploading(true);
@@ -193,17 +193,17 @@ function ImageRowBlock({
   const handleBulkFiles = useCallback(
     async (files) => {
       const oversized = Array.from(files).filter(
-        (f) => f.type.startsWith("image/") && f.size > 5 * 1024 * 1024,
+        (f) => f.type.startsWith("image/") && f.size > MAX_UPLOAD_BYTES,
       );
       if (oversized.length) {
         alert(
           oversized
             .map((f) => `"${f.name}" (${(f.size / 1024 / 1024).toFixed(1)}MB)`)
-            .join("\n") + "\n\nসর্বোচ্চ ৫MB অনুমোদিত — এই ছবিগুলো বাদ দেওয়া হয়েছে।",
+            .join("\n") + "\n\nসর্বোচ্চ ১০MB অনুমোদিত — এই ছবিগুলো বাদ দেওয়া হয়েছে।",
         );
       }
       const fileArr = Array.from(files)
-        .filter((f) => f.type.startsWith("image/") && f.size <= 5 * 1024 * 1024)
+        .filter((f) => f.type.startsWith("image/") && f.size <= MAX_UPLOAD_BYTES)
         .slice(0, cols);
       if (!fileArr.length) return;
       setBulkUploading(true);

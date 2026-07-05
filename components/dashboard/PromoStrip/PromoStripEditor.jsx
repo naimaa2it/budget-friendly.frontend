@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import MediaPicker from "@/components/dashboard/MediaPicker";
+import { uploadAdminImage } from "@/lib/uploadImage";
 
 export default function PromoStripEditor({
   itemId = null,
@@ -48,16 +49,7 @@ export default function PromoStripEditor({
     setImage({ url: previewUrl, public_id: "", __uploading: true });
 
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("folder", "Pickob/promostrip");
-      const resp = await fetch(`${API}/api/admin/upload`, {
-        method: "POST",
-        body: fd,
-        credentials: "include",
-      });
-      const body = await resp.json();
-      if (!resp.ok) throw new Error(body.error || "Upload failed");
+      const body = await uploadAdminImage(file, "Pickob/promostrip");
       setImage({ url: body.asset.url, public_id: body.asset.public_id });
       URL.revokeObjectURL(previewUrl);
     } catch (err) {

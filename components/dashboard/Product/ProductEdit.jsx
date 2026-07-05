@@ -17,7 +17,7 @@ import Image from "next/image";
 import ProductVariantBuilder from "@/components/dashboard/Product/ProductVariantBuilder";
 import ProductAsideSections from "@/components/dashboard/Product/ProductAsideSections";
 import Link from "next/link";
-import { uploadImageDirect } from "@/lib/uploadImage";
+import { uploadImageDirect, MAX_UPLOAD_BYTES } from "@/lib/uploadImage";
 
 const DEFAULT_BADGE_OPTIONS = [
   {
@@ -772,8 +772,8 @@ export default function ProductEdit({ productId }) {
   }, [product, tagStr, productId, API, sanitizeBadgeKeys]);
 
   const handleFile = async (file) => {
-    if (file.size > 5 * 1024 * 1024) {
-      alert(`"${file.name}" সাইজ ${(file.size / 1024 / 1024).toFixed(1)}MB — সর্বোচ্চ ৫MB অনুমোদিত।`);
+    if (file.size > MAX_UPLOAD_BYTES) {
+      alert(`"${file.name}" সাইজ ${(file.size / 1024 / 1024).toFixed(1)}MB — সর্বোচ্চ ১০MB অনুমোদিত।`);
       return;
     }
     const preview = URL.createObjectURL(file);

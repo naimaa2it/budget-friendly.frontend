@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import MediaPicker from "@/components/dashboard/MediaPicker";
 import Image from "next/image";
+import { uploadAdminImage } from "@/lib/uploadImage";
 
 function ProductSearchSelect({ selectedProducts, onChange, API }) {
   const [query, setQuery] = useState("");
@@ -213,16 +214,7 @@ export default function PromoPanelEditor({
     setImage({ url: preview, public_id: "", __uploading: true });
     setUploading(true);
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("folder", "Pickob/panels");
-      const resp = await fetch(`${API}/api/admin/upload`, {
-        method: "POST",
-        credentials: "include",
-        body: fd,
-      });
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error || "Upload failed");
+      const data = await uploadAdminImage(file, "Pickob/panels");
       setImage({ url: data.asset.url, public_id: data.asset.public_id });
     } catch (err) {
       alert("Image upload failed: " + err.message);

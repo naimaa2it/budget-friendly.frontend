@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import toast from "react-hot-toast";
 import { useUser } from "@/components/context/UserContext";
+import { uploadAdminImage } from "@/lib/uploadImage";
 
 const ROOT_FOLDER = process.env.NEXT_PUBLIC_CLOUDINARY_FOLDER || "Pickob";
 
@@ -84,17 +85,8 @@ export default function MediaLibrary() {
     const uploadFolder = folder || ROOT_FOLDER;
     let successCount = 0;
     for (const file of files) {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("folder", uploadFolder);
       try {
-        const r = await fetch(`${API}/api/admin/upload`, {
-          method: "POST",
-          body: fd,
-          credentials: "include",
-        });
-        const b = await r.json();
-        if (!r.ok) throw new Error(b.error || "Upload failed");
+        await uploadAdminImage(file, uploadFolder);
         successCount++;
       } catch (err) {
         toast.error(`Failed: ${file.name} — ${err.message}`);

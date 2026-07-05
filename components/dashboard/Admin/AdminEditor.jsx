@@ -4,6 +4,41 @@ import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/components/context/UserContext";
 
+const generateStrongPassword = () => {
+  const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const lower = "abcdefghijklmnopqrstuvwxyz";
+  const nums  = "0123456789";
+  const syms  = "!@#$%^&*()_+-=";
+  const all   = upper + lower + nums + syms;
+  const p = [
+    upper[Math.random() * upper.length | 0],
+    lower[Math.random() * lower.length | 0],
+    nums [Math.random() * nums.length  | 0],
+    syms [Math.random() * syms.length  | 0],
+  ];
+  for (let i = 4; i < 16; i++) p.push(all[Math.random() * all.length | 0]);
+  for (let i = p.length - 1; i > 0; i--) {
+    const j = Math.random() * (i + 1) | 0;
+    [p[i], p[j]] = [p[j], p[i]];
+  }
+  return p.join("");
+};
+
+const getPasswordStrength = (pwd) => {
+  if (!pwd) return null;
+  const score = [
+    pwd.length >= 8,
+    pwd.length >= 12,
+    /[A-Z]/.test(pwd),
+    /[a-z]/.test(pwd),
+    /[0-9]/.test(pwd),
+    /[^A-Za-z0-9]/.test(pwd),
+  ].filter(Boolean).length;
+  if (score <= 2) return { score, label: "Weak",   bar: "bg-red-500",   text: "text-red-600"   };
+  if (score <= 4) return { score, label: "Fair",   bar: "bg-yellow-400", text: "text-yellow-600" };
+  return              { score, label: "Strong", bar: "bg-green-500",  text: "text-green-600" };
+};
+
 // Mirrors backend lib/permissions.js PERMISSION_GROUPS
 const PERMISSION_GROUPS = [
   {
@@ -131,6 +166,7 @@ export default function AdminEditor({ adminId }) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (!user) refreshUser();
@@ -335,15 +371,78 @@ export default function AdminEditor({ adminId }) {
           )}
 
           <div>
-            <label className="block text-sm font-medium">
-              Set new password (leave blank to keep current)
+            <label className="block text-sm font-medium mb-1">
+              {adminId === "new" ? "Password" : "New password (leave blank to keep current)"}
             </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full border px-3 py-2 rounded"
-            />
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={adminId !== "new" ? "Leave blank to keep current" : "Enter password"}
+                  className="w-full border px-3 py-2 rounded pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm select-none"
+                  tabIndex={-1}
+                  title={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? "🙈" : "👁"}
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const p = generateStrongPassword();
+                  setPassword(p);
+                  setShowPassword(true);
+                }}
+                className="px-3 py-2 border border-indigo-300 text-indigo-600 rounded text-sm hover:bg-indigo-50 whitespace-nowrap font-medium"
+                title="Generate a strong random password"
+              >
+                ✦ Generate
+              </button>
+            </div>
+
+            {/* Strength indicator */}
+            {password && (() => {
+              const strength = getPasswordStrength(password);
+              const checks = [
+                { label: "8+ chars",  ok: password.length >= 8 },
+                { label: "Uppercase", ok: /[A-Z]/.test(password) },
+                { label: "Lowercase", ok: /[a-z]/.test(password) },
+                { label: "Number",    ok: /[0-9]/.test(password) },
+                { label: "Symbol",    ok: /[^A-Za-z0-9]/.test(password) },
+              ];
+              return (
+                <div className="mt-2 space-y-1.5">
+                  <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full ${strength.bar} transition-all duration-300`}
+                      style={{ width: `${(strength.score / 6) * 100}%` }}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+                      {checks.map((c) => (
+                        <span
+                          key={c.label}
+                          className={`text-xs ${c.ok ? "text-green-600" : "text-gray-400"}`}
+                        >
+                          {c.ok ? "✓" : "○"} {c.label}
+                        </span>
+                      ))}
+                    </div>
+                    <span className={`text-xs font-semibold ${strength.text} ml-2 shrink-0`}>
+                      {strength.label}
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           <div className="flex gap-2">

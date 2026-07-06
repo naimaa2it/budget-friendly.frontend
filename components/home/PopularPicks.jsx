@@ -242,9 +242,25 @@ export default function PopularPicks() {
             </div>
             <Link
               href="/tag/popular-pics/"
-              className="text-md text-rose-500 font-semibold hover:underline whitespace-nowrap"
+              className="group inline-flex items-center gap-1.5 text-md text-rose-500 font-semibold whitespace-nowrap transition-colors hover:text-rose-600"
             >
-              {t("home.view_all")}
+              <span className="relative">
+                {t("home.view_all")}
+                <span className="absolute -bottom-0.5 left-0 h-0.5 w-0 bg-rose-600 transition-all duration-300 group-hover:w-full" />
+              </span>
+              <svg
+                className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 7l5 5m0 0l-5 5m5-5H6"
+                />
+              </svg>
             </Link>
           </div>
 
@@ -356,7 +372,7 @@ export default function PopularPicks() {
                         className="bg-white border border-[#F1E4D8] rounded-xl shadow-sm overflow-hidden group hover:shadow-xl transition-all duration-300 cursor-pointer h-full flex flex-col"
                       >
                         {/* Product Image Container */}
-                        <div className="relative bg-white  rounded-xl p-6 h-54 flex items-center justify-center overflow-hidden">
+                        <div className="relative bg-white  rounded-xl p-1 h-54 flex items-center justify-center overflow-hidden">
                           <Image
                             src={encodeURI(
                               activeImageIndex[product.id] != null

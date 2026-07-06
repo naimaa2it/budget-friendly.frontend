@@ -206,18 +206,20 @@ export default function ProductsList() {
           )}
         </h2>
         <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={() => {
-              setViewTrash((v) => !v);
-              setPage(1);
-              setSelectedIds([]);
-            }}
-            className={`px-3 py-2 rounded text-sm border ${viewTrash ? "bg-gray-800 text-white border-gray-800" : "bg-white text-gray-700 hover:bg-gray-50"}`}
-          >
-            <FaTrash className="inline-block mr-1" />
-            {viewTrash ? "Back to Products" : "Trash"}
-          </button>
+          {user?.role === "admin" && (
+            <button
+              type="button"
+              onClick={() => {
+                setViewTrash((v) => !v);
+                setPage(1);
+                setSelectedIds([]);
+              }}
+              className={`px-3 py-2 rounded text-sm border ${viewTrash ? "bg-gray-800 text-white border-gray-800" : "bg-white text-gray-700 hover:bg-gray-50"}`}
+            >
+              <FaTrash className="inline-block mr-1" />
+              {viewTrash ? "Back to Products" : "Trash"}
+            </button>
+          )}
           {!viewTrash && (
             <Link
               href="/dashboard/products/new"
@@ -321,8 +323,8 @@ export default function ProductsList() {
         />
       </div>
 
-      {/* Bulk action bar — appears once one or more rows are selected */}
-      {selectedIds.length > 0 && (
+      {/* Bulk action bar — appears once one or more rows are selected (admin only) */}
+      {user?.role === "admin" && selectedIds.length > 0 && (
         <div className="flex flex-wrap items-center gap-3 mb-4 p-3 bg-pink-50 border border-pink-100 rounded">
           <span className="text-sm font-medium text-gray-700">
             {selectedIds.length} selected
@@ -375,15 +377,17 @@ export default function ProductsList() {
           <table className="w-full text-left text-sm">
             <thead className="text-gray-600">
               <tr>
-                <th className="py-2 w-8">
-                  <input
-                    type="checkbox"
-                    aria-label="Select all products"
-                    checked={allSelected}
-                    onChange={toggleSelectAll}
-                    className="cursor-pointer"
-                  />
-                </th>
+                {user?.role === "admin" && (
+                  <th className="py-2 w-8">
+                    <input
+                      type="checkbox"
+                      aria-label="Select all products"
+                      checked={allSelected}
+                      onChange={toggleSelectAll}
+                      className="cursor-pointer"
+                    />
+                  </th>
+                )}
                 <th className="py-2 px-3">Title</th>
                 <th className="py-2 px-3 whitespace-nowrap">Price</th>
                 <th className="py-2 px-3 whitespace-nowrap">Inventory</th>
@@ -407,15 +411,17 @@ export default function ProductsList() {
                       }
                     }}
                   >
-                    <td className="py-3 align-top">
-                      <input
-                        type="checkbox"
-                        aria-label={`Select ${p.title}`}
-                        checked={checked}
-                        onChange={() => toggleSelect(id)}
-                        className="cursor-pointer mt-1"
-                      />
-                    </td>
+                    {user?.role === "admin" && (
+                      <td className="py-3 align-top">
+                        <input
+                          type="checkbox"
+                          aria-label={`Select ${p.title}`}
+                          checked={checked}
+                          onChange={() => toggleSelect(id)}
+                          className="cursor-pointer mt-1"
+                        />
+                      </td>
+                    )}
                     <td className="py-3 px-3">
                       <div className="flex items-center gap-3">
                         {p.images?.[0]?.url ? (
@@ -513,15 +519,17 @@ export default function ProductsList() {
                                 ? "Duplicating…"
                                 : "Duplicate"}
                             </button>
-                            <button
-                              title="Move to Trash"
-                              onClick={() => moveToTrash([id])}
-                              disabled={bulkBusy}
-                              className="px-2 py-1 border rounded text-xs text-red-600 hover:bg-red-50 disabled:opacity-50"
-                            >
-                              <FaTrash className="inline-block mr-1" />
-                              Trash
-                            </button>
+                            {user?.role === "admin" && (
+                              <button
+                                title="Move to Trash"
+                                onClick={() => moveToTrash([id])}
+                                disabled={bulkBusy}
+                                className="px-2 py-1 border rounded text-xs text-red-600 hover:bg-red-50 disabled:opacity-50"
+                              >
+                                <FaTrash className="inline-block mr-1" />
+                                Trash
+                              </button>
+                            )}
                             <button
                               title="View waitlist for product"
                               onClick={() =>

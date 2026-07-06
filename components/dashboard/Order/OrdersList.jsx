@@ -1779,17 +1779,19 @@ function AllOrdersSection() {
               <span className="text-xs text-gray-400">
                 {total} result{total !== 1 ? "s" : ""}
               </span>
-              <button
-                type="button"
-                onClick={() => {
-                  setViewTrash((v) => !v);
-                  setPage(1);
-                  setSelectedIds([]);
-                }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${viewTrash ? "bg-gray-800 text-white border-gray-800" : "bg-white text-gray-700 hover:bg-gray-50"}`}
-              >
-                🗑 {viewTrash ? "Back to Orders" : "Trash"}
-              </button>
+              {user?.role === "admin" && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setViewTrash((v) => !v);
+                    setPage(1);
+                    setSelectedIds([]);
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${viewTrash ? "bg-gray-800 text-white border-gray-800" : "bg-white text-gray-700 hover:bg-gray-50"}`}
+                >
+                  🗑 {viewTrash ? "Back to Orders" : "Trash"}
+                </button>
+              )}
             </div>
           </div>
           {!viewTrash && (
@@ -1824,8 +1826,8 @@ function AllOrdersSection() {
           </div>
         )}
 
-        {/* Bulk action bar */}
-        {selectedIds.length > 0 && (
+        {/* Bulk action bar (admin only) */}
+        {canPermanentDelete && selectedIds.length > 0 && (
           <div className="flex flex-wrap items-center gap-3 px-5 py-3 bg-rose-50 border-b border-rose-100">
             <span className="text-sm font-medium text-gray-700">
               {selectedIds.length} selected
@@ -1889,7 +1891,7 @@ function AllOrdersSection() {
                 userId: order.userId,
               })
             }
-            selectable
+            selectable={canPermanentDelete}
             selectedIds={selectedIds}
             onToggleSelect={toggleSelect}
             allSelected={allSelected}

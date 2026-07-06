@@ -155,10 +155,7 @@ export default function ProductCard({
         >
           <span className="sr-only">{product.title || product.slug}</span>
         </Link>
-        <div
-          className="relative bg-gray-50"
-          style={{ height: imageHeight }}
-        >
+        <div className="relative bg-gray-50" style={{ height: imageHeight }}>
           <div className="absolute inset-0 px-2 flex items-center justify-center overflow-hidden">
             <Image
               src={image}
@@ -186,10 +183,10 @@ export default function ProductCard({
                     e.stopPropagation();
                     setCurrentImageIndex(idx);
                   }}
-                  className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
+                  className={`w-2 h-2 rounded-full transition-all duration-200 ${
                     idx === currentImageIndex
                       ? "bg-red-600 w-4"
-                      : "bg-white/70 hover:bg-white"
+                      : "bg-gray-600/90 hover:bg-red-600"
                   }`}
                   aria-label={`View image ${idx + 1}`}
                 />
@@ -216,7 +213,9 @@ export default function ProductCard({
               )}
               {visibleTags.map((b) => {
                 const badge = BADGE_MAP[b] || {
-                  label: b.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+                  label: b
+                    .replace(/_/g, " ")
+                    .replace(/\b\w/g, (c) => c.toUpperCase()),
                   cls: "bg-gray-700 text-white",
                 };
                 return (

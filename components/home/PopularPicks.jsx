@@ -242,25 +242,9 @@ export default function PopularPicks() {
             </div>
             <Link
               href="/tag/popular-pics/"
-              className="group inline-flex items-center gap-1.5 text-md text-rose-500 font-semibold whitespace-nowrap transition-colors hover:text-rose-600"
+              className="text-md text-rose-500 font-semibold hover:underline whitespace-nowrap"
             >
-              <span className="relative">
-                {t("home.view_all")}
-                <span className="absolute -bottom-0.5 left-0 h-0.5 w-0 bg-rose-600 transition-all duration-300 group-hover:w-full" />
-              </span>
-              <svg
-                className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 7l5 5m0 0l-5 5m5-5H6"
-                />
-              </svg>
+              {t("home.view_all")}
             </Link>
           </div>
 
@@ -296,15 +280,47 @@ export default function PopularPicks() {
                       activePromoPanel.buttonLink && (
                         <a
                           href={activePromoPanel.buttonLink}
-                          className="inline-block px-6 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 transition font-medium self-center"
+                          className="promo-view-all relative inline-block overflow-hidden px-6 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 transition font-medium self-center"
                         >
-                          {activePromoPanel.buttonText}
+                          <span className="relative z-10">
+                            {activePromoPanel.buttonText}
+                          </span>
                         </a>
                       )}
                   </div>
                 </div>
               </div>
             )}
+            <style jsx>{`
+              .promo-view-all::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(
+                  120deg,
+                  transparent 0%,
+                  transparent 30%,
+                  rgba(255, 255, 255, 0.55) 50%,
+                  transparent 70%,
+                  transparent 100%
+                );
+                background-size: 250% 100%;
+                animation: promoViewAllFlow 2.2s linear infinite;
+              }
+              @keyframes promoViewAllFlow {
+                0% {
+                  background-position: 150% 0;
+                }
+                100% {
+                  background-position: -150% 0;
+                }
+              }
+              @media (prefers-reduced-motion: reduce) {
+                .promo-view-all::before {
+                  animation: none;
+                }
+              }
+            `}</style>
 
             {/* Products Grid */}
             <div className="relative flex-1 self-stretch">

@@ -16,6 +16,15 @@ import CourierScorePanel from "@/components/dashboard/Customer/CourierScorePanel
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
+// Recycle bin: retention window before a trashed order is permanently purged.
+// Must match TRASH_RETENTION_MS on the backend (30 days).
+const TRASH_RETENTION_DAYS = 30;
+const daysLeftInTrash = (deletedAt) => {
+  if (!deletedAt) return null;
+  const elapsed = Date.now() - new Date(deletedAt).getTime();
+  return Math.max(0, TRASH_RETENTION_DAYS - Math.floor(elapsed / 86400000));
+};
+
 function useCourierLifetime(phone) {
   const [lifetime, setLifetime] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -307,12 +316,39 @@ function OrderActionsMenu({ order, onDelete }) {
 
 // ─── Reusable orders table ────────────────────────────────────────────────────
 
-function OrdersTable({ orders, onDelete, onRowClick, onCustomerClick }) {
+function OrdersTable({
+  orders,
+  onDelete,
+  onRowClick,
+  onCustomerClick,
+  // recycle-bin extras (all optional — omitted in normal usage)
+  selectable = false,
+  selectedIds = [],
+  onToggleSelect,
+  allSelected = false,
+  onToggleAll,
+  trashMode = false,
+  onRestore,
+  onPermanentDelete,
+  canPermanentDelete = false,
+  bulkBusy = false,
+}) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm text-left">
         <thead>
           <tr className="text-xs text-gray-500 uppercase border-b bg-gray-50">
+            {selectable && (
+              <th className="px-4 py-3 font-medium w-8">
+                <input
+                  type="checkbox"
+                  aria-label="Select all orders"
+                  checked={allSelected}
+                  onChange={onToggleAll}
+                  className="cursor-pointer align-middle"
+                />
+              </th>
+            )}
             <th className="px-4 py-3 font-medium">Order ID</th>
             <th className="px-4 py-3 font-medium">Customer</th>
             <th className="px-4 py-3 font-medium">Item</th>
@@ -324,12 +360,27 @@ function OrdersTable({ orders, onDelete, onRowClick, onCustomerClick }) {
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
-          {orders.map((order) => (
+          {orders.map((order) => {
+            const oid = String(order._id);
+            const checked = selectedIds.includes(oid);
+            const daysLeft = trashMode ? daysLeftInTrash(order.deletedAt) : null;
+            return (
             <tr
               key={order._id}
               onClick={() => onRowClick(order._id)}
-              className="hover:bg-rose-50 transition cursor-pointer"
+              className={`hover:bg-rose-50 transition cursor-pointer ${checked ? "bg-rose-50/60" : ""}`}
             >
+              {selectable && (
+                <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    aria-label={`Select order ${formatOrderId(order._id)}`}
+                    checked={checked}
+                    onChange={() => onToggleSelect(oid)}
+                    className="cursor-pointer align-middle"
+                  />
+                </td>
+              )}
               <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                 <Link
                   href={`/dashboard/orders/${order._id}`}
@@ -394,12 +445,45 @@ function OrdersTable({ orders, onDelete, onRowClick, onCustomerClick }) {
               </td>
               <td className="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
                 {fmt(order.createdAt)}
+                {trashMode && daysLeft !== null && (
+                  <span
+                    className={`block mt-1 px-2 py-0.5 rounded text-[11px] font-medium w-fit ${daysLeft <= 3 ? "bg-red-50 text-red-600" : "bg-amber-50 text-amber-700"}`}
+                  >
+                    {daysLeft > 0
+                      ? `🗑 ${daysLeft} of ${TRASH_RETENTION_DAYS} days left`
+                      : "🗑 Pending deletion"}
+                  </span>
+                )}
               </td>
-              <td className="px-4 py-3">
-                <OrderActionsMenu order={order} onDelete={onDelete} />
+              <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                {trashMode ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => onRestore([oid])}
+                      disabled={bulkBusy}
+                      className="px-2 py-1 rounded-lg text-xs text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
+                    >
+                      Restore
+                    </button>
+                    {canPermanentDelete && (
+                      <button
+                        type="button"
+                        onClick={() => onPermanentDelete([oid])}
+                        disabled={bulkBusy}
+                        className="px-2 py-1 rounded-lg text-xs text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <OrderActionsMenu order={order} onDelete={onDelete} />
+                )}
               </td>
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -1523,6 +1607,8 @@ const ALL_ORDERS_LABELS = {
 
 function AllOrdersSection() {
   const router = useRouter();
+  const { user } = useUser();
+  const canPermanentDelete = user?.role === "admin";
   const [orders, setOrders] = useState([]);
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(false);
@@ -1533,15 +1619,22 @@ function AllOrdersSection() {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [viewTrash, setViewTrash] = useState(false); // recycle-bin view
+  const [selectedIds, setSelectedIds] = useState([]); // bulk-selected order ids
+  const [bulkBusy, setBulkBusy] = useState(false);
 
-  const fetchOrders = useCallback(async (tab, q, pg, preset) => {
+  const fetchOrders = useCallback(async (tab, q, pg, preset, trash) => {
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: pg, limit: 20 });
-      if (tab && tab !== "all") params.set("status", tab);
+      if (trash) {
+        params.set("trashed", "true");
+      } else {
+        if (tab && tab !== "all") params.set("status", tab);
+        const from = dateFromPreset(preset);
+        if (from) params.set("dateFrom", from);
+      }
       if (q) params.set("q", q);
-      const from = dateFromPreset(preset);
-      if (from) params.set("dateFrom", from);
       const r = await fetch(`${API}/api/admin/orders?${params}`, {
         credentials: "include",
       });
@@ -1560,12 +1653,72 @@ function AllOrdersSection() {
   }, []);
 
   useEffect(() => {
-    fetchOrders(activeTab, query, page, datePreset);
-  }, [activeTab, query, page, datePreset, fetchOrders]);
+    fetchOrders(activeTab, query, page, datePreset, viewTrash);
+  }, [activeTab, query, page, datePreset, viewTrash, fetchOrders]);
 
+  // clear selection whenever the visible list changes
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [orders]);
+
+  const refresh = () =>
+    fetchOrders(activeTab, query, page, datePreset, viewTrash);
+
+  const toggleSelect = (id) =>
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  const allSelected =
+    orders.length > 0 && selectedIds.length === orders.length;
+  const toggleSelectAll = () =>
+    setSelectedIds(allSelected ? [] : orders.map((o) => String(o._id)));
+
+  // Run a bulk recycle-bin action (trash / restore / permanent-delete).
+  const runBulk = async (action, ids, confirmMsg) => {
+    if (!ids.length) return;
+    if (confirmMsg && !confirm(confirmMsg)) return;
+    setBulkBusy(true);
+    try {
+      const r = await fetch(`${API}/api/admin/orders/${action}`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      });
+      const body = await r.json();
+      if (!r.ok) throw new Error(body.error || "Action failed");
+      setSelectedIds([]);
+      await refresh();
+    } catch (err) {
+      alert(err.message || "Failed");
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const moveToTrash = (ids) =>
+    runBulk(
+      "trash",
+      ids,
+      `Move ${ids.length} order(s) to Trash? They can be restored within ${TRASH_RETENTION_DAYS} days.`,
+    );
+  const restoreOrders = (ids) => runBulk("restore", ids, null);
+  const permanentDelete = (ids) => {
+    if (!canPermanentDelete) {
+      return alert("Only admin users can permanently delete orders");
+    }
+    return runBulk(
+      "permanent-delete",
+      ids,
+      `Permanently delete ${ids.length} order(s)? This cannot be undone.`,
+    );
+  };
+
+  // Per-row "Delete" in the normal view moves the order to Trash.
   const handleDelete = async (e, orderId) => {
     e.stopPropagation();
-    if (!confirm("Permanently delete this order?")) return;
+    if (!confirm("Move this order to Trash? It can be restored within 30 days."))
+      return;
     try {
       const r = await fetch(`${API}/api/admin/orders/${orderId}`, {
         method: "DELETE",
@@ -1611,7 +1764,7 @@ function AllOrdersSection() {
         <div className="px-5 py-4 border-b flex flex-col gap-3">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <h2 className="text-base font-semibold text-gray-800 shrink-0">
-              Orders
+              {viewTrash ? "Trash" : "Orders"}
             </h2>
             <input
               value={query}
@@ -1622,37 +1775,98 @@ function AllOrdersSection() {
               placeholder="Search by name, phone, order ID…"
               className="border rounded-lg px-3 py-1.5 text-sm w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-rose-300"
             />
-            <span className="text-xs text-gray-400 sm:ml-auto shrink-0">
-              {total} result{total !== 1 ? "s" : ""}
-            </span>
+            <div className="flex items-center gap-2 sm:ml-auto shrink-0">
+              <span className="text-xs text-gray-400">
+                {total} result{total !== 1 ? "s" : ""}
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setViewTrash((v) => !v);
+                  setPage(1);
+                  setSelectedIds([]);
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${viewTrash ? "bg-gray-800 text-white border-gray-800" : "bg-white text-gray-700 hover:bg-gray-50"}`}
+              >
+                🗑 {viewTrash ? "Back to Orders" : "Trash"}
+              </button>
+            </div>
           </div>
-          <DateFilter
-            value={datePreset}
-            onChange={(v) => {
-              setDatePreset(v);
-              setPage(1);
-            }}
-          />
-        </div>
-
-        {/* Sub-tabs */}
-        <div className="flex overflow-x-auto gap-1 px-5 py-2 border-b scrollbar-hide">
-          {ALL_ORDERS_TABS.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => {
-                setActiveTab(tab);
+          {!viewTrash && (
+            <DateFilter
+              value={datePreset}
+              onChange={(v) => {
+                setDatePreset(v);
                 setPage(1);
               }}
-              className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium capitalize transition ${activeTab === tab ? "bg-rose-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
-            >
-              {ALL_ORDERS_LABELS[tab]}
-              {stats[tab] != null && (
-                <span className="ml-1 opacity-70">({stats[tab]})</span>
-              )}
-            </button>
-          ))}
+            />
+          )}
         </div>
+
+        {/* Sub-tabs (hidden in trash view) */}
+        {!viewTrash && (
+          <div className="flex overflow-x-auto gap-1 px-5 py-2 border-b scrollbar-hide">
+            {ALL_ORDERS_TABS.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => {
+                  setActiveTab(tab);
+                  setPage(1);
+                }}
+                className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium capitalize transition ${activeTab === tab ? "bg-rose-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+              >
+                {ALL_ORDERS_LABELS[tab]}
+                {stats[tab] != null && (
+                  <span className="ml-1 opacity-70">({stats[tab]})</span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Bulk action bar */}
+        {selectedIds.length > 0 && (
+          <div className="flex flex-wrap items-center gap-3 px-5 py-3 bg-rose-50 border-b border-rose-100">
+            <span className="text-sm font-medium text-gray-700">
+              {selectedIds.length} selected
+            </span>
+            {viewTrash ? (
+              <>
+                <button
+                  onClick={() => restoreOrders(selectedIds)}
+                  disabled={bulkBusy}
+                  className="px-3 py-1.5 rounded-lg text-xs text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
+                >
+                  Restore
+                </button>
+                {canPermanentDelete && (
+                  <button
+                    onClick={() => permanentDelete(selectedIds)}
+                    disabled={bulkBusy}
+                    className="px-3 py-1.5 rounded-lg text-xs text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
+                  >
+                    Delete permanently
+                  </button>
+                )}
+              </>
+            ) : (
+              <button
+                onClick={() => moveToTrash(selectedIds)}
+                disabled={bulkBusy}
+                className="px-3 py-1.5 rounded-lg text-xs text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
+              >
+                Move to Trash
+              </button>
+            )}
+            <button
+              onClick={() => setSelectedIds([])}
+              disabled={bulkBusy}
+              className="px-3 py-1.5 rounded-lg text-xs border text-gray-600 hover:bg-white disabled:opacity-50"
+            >
+              Clear
+            </button>
+          </div>
+        )}
 
         {loading ? (
           <div className="py-16 text-center text-gray-400 text-sm">
@@ -1660,7 +1874,7 @@ function AllOrdersSection() {
           </div>
         ) : orders.length === 0 ? (
           <div className="py-16 text-center text-gray-400 text-sm">
-            No orders found.
+            {viewTrash ? "Trash is empty" : "No orders found."}
           </div>
         ) : (
           <OrdersTable
@@ -1675,6 +1889,16 @@ function AllOrdersSection() {
                 userId: order.userId,
               })
             }
+            selectable
+            selectedIds={selectedIds}
+            onToggleSelect={toggleSelect}
+            allSelected={allSelected}
+            onToggleAll={toggleSelectAll}
+            trashMode={viewTrash}
+            onRestore={restoreOrders}
+            onPermanentDelete={permanentDelete}
+            canPermanentDelete={canPermanentDelete}
+            bulkBusy={bulkBusy}
           />
         )}
         <Pagination page={page} totalPages={totalPages} onPage={setPage} />

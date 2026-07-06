@@ -29,6 +29,7 @@ export default function PopularPicks() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hoveredId, setHoveredId] = useState(null);
+  const [activeImageIndex, setActiveImageIndex] = useState({});
   const [promoPanels, setPromoPanels] = useState([]);
   const [slidesToShow, setSlidesToShow] = useState(2);
 
@@ -36,7 +37,28 @@ export default function PopularPicks() {
   useEffect(() => {
     const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
     const normalizeProduct = (p) => {
-      const { price, compareAtPrice, discountPct } = getDisplayPrice(p);
+      // Show the product's own main price — never a variant's price.
+      // Only fall back to variant pricing when the product has no main price.
+      const hasMainPrice = Number(p.price) > 0;
+      const variantPricing = getDisplayPrice(p);
+      const price = hasMainPrice ? Number(p.price) : variantPricing.price;
+      const compareAtPrice = hasMainPrice
+        ? Number(p.compareAtPrice) > 0
+          ? Number(p.compareAtPrice)
+          : null
+        : variantPricing.compareAtPrice;
+      const discountPct =
+        compareAtPrice && compareAtPrice > price
+          ? Math.round(((compareAtPrice - price) / compareAtPrice) * 100)
+          : null;
+
+      // Collect every image so the card can page through them via dots.
+      const gallery = (
+        (p.Images && p.Images.length ? p.Images : p.images) || []
+      )
+        .map((im) => im && im.url)
+        .filter(Boolean);
+
       return {
         ...p,
         id: p._id || p.id,
@@ -49,11 +71,9 @@ export default function PopularPicks() {
         status: p.availability === "out_of_stock" ? "Stock Out" : "In Stock",
         badges: p.badges || [],
         discount: discountPct,
-        image:
-          (p.Images && p.Images[0] && p.Images[0].url) ||
-          (p.images && p.images[0] && p.images[0].url) ||
-          "/assets/placeholder.svg",
-        secondImage: (p.images && p.images[1] && p.images[1].url) || null,
+        image: gallery[0] || "/assets/placeholder.svg",
+        secondImage: gallery[1] || null,
+        images: gallery.length ? gallery : ["/assets/placeholder.svg"],
         rating: p.averageRating || 0,
         reviews: `(${p.reviewCount || 0})`,
       };
@@ -250,9 +270,9 @@ export default function PopularPicks() {
                     className="object-cover"
                   />
 
-                  <div className="absolute inset-0 z-10 p-6 text-center flex flex-col justify-center">
+                  <div className="absolute inset-0 z-10 p-4 text-center flex flex-col justify-end">
                     {activePromoPanel.title && (
-                      <h2 className="text-2xl font-bold text-orange-600 mb-4">
+                      <h2 className="text-xl font-bold text-orange-600 mb-1">
                         {activePromoPanel.title}
                       </h2>
                     )}
@@ -260,7 +280,7 @@ export default function PopularPicks() {
                       activePromoPanel.buttonLink && (
                         <a
                           href={activePromoPanel.buttonLink}
-                          className="inline-block px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition font-medium self-center"
+                          className="inline-block px-6 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 transition font-medium self-center"
                         >
                           {activePromoPanel.buttonText}
                         </a>
@@ -339,9 +359,12 @@ export default function PopularPicks() {
                         <div className="relative bg-white  rounded-xl p-6 h-54 flex items-center justify-center overflow-hidden">
                           <Image
                             src={encodeURI(
-                              hoveredId === product.id && product.secondImage
-                                ? product.secondImage
-                                : product.image,
+                              activeImageIndex[product.id] != null
+                                ? product.images[activeImageIndex[product.id]]
+                                : hoveredId === product.id &&
+                                    product.secondImage
+                                  ? product.secondImage
+                                  : product.image,
                             )}
                             alt={product.subtitle}
                             width={300}
@@ -469,6 +492,30 @@ export default function PopularPicks() {
                               <span className="bg-red-600 text-white px-4 py-2 rounded font-semibold">
                                 Stock Out
                               </span>
+                            </div>
+                          )}
+
+                          {/* Image dots — click to browse all product images */}
+                          {product.images && product.images.length > 1 && (
+                            <div className="absolute bottom-2 left-0 right-0 z-20 flex justify-center gap-1.5">
+                              {product.images.map((_, i) => (
+                                <button
+                                  key={i}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setActiveImageIndex((prev) => ({
+                                      ...prev,
+                                      [product.id]: i,
+                                    }));
+                                  }}
+                                  aria-label={`View image ${i + 1}`}
+                                  className={`h-2 rounded-full transition-all ${
+                                    (activeImageIndex[product.id] ?? 0) === i
+                                      ? "w-4 bg-red-600"
+                                      : "w-2 bg-gray-300 hover:bg-gray-400"
+                                  }`}
+                                />
+                              ))}
                             </div>
                           )}
                         </div>

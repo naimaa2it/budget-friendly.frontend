@@ -513,7 +513,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                   alt={title}
                   width={700}
                   height={700}
-                  className="w-full h-full object-contain p-0 md:p-2 group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-full object-contain p-0 md:p-1 group-hover:scale-105 transition-transform duration-300"
                 />
               </button>
               {images.length > 1 && (
@@ -659,7 +659,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                   aria-expanded={descOpen}
                   className="mt-0.5 inline-flex items-center gap-1 text-xs font-semibold text-red-600 hover:text-red-700 transition-colors"
                 >
-                  {descOpen ? "See less" : "See more"}
+                  {descOpen ? "Less" : "More"}
                   <FaChevronDown
                     className={`w-2.5 h-2.5 transition-transform ${
                       descOpen ? "rotate-180" : ""
@@ -778,7 +778,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
             </div>
           )}
 
-          <hr className="border-gray-200 mb-3 mt-1" />
+          <hr className="border-gray-200 mb-3 mt-1 hidden md:block" />
 
           {/* Add to cart */}
           <div className="mb-3">

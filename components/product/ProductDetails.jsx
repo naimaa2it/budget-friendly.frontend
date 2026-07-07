@@ -179,6 +179,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
   const [openPolicy, setOpenPolicy] = useState(null);
   const [isDesktop, setIsDesktop] = useState(false);
   const [tagsOpen, setTagsOpen] = useState(false); // mobile: collapse tags to one line
+  const [descOpen, setDescOpen] = useState(false); // expand truncated description
   // touch swipe state for zoom modal
   const touchStartX = React.useRef(null);
   const currentImage = images[currentIndex] || "/assets/placeholder.svg";
@@ -497,7 +498,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
               {images.length > 1 && (
                 <button
                   onClick={prevImage}
-                  className="absolute -left-1 md:left-2 z-10 p-1.5 bg-white border border-gray-300 rounded-full shadow-sm hover:bg-gray-50 transition"
+                  className="absolute left-1 md:left-2 z-20 p-1.5 bg-white border border-gray-300 rounded-full shadow-sm hover:bg-gray-50 transition"
                 >
                   <FaChevronLeft className="w-3 h-3 text-gray-600" />
                 </button>
@@ -512,13 +513,13 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                   alt={title}
                   width={700}
                   height={700}
-                  className="w-full h-full object-contain p-1 md:p-2 group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-full object-contain p-0 md:p-2 group-hover:scale-105 transition-transform duration-300"
                 />
               </button>
               {images.length > 1 && (
                 <button
                   onClick={nextImage}
-                  className="absolute -right-1 md:right-2 z-10 p-1.5 bg-white border border-gray-300 rounded-full shadow-sm hover:bg-gray-50 transition"
+                  className="absolute right-1 md:right-2 z-20 p-1.5 bg-white border border-gray-300 rounded-full shadow-sm hover:bg-gray-50 transition"
                 >
                   <FaChevronRight className="w-3 h-3 text-gray-600" />
                 </button>
@@ -643,9 +644,30 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
 
           {/* Description */}
           {toPlainText(description) && (
-            <p className="text-gray-500 text-sm leading-relaxed mb-1 line-clamp-4">
-              {toPlainText(description)}
-            </p>
+            <div className="mb-1">
+              <p
+                className={`text-gray-500 text-sm leading-relaxed ${
+                  descOpen ? "" : "line-clamp-4"
+                }`}
+              >
+                {toPlainText(description)}
+              </p>
+              {toPlainText(description).length > 180 && (
+                <button
+                  type="button"
+                  onClick={() => setDescOpen((v) => !v)}
+                  aria-expanded={descOpen}
+                  className="mt-0.5 inline-flex items-center gap-1 text-xs font-semibold text-red-600 hover:text-red-700 transition-colors"
+                >
+                  {descOpen ? "See less" : "See more"}
+                  <FaChevronDown
+                    className={`w-2.5 h-2.5 transition-transform ${
+                      descOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+              )}
+            </div>
           )}
 
           {/* Stock */}
@@ -790,7 +812,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
             </div>
           </div>
 
-          <hr className="border-gray-100 mb-3" />
+          <hr className="border-gray-100 mb-3 hidden md:block" />
 
           {/* SKU / Category / Tags / Share */}
           <div className="flex flex-col gap-2 text-sm">

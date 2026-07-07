@@ -833,7 +833,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                   <div
                     className={`flex flex-wrap gap-x-2 gap-y-1 ${
                       !tagsOpen && tags.length > 3
-                        ? "max-h-5 overflow-hidden sm:max-h-none sm:overflow-visible"
+                        ? "max-h-5 overflow-hidden"
                         : ""
                     }`}
                   >
@@ -854,7 +854,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                       </button>
                     ))}
                   </div>
-                  {/* Mobile-only toggle to reveal the remaining tags */}
+                  {/* Toggle to reveal the remaining tags (all screen sizes) */}
                   {tags.length > 3 && (
                     <button
                       type="button"
@@ -863,7 +863,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                       aria-label={
                         tagsOpen ? "Show fewer tags" : "Show all tags"
                       }
-                      className="sm:hidden flex-shrink-0 mt-0.5 text-gray-400 hover:text-red-600 transition-colors"
+                      className="shrink-0 mt-0.5 text-gray-400 hover:text-red-600 transition-colors"
                     >
                       <FaChevronDown
                         className={`w-3 h-3 transition-transform ${

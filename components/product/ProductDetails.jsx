@@ -22,6 +22,7 @@ import {
   FaGift,
   FaCommentDots,
   FaPencilAlt,
+  FaChevronDown,
 } from "react-icons/fa";
 import AddToCartSection from "@/components/product/AddToCartSection";
 import {
@@ -177,6 +178,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
   const [zoomOpen, setZoomOpen] = useState(false);
   const [openPolicy, setOpenPolicy] = useState(null);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [tagsOpen, setTagsOpen] = useState(false); // mobile: collapse tags to one line
   // touch swipe state for zoom modal
   const touchStartX = React.useRef(null);
   const currentImage = images[currentIndex] || "/assets/placeholder.svg";
@@ -495,7 +497,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
               {images.length > 1 && (
                 <button
                   onClick={prevImage}
-                  className="absolute left-2 z-10 p-1.5 bg-white border border-gray-300 rounded-full shadow-sm hover:bg-gray-50 transition"
+                  className="absolute -left-1 md:left-2 z-10 p-1.5 bg-white border border-gray-300 rounded-full shadow-sm hover:bg-gray-50 transition"
                 >
                   <FaChevronLeft className="w-3 h-3 text-gray-600" />
                 </button>
@@ -510,13 +512,13 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                   alt={title}
                   width={700}
                   height={700}
-                  className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-full object-contain p-1 md:p-2 group-hover:scale-105 transition-transform duration-300"
                 />
               </button>
               {images.length > 1 && (
                 <button
                   onClick={nextImage}
-                  className="absolute right-2 z-10 p-1.5 bg-white border border-gray-300 rounded-full shadow-sm hover:bg-gray-50 transition"
+                  className="absolute -right-1 md:right-2 z-10 p-1.5 bg-white border border-gray-300 rounded-full shadow-sm hover:bg-gray-50 transition"
                 >
                   <FaChevronRight className="w-3 h-3 text-gray-600" />
                 </button>
@@ -803,25 +805,51 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
               </div>
             )}
             {tags.length > 0 && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-start gap-2">
                 <span className="text-gray-400 w-20 flex-shrink-0">Tags:</span>
-                <div className="flex flex-wrap gap-x-2 gap-y-1">
-                  {tags.map((tag, i) => (
+                <div className="min-w-0 flex-1 flex items-start gap-1.5">
+                  <div
+                    className={`flex flex-wrap gap-x-2 gap-y-1 ${
+                      !tagsOpen && tags.length > 3
+                        ? "max-h-5 overflow-hidden sm:max-h-none sm:overflow-visible"
+                        : ""
+                    }`}
+                  >
+                    {tags.map((tag, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() =>
+                          router.push(
+                            `/tag/${encodeURIComponent(
+                              String(tag).toLowerCase().replace(/\s+/g, "-"),
+                            )}`,
+                          )
+                        }
+                        className="text-xs text-gray-500 hover:text-red-600 transition-colors cursor-pointer whitespace-nowrap"
+                      >
+                        #{tag}
+                      </button>
+                    ))}
+                  </div>
+                  {/* Mobile-only toggle to reveal the remaining tags */}
+                  {tags.length > 3 && (
                     <button
-                      key={i}
                       type="button"
-                      onClick={() =>
-                        router.push(
-                          `/tag/${encodeURIComponent(
-                            String(tag).toLowerCase().replace(/\s+/g, "-"),
-                          )}`,
-                        )
+                      onClick={() => setTagsOpen((v) => !v)}
+                      aria-expanded={tagsOpen}
+                      aria-label={
+                        tagsOpen ? "Show fewer tags" : "Show all tags"
                       }
-                      className="text-xs text-gray-500 hover:text-red-600 transition-colors cursor-pointer"
+                      className="sm:hidden flex-shrink-0 mt-0.5 text-gray-400 hover:text-red-600 transition-colors"
                     >
-                      #{tag}
+                      <FaChevronDown
+                        className={`w-3 h-3 transition-transform ${
+                          tagsOpen ? "rotate-180" : ""
+                        }`}
+                      />
                     </button>
-                  ))}
+                  )}
                 </div>
               </div>
             )}

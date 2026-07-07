@@ -227,6 +227,7 @@ export default function ProductEdit({ productId }) {
     rating: "",
     title: "",
     body: "",
+    date: "",
   });
   const [editingReviewIdx, setEditingReviewIdx] = useState(null);
   const [editReviewForm, setEditReviewForm] = useState({
@@ -234,6 +235,7 @@ export default function ProductEdit({ productId }) {
     rating: "",
     title: "",
     body: "",
+    date: "",
   });
   const [lastSaved, setLastSaved] = useState(null); // Track last auto-save time
   const [fbtSearch, setFbtSearch] = useState("");
@@ -849,6 +851,30 @@ export default function ProductEdit({ productId }) {
     return { count, avg };
   };
 
+  // Random date within the last ~180 days (YYYY-MM-DD) so admin-added reviews/FAQs
+  // look like they came from different customers at different times.
+  const randomPastDateStr = () => {
+    const daysAgo = Math.floor(Math.random() * 180) + 1;
+    const d = new Date();
+    d.setDate(d.getDate() - daysAgo);
+    return d.toISOString().slice(0, 10);
+  };
+  // Convert a YYYY-MM-DD picker value to an ISO timestamp. Adds a random
+  // time-of-day so entries on the same day still order naturally. Falls back to
+  // "now" when no date is chosen.
+  const dateStrToISO = (dateStr) => {
+    if (!dateStr) return new Date().toISOString();
+    const d = new Date(`${dateStr}T00:00:00`);
+    if (Number.isNaN(d.getTime())) return new Date().toISOString();
+    d.setHours(
+      Math.floor(Math.random() * 24),
+      Math.floor(Math.random() * 60),
+      0,
+      0,
+    );
+    return d.toISOString();
+  };
+
   const addReview = () => {
     const rating = parseFloat(newReview.rating);
     if (isNaN(rating) || rating < 1 || rating > 5)
@@ -859,14 +885,14 @@ export default function ProductEdit({ productId }) {
       title: newReview.title || "",
       body: newReview.body || "",
       helpful: 0,
-      createdAt: new Date().toISOString(),
+      createdAt: dateStrToISO(newReview.date),
     };
     setProduct((p) => {
       const reviews = [...(p.reviews || []), review];
       const { count, avg } = recalcReviews(reviews);
       return { ...p, reviews, reviewCount: count, averageRating: avg };
     });
-    setNewReview({ authorName: "", rating: "", title: "", body: "" });
+    setNewReview({ authorName: "", rating: "", title: "", body: "", date: "" });
   };
 
   const removeReviewAt = (idx) => {
@@ -2531,6 +2557,50 @@ export default function ProductEdit({ productId }) {
                             placeholder="Your answer..."
                           />
                         </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Date
+                          </label>
+                          <div className="flex gap-2">
+                            <input
+                              type="date"
+                              max={new Date().toISOString().slice(0, 10)}
+                              value={toDateInput(f.createdAt)}
+                              onChange={(e) =>
+                                setProduct((p) => {
+                                  const arr = [...(p.faqs || [])];
+                                  arr[i] = {
+                                    ...(arr[i] || {}),
+                                    createdAt: e.target.value
+                                      ? dateStrToISO(e.target.value)
+                                      : "",
+                                  };
+                                  return { ...p, faqs: arr };
+                                })
+                              }
+                              className={inputClass}
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setProduct((p) => {
+                                  const arr = [...(p.faqs || [])];
+                                  arr[i] = {
+                                    ...(arr[i] || {}),
+                                    createdAt: dateStrToISO(randomPastDateStr()),
+                                  };
+                                  return { ...p, faqs: arr };
+                                })
+                              }
+                              className="shrink-0 px-4 py-2.5 border border-indigo-300 text-indigo-700 rounded-lg hover:bg-indigo-50 whitespace-nowrap"
+                            >
+                              🎲 Random
+                            </button>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Leave empty to use today. Shown on the product page.
+                          </p>
+                        </div>
                         <button
                           type="button"
                           onClick={() =>
@@ -2744,6 +2814,32 @@ export default function ProductEdit({ productId }) {
                   </div>
                 </div>
                 <div>
+                  <label className={labelClass}>Review Date</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="date"
+                      max={new Date().toISOString().slice(0, 10)}
+                      value={newReview.date}
+                      onChange={(e) =>
+                        setNewReview((n) => ({ ...n, date: e.target.value }))
+                      }
+                      className={inputClass}
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setNewReview((n) => ({ ...n, date: randomPastDateStr() }))
+                      }
+                      className="shrink-0 px-4 py-2.5 border border-indigo-300 text-indigo-700 rounded-lg hover:bg-indigo-50 whitespace-nowrap"
+                    >
+                      🎲 Random
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Leave empty to use today. Shown on the product page.
+                  </p>
+                </div>
+                <div>
                   <label className={labelClass}>Review Title</label>
                   <input
                     type="text"
@@ -2862,6 +2958,35 @@ export default function ProductEdit({ productId }) {
                               placeholder="Review body…"
                             />
                           </div>
+                          <div>
+                            <label className={labelClass}>Review Date</label>
+                            <div className="flex gap-2">
+                              <input
+                                type="date"
+                                max={new Date().toISOString().slice(0, 10)}
+                                value={editReviewForm.date}
+                                onChange={(e) =>
+                                  setEditReviewForm((f) => ({
+                                    ...f,
+                                    date: e.target.value,
+                                  }))
+                                }
+                                className={inputClass}
+                              />
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setEditReviewForm((f) => ({
+                                    ...f,
+                                    date: randomPastDateStr(),
+                                  }))
+                                }
+                                className="shrink-0 px-4 py-2.5 border border-indigo-300 text-indigo-700 rounded-lg hover:bg-indigo-50 whitespace-nowrap"
+                              >
+                                🎲 Random
+                              </button>
+                            </div>
+                          </div>
                           <div className="flex gap-2">
                             <button
                               type="button"
@@ -2878,6 +3003,7 @@ export default function ProductEdit({ productId }) {
                                   rating,
                                   title: editReviewForm.title,
                                   body: editReviewForm.body,
+                                  createdAt: dateStrToISO(editReviewForm.date),
                                 });
                                 setEditingReviewIdx(null);
                               }}
@@ -2928,6 +3054,7 @@ export default function ProductEdit({ productId }) {
                                     rating: r.rating ?? "",
                                     title: r.title || "",
                                     body: r.body || "",
+                                    date: toDateInput(r.createdAt),
                                   });
                                 }}
                                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"

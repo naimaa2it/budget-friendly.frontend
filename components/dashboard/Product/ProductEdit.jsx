@@ -851,13 +851,23 @@ export default function ProductEdit({ productId }) {
     return { count, avg };
   };
 
-  // Random date within the last ~180 days (YYYY-MM-DD) so admin-added reviews/FAQs
-  // look like they came from different customers at different times.
+  // Random past date (YYYY-MM-DD) picked from the current year back to 3 years
+  // ago (e.g. 2026, 2025, 2024, 2023) so admin-added reviews/FAQs look like
+  // they came from different customers at different times. Never in the future.
   const randomPastDateStr = () => {
-    const daysAgo = Math.floor(Math.random() * 180) + 1;
-    const d = new Date();
-    d.setDate(d.getDate() - daysAgo);
-    return d.toISOString().slice(0, 10);
+    const now = new Date();
+    const year = now.getFullYear() - Math.floor(Math.random() * 4);
+    const start = new Date(year, 0, 1).getTime();
+    const end =
+      year === now.getFullYear()
+        ? now.getTime()
+        : new Date(year, 11, 31, 23, 59, 59).getTime();
+    const d = new Date(start + Math.random() * (end - start));
+    return (
+      `${d.getFullYear()}-` +
+      `${String(d.getMonth() + 1).padStart(2, "0")}-` +
+      `${String(d.getDate()).padStart(2, "0")}`
+    );
   };
   // Convert a YYYY-MM-DD picker value to an ISO timestamp. Adds a random
   // time-of-day so entries on the same day still order naturally. Falls back to

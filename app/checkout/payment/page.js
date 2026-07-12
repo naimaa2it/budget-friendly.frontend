@@ -156,7 +156,7 @@ function PaymentPageInner() {
         credentials: "include",
       });
     } catch {}
-    router.push(`/checkout/success?orderId=${orderId}&method=cash-on-delivery`);
+    router.push(`/thankyou/success?orderId=${orderId}&method=cash-on-delivery`);
   };
 
   // countdown + auto-submit on step 3
@@ -179,7 +179,7 @@ function PaymentPageInner() {
     })
       .catch(() => {})
       .finally(() => {
-        router.push(`/checkout/success?orderId=${orderId}&method=${method}`);
+        router.push(`/thankyou/success?orderId=${orderId}&method=${method}`);
       });
   }, [step, countdown, orderId, method, senderNumber, txId, router]);
 

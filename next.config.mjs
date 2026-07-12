@@ -8,6 +8,24 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const nextConfig = {
   // output: "export",
   trailingSlash: true,
+
+  async redirects() {
+    return [
+      // Order-success page moved from /checkout/success to /thankyou/success.
+      // Query params (orderId, method) are preserved automatically.
+      {
+        source: "/checkout/success",
+        destination: "/thankyou/success",
+        permanent: false,
+      },
+      // Bare /thankyou lands on the success page too.
+      {
+        source: "/thankyou",
+        destination: "/thankyou/success",
+        permanent: false,
+      },
+    ];
+  },
   // headers() is not supported with output: "export" — set these via .htaccess on cPanel instead.
   // async headers() {
   //   return [{ source: '/(.*)', headers: securityHeaders }];

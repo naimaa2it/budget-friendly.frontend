@@ -14,6 +14,7 @@ export default function robots() {
           "/user",
           "/cart",
           "/checkout",
+          "/thankyou",
           "/wishlist",
           "/track-order",
           "/api/",

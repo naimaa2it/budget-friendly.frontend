@@ -773,6 +773,55 @@ function OrdersSection({ API }) {
                   )}
                 </div>
 
+                {/* Status change reasons — admin updates and the customer's own
+                    cancellation reason both come from statusHistory */}
+                {(order.statusHistory || []).some((ev) => ev.reason) && (
+                  <div className="text-sm">
+                    <p className="font-medium text-gray-900 mb-1.5">
+                      {t("orders.status_updates")}
+                    </p>
+                    <div className="space-y-1.5">
+                      {[...(order.statusHistory || [])]
+                        .reverse()
+                        .filter((ev) => ev.reason)
+                        .map((ev, i) => (
+                          <div
+                            key={i}
+                            className="bg-gray-50 border border-gray-100 rounded-lg px-3 py-2"
+                          >
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span
+                                className={`text-xs px-2 py-0.5 rounded-full font-semibold capitalize ${STATUS_COLORS[ev.newStatus] || "bg-gray-100 text-gray-600"}`}
+                              >
+                                {ev.newStatus}
+                              </span>
+                              <span className="text-xs text-gray-400">
+                                {ev.changedBy === "customer"
+                                  ? t("orders.by_you")
+                                  : t("orders.by_store")}
+                              </span>
+                              {ev.at && (
+                                <span className="text-xs text-gray-400 ml-auto">
+                                  {new Date(ev.at).toLocaleDateString("en-GB", {
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric",
+                                  })}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-600 mt-1">
+                              <span className="text-gray-400">
+                                {t("orders.status_reason")}:{" "}
+                              </span>
+                              {ev.reason}
+                            </p>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
                 {(order.shipment?.trackingId ||
                   ["confirmed", "processing", "shipped", "delivered"].includes(
                     order.status,

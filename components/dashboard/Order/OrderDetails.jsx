@@ -631,6 +631,66 @@ export default function OrderDetails({ orderId }) {
               </Link>
             </div>
           )}
+
+          {/* Status history — every status change with its reason, including
+              cancellations made by the customer */}
+          {order.statusHistory?.length > 0 && (
+            <div className="bg-white rounded-xl border shadow-sm p-5">
+              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
+                Status History
+              </h2>
+              <div className="space-y-3">
+                {[...order.statusHistory].reverse().map((ev, i) => {
+                  const byCustomer = ev.changedBy === "customer";
+                  const bySystem = ev.changedBy === "system";
+                  return (
+                    <div
+                      key={i}
+                      className="border border-gray-100 rounded-lg p-3 bg-gray-50/60"
+                    >
+                      <div className="flex flex-wrap items-center gap-2">
+                        {ev.previousStatus && (
+                          <>
+                            <span
+                              className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${STATUS_STYLE[ev.previousStatus] || "bg-gray-100 text-gray-500"}`}
+                            >
+                              {ev.previousStatus}
+                            </span>
+                            <span className="text-gray-400 text-xs">→</span>
+                          </>
+                        )}
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded-full font-semibold capitalize ${STATUS_STYLE[ev.newStatus] || "bg-gray-100 text-gray-500"}`}
+                        >
+                          {ev.newStatus}
+                        </span>
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded-full font-medium ${byCustomer ? "bg-orange-100 text-orange-700" : bySystem ? "bg-gray-100 text-gray-500" : "bg-indigo-100 text-indigo-700"}`}
+                        >
+                          {byCustomer
+                            ? "By customer"
+                            : bySystem
+                              ? "System"
+                              : "By admin"}
+                        </span>
+                        <span className="text-xs text-gray-400 ml-auto whitespace-nowrap">
+                          {ev.at ? fmt(ev.at) : ""}
+                        </span>
+                      </div>
+                      {ev.reason && (
+                        <p className="mt-1.5 text-sm text-gray-700">
+                          <span className="text-xs font-medium text-gray-400 mr-1">
+                            Reason:
+                          </span>
+                          {ev.reason}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right sidebar */}

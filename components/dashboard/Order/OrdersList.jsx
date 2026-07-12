@@ -314,6 +314,130 @@ function OrderActionsMenu({ order, onDelete }) {
   );
 }
 
+// ─── Status update modal (with required reason) ──────────────────────────────
+// Mirrors the modal on the order-details page: every status change from the
+// orders list must carry a reason, which lands in the order's statusHistory
+// and is visible to both admins and the customer.
+
+const ORDER_STATUSES = [
+  "pending",
+  "accepted",
+  "picked",
+  "approved",
+  "rejected",
+  "confirmed",
+  "processing",
+  "shipped",
+  "delivered",
+  "returned",
+  "failed",
+  "cancelled",
+];
+
+function StatusUpdateModal({ order, onClose, onUpdated }) {
+  const [status, setStatus] = useState(order.status || "pending");
+  const [reason, setReason] = useState("");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const submit = async () => {
+    if (!reason.trim()) {
+      setError("Status update reason is required.");
+      return;
+    }
+    setSubmitting(true);
+    setError("");
+    try {
+      const r = await fetch(`${API}/api/admin/orders/${order._id}/status`, {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status, reason: reason.trim() }),
+      });
+      const body = await r.json();
+      if (!r.ok) throw new Error(body.error || "Could not update status");
+      onUpdated?.(body);
+      onClose();
+    } catch (e) {
+      setError(e.message || "Could not update status");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (typeof document === "undefined") return null;
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[110] flex items-center justify-center bg-black/40 px-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-5 space-y-3"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div>
+          <h3 className="text-base font-bold text-gray-900">Update status</h3>
+          <p className="text-xs text-gray-400 font-mono mt-0.5">
+            {formatOrderId(order._id)} · {order.billingDetails?.name || ""}
+          </p>
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">
+            New status
+          </label>
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="w-full border rounded-lg px-3 py-2 text-sm capitalize focus:outline-none focus:ring-2 focus:ring-rose-300"
+          >
+            {ORDER_STATUSES.map((s) => (
+              <option key={s} value={s} className="capitalize">
+                {s}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">
+            Reason <span className="text-rose-600">*</span>
+          </label>
+          <textarea
+            autoFocus
+            rows={3}
+            value={reason}
+            onChange={(e) => {
+              setReason(e.target.value);
+              setError("");
+            }}
+            placeholder="Why are you changing this status? The customer can see this."
+            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 resize-none"
+          />
+        </div>
+        {error && <p className="text-xs text-red-500">{error}</p>}
+        <div className="flex gap-2 pt-1">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={submitting}
+            className="flex-1 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition disabled:opacity-60"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={submit}
+            disabled={submitting}
+            className="flex-1 py-2 bg-rose-600 text-white rounded-lg text-sm font-semibold hover:bg-rose-700 transition disabled:opacity-60"
+          >
+            {submitting ? "Saving…" : "Update"}
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
 // ─── Reusable orders table ────────────────────────────────────────────────────
 
 function OrdersTable({
@@ -332,9 +456,18 @@ function OrdersTable({
   onPermanentDelete,
   canPermanentDelete = false,
   bulkBusy = false,
+  onStatusUpdated,
 }) {
+  const [statusOrder, setStatusOrder] = useState(null);
   return (
     <div className="overflow-x-auto">
+      {statusOrder && (
+        <StatusUpdateModal
+          order={statusOrder}
+          onClose={() => setStatusOrder(null)}
+          onUpdated={onStatusUpdated}
+        />
+      )}
       <table className="w-full text-sm text-left">
         <thead>
           <tr className="text-xs text-gray-500 uppercase border-b bg-gray-50">
@@ -436,12 +569,22 @@ function OrdersTable({
                 </div>
               </td>
               <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                <Link
-                  href={`/dashboard/orders/${order._id}`}
-                  className={`inline-block text-xs font-medium px-2 py-1 rounded-full capitalize hover:underline ${STATUS_STYLE[order.status] || ""}`}
-                >
-                  {order.status}
-                </Link>
+                {trashMode ? (
+                  <span
+                    className={`inline-block text-xs font-medium px-2 py-1 rounded-full capitalize ${STATUS_STYLE[order.status] || ""}`}
+                  >
+                    {order.status}
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    title="Update status"
+                    onClick={() => setStatusOrder(order)}
+                    className={`inline-block text-xs font-medium px-2 py-1 rounded-full capitalize hover:underline hover:opacity-80 ${STATUS_STYLE[order.status] || ""}`}
+                  >
+                    {order.status} ✎
+                  </button>
+                )}
               </td>
               <td className="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
                 {fmt(order.createdAt)}
@@ -1882,6 +2025,7 @@ function AllOrdersSection() {
           <OrdersTable
             orders={orders}
             onDelete={handleDelete}
+            onStatusUpdated={refresh}
             onRowClick={(id) => router.push(`/dashboard/orders/${id}`)}
             onCustomerClick={(order) =>
               setSelectedCustomer({
@@ -2179,6 +2323,7 @@ function FilteredOrdersSection({
           <OrdersTable
             orders={orders}
             onDelete={handleDelete}
+            onStatusUpdated={() => fetch_(query, page, datePreset)}
             onRowClick={(id) => router.push(`/dashboard/orders/${id}`)}
             onCustomerClick={openCustomer}
           />

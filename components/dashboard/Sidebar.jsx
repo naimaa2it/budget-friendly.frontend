@@ -9,39 +9,7 @@ import { useStoreSettings } from "@/components/context/StoreSettingsContext";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 const STORAGE_KEY = "Pickob-dashboard-sidebar-collapsed";
 
-// Mirrors backend lib/permissions.js: admins always have full access, and a
-// moderator with no permissions assigned keeps full access too — assigning
-// permissions is an opt-in restriction, not an opt-in grant.
-// Supports both legacy section keys (catalog/orders/…) and new granular keys (products.view/…).
-const LEGACY_MAP = {
-  catalog: [
-    "products.view", "products.buying_price", "products.manage", "products.delete",
-    "products.inventory", "products.variants", "products.categories", "products.discounts",
-    "products.tags", "products.barcodes", "products.reviews", "products.rewards",
-    "products.waitlist", "products.questions", "products.preorders",
-  ],
-  orders: [
-    "orders.view", "orders.manage", "orders.delete", "orders.returns",
-    "orders.abandoned", "orders.wishlist", "orders.timeline", "orders.notes",
-    "orders.pick", "orders.courier",
-  ],
-  customers: ["customers.view", "customers.manage", "customers.delete", "customers.tags"],
-  content: ["content.banners", "content.promo", "content.featured", "content.blog", "content.media"],
-  addons: ["addons.manage", "addons.pixels", "addons.analytics", "addons.adsense", "addons.protection"],
-};
-const REVERSE_MAP = Object.fromEntries(
-  Object.entries(LEGACY_MAP).flatMap(([legacy, keys]) => keys.map((k) => [k, legacy]))
-);
-
-function hasPermission(user, key) {
-  if (!user) return false;
-  if (user.role === "admin") return true;
-  if (!Array.isArray(user.permissions) || user.permissions.length === 0) return false;
-  if (user.permissions.includes(key)) return true;
-  if (LEGACY_MAP[key]) return LEGACY_MAP[key].some((k) => user.permissions.includes(k));
-  if (REVERSE_MAP[key]) return user.permissions.includes(REVERSE_MAP[key]);
-  return false;
-}
+import { hasPermission } from "@/lib/permissions";
 
 const SECTION_ICONS = {
   overview: "M3 12h18M3 6h18M3 18h18",

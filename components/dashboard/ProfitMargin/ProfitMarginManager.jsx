@@ -492,6 +492,7 @@ export default function ProfitMarginManager() {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [expanded, setExpanded] = useState({});
+  const [forbidden, setForbidden] = useState(false);
 
   // Analytics state
   const [analytics, setAnalytics] = useState(null);
@@ -508,7 +509,10 @@ export default function ProfitMarginManager() {
         credentials: "include",
       });
       const d = await r.json();
-      if (r.ok) {
+      if (r.status === 403) {
+        setForbidden(true);
+      } else if (r.ok) {
+        setForbidden(false);
         setItems(d.items || []);
         setSummary(d.summary || {});
         setTotalPages(d.pages || 1);
@@ -586,6 +590,20 @@ export default function ProfitMarginManager() {
         : summary.netMarginPct < 15
           ? "text-amber-600"
           : "text-green-600";
+
+  if (forbidden) {
+    return (
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-8 text-center">
+        <p className="text-lg font-semibold text-amber-800">
+          Access restricted
+        </p>
+        <p className="mt-1 text-sm text-amber-700">
+          You do not have permission to view profit margin data. Please contact
+          an administrator.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">

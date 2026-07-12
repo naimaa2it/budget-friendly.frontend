@@ -13,7 +13,6 @@ export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [secret, setSecret] = useState("");
   const [message, setMessage] = useState("");
   const [type, setType] = useState("error");
   const [loading, setLoading] = useState(false);
@@ -31,8 +30,8 @@ export default function AdminLogin() {
   const handleLogin = async (e) => {
     e.preventDefault();
     clear();
-    if (!email || !password || !secret)
-      return showMessage("Email, password and secret code are required");
+    if (!email || !password)
+      return showMessage("Email and password are required");
 
     setLoading(true);
     try {
@@ -41,7 +40,7 @@ export default function AdminLogin() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email, password, adminSecret: secret }),
+        body: JSON.stringify({ email, password }),
       });
       const body = await resp.json().catch(() => ({}));
       if (!resp.ok) {
@@ -129,21 +128,6 @@ export default function AdminLogin() {
           </button>
         </div>
 
-        <div>
-          <label className="block text-sm">Secret code</label>
-          <input
-            placeholder="Server secret code"
-            value={secret}
-            onChange={(e) => setSecret(e.target.value)}
-            className="w-full border border-gray-200 bg-white text-gray-900 placeholder-gray-400 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-100"
-            disabled={loading}
-            required
-          />
-          <div className="text-xs text-gray-500 mt-1">
-            Enter the secret code
-          </div>
-        </div>
-
         <div className="flex items-center gap-3">
           <button
             type="submit"
@@ -179,7 +163,6 @@ export default function AdminLogin() {
             onClick={() => {
               setEmail("");
               setPassword("");
-              setSecret("");
             }}
             className="px-3 py-2 border rounded"
           >
@@ -257,7 +240,6 @@ export default function AdminLogin() {
             Account locks after 20 failed login attempts (30-minute lockout)
           </li>
           <li>Login attempts and IP addresses are logged</li>
-          <li>Server validates the admin secret code on each login</li>
         </ul>
       </div>
     </div>

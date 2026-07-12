@@ -3,6 +3,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useUser } from "@/components/context/UserContext";
+import { hasPermission } from "@/lib/permissions";
 
 export default function ProductAsideSections({
   product,
@@ -32,6 +34,8 @@ export default function ProductAsideSections({
     status: "idle",
     message: "",
   });
+  const { user } = useUser();
+  const canSeeBuyingPrice = hasPermission(user, "products.buying_price");
 
   const generateSku = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -399,26 +403,30 @@ export default function ProductAsideSections({
           Pricing & Inventory
         </p>
         <div className="mt-4 space-y-4">
-          <div>
-            <label className={labelClass}>Buying Price</label>
-            <input
-              type="number"
-              value={product.buyingPrice ?? ""}
-              onChange={(e) =>
-                setProduct((p) => ({
-                  ...p,
-                  buyingPrice:
-                    e.target.value === "" ? undefined : Number(e.target.value),
-                }))
-              }
-              className={inputClass}
-              placeholder="0.00"
-              step="0.01"
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              This is the buying price of the product.
-            </p>
-          </div>
+          {canSeeBuyingPrice && (
+            <div>
+              <label className={labelClass}>Buying Price</label>
+              <input
+                type="number"
+                value={product.buyingPrice ?? ""}
+                onChange={(e) =>
+                  setProduct((p) => ({
+                    ...p,
+                    buyingPrice:
+                      e.target.value === ""
+                        ? undefined
+                        : Number(e.target.value),
+                  }))
+                }
+                className={inputClass}
+                placeholder="0.00"
+                step="0.01"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                This is the buying price of the product.
+              </p>
+            </div>
+          )}
           <div>
             <label className={labelClass}>Selling Price <span className="text-red-500">*</span></label>
             <input

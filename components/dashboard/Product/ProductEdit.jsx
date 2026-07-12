@@ -18,6 +18,7 @@ import ProductVariantBuilder from "@/components/dashboard/Product/ProductVariant
 import ProductAsideSections from "@/components/dashboard/Product/ProductAsideSections";
 import Link from "next/link";
 import { uploadImageDirect, MAX_UPLOAD_BYTES } from "@/lib/uploadImage";
+import { hasPermission } from "@/lib/permissions";
 
 const DEFAULT_BADGE_OPTIONS = [
   {
@@ -163,6 +164,7 @@ function ImageDragGrid({ images, onReorder, onRemove }) {
 export default function ProductEdit({ productId }) {
   const router = useRouter();
   const { user, refreshUser } = useUser();
+  const canSeeBuyingPrice = hasPermission(user, "products.buying_price");
   const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
   const [product, setProduct] = useState({
@@ -1626,28 +1628,30 @@ export default function ProductEdit({ productId }) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="mt-4 space-y-4">
-                <div>
-                  <label className={labelClass}>Buying Price</label>
-                  <input
-                    type="number"
-                    value={product.buyingPrice ?? ""}
-                    onChange={(e) =>
-                      setProduct((p) => ({
-                        ...p,
-                        buyingPrice:
-                          e.target.value === ""
-                            ? undefined
-                            : Number(e.target.value),
-                      }))
-                    }
-                    className={inputClass}
-                    placeholder="0.00"
-                    step="0.01"
-                  />
-                  <p className="mt-1 text-xs text-gray-500">
-                    This is the buying price of the product.
-                  </p>
-                </div>
+                {canSeeBuyingPrice && (
+                  <div>
+                    <label className={labelClass}>Buying Price</label>
+                    <input
+                      type="number"
+                      value={product.buyingPrice ?? ""}
+                      onChange={(e) =>
+                        setProduct((p) => ({
+                          ...p,
+                          buyingPrice:
+                            e.target.value === ""
+                              ? undefined
+                              : Number(e.target.value),
+                        }))
+                      }
+                      className={inputClass}
+                      placeholder="0.00"
+                      step="0.01"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">
+                      This is the buying price of the product.
+                    </p>
+                  </div>
+                )}
                 <div>
                   <label className={labelClass}>Offer Price</label>
                   <input
@@ -1822,25 +1826,27 @@ export default function ProductEdit({ productId }) {
                 </div>
               </div>
               {/* Price */}
-              <div>
-                <label className={labelClass}>Buying Price</label>
-                <input
-                  type="number"
-                  value={product.buyingPrice ?? ""}
-                  onChange={(e) =>
-                    setProduct((p) => ({
-                      ...p,
-                      buyingPrice:
-                        e.target.value === ""
-                          ? undefined
-                          : Number(e.target.value),
-                    }))
-                  }
-                  className={inputClass}
-                  placeholder="0.00"
-                  step="0.01"
-                />
-              </div>
+              {canSeeBuyingPrice && (
+                <div>
+                  <label className={labelClass}>Buying Price</label>
+                  <input
+                    type="number"
+                    value={product.buyingPrice ?? ""}
+                    onChange={(e) =>
+                      setProduct((p) => ({
+                        ...p,
+                        buyingPrice:
+                          e.target.value === ""
+                            ? undefined
+                            : Number(e.target.value),
+                      }))
+                    }
+                    className={inputClass}
+                    placeholder="0.00"
+                    step="0.01"
+                  />
+                </div>
+              )}
               <div>
                 <label className={labelClass}>
                   Regular Price <span className="text-red-500">*</span>

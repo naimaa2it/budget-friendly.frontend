@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { useUser } from "@/components/context/UserContext";
+import { hasPermission } from "@/lib/permissions";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
@@ -131,6 +133,8 @@ export default function ProductVariantBuilder({
   inputClass,
   labelClass,
 }) {
+  const { user } = useUser();
+  const canSeeBuyingPrice = hasPermission(user, "products.buying_price");
   const [catalog, setCatalog] = useState(DEFAULT_VARIATIONS);
   const [selectedNames, setSelectedNames] = useState([]);
   const [optionDrafts, setOptionDrafts] = useState({});
@@ -708,7 +712,9 @@ export default function ProductVariantBuilder({
                 <thead className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   <tr>
                     <th className="px-3 py-3">Variant</th>
-                    <th className="px-3 py-3">Buying Price</th>
+                    {canSeeBuyingPrice && (
+                      <th className="px-3 py-3">Buying Price</th>
+                    )}
                     <th className="px-3 py-3">Selling Price ✱</th>
                     <th className="px-3 py-3">MRP / Original Price</th>
                     <th className="px-3 py-3">Discount</th>
@@ -738,22 +744,24 @@ export default function ProductVariantBuilder({
                             .join(" | ")}
                         </p>
                       </td>
-                      <td className="px-3 py-3 align-top">
-                        <input
-                          type="number"
-                          value={variant.buyingPrice ?? ""}
-                          onChange={(e) =>
-                            updateVariant(index, {
-                              buyingPrice:
-                                e.target.value === ""
-                                  ? undefined
-                                  : Number(e.target.value),
-                            })
-                          }
-                          className="w-full rounded-lg border border-gray-300 px-3 py-2"
-                          step="0.01"
-                        />
-                      </td>
+                      {canSeeBuyingPrice && (
+                        <td className="px-3 py-3 align-top">
+                          <input
+                            type="number"
+                            value={variant.buyingPrice ?? ""}
+                            onChange={(e) =>
+                              updateVariant(index, {
+                                buyingPrice:
+                                  e.target.value === ""
+                                    ? undefined
+                                    : Number(e.target.value),
+                              })
+                            }
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                            step="0.01"
+                          />
+                        </td>
+                      )}
                       <td className="px-3 py-3 align-top">
                         <input
                           type="number"

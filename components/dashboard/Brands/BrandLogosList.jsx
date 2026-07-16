@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useUser } from "@/components/context/UserContext";
 import { uploadAdminImage } from "@/lib/uploadImage";
+import MediaPicker from "@/components/dashboard/MediaPicker";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
@@ -20,6 +21,7 @@ function BrandForm({ brand, onSuccess, onCancel }) {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [showPicker, setShowPicker] = useState(false);
   const fileRef = useRef(null);
 
   const handleFile = async (e) => {
@@ -83,18 +85,36 @@ function BrandForm({ brand, onSuccess, onCancel }) {
               <span className="text-gray-300 text-xs">No logo</span>
             )}
           </div>
-          <label className="text-xs text-blue-600 border border-blue-200 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-blue-50">
-            {uploading ? "Uploading…" : logo ? "Change Logo" : "Upload Logo"}
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFile}
-              disabled={uploading}
-            />
-          </label>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs text-blue-600 border border-blue-200 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-blue-50 text-center">
+              {uploading ? "Uploading…" : logo ? "Change Logo" : "Upload Logo"}
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFile}
+                disabled={uploading}
+              />
+            </label>
+            <button
+              type="button"
+              onClick={() => setShowPicker(true)}
+              className="text-xs text-gray-600 border border-gray-300 rounded-lg px-3 py-1.5 hover:bg-gray-50 flex items-center justify-center gap-1"
+            >
+              <span>🖼</span> Select from Media Library
+            </button>
+          </div>
         </div>
+
+        <MediaPicker
+          open={showPicker}
+          onSelect={(asset) => {
+            setLogo(asset.url);
+            setShowPicker(false);
+          }}
+          onClose={() => setShowPicker(false)}
+        />
 
         {/* Name */}
         <input

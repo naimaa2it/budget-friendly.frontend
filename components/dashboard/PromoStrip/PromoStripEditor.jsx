@@ -13,6 +13,8 @@ export default function PromoStripEditor({
   const isEdit = !!itemId;
 
   const [title, setTitle] = useState("");
+  const [highlightWord, setHighlightWord] = useState("");
+  const [highlightColor, setHighlightColor] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [link, setLink] = useState("/");
   const [image, setImage] = useState({ url: "", public_id: "" });
@@ -30,6 +32,8 @@ export default function PromoStripEditor({
       .then((b) => {
         const item = b.item || {};
         setTitle(item.title || "");
+        setHighlightWord(item.highlightWord || "");
+        setHighlightColor(item.highlightColor || "");
         setSubtitle(item.subtitle || "");
         setLink(item.link || "/");
         setImage(
@@ -64,6 +68,8 @@ export default function PromoStripEditor({
     try {
       const payload = {
         title: title.trim(),
+        highlightWord: highlightWord.trim(),
+        highlightColor: highlightColor.trim(),
         subtitle: subtitle.trim(),
         link: link.trim() || "/",
         image: { url: image.url || "", public_id: image.public_id || "" },
@@ -174,11 +180,77 @@ export default function PromoStripEditor({
             </label>
             <input
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. 400 TK"
+              onChange={(e) => {
+                setTitle(e.target.value);
+                // drop the highlight if its word no longer exists in the text
+                const words = e.target.value.trim().split(/\s+/);
+                if (highlightWord && !words.includes(highlightWord)) {
+                  setHighlightWord("");
+                }
+              }}
+              placeholder="e.g. Mega Sale"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
+
+          {title.trim() && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Highlight a word (optional)
+              </label>
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {title
+                  .trim()
+                  .split(/\s+/)
+                  .map((word, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() =>
+                        setHighlightWord((prev) =>
+                          prev === word ? "" : word,
+                        )
+                      }
+                      className={`px-2 py-1 text-xs rounded-md border transition-colors ${
+                        highlightWord === word
+                          ? "bg-blue-600 text-white border-blue-600"
+                          : "bg-white text-gray-600 border-gray-300 hover:border-blue-400"
+                      }`}
+                    >
+                      {word}
+                    </button>
+                  ))}
+              </div>
+              {highlightWord && (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={highlightColor || "#e11d48"}
+                    onChange={(e) => setHighlightColor(e.target.value)}
+                    className="w-9 h-9 rounded border border-gray-300 cursor-pointer p-0.5"
+                  />
+                  <input
+                    value={highlightColor}
+                    onChange={(e) => setHighlightColor(e.target.value)}
+                    placeholder="#e11d48"
+                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  {highlightColor && (
+                    <button
+                      type="button"
+                      onClick={() => setHighlightColor("")}
+                      className="text-[11px] text-red-500 hover:text-red-700 whitespace-nowrap"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              )}
+              <p className="text-[11px] text-gray-400 mt-1">
+                Leave empty to keep the default gradient text style.
+              </p>
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">

@@ -4,6 +4,31 @@ import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { cdnImageUrl } from "@/lib/cdnImage";
 
+const GRADIENT_CLS =
+  "bg-linear-to-r from-rose-600 to-orange-500 bg-clip-text text-transparent";
+
+// splits the title around the highlighted word (if any) so only that word
+// gets the custom hex color while the rest keeps the default gradient style
+function renderTitle(title, highlightWord, highlightColor) {
+  if (!highlightWord || !highlightColor) {
+    return <span className={GRADIENT_CLS}>{title}</span>;
+  }
+  const words = title.split(/(\s+)/);
+  const idx = words.findIndex((w) => w === highlightWord);
+  if (idx === -1) {
+    return <span className={GRADIENT_CLS}>{title}</span>;
+  }
+  const before = words.slice(0, idx).join("");
+  const after = words.slice(idx + 1).join("");
+  return (
+    <>
+      {before && <span className={GRADIENT_CLS}>{before}</span>}
+      <span style={{ color: highlightColor }}>{highlightWord}</span>
+      {after && <span className={GRADIENT_CLS}>{after}</span>}
+    </>
+  );
+}
+
 export default function PromoStripSection() {
   const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
   const [items, setItems] = useState([]);
@@ -105,8 +130,8 @@ export default function PromoStripSection() {
               </div>
 
               <div className="min-w-0 flex-1 bg-white/70 backdrop-blur-sm border border-transparent group-hover:border-rose-100 rounded-lg px-0.5 py-1 transition-all duration-200 group-hover:shadow-[0_2px_8px_rgba(244,63,94,0.15)] group-hover:bg-white">
-                <p className="text-[13px] font-extrabold leading-none tracking-tight uppercase bg-linear-to-r from-rose-600 to-orange-500 bg-clip-text text-transparent">
-                  {item.title}
+                <p className="text-[13px] font-extrabold leading-none tracking-tight uppercase">
+                  {renderTitle(item.title, item.highlightWord, item.highlightColor)}
                 </p>
                 {item.subtitle && (
                   <p className="mt-0.5 text-[13px] leading-tight font-semibold text-slate-700 line-clamp-2">

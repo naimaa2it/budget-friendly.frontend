@@ -108,7 +108,7 @@ export default function ShopByCategory() {
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-4 mt-6 mb-6">
+    <div className="max-w-7xl mx-auto px-3 sm:px-4 mt-2 md:mt-3 mb-6">
       <div className="max-w-6xl mx-auto flex justify-between items-center mt-2 mb-4 px-6 ">
         <h1 className="text-xl md:text-3xl font-bold text-gray-900 text-center mt-4">
           <span className="border-b-2 border-red-500">

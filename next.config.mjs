@@ -31,7 +31,11 @@ const nextConfig = {
   //   return [{ source: '/(.*)', headers: securityHeaders }];
   // },
   images: {
-    unoptimized: true,
+    // Custom loader adds Cloudinary f_auto/q_auto so old browsers (no WebP
+    // support) get JPEG instead of broken images. Non-Cloudinary srcs pass
+    // through unchanged, so this stays compatible with output: "export".
+    loader: "custom",
+    loaderFile: "./lib/imageLoader.js",
     remotePatterns: [
       { protocol: "https", hostname: "res.cloudinary.com" },
       { protocol: "https", hostname: "download.logo.wine" },

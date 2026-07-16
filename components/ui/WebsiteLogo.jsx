@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useStoreSettings } from "@/components/context/StoreSettingsContext";
+import { cdnImageUrl } from "@/lib/cdnImage";
 
 const WebsiteLogo = ({ className = "h-7 mb-0 object-contain" }) => {
   const { logoUrl, storeName } = useStoreSettings();
@@ -13,7 +14,7 @@ const WebsiteLogo = ({ className = "h-7 mb-0 object-contain" }) => {
     <div>
       <Link href="/">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={logoUrl} alt={storeName || "Store logo"} className={className} />
+        <img src={cdnImageUrl(logoUrl)} alt={storeName || "Store logo"} className={className} />
       </Link>
     </div>
   );

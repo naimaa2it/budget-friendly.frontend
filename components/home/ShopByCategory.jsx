@@ -9,6 +9,7 @@ import { useUser } from "@/components/context/UserContext";
 import { useCategories } from "@/components/context/CategoryContext";
 import { useLanguage } from "@/components/context/LanguageContext";
 import Image from "next/image";
+import { cdnImageUrl } from "@/lib/cdnImage";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
@@ -203,7 +204,7 @@ export default function ShopByCategory() {
                         <div className="absolute top-1 left-1 bg-white rounded-full p-1 shadow z-20 border border-gray-100">
                           {typeof cat.icon === "string" ? (
                             <img
-                              src={cat.icon}
+                              src={cdnImageUrl(cat.icon, 64)}
                               alt=""
                               className="w-4 h-4 md:w-5 md:h-5 object-cover"
                             />

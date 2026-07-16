@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/components/context/LanguageContext";
+import { cdnImageUrl } from "@/lib/cdnImage";
 
 // How many cards visible per breakpoint (used for step calculation)
 const VISIBLE = { default: 2, sm: 3, md: 4, lg: 5 };
@@ -135,7 +136,7 @@ function OccasionSlider({ section }) {
                   <div className="w-full h-40  overflow-hidden flex-shrink-0">
                     {card.image?.url ? (
                       <img
-                        src={card.image.url}
+                        src={cdnImageUrl(card.image.url, 640)}
                         alt={card.label}
                         className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                       />

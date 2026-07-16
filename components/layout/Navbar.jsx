@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import SearchBox from "@/components/ui/SearchBox";
 import CategorySidebar from "../home/CategorySidebar";
 import { useLanguage } from "@/components/context/LanguageContext";
+import { cdnImageUrl } from "@/lib/cdnImage";
 
 function ProfileMenu() {
   const { user, setUser, refreshUser } = useUser();
@@ -68,7 +69,7 @@ function ProfileMenu() {
           user.image !== "undefined" &&
           user.image !== "null" ? (
             <img
-              src={user.image}
+              src={cdnImageUrl(user.image, 64)}
               alt={user.name || "User"}
               className="w-6 h-6 rounded-full object-cover"
               onError={() => setImgError(true)}

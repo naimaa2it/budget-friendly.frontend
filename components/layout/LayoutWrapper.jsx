@@ -7,6 +7,7 @@ import Navbar from "@/components/layout/Navbar";
 import MegaMenuNavbar from "@/components/layout/MegaMenuNavbar";
 import Footer from "@/components/layout/Footer";
 import { StoreSettingsProvider } from "@/components/context/StoreSettingsContext";
+import { cdnImageUrl } from "@/lib/cdnImage";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
@@ -159,7 +160,7 @@ function TopBanner() {
     };
     const content = cfg.imageUrl ? (
       <img
-        src={cfg.imageUrl}
+        src={cdnImageUrl(cfg.imageUrl)}
         alt="banner"
         style={{ maxHeight: "100%", maxWidth: "100%" }}
       />

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { cdnImageUrl } from "@/lib/cdnImage";
 
 export default function PromoStripSection() {
   const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
@@ -89,7 +90,7 @@ export default function PromoStripSection() {
                 {item.image?.url ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img
-                    src={item.image.url}
+                    src={cdnImageUrl(item.image.url, 160)}
                     alt={item.title || "Offer"}
                     className="w-full h-full object-cover"
                     onError={(e) => {

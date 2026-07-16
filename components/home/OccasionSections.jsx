@@ -6,7 +6,7 @@ import { useLanguage } from "@/components/context/LanguageContext";
 import { cdnImageUrl } from "@/lib/cdnImage";
 
 // How many cards visible per breakpoint (used for step calculation)
-const VISIBLE = { default: 2, sm: 3, md: 4, lg: 5 };
+const VISIBLE = { default: 1, sm: 2, md: 4, lg: 6 };
 
 function useVisibleCount() {
   const [count, setCount] = useState(VISIBLE.lg);
@@ -26,6 +26,7 @@ function useVisibleCount() {
 }
 
 function OccasionSlider({ section }) {
+  const { t } = useLanguage();
   const cards = section.cards || [];
   const visCount = useVisibleCount();
   const maxIndex = Math.max(0, cards.length - visCount);
@@ -76,10 +77,10 @@ function OccasionSlider({ section }) {
         <button
           onClick={prev}
           aria-label="Previous"
-          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-10 w-9 h-9 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:border hover:border-red-600 transition-colors"
+          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-8 h-8 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:border hover:border-red-600 transition-colors"
         >
           <svg
-            className="w-4 h-4"
+            className="w-3.5 h-3.5"
             fill="none"
             stroke="currentColor"
             strokeWidth="2.5"
@@ -99,10 +100,10 @@ function OccasionSlider({ section }) {
         <button
           onClick={next}
           aria-label="Next"
-          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-10 w-9 h-9 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:border hover:border-red-600 transition-colors"
+          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-8 h-8 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:border hover:border-red-600 transition-colors"
         >
           <svg
-            className="w-4 h-4"
+            className="w-3.5 h-3.5"
             fill="none"
             stroke="currentColor"
             strokeWidth="2.5"
@@ -126,37 +127,38 @@ function OccasionSlider({ section }) {
           {cards.map((card, idx) => (
             <div
               key={card._id || idx}
-              className="flex-shrink-0 px-2"
+              className="flex-shrink-0 px-1.5"
               style={{ width: `${cardPct}%` }}
             >
               <Link href={card.link || "#"} className="group block h-full">
-                {/* Fixed-height card */}
-                <div className="border border-gray-200 rounded-xl overflow-hidden  shadow-sm hover:shadow-md transition-shadow flex flex-col h-full">
-                  {/* Image — fixed height */}
-                  <div className="w-full h-40  overflow-hidden flex-shrink-0">
+                {/* Compact horizontal card: image left, text right */}
+                <div className="flex items-center gap-3 h-full bg-indigo-50/70 border border-indigo-100 rounded-lg  hover:shadow-md hover:border-indigo-200 transition-all">
+                  {/* Image */}
+                  <div className="w-20 h-20 flex-shrink-0 flex items-center justify-center">
                     {card.image?.url ? (
                       <img
-                        src={cdnImageUrl(card.image.url, 640)}
+                        src={cdnImageUrl(card.image.url, 160)}
                         alt={card.label}
                         className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-300 text-3xl">
+                      <div className="w-full h-full flex items-center justify-center text-gray-300 text-2xl">
                         🎁
                       </div>
                     )}
                   </div>
 
-                  {/* Subtitle — fixed height so all cards align */}
-                  <div className="px-3 py-2 flex-1 flex items-center justify-center bg-[#FFF5ED]">
-                    <p className="text-xs text-gray-500 text-center leading-relaxed line-clamp-2">
-                      {card.subtitle || "\u00A0"}
+                  {/* Text stack */}
+                  <div className="min-w-0 flex-1 py-3 px-3">
+                    <p className="text-xs sm:text-sm font-bold text-gray-900 truncate">
+                      {card.label || " "}
                     </p>
-                  </div>
-
-                  {/* Label bar */}
-                  <div className="bg-[#FFE3CC] text-red-600 text-xs sm:text-sm font-semibold text-center py-2 px-2 truncate group-hover:bg-[#fed0ab] transition-colors flex-shrink-0">
-                    {card.label || "\u00A0"}
+                    <p className="text-[11px] sm:text-xs font-semibold text-red-500 truncate mt-0.5">
+                      {card.subtitle || " "}
+                    </p>
+                    <span className="inline-block text-[10px] sm:text-[11px] font-semibold text-gray-700 group-hover:text-red-600 underline-offset-2 group-hover:underline mt-1">
+                      {t("home.shop_now")}
+                    </span>
                   </div>
                 </div>
               </Link>
@@ -196,18 +198,22 @@ export default function OccasionSections() {
   if (!sections.length) return null;
 
   return (
-    <div className="space-y-10 px-3 md:px-6 max-w-screen-xl mx-auto py-6">
+    <div className="space-y-6 px-3 md:px-6 max-w-screen-xl mx-auto py-6">
       {sections.map((section) => (
-        <div key={section._id}>
+        <div
+          key={section._id}
+          className="bg-white border border-gray-200 rounded-xl shadow-sm p-1 md:p-2"
+        >
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg md:text-3xl font-bold text-gray-900">
+            <h2 className="text-base md:text-xl font-bold text-gray-900 flex items-center gap-2">
+              <span aria-hidden="true">⭐</span>
               {lang === "bn" ? section.titleBn || section.title : section.title}
             </h2>
             {section.viewAllLink && section.viewAllLink !== "/" && (
               <Link
                 href={section.viewAllLink}
-                className="text-md  text-rose-500 font-semibold hover:underline whitespace-nowrap"
+                className="text-sm md:text-md text-rose-500 font-semibold hover:underline whitespace-nowrap"
               >
                 {t("home.view_all")}
               </Link>

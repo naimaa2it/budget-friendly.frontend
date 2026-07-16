@@ -15,11 +15,11 @@ export default function Home() {
       <Banner />
       <PromoStripSection />
       <ShopByCategory />
-      <OccasionSections />
       <AdSlot page="homepage" className="max-w-7xl mx-auto px-2 py-3" />
       <PopularPicks />
       <FeaturedSections />
       <DealsOfDay />
+      <OccasionSections />
       <div id="offers" className="scroll-mb-24">
         <OffersToSayYes />
       </div>

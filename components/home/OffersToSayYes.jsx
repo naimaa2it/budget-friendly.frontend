@@ -6,6 +6,25 @@ import { useLanguage } from "@/components/context/LanguageContext";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
+// How many cards visible per breakpoint
+const VISIBLE = { default: 1, sm: 2, md: 4 };
+
+function useVisibleCount() {
+  const [count, setCount] = useState(VISIBLE.md);
+  useEffect(() => {
+    const calc = () => {
+      const w = window.innerWidth;
+      if (w < 640) setCount(VISIBLE.default);
+      else if (w < 768) setCount(VISIBLE.sm);
+      else setCount(VISIBLE.md);
+    };
+    calc();
+    window.addEventListener("resize", calc);
+    return () => window.removeEventListener("resize", calc);
+  }, []);
+  return count;
+}
+
 const COLOR_THEMES = {
   pink: {
     bgColor: "from-pink-50 to-white",
@@ -96,7 +115,7 @@ function OfferCard({ offer }) {
               </h3>
             </>
           ) : (
-            <h2 className={`text-5xl font-bold ${t.textColor}`}>
+            <h2 className={`text-4xl font-bold ${t.textColor}`}>
               {offer.highlight}
             </h2>
           )}
@@ -108,7 +127,7 @@ function OfferCard({ offer }) {
             {offer.title}
           </h3>
           {offer.description && (
-            <p className="text-xs text-gray-600 leading-relaxed">
+            <p className="text-[11px] text-gray-600 leading-relaxed">
               {offer.description}
             </p>
           )}
@@ -121,9 +140,9 @@ function OfferCard({ offer }) {
 
 export default function OffersToSayYes() {
   const { t } = useLanguage();
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [mobileIndex, setMobileIndex] = useState(0);
+  const [current, setCurrent] = useState(0);
   const [offers, setOffers] = useState([]);
+  const visCount = useVisibleCount();
 
   useEffect(() => {
     fetch(`${API}/api/discounts`)
@@ -132,66 +151,71 @@ export default function OffersToSayYes() {
       .catch(() => setOffers([]));
   }, []);
 
-  const slidesToShow = 3;
-  const totalSlides = Math.max(1, Math.ceil(offers.length / slidesToShow));
+  const maxIndex = Math.max(0, offers.length - visCount);
+  // Clamp during render so a visCount change never leaves us out of range
+  const index = Math.min(current, maxIndex);
 
-  // Desktop auto-play
+  // Auto-play
   useEffect(() => {
-    if (offers.length === 0) return;
+    if (offers.length <= visCount) return;
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % totalSlides);
+      setCurrent((c) => (Math.min(c, maxIndex) >= maxIndex ? 0 : c + 1));
     }, 5000);
     return () => clearInterval(timer);
-  }, [totalSlides, offers.length]);
+  }, [maxIndex, offers.length, visCount]);
 
-  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % totalSlides);
-  const prevSlide = () =>
-    setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
-
-  const nextMobile = () => setMobileIndex((prev) => (prev + 1) % offers.length);
-  const prevMobile = () =>
-    setMobileIndex((prev) => (prev - 1 + offers.length) % offers.length);
-
-  const visibleOffers = Array.from(
-    { length: slidesToShow },
-    (_, i) => offers[(currentSlide * slidesToShow + i) % offers.length],
-  );
+  const next = () => setCurrent(index >= maxIndex ? 0 : index + 1);
+  const prev = () => setCurrent(index <= 0 ? maxIndex : index - 1);
 
   if (offers.length === 0) return null;
 
+  const showArrows = offers.length > visCount;
+  // Each card takes 1/visCount of the track width
+  const cardPct = 100 / visCount;
+
   return (
-    <div className="w-full max-w-7xl mx-auto px-3 md:px-6 lg:px-8 py-8">
+    <div className="w-full max-w-7xl mx-auto px-1 md:px-2 lg:px-3 py-6 md:py-8">
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-3 md:mb-6">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
           <span className="text-red-500">{t("offers.title_highlight")}</span>{" "}
           <span className="font-normal">{t("offers.title_rest")}</span>
         </h1>
       </div>
 
-      {/* ── Mobile slider: one card at a time (hidden on md+) ── */}
-      <div className="relative md:hidden">
-        <button
-          onClick={prevMobile}
-          className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full w-9 h-9 flex items-center justify-center shadow-lg hover:border hover:border-red-600 transition"
-        >
-          <FaChevronLeft className="w-4 h-4" />
-        </button>
-        <button
-          onClick={nextMobile}
-          className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full w-9 h-9 flex items-center justify-center shadow-lg hover:border hover:border-red-600 transition"
-        >
-          <FaChevronRight className="w-4 h-4" />
-        </button>
+      {/* ── Responsive slider: 1 card (mobile) / 2 (sm) / 4 (md+) ── */}
+      <div className="relative">
+        {showArrows && (
+          <button
+            onClick={prev}
+            aria-label="Previous"
+            className="absolute -left-2 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full w-9 h-9 flex items-center justify-center shadow-lg hover:shadow-xl hover:border hover:border-red-600 transition"
+          >
+            <FaChevronLeft className="w-4 h-4" />
+          </button>
+        )}
+        {showArrows && (
+          <button
+            onClick={next}
+            aria-label="Next"
+            className="absolute -right-2 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full w-9 h-9 flex items-center justify-center shadow-lg hover:shadow-xl hover:border hover:border-red-600 transition"
+          >
+            <FaChevronRight className="w-4 h-4" />
+          </button>
+        )}
 
         {/* Sliding track */}
         <div className="overflow-hidden rounded-lg">
           <div
             className="flex transition-transform duration-500 ease-in-out"
-            style={{ transform: `translateX(-${mobileIndex * 100}%)` }}
+            style={{ transform: `translateX(-${index * cardPct}%)` }}
           >
             {offers.map((offer) => (
-              <div key={offer._id} className="w-full shrink-0">
+              <div
+                key={offer._id}
+                className="shrink-0 px-1"
+                style={{ width: `${cardPct}%` }}
+              >
                 <OfferCard offer={offer} />
               </div>
             ))}
@@ -199,57 +223,22 @@ export default function OffersToSayYes() {
         </div>
 
         {/* Dots */}
-        <div className="flex justify-center gap-2 mt-4">
-          {offers.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setMobileIndex(index)}
-              className={`h-2 rounded-full transition-all ${
-                index === mobileIndex
-                  ? "bg-red-600 w-8"
-                  : "bg-gray-300 w-2 hover:bg-gray-400"
-              }`}
-              aria-label={`Go to offer ${index + 1}`}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* ── Desktop slider: groups of 3 (shown on md+) ── */}
-      <div className="relative hidden md:block">
-        <button
-          onClick={prevSlide}
-          className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full w-9 h-9 flex items-center justify-center shadow-lg hover:shadow-xl hover:border hover:border-red-600 transition"
-        >
-          <FaChevronLeft className="w-4 h-4" />
-        </button>
-        <button
-          onClick={nextSlide}
-          className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full w-9 h-9 flex items-center justify-center shadow-lg hover:shadow-xl hover:border hover:border-red-600 transition"
-        >
-          <FaChevronRight className="w-4 h-4" />
-        </button>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 transition-all duration-500">
-          {visibleOffers.map((offer) => (
-            <OfferCard key={offer._id} offer={offer} />
-          ))}
-        </div>
-
-        <div className="flex justify-center gap-2 mt-6">
-          {Array.from({ length: totalSlides }).map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`h-2 rounded-full transition-all ${
-                index === currentSlide
-                  ? "bg-red-600 w-8"
-                  : "bg-gray-300 w-2 hover:bg-gray-400"
-              }`}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
+        {showArrows && (
+          <div className="flex justify-center gap-2 mt-4">
+            {Array.from({ length: maxIndex + 1 }).map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrent(i)}
+                className={`h-2 rounded-full transition-all ${
+                  i === index
+                    ? "bg-red-600 w-8"
+                    : "bg-gray-300 w-2 hover:bg-gray-400"
+                }`}
+                aria-label={`Go to slide ${i + 1}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

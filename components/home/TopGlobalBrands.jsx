@@ -19,24 +19,26 @@ export default function TopGlobalBrands() {
 
   if (!brands.length) return null;
 
+  const shown = brands.slice(0, 10);
+
   return (
     <div className="max-w-screen-xl mx-auto px-3 md:px-6 py-6">
       {/* Header */}
-      <h2 className="flex items-center justify-center gap-2 text-xs md:text-sm font-bold text-gray-900 uppercase tracking-wide mb-5">
+      <h2 className="flex items-center justify-center gap-2 text-sm md:text-2xl font-bold text-gray-900 uppercase tracking-wide mb-5">
         <span aria-hidden="true">⭐</span>
         {t("home.top_brands_title")}
       </h2>
 
       {/* Logo row */}
-      <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-5 md:gap-x-12">
-        {brands.map((brand) => (
+      <div className="grid grid-cols-5 md:grid-cols-10 items-center justify-items-center gap-x-2 gap-y-5 md:gap-x-4">
+        {shown.map((brand) => (
           <img
             key={brand._id}
             src={cdnImageUrl(brand.logo, 300)}
             alt={brand.name}
             title={brand.name}
             loading="lazy"
-            className="h-5 md:h-7 w-auto max-w-[110px] object-contain grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition duration-300"
+            className="h-10 md:h-16 w-auto max-w-30 object-contain hover:scale-105 transition duration-300"
           />
         ))}
       </div>

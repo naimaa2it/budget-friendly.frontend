@@ -113,20 +113,6 @@ const ScrollToTop = () => {
             >
               <FaArrowUp className="text-sm" />
             </motion.div>
-
-            {/* Tooltip */}
-            <div
-              className="absolute right-full mr-2 px-2 py-1 
-                           bg-green-400 text-white text-xs rounded-lg 
-                           opacity-0 group-hover:opacity-100 
-                           transition-opacity duration-200 whitespace-nowrap"
-            >
-              Back to top
-              <div
-                className="absolute top-1/2 left-full -translate-y-1/2 
-                            border-4 border-transparent border-l-primary"
-              />
-            </div>
           </motion.button>
 
           {/* Floating particles */}

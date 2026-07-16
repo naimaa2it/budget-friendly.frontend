@@ -24,7 +24,7 @@ import Skeleton from "@/components/ui/Skeleton";
 
 export default function ProductCard({
   product,
-  imageWidth = 300,
+  imageWidth = 320,
   imageHeight = 200,
   imageQuality = 100,
   showActionsOnHover = true,
@@ -156,7 +156,7 @@ export default function ProductCard({
           <span className="sr-only">{product.title || product.slug}</span>
         </Link>
         <div className="relative bg-gray-50" style={{ height: imageHeight }}>
-          <div className="absolute inset-0 px-2 flex items-center justify-center overflow-hidden">
+          <div className="absolute inset-0 px-1 flex items-center justify-center overflow-hidden">
             <Image
               src={image}
               alt={product.title || product.slug}
@@ -292,11 +292,8 @@ export default function ProductCard({
         </div>
 
         <div className="p-3 flex flex-col grow">
-          <p className="text-sm text-gray-600 mb-1 line-clamp-1">
-            {product.title || product.category}
-          </p>
           <h3 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-2">
-            {product.description || product.title}
+            {product.title}
           </h3>
 
           <div className="mb-1">
@@ -337,7 +334,7 @@ export default function ProductCard({
                       <span
                         key={i}
                         title={c.name}
-                        className="w-4 h-4 rounded-full inline-block border border-gray-200"
+                        className="w-3 h-3 rounded-full inline-block border border-gray-200"
                         style={{ backgroundColor: hex }}
                       />
                     );

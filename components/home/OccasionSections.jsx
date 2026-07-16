@@ -198,7 +198,7 @@ export default function OccasionSections() {
   if (!sections.length) return null;
 
   return (
-    <div className="space-y-6 px-3 md:px-6 max-w-screen-xl mx-auto py-6">
+    <div className="space-y-6 px-1 md:px-2 max-w-screen-xl mx-auto py-6">
       {sections.map((section) => (
         <div
           key={section._id}

@@ -89,7 +89,7 @@ function OfferCard({ offer }) {
   const t = COLOR_THEMES[offer.theme] || COLOR_THEMES.pink;
   return (
     <div
-      className={`relative border-2 ${t.borderColor} rounded-lg px-4 py-5 bg-linear-to-br ${t.bgColor} overflow-hidden h-44`}
+      className={`relative border-2 ${t.borderColor} rounded-lg px-4 py-5 bg-linear-to-br ${t.bgColor} overflow-hidden h-40`}
     >
       <div
         className={`absolute -top-3 left-2/3 -translate-x-1/2 w-6 h-6 bg-white border-2 ${t.borderColor} rounded-full z-10`}

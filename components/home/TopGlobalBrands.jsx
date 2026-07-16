@@ -1,17 +1,18 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useLanguage } from "@/components/context/LanguageContext";
 import { cdnImageUrl } from "@/lib/cdnImage";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
-const SLIDE_INTERVAL = 5000;
+const SLIDE_INTERVAL = 3000;
 
 export default function TopGlobalBrands() {
   const { t } = useLanguage();
   const [brands, setBrands] = useState([]);
   const [perPage, setPerPage] = useState(5);
-  const [page, setPage] = useState(0);
+  const [current, setCurrent] = useState(0);
+  const paused = useRef(false);
 
   useEffect(() => {
     fetch(`${API}/api/brands?limit=40`)
@@ -21,38 +22,34 @@ export default function TopGlobalBrands() {
   }, []);
 
   useEffect(() => {
-    const updatePerPage = () => setPerPage(window.innerWidth >= 768 ? 10 : 5);
+    const updatePerPage = () => {
+      const w = window.innerWidth;
+      if (w < 400) setPerPage(3);
+      else if (w < 640) setPerPage(4);
+      else if (w < 768) setPerPage(5);
+      else if (w < 1024) setPerPage(8);
+      else setPerPage(10);
+    };
     updatePerPage();
     window.addEventListener("resize", updatePerPage);
     return () => window.removeEventListener("resize", updatePerPage);
   }, []);
 
-  const showsAll = brands.length <= perPage;
-  const pageCount = showsAll ? 1 : Math.ceil(brands.length / perPage);
-  const pages = [];
-  for (let i = 0; i < pageCount; i++) {
-    if (showsAll) {
-      pages.push(brands);
-    } else {
-      const group = [];
-      for (let j = 0; j < perPage; j++) {
-        group.push(brands[(i * perPage + j) % brands.length]);
-      }
-      pages.push(group);
-    }
-  }
+  const maxIndex = Math.max(0, brands.length - perPage);
 
   useEffect(() => {
-    if (pageCount <= 1) return;
+    if (maxIndex <= 0) return;
     const id = setInterval(() => {
-      setPage((p) => (p + 1) % pageCount);
+      if (paused.current) return;
+      setCurrent((c) => (c >= maxIndex ? 0 : c + 1));
     }, SLIDE_INTERVAL);
     return () => clearInterval(id);
-  }, [pageCount]);
+  }, [maxIndex]);
 
   if (!brands.length) return null;
 
-  const safePage = pageCount ? page % pageCount : 0;
+  const safeCurrent = Math.min(current, maxIndex);
+  const cardPct = 100 / perPage;
 
   return (
     <div className="max-w-screen-xl mx-auto px-3 md:px-6 py-6">
@@ -63,26 +60,32 @@ export default function TopGlobalBrands() {
       </h2>
 
       {/* Sliding logo track */}
-      <div className="overflow-hidden">
+      <div
+        className="overflow-hidden"
+        onMouseEnter={() => {
+          paused.current = true;
+        }}
+        onMouseLeave={() => {
+          paused.current = false;
+        }}
+      >
         <div
           className="flex transition-transform duration-700 ease-in-out"
-          style={{ transform: `translateX(-${safePage * 100}%)` }}
+          style={{ transform: `translateX(-${safeCurrent * cardPct}%)` }}
         >
-          {pages.map((group, i) => (
+          {brands.map((brand) => (
             <div
-              key={i}
-              className="grid grid-cols-5 md:grid-cols-10 items-center justify-items-center gap-x-2 gap-y-5 md:gap-x-4 w-full shrink-0"
+              key={brand._id}
+              className="flex items-center justify-center shrink-0 px-2 sm:px-3"
+              style={{ width: `${cardPct}%` }}
             >
-              {group.map((brand) => (
-                <img
-                  key={brand._id}
-                  src={cdnImageUrl(brand.logo, 300)}
-                  alt={brand.name}
-                  title={brand.name}
-                  loading="lazy"
-                  className="h-10 md:h-16 w-auto max-w-30 object-contain hover:scale-105 transition duration-300"
-                />
-              ))}
+              <img
+                src={cdnImageUrl(brand.logo, 300)}
+                alt={brand.name}
+                title={brand.name}
+                loading="lazy"
+                className="h-7 sm:h-9 md:h-12 lg:h-16 w-auto max-w-full object-contain hover:scale-105 transition duration-300"
+              />
             </div>
           ))}
         </div>

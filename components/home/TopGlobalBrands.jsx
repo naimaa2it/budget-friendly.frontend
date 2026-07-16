@@ -27,11 +27,20 @@ export default function TopGlobalBrands() {
     return () => window.removeEventListener("resize", updatePerPage);
   }, []);
 
+  const showsAll = brands.length <= perPage;
+  const pageCount = showsAll ? 1 : Math.ceil(brands.length / perPage);
   const pages = [];
-  for (let i = 0; i < brands.length; i += perPage) {
-    pages.push(brands.slice(i, i + perPage));
+  for (let i = 0; i < pageCount; i++) {
+    if (showsAll) {
+      pages.push(brands);
+    } else {
+      const group = [];
+      for (let j = 0; j < perPage; j++) {
+        group.push(brands[(i * perPage + j) % brands.length]);
+      }
+      pages.push(group);
+    }
   }
-  const pageCount = pages.length;
 
   useEffect(() => {
     if (pageCount <= 1) return;
@@ -78,23 +87,6 @@ export default function TopGlobalBrands() {
           ))}
         </div>
       </div>
-
-      {/* Dots */}
-      {pageCount > 1 && (
-        <div className="flex items-center justify-center gap-1.5 mt-4">
-          {pages.map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => setPage(i)}
-              aria-label={`Go to slide ${i + 1}`}
-              className={`h-1.5 rounded-full transition-all ${
-                i === safePage ? "w-5 bg-gray-800" : "w-1.5 bg-gray-300"
-              }`}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }

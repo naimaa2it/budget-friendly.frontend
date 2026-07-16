@@ -132,7 +132,7 @@ function OccasionSlider({ section }) {
             >
               <Link href={card.link || "#"} className="group block h-full">
                 {/* Compact horizontal card: image left, text right */}
-                <div className="flex items-center gap-3 h-full bg-indigo-50/70 border border-indigo-100 rounded-lg  hover:shadow-md hover:border-indigo-200 transition-all">
+                <div className="flex items-center gap-0 h-full bg-indigo-50/70 border border-indigo-100 rounded-lg  hover:shadow-md hover:border-indigo-200 transition-all">
                   {/* Image */}
                   <div className="w-20 h-20 flex-shrink-0 flex items-center justify-center">
                     {card.image?.url ? (

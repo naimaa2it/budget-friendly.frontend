@@ -57,7 +57,7 @@ const Banner = () => {
 
   return (
     <section className="bg-[#FFF5ED] ">
-      <div className="relative flex flex-col md:flex-row md:items-start max-w-7xl mx-auto  md:h-[396px]">
+      <div className="relative flex flex-col md:flex-row md:items-start max-w-7xl mx-auto  md:h-[430px]">
         {/* Sidebar (desktop only) */}
         <div className="hidden md:block md:w-[240px] min-w-[200px] overflow-visible z-20 relative md:h-full">
           <CategorySidebar />
@@ -66,7 +66,7 @@ const Banner = () => {
         {/* Banner Section */}
         <div className="flex-1 flex flex-col gap-4 px-2 md:px-4 ">
           <div
-            className="relative mt-1 mb-1 aspect-5/2 sm:aspect-auto sm:h-58.5 md:h-97 rounded-2xl overflow-hidden w-full mx-auto cursor-pointer"
+            className="relative mt-1 mb-1 aspect-[12/5] rounded-2xl overflow-hidden w-full mx-auto cursor-pointer"
             onMouseEnter={() => clearInterval(autoRef.current)}
             onMouseLeave={startAuto}
             onClick={() => {

@@ -102,9 +102,13 @@ export default function BannerEditor({ bannerId = null, onSuccess, onCancel }) {
 
       {/* Image upload */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <label className="block text-sm font-semibold text-gray-700 mb-1">
           Banner Image *
         </label>
+        <p className="text-xs text-amber-600 font-medium mb-2">
+          Required size: 1200 × 500 px (ratio 12:5) — other sizes will be
+          cropped to fit
+        </p>
         <div
           className="relative border-2 border-dashed border-gray-300 rounded-xl overflow-hidden cursor-pointer hover:border-blue-400 transition"
           style={{ height: "200px" }}
@@ -133,9 +137,6 @@ export default function BannerEditor({ bannerId = null, onSuccess, onCancel }) {
                 />
               </svg>
               <span className="text-sm">Click to upload banner image</span>
-              <span className="text-xs text-gray-300">
-                Recommended: 1600 × 600 px
-              </span>
             </div>
           )}
           {uploading && (

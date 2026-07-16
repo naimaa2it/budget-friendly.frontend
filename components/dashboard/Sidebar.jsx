@@ -304,6 +304,7 @@ const SECTIONS = [
       "/dashboard/popup",
       "/dashboard/blog",
       "/dashboard/media",
+      "/dashboard/brands",
     ],
     items: [
       {
@@ -339,6 +340,13 @@ const SECTIONS = [
         label: "Promo Panels Banner",
         href: "/dashboard/promo-panels",
         icon: "M3 3h8v8H3z M13 3h8v4h-8V3z M13 10h8v4h-8v-4z M3 14h8v7H3v-7z",
+        permissionKey: "content.promo",
+      },
+      {
+        key: "brands",
+        label: "Brand Logos",
+        href: "/dashboard/brands",
+        icon: "M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4L4.2 7.7l5.4-.8z",
         permissionKey: "content.promo",
       },
       {

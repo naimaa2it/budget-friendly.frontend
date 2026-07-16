@@ -7,6 +7,8 @@ import Banner from "./Banner";
 import PromoStripSection from "./PromoStripSection";
 import OccasionSections from "./OccasionSections";
 import FeaturedSections from "./FeaturedSections";
+import WhyChoosePickob from "./WhyChoosePickob";
+import TopGlobalBrands from "./TopGlobalBrands";
 import AdSlot from "@/components/ui/AdSlot";
 
 export default function Home() {
@@ -23,6 +25,8 @@ export default function Home() {
       <div id="offers" className="scroll-mb-24">
         <OffersToSayYes />
       </div>
+      <WhyChoosePickob />
+      <TopGlobalBrands />
     </>
   );
 }

@@ -5,15 +5,30 @@ import React, { useEffect, useState } from "react";
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 const TABS = [
+  { key: "about", label: "About Us", type: "section", icon: "ℹ️" },
   { key: "shipping", label: "শিপিং", type: "qa", icon: "🚚" },
   { key: "return", label: "রিটার্ন", type: "qa", icon: "↩️" },
   { key: "faq", label: "FAQ", type: "qa", icon: "❓" },
   { key: "privacy", label: "প্রাইভেসি", type: "section", icon: "🔒" },
   { key: "terms", label: "শর্তাবলী", type: "section", icon: "📄" },
+  { key: "footer", label: "Footer", type: "custom", icon: "🦶" },
+  { key: "contact", label: "Contact Page", type: "custom", icon: "📞" },
 ];
 
 /* ───────────── Default Bengali content ───────────── */
 const DEFAULT_CONTENT = {
+  about: [
+    {
+      heading: "আমাদের সম্পর্কে",
+      content:
+        "আমরা আপনাকে বাছাইকৃত গ্যাজেট ও ইলেকট্রনিক্স দ্রুত ডেলিভারি ও নির্ভরযোগ্য কাস্টমার সার্ভিসের সাথে উপহার দিই। আমরা বিশ্বাস করি, প্রত্যেকেরই সাশ্রয়ী মূল্যে মানসম্পন্ন প্রযুক্তি পাওয়ার অধিকার আছে।",
+    },
+    {
+      heading: "আমাদের যাত্রা",
+      content:
+        "প্রযুক্তির প্রতি ভালোবাসা থেকে প্রতিষ্ঠিত, আমরা স্মার্টফোন, এক্সেসরিজ এবং স্মার্ট গ্যাজেট প্রয়োজনীয় সামগ্রীর জন্য আপনার এক-স্টপ গন্তব্য।",
+    },
+  ],
   shipping: [
     {
       question: "ফ্রি শিপিং কি পাওয়া যায়?",
@@ -367,15 +382,301 @@ function SectionEditor({ items, onChange }) {
   );
 }
 
+const EMPTY_SITE_INFO = {
+  footerInfo: { phone: "", email: "", address: "" },
+  contactInfo: { phone: "", email: "", address: "" },
+  socialLinks: {},
+  footerLinks: { quickLinks: [], customerService: [] },
+};
+
+const INPUT =
+  "w-full border border-gray-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300";
+
+const SOCIAL_PLATFORMS = [
+  {
+    key: "facebook",
+    label: "Facebook",
+    color: "#1877F2",
+    placeholder: "https://facebook.com/yourpage",
+  },
+  {
+    key: "instagram",
+    label: "Instagram",
+    color: "#E1306C",
+    placeholder: "https://instagram.com/yourprofile",
+  },
+  {
+    key: "twitter",
+    label: "Twitter / X",
+    color: "#000000",
+    placeholder: "https://twitter.com/yourhandle",
+  },
+  {
+    key: "tiktok",
+    label: "TikTok",
+    color: "#010101",
+    placeholder: "https://tiktok.com/@yourprofile",
+  },
+  {
+    key: "youtube",
+    label: "YouTube",
+    color: "#FF0000",
+    placeholder: "https://youtube.com/@yourchannel",
+  },
+];
+
+function FooterEditor({
+  footerInfo,
+  socialLinks,
+  footerLinks,
+  setFooter,
+  setSocial,
+  setFooterLinks,
+}) {
+  return (
+    <div className="space-y-6">
+      {/* Contact info */}
+      <div>
+        <p className="text-xs font-semibold text-gray-700 mb-2">
+          ফুটার — যোগাযোগ তথ্য
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              ফোন নম্বর
+            </label>
+            <input
+              value={footerInfo?.phone || ""}
+              onChange={(e) => setFooter("phone", e.target.value)}
+              className={INPUT}
+              placeholder="+880 1700-000000"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              ইমেইল
+            </label>
+            <input
+              value={footerInfo?.email || ""}
+              onChange={(e) => setFooter("email", e.target.value)}
+              className={INPUT}
+              placeholder="info@example.com"
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              ঠিকানা
+            </label>
+            <input
+              value={footerInfo?.address || ""}
+              onChange={(e) => setFooter("address", e.target.value)}
+              className={INPUT}
+              placeholder="Mirpur, Dhaka-1216, Bangladesh"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Social links */}
+      <div>
+        <p className="text-xs font-semibold text-gray-700 mb-2">
+          সোশ্যাল মিডিয়া লিংক
+        </p>
+        <div className="space-y-2">
+          {SOCIAL_PLATFORMS.map(({ key, label, color, placeholder }) => {
+            const link = socialLinks?.[key] || {};
+            return (
+              <div
+                key={key}
+                className="flex items-center gap-3 px-3 py-2.5 border border-gray-200 rounded-lg bg-gray-50"
+              >
+                <span
+                  className="w-3 h-3 rounded-full shrink-0"
+                  style={{ backgroundColor: color }}
+                />
+                <span className="text-xs font-medium text-gray-700 w-20 shrink-0">
+                  {label}
+                </span>
+                <input
+                  type="url"
+                  value={link.url || ""}
+                  onChange={(e) => setSocial(key, "url", e.target.value)}
+                  className="flex-1 border border-gray-200 px-2.5 py-1.5 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300 bg-white"
+                  placeholder={placeholder}
+                />
+                <label className="flex items-center gap-1.5 text-xs cursor-pointer shrink-0 text-gray-600">
+                  <input
+                    type="checkbox"
+                    checked={link.enabled !== false}
+                    onChange={(e) =>
+                      setSocial(key, "enabled", e.target.checked)
+                    }
+                    className="w-3.5 h-3.5 accent-indigo-600"
+                  />
+                  Show
+                </label>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Footer nav links */}
+      <div>
+        <p className="text-xs font-semibold text-gray-700 mb-2">
+          ফুটার নেভিগেশন লিংক
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {[
+            { key: "quickLinks", title: "Quick Links" },
+            { key: "customerService", title: "Customer Service" },
+          ].map(({ key, title }) => {
+            const links = footerLinks?.[key] || [];
+            const setLinks = (updater) => setFooterLinks(key, updater);
+
+            return (
+              <div key={key}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-gray-700">
+                    {title}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setLinks((prev) => [...prev, { label: "", href: "" }])
+                    }
+                    className="flex items-center gap-1 text-xs px-2.5 py-1 bg-indigo-50 text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-100"
+                  >
+                    + Add
+                  </button>
+                </div>
+
+                {links.length === 0 ? (
+                  <p className="text-[11px] text-gray-400 italic py-3 text-center border border-dashed border-gray-200 rounded-lg">
+                    কোনো link নেই
+                  </p>
+                ) : (
+                  <div className="space-y-1.5">
+                    {links.map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-1.5">
+                        <input
+                          value={item.label}
+                          onChange={(e) =>
+                            setLinks((prev) =>
+                              prev.map((l, i) =>
+                                i === idx ? { ...l, label: e.target.value } : l,
+                              ),
+                            )
+                          }
+                          placeholder="Label"
+                          className="w-24 border border-gray-200 px-2 py-1.5 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                        />
+                        <input
+                          value={item.href}
+                          onChange={(e) =>
+                            setLinks((prev) =>
+                              prev.map((l, i) =>
+                                i === idx ? { ...l, href: e.target.value } : l,
+                              ),
+                            )
+                          }
+                          onBlur={(e) => {
+                            const val = e.target.value.trim();
+                            if (
+                              val &&
+                              !val.startsWith("/") &&
+                              !val.startsWith("http://") &&
+                              !val.startsWith("https://")
+                            ) {
+                              setLinks((prev) =>
+                                prev.map((l, i) =>
+                                  i === idx ? { ...l, href: `/${val}` } : l,
+                                ),
+                              );
+                            }
+                          }}
+                          placeholder="/path"
+                          className="flex-1 border border-gray-200 px-2 py-1.5 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setLinks((prev) => prev.filter((_, i) => i !== idx))
+                          }
+                          className="p-1.5 text-red-400 hover:text-red-600 border border-red-100 rounded-lg hover:bg-red-50"
+                          title="Remove"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ContactInfoEditor({ contactInfo, setContact }) {
+  return (
+    <div>
+      <p className="text-xs font-semibold text-gray-700 mb-2">
+        /contact পেজ — যোগাযোগ তথ্য
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-xs font-medium text-gray-600 mb-1">
+            ফোন নম্বর
+          </label>
+          <input
+            value={contactInfo?.phone || ""}
+            onChange={(e) => setContact("phone", e.target.value)}
+            className={INPUT}
+            placeholder="+880 1700-000000"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-600 mb-1">
+            ইমেইল
+          </label>
+          <input
+            value={contactInfo?.email || ""}
+            onChange={(e) => setContact("email", e.target.value)}
+            className={INPUT}
+            placeholder="support@example.com"
+          />
+        </div>
+        <div className="sm:col-span-2">
+          <label className="block text-xs font-medium text-gray-600 mb-1">
+            ঠিকানা
+          </label>
+          <input
+            value={contactInfo?.address || ""}
+            onChange={(e) => setContact("address", e.target.value)}
+            className={INPUT}
+            placeholder="Mirpur, Dhaka-1216, Bangladesh"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function PolicyPagesEditor() {
-  const [activeTab, setActiveTab] = useState("shipping");
+  const [activeTab, setActiveTab] = useState("about");
   const [policyContent, setPolicyContent] = useState({
+    about: [],
     shipping: [],
     return: [],
     faq: [],
     privacy: [],
     terms: [],
   });
+  const [siteInfo, setSiteInfo] = useState(EMPTY_SITE_INFO);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState("");
@@ -384,13 +685,21 @@ export default function PolicyPagesEditor() {
     fetch(`${API}/api/admin/settings`, { credentials: "include" })
       .then((r) => r.json())
       .then((b) => {
-        const pc = b.settings?.policyContent || {};
+        const s = b.settings || {};
+        const pc = s.policyContent || {};
         setPolicyContent({
+          about: pc.about || [],
           shipping: pc.shipping || [],
           return: pc.return || [],
           faq: pc.faq || [],
           privacy: pc.privacy || [],
           terms: pc.terms || [],
+        });
+        setSiteInfo({
+          footerInfo: s.footerInfo || EMPTY_SITE_INFO.footerInfo,
+          contactInfo: s.contactInfo || EMPTY_SITE_INFO.contactInfo,
+          socialLinks: s.socialLinks || {},
+          footerLinks: s.footerLinks || EMPTY_SITE_INFO.footerLinks,
         });
       })
       .catch(console.error)
@@ -420,7 +729,67 @@ export default function PolicyPagesEditor() {
     }
   };
 
-  const handleSave = () => save(policyContent);
+  const saveSiteInfo = async (payload) => {
+    setSaving(true);
+    try {
+      const resp = await fetch(`${API}/api/admin/settings`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+      if (!resp.ok) throw new Error((await resp.json()).error || "Save failed");
+      showToast("✅ সেভ হয়েছে!");
+    } catch (err) {
+      alert(err.message || "সেভ করতে সমস্যা হয়েছে");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSave = () => {
+    if (activeTab === "footer") {
+      return saveSiteInfo({
+        footerInfo: siteInfo.footerInfo,
+        socialLinks: siteInfo.socialLinks,
+        footerLinks: siteInfo.footerLinks,
+      });
+    }
+    if (activeTab === "contact") {
+      return saveSiteInfo({ contactInfo: siteInfo.contactInfo });
+    }
+    return save(policyContent);
+  };
+
+  const setFooter = (key, val) =>
+    setSiteInfo((s) => ({ ...s, footerInfo: { ...s.footerInfo, [key]: val } }));
+
+  const setContact = (key, val) =>
+    setSiteInfo((s) => ({
+      ...s,
+      contactInfo: { ...s.contactInfo, [key]: val },
+    }));
+
+  const setSocial = (platform, field, val) =>
+    setSiteInfo((s) => ({
+      ...s,
+      socialLinks: {
+        ...(s.socialLinks || {}),
+        [platform]: { ...(s.socialLinks?.[platform] || {}), [field]: val },
+      },
+    }));
+
+  const setFooterLinks = (listKey, updater) =>
+    setSiteInfo((s) => ({
+      ...s,
+      footerLinks: {
+        ...(s.footerLinks || {}),
+        [listKey]:
+          typeof updater === "function"
+            ? updater(s?.footerLinks?.[listKey] || [])
+            : updater,
+      },
+    }));
 
   const handleQuickSetup = async () => {
     if (
@@ -493,7 +862,7 @@ export default function PolicyPagesEditor() {
               Policy Pages Editor
             </h2>
             <p className="text-xs text-gray-500 mt-0.5">
-              Dashboard থেকে সাইটের সব পলিসি পেজ এডিট করুন
+              Dashboard থেকে About, Footer, Contact ও পলিসি পেজ এডিট করুন
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -532,9 +901,11 @@ export default function PolicyPagesEditor() {
               }`}
             >
               {tab.icon} {tab.label}
-              <span className="ml-1.5 text-xs text-gray-400">
-                ({(policyContent[tab.key] || []).length})
-              </span>
+              {tab.type !== "custom" && (
+                <span className="ml-1.5 text-xs text-gray-400">
+                  ({(policyContent[tab.key] || []).length})
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -546,23 +917,29 @@ export default function PolicyPagesEditor() {
               <span className="text-sm font-medium text-gray-700">
                 {activeTabConfig?.icon} {activeTabConfig?.label} পেজ
               </span>
-              <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
-                /
-                {activeTab === "faq"
-                  ? "faq"
-                  : activeTab === "shipping"
-                    ? "shipping"
-                    : activeTab === "return"
-                      ? "returns"
-                      : activeTab}
-              </span>
+              {activeTabConfig?.type !== "custom" && (
+                <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
+                  /
+                  {activeTab === "faq"
+                    ? "faq"
+                    : activeTab === "shipping"
+                      ? "shipping"
+                      : activeTab === "return"
+                        ? "returns"
+                        : activeTab === "about"
+                          ? "about"
+                          : activeTab}
+                </span>
+              )}
             </div>
-            <button
-              onClick={handleLoadTabDefault}
-              className="text-xs text-indigo-600 hover:text-indigo-800 border border-indigo-200 hover:bg-indigo-50 px-3 py-1 rounded-lg transition"
-            >
-              এই ট্যাবে default কনটেন্ট লোড করুন
-            </button>
+            {activeTabConfig?.type !== "custom" && (
+              <button
+                onClick={handleLoadTabDefault}
+                className="text-xs text-indigo-600 hover:text-indigo-800 border border-indigo-200 hover:bg-indigo-50 px-3 py-1 rounded-lg transition"
+              >
+                এই ট্যাবে default কনটেন্ট লোড করুন
+              </button>
+            )}
           </div>
 
           {activeTabConfig?.type === "qa" ? (
@@ -570,24 +947,42 @@ export default function PolicyPagesEditor() {
               items={policyContent[activeTab] || []}
               onChange={(val) => handleChange(activeTab, val)}
             />
-          ) : (
+          ) : activeTabConfig?.type === "section" ? (
             <SectionEditor
               items={policyContent[activeTab] || []}
               onChange={(val) => handleChange(activeTab, val)}
             />
-          )}
+          ) : activeTab === "footer" ? (
+            <FooterEditor
+              footerInfo={siteInfo.footerInfo}
+              socialLinks={siteInfo.socialLinks}
+              footerLinks={siteInfo.footerLinks}
+              setFooter={setFooter}
+              setSocial={setSocial}
+              setFooterLinks={setFooterLinks}
+            />
+          ) : activeTab === "contact" ? (
+            <ContactInfoEditor
+              contactInfo={siteInfo.contactInfo}
+              setContact={setContact}
+            />
+          ) : null}
         </div>
 
         <div className="border-t border-gray-100 px-6 py-3 bg-gray-50 flex justify-between items-center">
-          <button
-            onClick={() => {
-              handleChange(activeTab, []);
-              showToast("ট্যাব খালি করা হয়েছে");
-            }}
-            className="text-xs text-gray-400 hover:text-red-500 transition"
-          >
-            এই ট্যাব রিসেট করুন
-          </button>
+          {activeTabConfig?.type !== "custom" ? (
+            <button
+              onClick={() => {
+                handleChange(activeTab, []);
+                showToast("ট্যাব খালি করা হয়েছে");
+              }}
+              className="text-xs text-gray-400 hover:text-red-500 transition"
+            >
+              এই ট্যাব রিসেট করুন
+            </button>
+          ) : (
+            <span />
+          )}
           <button
             onClick={handleSave}
             disabled={saving}

@@ -10,6 +10,7 @@ const EMPTY_POLICY = {
   faq: [],
   privacy: [],
   terms: [],
+  about: [],
 };
 
 const EMPTY_FOOTER_LINKS = { quickLinks: [], customerService: [] };

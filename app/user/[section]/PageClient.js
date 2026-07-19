@@ -302,7 +302,7 @@ function OrdersSection({ API }) {
         );
         setCancelModalOrderId(null);
       } else {
-        alert(d.error || "Could not cancel order.");
+        alert(d.error || "Could not order cancellation. Please try again.");
       }
     } catch {
       alert("Failed. Please try again.");
@@ -1458,7 +1458,10 @@ export default function UserSectionPage() {
       if (selectedImageFile) {
         // Upload the avatar straight to Cloudinary (bypasses Vercel's 4.5MB body
         // cap; anything up to 10MB works) and send just the resulting URL.
-        const asset = await uploadUserImage(selectedImageFile, "Pickob/profiles");
+        const asset = await uploadUserImage(
+          selectedImageFile,
+          "Pickob/profiles",
+        );
         formData.append("imageUrl", asset.url);
         if (asset.public_id) formData.append("imagePublicId", asset.public_id);
       }

@@ -271,7 +271,7 @@ function SuccessContent() {
         setCancelled(true);
         setOrder((prev) => ({ ...prev, status: "cancelled" }));
       } else {
-        alert(data.error || "Could not cancel order.");
+        alert(data.error || "Could not order cancellation.");
       }
     } catch {
       alert("Failed to cancel. Please try again.");

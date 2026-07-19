@@ -575,7 +575,6 @@ export default function CheckoutPage() {
     const requiredFields = {
       name: formData.name,
       phone: formData.phone,
-      email: formData.email,
       city: finalCity,
       zone: finalZone,
     };
@@ -1029,7 +1028,6 @@ export default function CheckoutPage() {
                   onChange={handleInputChange}
                   placeholder={t("checkout.email_ph")}
                   className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none"
-                  required
                 />
               </div>
 

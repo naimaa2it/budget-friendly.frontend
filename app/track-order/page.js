@@ -70,7 +70,7 @@ function OrderCard({ order, courierLabels, onSelect, selected }) {
     >
       <div className="flex items-center justify-between mb-1">
         <span className="font-mono text-sm font-semibold text-gray-800">
-          #{formatOrderId(order._id)}
+          {formatOrderId(order._id)}
         </span>
         <span
           className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
@@ -305,7 +305,7 @@ export default function TrackOrderPage() {
                 <div>
                   <p className="text-xs text-gray-400 uppercase">Order</p>
                   <p className="font-mono text-sm font-semibold text-gray-800">
-                    #{formatOrderId(order._id)}
+                    {formatOrderId(order._id)}
                   </p>
                 </div>
                 <span

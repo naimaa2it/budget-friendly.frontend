@@ -55,6 +55,9 @@ export default function SettingsForm() {
   const [logoUploading, setLogoUploading] = useState(false);
   const [showLogoPicker, setShowLogoPicker] = useState(false);
   const [logoStatus, setLogoStatus] = useState("");
+  const [faviconUploading, setFaviconUploading] = useState(false);
+  const [showFaviconPicker, setShowFaviconPicker] = useState(false);
+  const [faviconStatus, setFaviconStatus] = useState("");
   const [migrating, setMigrating] = useState(false);
   const [migrateResult, setMigrateResult] = useState(null);
   const [migrateFrom, setMigrateFrom] = useState("SmartBuyBD");
@@ -145,6 +148,59 @@ export default function SettingsForm() {
     }
     setSettings((s) => ({ ...s, websiteLogo: {} }));
     await saveLogo({});
+  };
+
+  const saveFavicon = async (faviconValue) => {
+    setFaviconStatus("saving");
+    try {
+      const r = await fetch(`${API}/api/admin/settings`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ favicon: faviconValue }),
+      });
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({}));
+        throw new Error(body.error || `Server error (${r.status})`);
+      }
+      setFaviconStatus("saved");
+      setTimeout(() => setFaviconStatus(""), 2500);
+    } catch (err) {
+      setFaviconStatus(err.message || "error");
+    }
+  };
+
+  const handleFaviconUpload = async (file) => {
+    if (!file) return;
+    setFaviconUploading(true);
+    try {
+      const b = await uploadAdminImage(file, "Pickob/settings");
+      const asset = b.asset || {};
+      setSettings((s) => ({ ...s, favicon: asset }));
+      await saveFavicon(asset);
+    } catch (err) {
+      alert(err.message || "Favicon upload failed");
+    } finally {
+      setFaviconUploading(false);
+    }
+  };
+
+  const handleDeleteFavicon = async () => {
+    const publicId = settings?.favicon?.public_id;
+    if (publicId) {
+      try {
+        await fetch(`${API}/api/admin/media`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ public_ids: [publicId] }),
+        });
+      } catch {
+        // non-blocking
+      }
+    }
+    setSettings((s) => ({ ...s, favicon: {} }));
+    await saveFavicon({});
   };
 
   const setSupport = (key, val) =>
@@ -277,6 +333,71 @@ export default function SettingsForm() {
                 <span className="text-red-500">Error: {logoStatus}</span>
               )}
             {!logoStatus && "Changes apply to the website immediately."}
+          </p>
+        </div>
+
+        {/* Favicon */}
+        <div className="mt-4 pt-4 border-t border-gray-100">
+          <p className="text-xs font-medium text-gray-600 mb-2">Favicon</p>
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="w-14 h-14 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center overflow-hidden shrink-0">
+              {settings.favicon?.url ? (
+                <img
+                  src={settings.favicon.url}
+                  alt="Favicon"
+                  className="max-w-full max-h-full object-contain"
+                />
+              ) : (
+                <span className="text-[10px] text-gray-300 text-center px-1">
+                  No favicon
+                </span>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <label className="px-3 py-1.5 border border-gray-200 rounded-lg text-xs cursor-pointer bg-white hover:bg-gray-50">
+                {faviconUploading ? "Uploading…" : "Upload"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  disabled={faviconUploading}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFaviconUpload(file);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => setShowFaviconPicker(true)}
+                className="px-3 py-1.5 border border-gray-200 rounded-lg text-xs bg-white hover:bg-gray-50"
+              >
+                From Media
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteFavicon}
+                className="px-3 py-1.5 border border-red-200 rounded-lg text-xs text-red-600 bg-white hover:bg-red-50"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+          <p className="mt-2 text-[11px] text-gray-400">
+            {faviconStatus === "saving" && (
+              <span className="text-blue-500">Saving…</span>
+            )}
+            {faviconStatus === "saved" && (
+              <span className="text-green-600">Saved!</span>
+            )}
+            {faviconStatus &&
+              faviconStatus !== "saving" &&
+              faviconStatus !== "saved" && (
+                <span className="text-red-500">Error: {faviconStatus}</span>
+              )}
+            {!faviconStatus &&
+              "Browser tab icon হিসেবে দেখাবে। বর্গাকার ছবি (যেমন 512x512 PNG) ব্যবহার করুন।"}
           </p>
         </div>
       </Section>

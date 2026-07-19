@@ -16,7 +16,9 @@ function injectHTML(html, parent, position) {
     let el;
     if (node.nodeName === "SCRIPT") {
       el = document.createElement("script");
-      Array.from(node.attributes).forEach((a) => el.setAttribute(a.name, a.value));
+      Array.from(node.attributes).forEach((a) =>
+        el.setAttribute(a.name, a.value),
+      );
       el.textContent = node.textContent;
     } else {
       el = node.cloneNode(true);

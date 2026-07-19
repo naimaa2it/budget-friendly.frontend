@@ -10,6 +10,14 @@ DirectoryIndex index.html
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
 
+  # ── Legacy route redirects ──────────────────────────────────────────────
+  # Previously handled by next.config.js redirects(), which output:"export"
+  # does not support. Order-success page moved from /checkout/success to
+  # /thankyou/success; bare /thankyou lands on the success page too. Query
+  # params (orderId, method) are preserved automatically by mod_rewrite.
+  RewriteRule ^checkout/success/?$ /thankyou/success/ [R=302,L]
+  RewriteRule ^thankyou/?$ /thankyou/success/ [R=302,L]
+
   # ── RSC / flight data payloads (.txt / .rsc) ───────────────────────────
   # Next.js client-side navigation fetches "<path>.txt" (or "<path>/index.txt")
   # for the React Server Component payload. For routes that aren't pre-built

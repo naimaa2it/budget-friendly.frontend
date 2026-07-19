@@ -6,30 +6,14 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const nextConfig = {
-  // output: "export",
+  output: "export",
   trailingSlash: true,
 
-  async redirects() {
-    return [
-      // Order-success page moved from /checkout/success to /thankyou/success.
-      // Query params (orderId, method) are preserved automatically.
-      {
-        source: "/checkout/success",
-        destination: "/thankyou/success",
-        permanent: false,
-      },
-      // Bare /thankyou lands on the success page too.
-      {
-        source: "/thankyou",
-        destination: "/thankyou/success",
-        permanent: false,
-      },
-    ];
-  },
-  // headers() is not supported with output: "export" — set these via .htaccess on cPanel instead.
-  // async headers() {
-  //   return [{ source: '/(.*)', headers: securityHeaders }];
-  // },
+  // redirects() and headers() are not supported with output: "export" — both
+  // are set via public/.htaccess instead (RewriteRule block + mod_headers).
+  // The /checkout/success and /thankyou legacy redirects live there too.
+  // async redirects() { ... }
+  // async headers() { ... }
   images: {
     // Custom loader adds Cloudinary f_auto/q_auto so old browsers (no WebP
     // support) get JPEG instead of broken images. Non-Cloudinary srcs pass

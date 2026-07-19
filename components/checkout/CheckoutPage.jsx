@@ -416,7 +416,10 @@ export default function CheckoutPage() {
   };
 
   const handlePhoneBlur = () => {
-    setFieldErrors((prev) => ({ ...prev, phone: validatePhone(formData.phone) }));
+    setFieldErrors((prev) => ({
+      ...prev,
+      phone: validatePhone(formData.phone),
+    }));
   };
 
   const applyPreviousAddress = (billing) => {
@@ -676,7 +679,7 @@ export default function CheckoutPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || "Failed to place order");
+        throw new Error(result.error || "Failed to order");
       }
 
       if (result.method === "cod") {
@@ -705,7 +708,7 @@ export default function CheckoutPage() {
       }
     } catch (error) {
       console.error("Order error:", error);
-      toast.error(error.message || "Failed to place order. Please try again.");
+      toast.error(error.message || "Failed to order. Please try again.");
     } finally {
       setIsPlacingOrder(false);
     }

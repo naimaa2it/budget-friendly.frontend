@@ -235,7 +235,7 @@ export default function PaymentSelector({
         </div>
       </div>
 
-      {/* Place Order button */}
+      {/*  Order Place button */}
       <button
         type="button"
         onClick={onSubmit}

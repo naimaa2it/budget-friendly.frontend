@@ -156,6 +156,12 @@ export default function SettingsForm() {
       contactInfo: { ...s.contactInfo, [key]: val },
     }));
 
+  const setSupport = (key, val) =>
+    setSettings((s) => ({
+      ...s,
+      supportInfo: { ...s.supportInfo, [key]: val },
+    }));
+
   const setSocial = (platform, field, val) =>
     setSettings((s) => ({
       ...s,
@@ -380,6 +386,33 @@ export default function SettingsForm() {
               onChange={(e) => setContact("address", e.target.value)}
               className={`${INPUT} sm:col-span-2`}
               placeholder="Mirpur, Dhaka-1216, Bangladesh"
+            />
+          </Field>
+        </div>
+      </Section>
+
+      {/* ── Order Support Info ──────────────────────────────────── */}
+      <Section
+        title="Order Support Info"
+        badge="Thank You Page"
+        badgeColor="bg-green-50 text-green-600"
+        desc="Order place করার পর Thank You page-এ 'Need Help With Anything?' section-এ এই নম্বর দেখাবে।"
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label="ফোন নম্বর">
+            <input
+              value={settings.supportInfo?.phone || ""}
+              onChange={(e) => setSupport("phone", e.target.value)}
+              className={INPUT}
+              placeholder="+880 1700-000000"
+            />
+          </Field>
+          <Field label="ইমেইল">
+            <input
+              value={settings.supportInfo?.email || ""}
+              onChange={(e) => setSupport("email", e.target.value)}
+              className={INPUT}
+              placeholder="support@example.com"
             />
           </Field>
         </div>

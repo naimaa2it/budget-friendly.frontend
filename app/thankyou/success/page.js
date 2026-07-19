@@ -6,6 +6,7 @@ import { Suspense, useEffect, useState } from "react";
 import Image from "next/image";
 import { useCart } from "@/components/context/CartContext";
 import { useLanguage } from "@/components/context/LanguageContext";
+import { useStoreSettings } from "@/components/context/StoreSettingsContext";
 
 // Social icon components
 const WhatsApp = () => (
@@ -183,7 +184,11 @@ function SuccessContent() {
   const [searchLoading, setSearchLoading] = useState(false);
 
   const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
-  const PHONE = process.env.NEXT_PUBLIC_STORE_PHONE || "+8801643007383";
+  const { supportInfo } = useStoreSettings();
+  const PHONE =
+    supportInfo?.phone ||
+    process.env.NEXT_PUBLIC_STORE_PHONE ||
+    "+8801643007383";
   const { clearCart } = useCart();
 
   // Clear the cart on successful payment (covers the online payment same-window flow).

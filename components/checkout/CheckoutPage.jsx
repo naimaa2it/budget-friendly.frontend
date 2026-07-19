@@ -85,7 +85,7 @@ export default function CheckoutPage() {
   // Form state
   const [formData, setFormData] = useState({
     name: "",
-    phone: "",
+    phone: "+880",
     email: "",
     city: "",
     zone: "",
@@ -380,9 +380,23 @@ export default function CheckoutPage() {
     }
   }, [formData.city, formData.zone, locationData]);
 
+  // BD mobile numbers are 11 digits starting with 0 (e.g. 01712345678).
+  // We always keep formData.phone in "+880XXXXXXXXXX" form so the +880
+  // prefix can never be typed over or removed by the user.
+  const formatBdPhone = (raw) => {
+    let digits = String(raw || "").replace(/\D/g, "");
+    if (digits.startsWith("880")) digits = digits.slice(3);
+    else if (digits.startsWith("0")) digits = digits.slice(1);
+    digits = digits.slice(0, 10);
+    return `+880${digits}`;
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "phone" ? formatBdPhone(value) : value,
+    }));
     if (name === "coupon") setCouponMsg(null); // clear coupon msg on input change
     // Reset custom inputs when switching back from "Other"
     if (name === "city" && value !== "other") setCustomCity("");
@@ -398,7 +412,7 @@ export default function CheckoutPage() {
     setFormData((prev) => ({
       ...prev,
       name: billing.name || prev.name,
-      phone: billing.phone || prev.phone,
+      phone: billing.phone ? formatBdPhone(billing.phone) : prev.phone,
       email: billing.email || prev.email,
       city: billing.city || "",
       zone: billing.zone || "",
@@ -582,6 +596,11 @@ export default function CheckoutPage() {
     const missingFields = Object.entries(requiredFields).filter(([, v]) => !v);
     if (missingFields.length > 0) {
       toast.error(t("checkout.required_fields"));
+      return;
+    }
+
+    if (!/^\+880\d{10}$/.test(formData.phone)) {
+      toast.error(t("checkout.invalid_phone"));
       return;
     }
 

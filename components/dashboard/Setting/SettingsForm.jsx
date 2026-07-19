@@ -544,6 +544,17 @@ export default function SettingsForm() {
         }}
         onClose={() => setShowLogoPicker(false)}
       />
+
+      <MediaPicker
+        open={showFaviconPicker}
+        onSelect={async (asset) => {
+          const favicon = asset || {};
+          setSettings((s) => ({ ...s, favicon: favicon }));
+          setShowFaviconPicker(false);
+          await saveFavicon(favicon);
+        }}
+        onClose={() => setShowFaviconPicker(false)}
+      />
     </div>
   );
 }

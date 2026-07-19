@@ -33,18 +33,37 @@ export default async function AboutPage() {
         <h1 className="text-3xl font-bold mb-6">About {storeName}</h1>
         {sections.length > 0 ? (
           <div className="space-y-4">
-            {sections.map((sec, i) => (
-              <section key={i}>
-                {sec.heading && (
-                  <h2 className="text-lg font-semibold text-gray-800 mb-1">
-                    {sec.heading}
-                  </h2>
-                )}
-                <p className="text-gray-600 whitespace-pre-line">
-                  {sec.content}
-                </p>
-              </section>
-            ))}
+            {sections.map((sec, i) => {
+              // Legacy items saved before the `type` field existed default to paragraph.
+              const type = sec.type || (sec.question ? "qa" : "paragraph");
+              return (
+                <section key={i}>
+                  {type === "qa" ? (
+                    <>
+                      {sec.question && (
+                        <h2 className="text-lg font-semibold text-gray-800 mb-1">
+                          {sec.question}
+                        </h2>
+                      )}
+                      <p className="text-gray-600 whitespace-pre-line">
+                        {sec.answer}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      {sec.heading && (
+                        <h2 className="text-lg font-semibold text-gray-800 mb-1">
+                          {sec.heading}
+                        </h2>
+                      )}
+                      <p className="text-gray-600 whitespace-pre-line">
+                        {sec.content}
+                      </p>
+                    </>
+                  )}
+                </section>
+              );
+            })}
           </div>
         ) : (
           <>

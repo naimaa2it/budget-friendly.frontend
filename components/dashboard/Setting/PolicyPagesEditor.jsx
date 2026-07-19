@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 const TABS = [
-  { key: "about", label: "About Us", type: "section", icon: "ℹ️" },
+  { key: "about", label: "About Us", type: "about", icon: "ℹ️" },
   { key: "shipping", label: "শিপিং", type: "qa", icon: "🚚" },
   { key: "return", label: "রিটার্ন", type: "qa", icon: "↩️" },
   { key: "faq", label: "FAQ", type: "qa", icon: "❓" },
@@ -19,11 +19,13 @@ const TABS = [
 const DEFAULT_CONTENT = {
   about: [
     {
+      type: "paragraph",
       heading: "আমাদের সম্পর্কে",
       content:
         "আমরা আপনাকে বাছাইকৃত গ্যাজেট ও ইলেকট্রনিক্স দ্রুত ডেলিভারি ও নির্ভরযোগ্য কাস্টমার সার্ভিসের সাথে উপহার দিই। আমরা বিশ্বাস করি, প্রত্যেকেরই সাশ্রয়ী মূল্যে মানসম্পন্ন প্রযুক্তি পাওয়ার অধিকার আছে।",
     },
     {
+      type: "paragraph",
       heading: "আমাদের যাত্রা",
       content:
         "প্রযুক্তির প্রতি ভালোবাসা থেকে প্রতিষ্ঠিত, আমরা স্মার্টফোন, এক্সেসরিজ এবং স্মার্ট গ্যাজেট প্রয়োজনীয় সামগ্রীর জন্য আপনার এক-স্টপ গন্তব্য।",
@@ -378,6 +380,115 @@ function SectionEditor({ items, onChange }) {
       >
         + নতুন বিভাগ যোগ করুন
       </button>
+    </div>
+  );
+}
+
+function AboutEditor({ items, onChange }) {
+  const addParagraph = () =>
+    onChange([...items, { type: "paragraph", heading: "", content: "" }]);
+  const addQA = () =>
+    onChange([...items, { type: "qa", question: "", answer: "" }]);
+  const remove = (i) => onChange(items.filter((_, idx) => idx !== i));
+  const update = (i, field, value) =>
+    onChange(
+      items.map((it, idx) => (idx === i ? { ...it, [field]: value } : it)),
+    );
+
+  return (
+    <div className="space-y-4">
+      {items.map((item, i) => {
+        // Legacy items saved before the `type` field existed default to paragraph.
+        const itemType = item.type || (item.question ? "qa" : "paragraph");
+        return (
+          <div
+            key={i}
+            className="border border-gray-200 rounded-xl p-4 bg-gray-50 relative"
+          >
+            <span className="absolute top-3 left-3 text-xs text-gray-400 font-mono">
+              #{i + 1} · {itemType === "qa" ? "প্রশ্ন-উত্তর" : "প্যারাগ্রাফ"}
+            </span>
+            <button
+              type="button"
+              onClick={() => remove(i)}
+              className="absolute top-3 right-3 text-red-400 hover:text-red-600 text-xs"
+            >
+              ✕ মুছুন
+            </button>
+            <div className="mt-4 space-y-2">
+              {itemType === "qa" ? (
+                <>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      প্রশ্ন
+                    </label>
+                    <input
+                      value={item.question || ""}
+                      onChange={(e) => update(i, "question", e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-400"
+                      placeholder="প্রশ্ন লিখুন…"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      উত্তর
+                    </label>
+                    <textarea
+                      value={item.answer || ""}
+                      onChange={(e) => update(i, "answer", e.target.value)}
+                      rows={4}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-400 resize-y"
+                      placeholder="উত্তর লিখুন…"
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      শিরোনাম
+                    </label>
+                    <input
+                      value={item.heading || ""}
+                      onChange={(e) => update(i, "heading", e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-400"
+                      placeholder="বিভাগের শিরোনাম লিখুন…"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      বিষয়বস্তু
+                    </label>
+                    <textarea
+                      value={item.content || ""}
+                      onChange={(e) => update(i, "content", e.target.value)}
+                      rows={5}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-400 resize-y"
+                      placeholder="বিষয়বস্তু লিখুন…"
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        );
+      })}
+      <div className="flex gap-3">
+        <button
+          type="button"
+          onClick={addParagraph}
+          className="flex-1 border-2 border-dashed border-gray-300 hover:border-indigo-400 text-gray-500 hover:text-indigo-600 rounded-xl py-3 text-sm transition"
+        >
+          + প্যারাগ্রাফ যোগ করুন
+        </button>
+        <button
+          type="button"
+          onClick={addQA}
+          className="flex-1 border-2 border-dashed border-gray-300 hover:border-indigo-400 text-gray-500 hover:text-indigo-600 rounded-xl py-3 text-sm transition"
+        >
+          + প্রশ্ন-উত্তর যোগ করুন
+        </button>
+      </div>
     </div>
   );
 }
@@ -944,6 +1055,11 @@ export default function PolicyPagesEditor() {
 
           {activeTabConfig?.type === "qa" ? (
             <QAEditor
+              items={policyContent[activeTab] || []}
+              onChange={(val) => handleChange(activeTab, val)}
+            />
+          ) : activeTabConfig?.type === "about" ? (
+            <AboutEditor
               items={policyContent[activeTab] || []}
               onChange={(val) => handleChange(activeTab, val)}
             />

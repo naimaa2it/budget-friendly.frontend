@@ -67,7 +67,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             id="facebook-pixel"
             strategy="afterInteractive"
             dangerouslySetInnerHTML={{
-              __html: `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${config.facebookPixel.pixelId}');fbq('track','PageView');`,
+              __html: `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('set','autoConfig',false,'${config.facebookPixel.pixelId}');fbq('init','${config.facebookPixel.pixelId}');fbq('track','PageView');`,
             }}
           />
         )}
@@ -94,6 +94,27 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       )}
     </>
   );
+}
+
+// Next.js App Router client-side navigations don't reload TrackingScripts,
+// so the base pixel snippet's single fbq('track','PageView') only ever fires
+// once per hard page load. This fires the PageView on every SPA route change
+// too (skipping the very first mount, which the base snippet already covers).
+function PixelRouteTracker() {
+  const pathname = usePathname();
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (typeof window !== "undefined" && typeof window.fbq === "function") {
+      window.fbq("track", "PageView");
+    }
+  }, [pathname]);
+
+  return null;
 }
 // ────────────────────────────────────────────────────────────────────────────
 
@@ -202,6 +223,7 @@ export default function LayoutWrapper({ children }) {
     <StoreSettingsProvider>
       {/* Tracking pixels — only on storefront, not dashboard */}
       {!hideNav && <TrackingScripts />}
+      {!hideNav && <PixelRouteTracker />}
 
       {/* TopBanner sits BEFORE the sticky wrapper → scrolls away on page scroll */}
       {!hideNav && <TopBanner />}

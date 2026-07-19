@@ -12,6 +12,7 @@ import {
 } from "@/components/cart/VariantEditModal";
 import { FaBell, FaClock } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import { trackAddToCart } from "@/lib/metaPixel";
 
 const STORAGE_KEY = (id) => `waitlist_joined_${id}`;
 
@@ -92,6 +93,7 @@ export default function AddToCartSection({
       selectedSize: selectedSize || null,
       selectedVariant,
     });
+    trackAddToCart(product, qty, effectivePrice);
   };
 
   const handleBuyNow = () => {
@@ -101,6 +103,7 @@ export default function AddToCartSection({
       selectedVariant,
       silent: true,
     });
+    trackAddToCart(product, qty, effectivePrice);
     router.push("/checkout");
   };
 

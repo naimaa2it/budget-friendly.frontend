@@ -26,6 +26,7 @@ import PaymentSelector from "@/components/checkout/PaymentSelector";
 import SearchableSelect from "@/components/ui/SearchableSelect";
 import { toast } from "react-hot-toast";
 import { useLanguage } from "@/components/context/LanguageContext";
+import { trackInitiateCheckout } from "@/lib/metaPixel";
 import "animate.css";
 
 export default function CheckoutPage() {
@@ -65,6 +66,7 @@ export default function CheckoutPage() {
   const [couponMsg, setCouponMsg] = useState(null); // { type: 'success'|'error', text }
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const orderPlaced = useRef(false);
+  const initiateCheckoutFired = useRef(false);
   const [previousAddresses, setPreviousAddresses] = useState([]);
 
   // Progress indicators state
@@ -271,6 +273,20 @@ export default function CheckoutPage() {
 
     fetchPreviousAddresses();
   }, [user]);
+
+  // Fire InitiateCheckout exactly once per visit, as soon as the cart is
+  // known — regardless of whether the user arrived via "Buy Now" or
+  // Cart → "Proceed to Checkout".
+  useEffect(() => {
+    if (initiateCheckoutFired.current || !cartHydrated || !cartItems.length)
+      return;
+    initiateCheckoutFired.current = true;
+    const total = cartItems.reduce(
+      (sum, item) => sum + getItemPrice(item) * item.quantity,
+      0,
+    );
+    trackInitiateCheckout(cartItems, total);
+  }, [cartHydrated, cartItems]);
 
   useEffect(() => {
     if (!cartItems.length) return;

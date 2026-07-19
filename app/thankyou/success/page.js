@@ -7,6 +7,7 @@ import Image from "next/image";
 import { useCart } from "@/components/context/CartContext";
 import { useLanguage } from "@/components/context/LanguageContext";
 import { useStoreSettings } from "@/components/context/StoreSettingsContext";
+import { trackPurchase } from "@/lib/metaPixel";
 
 // Social icon components
 const Facebook = () => (
@@ -215,6 +216,7 @@ function SuccessContent() {
         const o = data.order || null;
         setOrder(o);
         if (o) {
+          trackPurchase(o);
           setEditBilling({
             name: o.billingDetails?.name || "",
             email: o.billingDetails?.email || "",

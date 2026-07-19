@@ -85,7 +85,7 @@ export default function CheckoutPage() {
   // Form state
   const [formData, setFormData] = useState({
     name: "",
-    phone: "+880",
+    phone: "",
     email: "",
     city: "",
     zone: "",
@@ -95,6 +95,9 @@ export default function CheckoutPage() {
     paymentMethod: "cash-on-delivery",
     coupon: "",
   });
+
+  // Per-field validation errors, keyed by formData field name (or "customCity" etc.)
+  const [fieldErrors, setFieldErrors] = useState({});
 
   // Custom input states
   const [customCity, setCustomCity] = useState("");
@@ -381,14 +384,21 @@ export default function CheckoutPage() {
   }, [formData.city, formData.zone, locationData]);
 
   // BD mobile numbers are 11 digits starting with 0 (e.g. 01712345678).
-  // We always keep formData.phone in "+880XXXXXXXXXX" form so the +880
-  // prefix can never be typed over or removed by the user.
+  // Accepts legacy "+880..." values (from older saved addresses) and
+  // normalizes them back to the local "01XXXXXXXXX" form.
   const formatBdPhone = (raw) => {
     let digits = String(raw || "").replace(/\D/g, "");
     if (digits.startsWith("880")) digits = digits.slice(3);
-    else if (digits.startsWith("0")) digits = digits.slice(1);
-    digits = digits.slice(0, 10);
-    return `+880${digits}`;
+    if (digits && !digits.startsWith("0")) digits = `0${digits}`;
+    return digits.slice(0, 11);
+  };
+
+  const BD_PHONE_REGEX = /^01\d{9}$/;
+
+  const validatePhone = (phone) => {
+    if (!phone) return t("checkout.field_required");
+    if (!BD_PHONE_REGEX.test(phone)) return t("checkout.invalid_phone");
+    return null;
   };
 
   const handleInputChange = (e) => {
@@ -402,6 +412,11 @@ export default function CheckoutPage() {
     if (name === "city" && value !== "other") setCustomCity("");
     if (name === "zone" && value !== "other") setCustomZone("");
     if (name === "area" && value !== "other") setCustomArea("");
+    setFieldErrors((prev) => (prev[name] ? { ...prev, [name]: null } : prev));
+  };
+
+  const handlePhoneBlur = () => {
+    setFieldErrors((prev) => ({ ...prev, phone: validatePhone(formData.phone) }));
   };
 
   const applyPreviousAddress = (billing) => {
@@ -585,24 +600,23 @@ export default function CheckoutPage() {
     const finalZone = formData.zone === "other" ? customZone : formData.zone;
     const finalArea = formData.area === "other" ? customArea : formData.area;
 
-    // Validate required fields
-    const requiredFields = {
-      name: formData.name,
-      phone: formData.phone,
-      city: finalCity,
-      zone: finalZone,
-    };
+    // Validate required fields — set per-field errors so the exact box is flagged
+    const newErrors = {};
+    if (!formData.name.trim()) newErrors.name = t("checkout.field_required");
 
-    const missingFields = Object.entries(requiredFields).filter(([, v]) => !v);
-    if (missingFields.length > 0) {
-      toast.error(t("checkout.required_fields"));
+    const phoneError = validatePhone(formData.phone);
+    if (phoneError) newErrors.phone = phoneError;
+
+    if (!finalCity) newErrors.city = t("checkout.field_required");
+    if (!finalZone) newErrors.zone = t("checkout.field_required");
+    if (!formData.address.trim())
+      newErrors.address = t("checkout.field_required");
+
+    if (Object.keys(newErrors).length > 0) {
+      setFieldErrors(newErrors);
       return;
     }
-
-    if (!/^\+880\d{10}$/.test(formData.phone)) {
-      toast.error(t("checkout.invalid_phone"));
-      return;
-    }
+    setFieldErrors({});
 
     setIsPlacingOrder(true);
 
@@ -1024,22 +1038,41 @@ export default function CheckoutPage() {
                   value={formData.name}
                   onChange={handleInputChange}
                   placeholder={t("checkout.name_ph")}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none ${
+                    fieldErrors.name ? "border-red-500" : "border-gray-300"
+                  }`}
                   required
                 />
+                {fieldErrors.name && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {fieldErrors.name}
+                  </p>
+                )}
               </div>
 
               {/* Phone and Email */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  placeholder={t("checkout.phone_ph")}
-                  className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none"
-                  required
-                />
+                <div>
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    onBlur={handlePhoneBlur}
+                    placeholder={t("checkout.phone_ph")}
+                    maxLength={11}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none ${
+                      fieldErrors.phone ? "border-red-500" : "border-gray-300"
+                    }`}
+                    required
+                  />
+                  {fieldErrors.phone && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {fieldErrors.phone}
+                    </p>
+                  )}
+                </div>
                 <input
                   type="email"
                   name="email"
@@ -1061,16 +1094,29 @@ export default function CheckoutPage() {
                     options={cities}
                     placeholder={t("checkout.city_ph")}
                     required
+                    className={
+                      fieldErrors.city ? "ring-2 ring-red-500 rounded-lg" : ""
+                    }
                   />
                   {formData.city === "other" && (
                     <input
                       type="text"
                       value={customCity}
-                      onChange={(e) => setCustomCity(e.target.value)}
+                      onChange={(e) => {
+                        setCustomCity(e.target.value);
+                        setFieldErrors((prev) =>
+                          prev.city ? { ...prev, city: null } : prev,
+                        );
+                      }}
                       placeholder={t("checkout.enter_city")}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none mt-2"
                       required
                     />
+                  )}
+                  {fieldErrors.city && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {fieldErrors.city}
+                    </p>
                   )}
                 </div>
 
@@ -1084,16 +1130,29 @@ export default function CheckoutPage() {
                     placeholder={t("checkout.zone_ph")}
                     required
                     disabled={!formData.city || formData.city === "other"}
+                    className={
+                      fieldErrors.zone ? "ring-2 ring-red-500 rounded-lg" : ""
+                    }
                   />
                   {(formData.zone === "other" || formData.city === "other") && (
                     <input
                       type="text"
                       value={customZone}
-                      onChange={(e) => setCustomZone(e.target.value)}
+                      onChange={(e) => {
+                        setCustomZone(e.target.value);
+                        setFieldErrors((prev) =>
+                          prev.zone ? { ...prev, zone: null } : prev,
+                        );
+                      }}
                       placeholder={t("checkout.enter_zone")}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none mt-2"
                       required
                     />
+                  )}
+                  {fieldErrors.zone && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {fieldErrors.zone}
+                    </p>
                   )}
                 </div>
 
@@ -1133,9 +1192,16 @@ export default function CheckoutPage() {
                   onChange={handleInputChange}
                   placeholder={t("checkout.address_ph")}
                   rows={3}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none resize-none"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none resize-none ${
+                    fieldErrors.address ? "border-red-500" : "border-gray-300"
+                  }`}
                   required
                 />
+                {fieldErrors.address && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {fieldErrors.address}
+                  </p>
+                )}
               </div>
 
               {/* Note */}

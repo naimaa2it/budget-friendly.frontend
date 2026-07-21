@@ -170,6 +170,8 @@ export default function ProductCreate() {
     buyingPrice: undefined,
     price: undefined,
     compareAtPrice: undefined,
+    delivery: undefined,
+    packaging: undefined,
     sku: (() => {
       const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
       const rand = (n) =>
@@ -246,6 +248,8 @@ export default function ProductCreate() {
   const [badgeSaving, setBadgeSaving] = useState(false);
   const [newBadgeKey, setNewBadgeKey] = useState("");
   const [newBadgeLabel, setNewBadgeLabel] = useState("");
+  const [deliveryOptions, setDeliveryOptions] = useState([]);
+  const [packagingOptions, setPackagingOptions] = useState([]);
 
   // helper strings for comma‑separated inputs (tags) so user can type freely
   const [tagStr, setTagStr] = useState("");
@@ -414,6 +418,61 @@ export default function ProductCreate() {
     }
   };
 
+  const loadChargeOptions = useCallback(async () => {
+    try {
+      const [deliveryResp, packagingResp] = await Promise.all([
+        fetch(`${API}/api/admin/delivery-charges`, { credentials: "include" }),
+        fetch(`${API}/api/admin/packaging-charges`, {
+          credentials: "include",
+        }),
+      ]);
+      const deliveryBody = await deliveryResp.json();
+      const packagingBody = await packagingResp.json();
+      setDeliveryOptions(deliveryResp.ok ? deliveryBody.items || [] : []);
+      setPackagingOptions(packagingResp.ok ? packagingBody.items || [] : []);
+    } catch {
+      setDeliveryOptions([]);
+      setPackagingOptions([]);
+    }
+  }, [API]);
+
+  const addDeliveryOption = async (label, value) => {
+    try {
+      const resp = await fetch(`${API}/api/admin/delivery-charges`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ label, value }),
+      });
+      const body = await resp.json();
+      if (!resp.ok) throw new Error(body.error || "Failed to add delivery charge");
+      setDeliveryOptions((prev) => [...prev, body.charge]);
+      return body.charge;
+    } catch (err) {
+      alert(err.message || "Failed to add delivery charge");
+      return null;
+    }
+  };
+
+  const addPackagingOption = async (label, value) => {
+    try {
+      const resp = await fetch(`${API}/api/admin/packaging-charges`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ label, value }),
+      });
+      const body = await resp.json();
+      if (!resp.ok)
+        throw new Error(body.error || "Failed to add packaging charge");
+      setPackagingOptions((prev) => [...prev, body.charge]);
+      return body.charge;
+    } catch (err) {
+      alert(err.message || "Failed to add packaging charge");
+      return null;
+    }
+  };
+
   useEffect(() => {
     setProduct((prev) => {
       const nextBadges = sanitizeBadgeKeys(prev.badges || []);
@@ -489,6 +548,10 @@ export default function ProductCreate() {
   useEffect(() => {
     loadBadgeOptions();
   }, [loadBadgeOptions]);
+
+  useEffect(() => {
+    loadChargeOptions();
+  }, [loadChargeOptions]);
 
   useEffect(() => {
     const current = product.badges || [];
@@ -1143,6 +1206,10 @@ export default function ProductCreate() {
                   newBadgeKey={newBadgeKey}
                   setNewBadgeKey={setNewBadgeKey}
                   normalizeBadgeKey={normalizeBadgeKey}
+                  deliveryOptions={deliveryOptions}
+                  packagingOptions={packagingOptions}
+                  addDeliveryOption={addDeliveryOption}
+                  addPackagingOption={addPackagingOption}
                   labelClass={labelClass}
                   inputClass={inputClass}
                   fbtSearch={fbtSearch}

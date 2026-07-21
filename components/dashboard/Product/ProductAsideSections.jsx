@@ -20,6 +20,10 @@ export default function ProductAsideSections({
   newBadgeKey,
   setNewBadgeKey,
   normalizeBadgeKey,
+  deliveryOptions,
+  packagingOptions,
+  addDeliveryOption,
+  addPackagingOption,
   labelClass,
   inputClass,
   fbtSearch,
@@ -34,8 +38,18 @@ export default function ProductAsideSections({
     status: "idle",
     message: "",
   });
+  const [showNewDelivery, setShowNewDelivery] = useState(false);
+  const [newDeliveryLabel, setNewDeliveryLabel] = useState("");
+  const [newDeliveryValue, setNewDeliveryValue] = useState("");
+  const [showNewPackaging, setShowNewPackaging] = useState(false);
+  const [newPackagingLabel, setNewPackagingLabel] = useState("");
+  const [newPackagingValue, setNewPackagingValue] = useState("");
   const { user } = useUser();
   const canSeeBuyingPrice = hasPermission(user, "products.buying_price");
+  const costPerItem =
+    (Number(product.buyingPrice) || 0) +
+    (Number(product.delivery?.value) || 0) +
+    (Number(product.packaging?.value) || 0);
 
   const generateSku = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -488,6 +502,182 @@ export default function ProductAsideSections({
               placeholder="0"
             />
           </div>
+          <div>
+            <label className={labelClass}>Delivery</label>
+            <select
+              value={product.delivery?.label || ""}
+              onChange={(e) => {
+                const opt = (deliveryOptions || []).find(
+                  (o) => o.label === e.target.value,
+                );
+                setProduct((p) => ({
+                  ...p,
+                  delivery: opt
+                    ? { label: opt.label, value: opt.value }
+                    : undefined,
+                }));
+              }}
+              className={inputClass}
+            >
+              <option value="">Select delivery charge</option>
+              {(deliveryOptions || []).map((opt) => (
+                <option key={opt._id} value={opt.label}>
+                  {opt.label} ({Number(opt.value).toFixed(2)})
+                </option>
+              ))}
+            </select>
+            {showNewDelivery ? (
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <input
+                  value={newDeliveryLabel}
+                  onChange={(e) => setNewDeliveryLabel(e.target.value)}
+                  className={`${inputClass} w-32`}
+                  placeholder="Label"
+                />
+                <input
+                  type="number"
+                  step="0.01"
+                  value={newDeliveryValue}
+                  onChange={(e) => setNewDeliveryValue(e.target.value)}
+                  className={`${inputClass} w-24`}
+                  placeholder="Amount"
+                />
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const label = newDeliveryLabel.trim();
+                    if (!label || newDeliveryValue === "") return;
+                    const opt = await addDeliveryOption(
+                      label,
+                      Number(newDeliveryValue),
+                    );
+                    if (opt) {
+                      setProduct((p) => ({
+                        ...p,
+                        delivery: { label: opt.label, value: opt.value },
+                      }));
+                      setNewDeliveryLabel("");
+                      setNewDeliveryValue("");
+                      setShowNewDelivery(false);
+                    }
+                  }}
+                  className="rounded-lg border border-indigo-300 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-50"
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowNewDelivery(false)}
+                  className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowNewDelivery(true)}
+                className="mt-2 text-xs font-semibold text-indigo-700 hover:underline"
+              >
+                + Add new delivery charge
+              </button>
+            )}
+          </div>
+          <div>
+            <label className={labelClass}>Packaging</label>
+            <select
+              value={product.packaging?.label || ""}
+              onChange={(e) => {
+                const opt = (packagingOptions || []).find(
+                  (o) => o.label === e.target.value,
+                );
+                setProduct((p) => ({
+                  ...p,
+                  packaging: opt
+                    ? { label: opt.label, value: opt.value }
+                    : undefined,
+                }));
+              }}
+              className={inputClass}
+            >
+              <option value="">Select packaging charge</option>
+              {(packagingOptions || []).map((opt) => (
+                <option key={opt._id} value={opt.label}>
+                  {opt.label} ({Number(opt.value).toFixed(2)})
+                </option>
+              ))}
+            </select>
+            {showNewPackaging ? (
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <input
+                  value={newPackagingLabel}
+                  onChange={(e) => setNewPackagingLabel(e.target.value)}
+                  className={`${inputClass} w-32`}
+                  placeholder="Label"
+                />
+                <input
+                  type="number"
+                  step="0.01"
+                  value={newPackagingValue}
+                  onChange={(e) => setNewPackagingValue(e.target.value)}
+                  className={`${inputClass} w-24`}
+                  placeholder="Amount"
+                />
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const label = newPackagingLabel.trim();
+                    if (!label || newPackagingValue === "") return;
+                    const opt = await addPackagingOption(
+                      label,
+                      Number(newPackagingValue),
+                    );
+                    if (opt) {
+                      setProduct((p) => ({
+                        ...p,
+                        packaging: { label: opt.label, value: opt.value },
+                      }));
+                      setNewPackagingLabel("");
+                      setNewPackagingValue("");
+                      setShowNewPackaging(false);
+                    }
+                  }}
+                  className="rounded-lg border border-indigo-300 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-50"
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowNewPackaging(false)}
+                  className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowNewPackaging(true)}
+                className="mt-2 text-xs font-semibold text-indigo-700 hover:underline"
+              >
+                + Add new packaging charge
+              </button>
+            )}
+          </div>
+          {canSeeBuyingPrice && (
+            <div>
+              <label className={labelClass}>Cost per item</label>
+              <input
+                type="text"
+                value={costPerItem.toFixed(2)}
+                disabled
+                className={`${inputClass} cursor-not-allowed bg-gray-100 text-gray-600`}
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Buying Price + Delivery + Packaging (calculated automatically).
+              </p>
+            </div>
+          )}
           <div>
             <label className={labelClass}>SKU</label>
             <input

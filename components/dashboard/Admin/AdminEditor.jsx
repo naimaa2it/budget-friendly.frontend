@@ -75,6 +75,7 @@ const PERMISSION_GROUPS = [
       { key: "products.categories",   label: "Categories" },
       { key: "products.discounts",    label: "Discounts & coupons" },
       { key: "products.tags",         label: "Tags & badges" },
+      { key: "products.charges",      label: "Delivery & packaging charges" },
       { key: "products.barcodes",     label: "Barcodes" },
       { key: "products.reviews",      label: "Reviews" },
       { key: "products.rewards",      label: "Rewards" },

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { useCart, getItemPrice } from "@/components/context/CartContext";
 import { FaShoppingBag, FaShoppingCart, FaChevronRight } from "react-icons/fa";
 import { useLanguage } from "@/components/context/LanguageContext";
@@ -8,6 +9,8 @@ import { useLanguage } from "@/components/context/LanguageContext";
 export default function CartFloating() {
   const { cartItems, getCartCount, toggleSidebar, isSidebarOpen } = useCart();
   const { t } = useLanguage();
+  const pathname = usePathname() || "";
+  const isDashboard = pathname.startsWith("/dashboard");
   const count = getCartCount();
   const [bump, setBump] = useState(false);
   const prevCount = useRef(count);
@@ -21,7 +24,7 @@ export default function CartFloating() {
     }
   }, [count]);
 
-  if (count === 0 || isSidebarOpen) return null;
+  if (count === 0 || isSidebarOpen || isDashboard) return null;
 
   const total = cartItems.reduce(
     (sum, item) => sum + getItemPrice(item) * item.quantity,

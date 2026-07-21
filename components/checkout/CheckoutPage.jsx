@@ -182,14 +182,18 @@ export default function CheckoutPage() {
   }, [cartItems.length, cartHydrated, router]);
 
   // ── Server quote ────────────────────────────────────────────────────────────
-  // Re-fetch whenever cartItems OR city changes (keep any active coupons via ref)
+  // Re-fetch whenever cartItems OR city/zone/area changes (keep any active coupons via ref)
   const currentCityRef = useRef("");
+  const currentZoneRef = useRef("");
+  const currentAreaRef = useRef("");
 
   const fetchQuote = useCallback(
     (couponCodes, pointsToRedeem = 0) => {
       if (!cartItems.length) return;
       const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
       const city = currentCityRef.current?.trim() || null;
+      const zone = currentZoneRef.current?.trim() || null;
+      const area = currentAreaRef.current?.trim() || null;
       return fetch(`${API}/api/orders/quote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -203,6 +207,8 @@ export default function CheckoutPage() {
           })),
           couponCodes: couponCodes?.length ? couponCodes : null,
           city,
+          zone,
+          area,
           pointsToRedeem: pointsToRedeem > 0 ? pointsToRedeem : null,
         }),
       }).then((r) => r.json());
@@ -314,14 +320,21 @@ export default function CheckoutPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cartItems]);
 
-  // Re-fetch when city selection changes so shipping reflects inside/outside Dhaka
+  // Re-fetch when city/zone/area changes so shipping reflects inside/outside
+  // Dhaka and any zone/area override (zone/area only apply within Dhaka)
   useEffect(() => {
     const resolvedCity = formData.city === "other" ? customCity : formData.city;
     if (!resolvedCity) {
       currentCityRef.current = "";
+      currentZoneRef.current = "";
+      currentAreaRef.current = "";
       return;
     }
     currentCityRef.current = resolvedCity;
+    currentZoneRef.current =
+      (formData.zone === "other" ? customZone : formData.zone) || "";
+    currentAreaRef.current =
+      (formData.area === "other" ? customArea : formData.area) || "";
     if (!cartItems.length) return;
     setQuoteLoading(true);
     fetchQuote(appliedCouponsRef.current, pointsToRedeemRef.current)
@@ -331,7 +344,14 @@ export default function CheckoutPage() {
       .catch((err) => console.error("Quote (city) fetch failed:", err))
       .finally(() => setQuoteLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.city, customCity]);
+  }, [
+    formData.city,
+    customCity,
+    formData.zone,
+    customZone,
+    formData.area,
+    customArea,
+  ]);
 
   const refetchQuoteWithPoints = (points) => {
     pointsToRedeemRef.current = points;
@@ -496,6 +516,8 @@ export default function CheckoutPage() {
           })),
           couponCodes: newCoupons,
           city: currentCityRef.current || null,
+          zone: currentZoneRef.current || null,
+          area: currentAreaRef.current || null,
           pointsToRedeem:
             pointsToRedeemRef.current > 0 ? pointsToRedeemRef.current : null,
         }),
@@ -558,6 +580,8 @@ export default function CheckoutPage() {
           })),
           couponCodes: newCoupons.length ? newCoupons : null,
           city: currentCityRef.current || null,
+          zone: currentZoneRef.current || null,
+          area: currentAreaRef.current || null,
           pointsToRedeem:
             pointsToRedeemRef.current > 0 ? pointsToRedeemRef.current : null,
         }),
@@ -595,6 +619,8 @@ export default function CheckoutPage() {
           })),
           couponCodes: null,
           city: currentCityRef.current || null,
+          zone: currentZoneRef.current || null,
+          area: currentAreaRef.current || null,
           pointsToRedeem:
             pointsToRedeemRef.current > 0 ? pointsToRedeemRef.current : null,
         }),
@@ -627,7 +653,8 @@ export default function CheckoutPage() {
     if (phoneError) newErrors.phone = phoneError;
 
     if (!finalCity) newErrors.city = t("checkout.field_required");
-    if (!finalZone) newErrors.zone = t("checkout.field_required");
+    if (formData.city === "Dhaka" && !finalZone)
+      newErrors.zone = t("checkout.field_required");
     if (!formData.address.trim())
       newErrors.address = t("checkout.field_required");
 
@@ -1102,8 +1129,12 @@ export default function CheckoutPage() {
                 />
               </div>
 
-              {/* City, Zone, Area */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              {/* City, and (Dhaka-only) Zone, Area */}
+              <div
+                className={`grid grid-cols-1 gap-4 mb-4 ${
+                  formData.city === "Dhaka" ? "md:grid-cols-3" : ""
+                }`}
+              >
                 {/* City Searchable Dropdown */}
                 <div>
                   <SearchableSelect
@@ -1139,68 +1170,69 @@ export default function CheckoutPage() {
                   )}
                 </div>
 
-                {/* Zone Searchable Dropdown */}
-                <div>
-                  <SearchableSelect
-                    name="zone"
-                    value={formData.zone}
-                    onChange={handleInputChange}
-                    options={zones}
-                    placeholder={t("checkout.zone_ph")}
-                    required
-                    disabled={!formData.city || formData.city === "other"}
-                    className={
-                      fieldErrors.zone ? "ring-2 ring-red-500 rounded-lg" : ""
-                    }
-                  />
-                  {(formData.zone === "other" || formData.city === "other") && (
-                    <input
-                      type="text"
-                      value={customZone}
-                      onChange={(e) => {
-                        setCustomZone(e.target.value);
-                        setFieldErrors((prev) =>
-                          prev.zone ? { ...prev, zone: null } : prev,
-                        );
-                      }}
-                      placeholder={t("checkout.enter_zone")}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none mt-2"
-                      required
-                    />
-                  )}
-                  {fieldErrors.zone && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {fieldErrors.zone}
-                    </p>
-                  )}
-                </div>
+                {/* Zone/Area only matter for shipping pricing inside Dhaka */}
+                {formData.city === "Dhaka" && (
+                  <>
+                    {/* Zone Searchable Dropdown */}
+                    <div>
+                      <SearchableSelect
+                        name="zone"
+                        value={formData.zone}
+                        onChange={handleInputChange}
+                        options={zones}
+                        placeholder={t("checkout.zone_ph")}
+                        required
+                        className={
+                          fieldErrors.zone
+                            ? "ring-2 ring-red-500 rounded-lg"
+                            : ""
+                        }
+                      />
+                      {formData.zone === "other" && (
+                        <input
+                          type="text"
+                          value={customZone}
+                          onChange={(e) => {
+                            setCustomZone(e.target.value);
+                            setFieldErrors((prev) =>
+                              prev.zone ? { ...prev, zone: null } : prev,
+                            );
+                          }}
+                          placeholder={t("checkout.enter_zone")}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none mt-2"
+                          required
+                        />
+                      )}
+                      {fieldErrors.zone && (
+                        <p className="mt-1 text-xs text-red-500">
+                          {fieldErrors.zone}
+                        </p>
+                      )}
+                    </div>
 
-                {/* Area Searchable Dropdown */}
-                <div>
-                  <SearchableSelect
-                    name="area"
-                    value={formData.area}
-                    onChange={handleInputChange}
-                    options={areas}
-                    placeholder={t("checkout.area_ph")}
-                    disabled={
-                      !formData.zone ||
-                      formData.zone === "other" ||
-                      formData.city === "other"
-                    }
-                  />
-                  {(formData.area === "other" ||
-                    formData.zone === "other" ||
-                    formData.city === "other") && (
-                    <input
-                      type="text"
-                      value={customArea}
-                      onChange={(e) => setCustomArea(e.target.value)}
-                      placeholder={t("checkout.enter_area")}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none mt-2"
-                    />
-                  )}
-                </div>
+                    {/* Area Searchable Dropdown */}
+                    <div>
+                      <SearchableSelect
+                        name="area"
+                        value={formData.area}
+                        onChange={handleInputChange}
+                        options={areas}
+                        placeholder={t("checkout.area_ph")}
+                        disabled={!formData.zone || formData.zone === "other"}
+                      />
+                      {(formData.area === "other" ||
+                        formData.zone === "other") && (
+                        <input
+                          type="text"
+                          value={customArea}
+                          onChange={(e) => setCustomArea(e.target.value)}
+                          placeholder={t("checkout.enter_area")}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none mt-2"
+                        />
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Address */}

@@ -764,7 +764,7 @@ function OrdersSection({ API }) {
                     {billing.phone ? " · " + billing.phone : ""}
                   </p>
                   <p>
-                    {[billing.address, billing.zone, billing.city]
+                    {[billing.address, billing.area, billing.zone, billing.city]
                       .filter(Boolean)
                       .join(", ")}
                   </p>

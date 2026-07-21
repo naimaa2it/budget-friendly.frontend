@@ -426,7 +426,7 @@ function SuccessContent() {
 
   const shortId = (id) => (id ? "#" + String(id).slice(-8).toUpperCase() : "");
   const billing = order?.billingDetails || {};
-  const addr = [billing.address, billing.zone, billing.city]
+  const addr = [billing.address, billing.area, billing.zone, billing.city]
     .filter(Boolean)
     .join(", ");
   const canCancel =

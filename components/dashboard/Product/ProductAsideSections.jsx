@@ -545,8 +545,11 @@ export default function ProductAsideSections({
                 <button
                   type="button"
                   onClick={async () => {
-                    const label = newDeliveryLabel.trim();
-                    if (!label || newDeliveryValue === "") return;
+                    if (newDeliveryValue === "" || isNaN(Number(newDeliveryValue))) {
+                      alert("Please enter an amount");
+                      return;
+                    }
+                    const label = newDeliveryLabel.trim() || newDeliveryValue;
                     const opt = await addDeliveryOption(
                       label,
                       Number(newDeliveryValue),
@@ -626,8 +629,11 @@ export default function ProductAsideSections({
                 <button
                   type="button"
                   onClick={async () => {
-                    const label = newPackagingLabel.trim();
-                    if (!label || newPackagingValue === "") return;
+                    if (newPackagingValue === "" || isNaN(Number(newPackagingValue))) {
+                      alert("Please enter an amount");
+                      return;
+                    }
+                    const label = newPackagingLabel.trim() || newPackagingValue;
                     const opt = await addPackagingOption(
                       label,
                       Number(newPackagingValue),

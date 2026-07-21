@@ -42,7 +42,11 @@ export default function ChargeList({ title, description, apiPath, noun }) {
 
   const saveItem = async (e) => {
     e.preventDefault();
-    if (!form.label.trim() || form.value === "") return;
+    if (form.value === "" || isNaN(Number(form.value))) {
+      alert("Please enter an amount");
+      return;
+    }
+    const label = form.label.trim() || form.value;
     setSaving(true);
     try {
       const resp = await fetch(
@@ -54,7 +58,7 @@ export default function ChargeList({ title, description, apiPath, noun }) {
           headers: { "Content-Type": "application/json" },
           credentials: "include",
           body: JSON.stringify({
-            label: form.label,
+            label,
             value: Number(form.value),
           }),
         },

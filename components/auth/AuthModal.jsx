@@ -12,7 +12,6 @@ import {
   sendPasswordResetEmail,
 } from "firebase/auth";
 import WebsiteLogo from "@/components/ui/WebsiteLogo";
-import Link from "next/link";
 
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_SECONDS = 60;
@@ -426,9 +425,9 @@ export default function AuthModal({ isOpen, onClose }) {
             <h2 className="text-xl font-bold text-gray-900 mt-2">
               Continue with
             </h2>
-            <Link href="/" className="flex items-center justify-center">
+            <div className="flex items-center justify-center">
               <WebsiteLogo className="w-20 h-6 " />
-            </Link>
+            </div>
           </div>
         </div>
         <div className="px-6 py-3">

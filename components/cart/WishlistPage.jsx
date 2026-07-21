@@ -102,8 +102,12 @@ export default function WishlistPage({ embedded = false }) {
                 imageQuality={85}
               />
               <button
-                onClick={() => removeFromWishlist(getId(product))}
-                className="absolute top-10 left-2 text-red-600 hover:text-red-800 bg-white rounded-full p-1 shadow"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  removeFromWishlist(getId(product));
+                }}
+                className="absolute top-10 left-2 z-20 text-red-600 hover:text-red-800 bg-white rounded-full p-1 shadow"
                 title={t("wishlist.remove")}
               >
                 <FaTrash />

@@ -753,7 +753,7 @@ export default function ProductVariantBuilder({
                               updateVariant(index, {
                                 buyingPrice:
                                   e.target.value === ""
-                                    ? undefined
+                                    ? null
                                     : Number(e.target.value),
                               })
                             }

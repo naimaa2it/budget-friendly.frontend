@@ -1705,9 +1705,7 @@ export default function ProductEdit({ productId }) {
                         setProduct((p) => ({
                           ...p,
                           buyingPrice:
-                            e.target.value === ""
-                              ? undefined
-                              : Number(e.target.value),
+                            e.target.value === "" ? null : Number(e.target.value),
                         }))
                       }
                       className={inputClass}

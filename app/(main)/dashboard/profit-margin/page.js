@@ -18,7 +18,8 @@ export default function ProfitMarginPage() {
       <div className="mb-5">
         <h1 className="text-2xl font-bold text-gray-900">Profit Margin</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Buying price ও selling price-এর basis-এ প্রতিটি product-এর profit margin দেখুন।
+          Selling (discount) price ও cost per item (buying price + delivery +
+          packaging)-এর basis-এ প্রতিটি product-এর profit margin দেখুন।
         </p>
       </div>
       <ProfitMarginManager />

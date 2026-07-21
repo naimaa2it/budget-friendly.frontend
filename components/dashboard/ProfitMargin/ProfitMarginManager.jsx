@@ -710,15 +710,20 @@ export default function ProfitMarginManager() {
       {/* ── Charts section ── */}
       <div className="grid lg:grid-cols-5 gap-4">
         {/* Bar chart (3/5 width) */}
-        <div className="lg:col-span-3 bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+        <div className="lg:col-span-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-sm font-semibold text-gray-800">
-                Revenue · COGS · Profit
-              </p>
-              <p className="text-xs text-gray-400 mt-0.5">
-                From fulfilled orders (est. COGS uses current buying prices)
-              </p>
+            <div className="flex items-center gap-2.5">
+              <span className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-500 flex items-center justify-center shrink-0">
+                <FiBarChart2 className="w-4 h-4" />
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-gray-800">
+                  Revenue · COGS · Profit
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  From fulfilled orders (est. COGS uses current cost per item)
+                </p>
+              </div>
             </div>
             <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs font-medium">
               {["monthly", "yearly"].map((t) => (
@@ -744,13 +749,20 @@ export default function ProfitMarginManager() {
         {/* Right column: two pie charts stacked */}
         <div className="lg:col-span-2 flex flex-col gap-4">
           {/* Margin health distribution */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex-1">
-            <p className="text-sm font-semibold text-gray-800 mb-0.5">
-              Margin Health
-            </p>
-            <p className="text-xs text-gray-400 mb-3">
-              Product count by margin status
-            </p>
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex-1">
+            <div className="flex items-center gap-2.5 mb-3">
+              <span className="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center shrink-0">
+                <FiPieChart className="w-4 h-4" />
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-gray-800">
+                  Margin Health
+                </p>
+                <p className="text-xs text-gray-400">
+                  Product count by margin status
+                </p>
+              </div>
+            </div>
             {loading ? (
               <div className="h-40 flex items-center justify-center text-gray-300 text-sm">
                 Loading…
@@ -761,15 +773,22 @@ export default function ProfitMarginManager() {
           </div>
 
           {/* Period profit contribution */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex-1">
-            <p className="text-sm font-semibold text-gray-800 mb-0.5">
-              Profit Contribution
-            </p>
-            <p className="text-xs text-gray-400 mb-3">
-              {chartTab === "monthly"
-                ? "Monthly share of total profit"
-                : "Yearly share of total profit"}
-            </p>
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex-1">
+            <div className="flex items-center gap-2.5 mb-3">
+              <span className="w-8 h-8 rounded-lg bg-pink-50 text-pink-500 flex items-center justify-center shrink-0">
+                <FiPieChart className="w-4 h-4" />
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-gray-800">
+                  Profit Contribution
+                </p>
+                <p className="text-xs text-gray-400">
+                  {chartTab === "monthly"
+                    ? "Monthly share of total profit"
+                    : "Yearly share of total profit"}
+                </p>
+              </div>
+            </div>
             {analyticsLoading ? (
               <div className="h-40 flex items-center justify-center text-gray-300 text-sm">
                 Loading…
@@ -783,7 +802,7 @@ export default function ProfitMarginManager() {
 
       {/* ── Analytics totals strip ── */}
       {analytics && !analyticsLoading && (
-        <div className="bg-linear-to-r from-indigo-50 to-purple-50 border border-indigo-100 rounded-xl px-5 py-3 flex flex-wrap gap-6 items-center text-sm">
+        <div className="bg-linear-to-r from-indigo-50 to-purple-50 border border-indigo-100 rounded-2xl px-5 py-3.5 flex flex-wrap gap-6 items-center text-sm">
           <div>
             <span className="text-gray-500 text-xs uppercase tracking-wide">
               Period Revenue
@@ -853,40 +872,43 @@ export default function ProfitMarginManager() {
       </div>
 
       {/* ── Product table ── */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         {/* Toolbar */}
         <div className="px-5 py-4 border-b flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-          <input
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setPage(1);
-            }}
-            placeholder="Search product name or SKU…"
-            className="border rounded-lg px-3 py-1.5 text-sm w-full sm:w-72 focus:outline-none focus:ring-2 focus:ring-indigo-300"
-          />
+          <div className="relative w-full sm:w-72">
+            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+            <input
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Search product name or SKU…"
+              className="border border-gray-200 rounded-lg pl-8 pr-3 py-1.5 text-sm w-full focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300"
+            />
+          </div>
           <select
             value={sort}
             onChange={(e) => {
               setSort(e.target.value);
               setPage(1);
             }}
-            className="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300"
           >
             <option value="margin_asc">Margin: Low → High</option>
             <option value="margin_desc">Margin: High → Low</option>
             <option value="profit_desc">Profit: High → Low</option>
             <option value="name_asc">Name: A → Z</option>
           </select>
-          <span className="text-xs text-gray-400 sm:ml-auto shrink-0">
+          <span className="text-xs font-medium text-gray-400 sm:ml-auto shrink-0">
             {total} product{total !== 1 ? "s" : ""}
           </span>
         </div>
 
         {/* Column headers */}
-        <div className="hidden lg:grid grid-cols-[2fr_0.9fr_0.9fr_0.9fr_1.4fr_0.7fr_1.1fr_0.9fr_auto] gap-3 px-5 py-2 border-b bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+        <div className="hidden lg:grid grid-cols-[2fr_0.9fr_0.9fr_0.9fr_1.4fr_0.7fr_1.1fr_0.9fr_auto] gap-3 px-5 py-2.5 border-b bg-gray-50/80 text-xs font-semibold text-gray-500 uppercase tracking-wide">
           <span>Product</span>
-          <span>Cost Price</span>
+          <span>Cost / Item</span>
           <span>Sell Price</span>
           <span>Profit/Unit</span>
           <span>Gross Margin</span>
@@ -897,11 +919,13 @@ export default function ProfitMarginManager() {
         </div>
 
         {loading ? (
-          <div className="py-20 text-center text-gray-400 text-sm">
+          <div className="py-20 flex flex-col items-center gap-2 text-gray-300 text-sm">
+            <FiRefreshCw className="w-6 h-6 animate-spin" />
             Loading…
           </div>
         ) : items.length === 0 ? (
-          <div className="py-20 text-center text-gray-400 text-sm">
+          <div className="py-20 flex flex-col items-center gap-2 text-gray-300 text-sm">
+            <FiInbox className="w-8 h-8" strokeWidth={1.5} />
             No products found.
           </div>
         ) : (
@@ -924,22 +948,16 @@ export default function ProfitMarginManager() {
                       {product.hasVariants ? (
                         <button
                           onClick={() => toggle(product._id)}
-                          className="shrink-0 w-5 h-5 rounded flex items-center justify-center text-gray-400 hover:text-gray-600"
+                          className="shrink-0 w-5 h-5 rounded flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100"
                         >
-                          <svg
-                            className={`w-3 h-3 transition-transform ${isExpanded ? "rotate-90" : ""}`}
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={2.5}
-                          >
-                            <path d="M9 5l7 7-7 7" />
-                          </svg>
+                          <FiChevronDown
+                            className={`w-3.5 h-3.5 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                          />
                         </button>
                       ) : (
                         <div className="w-5 shrink-0" />
                       )}
-                      <div className="w-9 h-9 rounded-lg bg-gray-100 overflow-hidden shrink-0">
+                      <div className="w-9 h-9 rounded-lg bg-gray-100 overflow-hidden shrink-0 ring-1 ring-gray-100">
                         {thumb ? (
                           <img
                             src={thumb}
@@ -947,8 +965,8 @@ export default function ProfitMarginManager() {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-300 text-base">
-                            📦
+                          <div className="w-full h-full flex items-center justify-center text-gray-300">
+                            <FiPackage className="w-4 h-4" />
                           </div>
                         )}
                       </div>
@@ -974,24 +992,25 @@ export default function ProfitMarginManager() {
                       </div>
                     </div>
 
-                    {/* Cost price */}
+                    {/* Cost per item (buying price + delivery + packaging) */}
                     <div className="hidden lg:block text-sm text-gray-700">
                       {product.hasVariants ? (
                         <span className="text-xs text-gray-400 italic">
                           see variants
                         </span>
-                      ) : (
-                        <span
-                          className={
-                            !product.buyingPrice
-                              ? "text-gray-300 italic text-xs"
-                              : "font-medium"
-                          }
-                        >
-                          {product.buyingPrice
-                            ? fmt(product.buyingPrice)
-                            : "Not set"}
+                      ) : !m.hasData ? (
+                        <span className="text-gray-300 italic text-xs">
+                          Not set
                         </span>
+                      ) : (
+                        <div>
+                          <span className="font-medium">{fmt(m.cpi)}</span>
+                          {m.cpi > m.bp && (
+                            <p className="text-[10px] text-gray-400">
+                              buy {fmt(m.bp)}
+                            </p>
+                          )}
+                        </div>
                       )}
                     </div>
 
@@ -1076,8 +1095,9 @@ export default function ProfitMarginManager() {
                     {/* Edit link */}
                     <Link
                       href={`/dashboard/products/${product._id}`}
-                      className="hidden lg:block text-xs text-gray-400 hover:text-indigo-500 px-2 py-1 rounded border border-transparent hover:border-indigo-200 shrink-0"
+                      className="hidden lg:flex items-center gap-1 text-xs text-gray-400 hover:text-indigo-500 px-2 py-1 rounded-lg border border-transparent hover:border-indigo-200 hover:bg-indigo-50 shrink-0 w-fit"
                     >
+                      <FiEdit2 className="w-3 h-3" />
                       Edit
                     </Link>
 
@@ -1146,38 +1166,48 @@ export default function ProfitMarginManager() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2 px-5 py-4 border-t">
+          <div className="flex items-center justify-center gap-2 px-5 py-4 border-t bg-gray-50/50">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-3 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40"
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-white transition"
             >
-              ← Prev
+              <FiChevronLeft className="w-3.5 h-3.5" />
+              Prev
             </button>
-            <span className="text-sm text-gray-600">
-              Page {page} of {totalPages}
+            <span className="text-sm text-gray-600 px-2">
+              Page <strong className="text-gray-800">{page}</strong> of{" "}
+              {totalPages}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="px-3 py-1.5 text-sm rounded-lg border hover:bg-gray-50 disabled:opacity-40"
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-white transition"
             >
-              Next →
+              Next
+              <FiChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
         )}
       </div>
 
       {/* ── Formula legend ── */}
-      <div className="bg-white rounded-xl border border-gray-100 px-5 py-4 shadow-sm">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-          Calculation Reference
-        </p>
+      <div className="bg-white rounded-2xl border border-gray-100 px-5 py-4 shadow-sm">
+        <div className="flex items-center gap-2 mb-3">
+          <FiInfo className="w-3.5 h-3.5 text-gray-400" />
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+            Calculation Reference
+          </p>
+        </div>
         <div className="grid sm:grid-cols-2 gap-4 text-xs text-gray-600">
           <div className="space-y-1.5">
             <p>
+              <span className="font-semibold text-gray-700">Cost / Item</span>{" "}
+              = Buying Price + Delivery Charge + Packaging Charge
+            </p>
+            <p>
               <span className="font-semibold text-gray-700">Profit / Unit</span>{" "}
-              = Selling Price − Cost Price
+              = Selling (Discount) Price − Cost / Item
             </p>
             <p>
               <span className="font-semibold text-gray-700">
@@ -1187,11 +1217,11 @@ export default function ProfitMarginManager() {
             </p>
             <p>
               <span className="font-semibold text-gray-700">Total Profit</span>{" "}
-              = (Sell Price × Units Sold) − (Cost × Units Sold)
+              = (Sell Price × Units Sold) − (Cost / Item × Units Sold)
             </p>
             <p className="text-gray-400 italic">
-              * COGS estimated using current buying price, not historical order
-              price.
+              * Selling price already reflects any active discount/offer price.
+              COGS uses the current cost per item, not historical order price.
             </p>
           </div>
           <div className="space-y-1.5">
@@ -1207,7 +1237,7 @@ export default function ProfitMarginManager() {
             </div>
             <p className="text-gray-400 mt-1">
               Cost price set না থাকলে margin calculate করা যাবে না। পণ্যের Edit
-              পেজে buying price যোগ করুন।
+              পেজে buying price (এবং delivery/packaging charge) যোগ করুন।
             </p>
           </div>
         </div>

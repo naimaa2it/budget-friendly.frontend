@@ -18,19 +18,13 @@ const FALLBACK = [
   },
 ];
 
-const Banner = () => {
-  const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
+const Banner = ({ initialSlides }) => {
   const router = useRouter();
-  const [slides, setSlides] = useState([]);
+  const [slides, setSlides] = useState(
+    initialSlides && initialSlides.length > 0 ? initialSlides : FALLBACK,
+  );
   const [current, setCurrent] = useState(0);
   const autoRef = useRef(null);
-
-  useEffect(() => {
-    fetch(`${API}/api/banners`)
-      .then((r) => r.json())
-      .then((b) => setSlides((b.items || []).length > 0 ? b.items : FALLBACK))
-      .catch(() => setSlides(FALLBACK));
-  }, [API]);
 
   const total = slides.length;
 
@@ -80,7 +74,6 @@ const Banner = () => {
                 alt={slide.title || "Banner"}
                 fill
                 priority
-                quality={100}
                 sizes="100vw"
                 className="object-cover transition-opacity duration-500"
               />

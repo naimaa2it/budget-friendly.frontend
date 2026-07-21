@@ -203,9 +203,12 @@ export default function ShopByCategory() {
                       {cat.icon && (
                         <div className="absolute top-1 left-1 bg-white rounded-full p-1 shadow z-20 border border-gray-100">
                           {typeof cat.icon === "string" ? (
-                            <img
+                            <Image
                               src={cdnImageUrl(cat.icon, 64)}
                               alt=""
+                              width={20}
+                              height={20}
+                              loading="lazy"
                               className="w-4 h-4 md:w-5 md:h-5 object-cover"
                             />
                           ) : (

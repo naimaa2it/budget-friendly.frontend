@@ -11,7 +11,7 @@ import ToastProvider from "@/components/ui/ToastProvider";
 import FrequentlyBoughtTogetherModal from "@/components/cart/FrequentlyBoughtTogetherModal";
 import LayoutWrapper from "@/components/layout/LayoutWrapper";
 import TrackingCodeInjector from "@/components/layout/TrackingCodeInjector";
-import ScrollToTop from "@/components/ui/ScrollToTop";
+import ScrollToTop from "@/components/ui/ScrollToTopLazy";
 // import FloatingWhatsApp from "@/components/ui/FloatingWhatsApp";
 import PopupBanner from "@/components/ui/PopupBanner";
 import { getStoreName, getFavicon } from "@/lib/storeMeta";
@@ -25,7 +25,7 @@ const SITE_URL =
 const workSans = Work_Sans({
   variable: "--font-work-sans",
   subsets: ["latin"],
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export async function generateMetadata() {

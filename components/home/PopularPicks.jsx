@@ -79,25 +79,19 @@ export default function PopularPicks() {
       };
     };
 
-    const fetchPopular = async () => {
+    const fetchPopular = async (panelItems) => {
       setLoading(true);
       try {
         // First check if any promo panel has manually selected products
         let items = [];
-        try {
-          const panelResp = await fetch(`${API}/api/promo-panels`);
-          const panelJson = await panelResp.json();
-          const firstActive = (panelJson.items || []).find(
-            (p) =>
-              p.isActive &&
-              Array.isArray(p.productIds) &&
-              p.productIds.length > 0,
-          );
-          if (firstActive) {
-            items = firstActive.productIds.map(normalizeProduct);
-          }
-        } catch {
-          /* ignore */
+        const firstActive = panelItems.find(
+          (p) =>
+            p.isActive &&
+            Array.isArray(p.productIds) &&
+            p.productIds.length > 0,
+        );
+        if (firstActive) {
+          items = firstActive.productIds.map(normalizeProduct);
         }
 
         // Fall back to badge-based fetch
@@ -123,13 +117,14 @@ export default function PopularPicks() {
         const json = await resp.json();
         const items = Array.isArray(json.items) ? json.items : [];
         setPromoPanels(items);
+        return items;
       } catch {
         setPromoPanels([]);
+        return [];
       }
     };
 
-    fetchPopular();
-    fetchPromoPanel();
+    fetchPromoPanel().then(fetchPopular);
   }, []);
 
   // number of "pages" we can scroll through. we still wrap using modulo

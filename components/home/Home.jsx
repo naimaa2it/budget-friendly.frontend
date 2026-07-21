@@ -11,10 +11,10 @@ import WhyChoosePickob from "./WhyChoosePickob";
 import TopGlobalBrands from "./TopGlobalBrands";
 import AdSlot from "@/components/ui/AdSlot";
 
-export default function Home() {
+export default function Home({ initialSlides }) {
   return (
     <>
-      <Banner />
+      <Banner initialSlides={initialSlides} />
       <ShopByCategory />
       <PromoStripSection />
       {/* <AdSlot page="homepage" className="max-w-7xl mx-auto px-2 py-3" /> */}

@@ -44,25 +44,44 @@ export default function DealsOfDay() {
   // fetch deals-of-day product and bestseller list
   useEffect(() => {
     const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
+    const fetchDeal = async () => {
+      // First try settings-based deal of day, then fall back to badge
+      try {
+        const settingResp = await fetch(`${API}/api/deal-of-day`);
+        const settingJson = await settingResp.json();
+        if (settingJson.product) return settingJson.product;
+      } catch {
+        /* ignore */
+      }
+      try {
+        const dealResp = await fetch(
+          `${API}/api/products?badge=deals_of_the_day&limit=1`,
+        );
+        const dealJson = await dealResp.json();
+        return (dealJson.items || [])[0] || null;
+      } catch {
+        return null;
+      }
+    };
+
+    const fetchBestsellers = async () => {
+      try {
+        const bestResp = await fetch(
+          `${API}/api/products?badge=best_seller&limit=20`,
+        );
+        const bestJson = await bestResp.json();
+        return bestJson.items || [];
+      } catch {
+        return [];
+      }
+    };
+
     const fetchData = async () => {
       try {
-        // First try settings-based deal of day, then fall back to badge
-        let deal = null;
-        try {
-          const settingResp = await fetch(`${API}/api/deal-of-day`);
-          const settingJson = await settingResp.json();
-          deal = settingJson.product || null;
-        } catch {
-          /* ignore */
-        }
-
-        if (!deal) {
-          const dealResp = await fetch(
-            `${API}/api/products?badge=deals_of_the_day&limit=1`,
-          );
-          const dealJson = await dealResp.json();
-          deal = (dealJson.items || [])[0] || null;
-        }
+        const [deal, bestItems] = await Promise.all([
+          fetchDeal(),
+          fetchBestsellers(),
+        ]);
 
         if (deal) {
           const { price, compareAtPrice } = getDisplayPrice(deal);
@@ -70,11 +89,7 @@ export default function DealsOfDay() {
           setProductImages((deal.images || []).map((i) => i.url));
         }
 
-        const bestResp = await fetch(
-          `${API}/api/products?badge=best_seller&limit=20`,
-        );
-        const bestJson = await bestResp.json();
-        const bests = (bestJson.items || []).map((p) => {
+        const bests = bestItems.map((p) => {
           const { price } = getDisplayPrice(p);
           return {
             id: p._id || p.id,

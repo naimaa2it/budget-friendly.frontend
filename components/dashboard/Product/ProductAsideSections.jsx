@@ -444,7 +444,8 @@ export default function ProductAsideSections({
           )}
           <div>
             <label className={labelClass}>
-              Discount Price <span className="text-red-500">*</span>
+              Discount Price/Selling price{" "}
+              <span className="text-red-500">*</span>
             </label>
             <input
               type="number"
@@ -545,7 +546,10 @@ export default function ProductAsideSections({
                 <button
                   type="button"
                   onClick={async () => {
-                    if (newDeliveryValue === "" || isNaN(Number(newDeliveryValue))) {
+                    if (
+                      newDeliveryValue === "" ||
+                      isNaN(Number(newDeliveryValue))
+                    ) {
                       alert("Please enter an amount");
                       return;
                     }
@@ -629,7 +633,10 @@ export default function ProductAsideSections({
                 <button
                   type="button"
                   onClick={async () => {
-                    if (newPackagingValue === "" || isNaN(Number(newPackagingValue))) {
+                    if (
+                      newPackagingValue === "" ||
+                      isNaN(Number(newPackagingValue))
+                    ) {
                       alert("Please enter an amount");
                       return;
                     }

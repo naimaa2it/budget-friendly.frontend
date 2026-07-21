@@ -653,8 +653,7 @@ export default function CheckoutPage() {
     if (phoneError) newErrors.phone = phoneError;
 
     if (!finalCity) newErrors.city = t("checkout.field_required");
-    if (formData.city === "Dhaka" && !finalZone)
-      newErrors.zone = t("checkout.field_required");
+    if (!finalZone) newErrors.zone = t("checkout.field_required");
     if (!formData.address.trim())
       newErrors.address = t("checkout.field_required");
 
@@ -1129,12 +1128,11 @@ export default function CheckoutPage() {
                 />
               </div>
 
-              {/* City, and (Dhaka-only) Zone, Area */}
-              <div
-                className={`grid grid-cols-1 gap-4 mb-4 ${
-                  formData.city === "Dhaka" ? "md:grid-cols-3" : ""
-                }`}
-              >
+              {/* City, Zone, Area — same picker mechanism for every city.
+                  Only Dhaka's zone/area affect the shipping charge (see
+                  ShippingZoneRate overrides), but every city can still
+                  specify zone/area for a precise address. */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 {/* City Searchable Dropdown */}
                 <div>
                   <SearchableSelect
@@ -1170,69 +1168,68 @@ export default function CheckoutPage() {
                   )}
                 </div>
 
-                {/* Zone/Area only matter for shipping pricing inside Dhaka */}
-                {formData.city === "Dhaka" && (
-                  <>
-                    {/* Zone Searchable Dropdown */}
-                    <div>
-                      <SearchableSelect
-                        name="zone"
-                        value={formData.zone}
-                        onChange={handleInputChange}
-                        options={zones}
-                        placeholder={t("checkout.zone_ph")}
-                        required
-                        className={
-                          fieldErrors.zone
-                            ? "ring-2 ring-red-500 rounded-lg"
-                            : ""
-                        }
-                      />
-                      {formData.zone === "other" && (
-                        <input
-                          type="text"
-                          value={customZone}
-                          onChange={(e) => {
-                            setCustomZone(e.target.value);
-                            setFieldErrors((prev) =>
-                              prev.zone ? { ...prev, zone: null } : prev,
-                            );
-                          }}
-                          placeholder={t("checkout.enter_zone")}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none mt-2"
-                          required
-                        />
-                      )}
-                      {fieldErrors.zone && (
-                        <p className="mt-1 text-xs text-red-500">
-                          {fieldErrors.zone}
-                        </p>
-                      )}
-                    </div>
+                {/* Zone Searchable Dropdown */}
+                <div>
+                  <SearchableSelect
+                    name="zone"
+                    value={formData.zone}
+                    onChange={handleInputChange}
+                    options={zones}
+                    placeholder={t("checkout.zone_ph")}
+                    required
+                    disabled={!formData.city || formData.city === "other"}
+                    className={
+                      fieldErrors.zone ? "ring-2 ring-red-500 rounded-lg" : ""
+                    }
+                  />
+                  {(formData.zone === "other" || formData.city === "other") && (
+                    <input
+                      type="text"
+                      value={customZone}
+                      onChange={(e) => {
+                        setCustomZone(e.target.value);
+                        setFieldErrors((prev) =>
+                          prev.zone ? { ...prev, zone: null } : prev,
+                        );
+                      }}
+                      placeholder={t("checkout.enter_zone")}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none mt-2"
+                      required
+                    />
+                  )}
+                  {fieldErrors.zone && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {fieldErrors.zone}
+                    </p>
+                  )}
+                </div>
 
-                    {/* Area Searchable Dropdown */}
-                    <div>
-                      <SearchableSelect
-                        name="area"
-                        value={formData.area}
-                        onChange={handleInputChange}
-                        options={areas}
-                        placeholder={t("checkout.area_ph")}
-                        disabled={!formData.zone || formData.zone === "other"}
-                      />
-                      {(formData.area === "other" ||
-                        formData.zone === "other") && (
-                        <input
-                          type="text"
-                          value={customArea}
-                          onChange={(e) => setCustomArea(e.target.value)}
-                          placeholder={t("checkout.enter_area")}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none mt-2"
-                        />
-                      )}
-                    </div>
-                  </>
-                )}
+                {/* Area Searchable Dropdown */}
+                <div>
+                  <SearchableSelect
+                    name="area"
+                    value={formData.area}
+                    onChange={handleInputChange}
+                    options={areas}
+                    placeholder={t("checkout.area_ph")}
+                    disabled={
+                      !formData.zone ||
+                      formData.zone === "other" ||
+                      formData.city === "other"
+                    }
+                  />
+                  {(formData.area === "other" ||
+                    formData.zone === "other" ||
+                    formData.city === "other") && (
+                    <input
+                      type="text"
+                      value={customArea}
+                      onChange={(e) => setCustomArea(e.target.value)}
+                      placeholder={t("checkout.enter_area")}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none mt-2"
+                    />
+                  )}
+                </div>
               </div>
 
               {/* Address */}

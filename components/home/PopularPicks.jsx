@@ -236,7 +236,7 @@ export default function PopularPicks() {
               </h1>
             </div>
             <Link
-              href="/tag/popular-pics/"
+              href={activePromoPanel?.viewAllLink || "/tag/popular-pics/"}
               className="text-md text-rose-500 font-semibold hover:underline whitespace-nowrap"
             >
               {t("home.view_all")}

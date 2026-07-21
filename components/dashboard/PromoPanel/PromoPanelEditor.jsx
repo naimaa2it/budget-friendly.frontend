@@ -179,6 +179,7 @@ export default function PromoPanelEditor({
   const [title, setTitle] = useState("");
   const [buttonText, setButtonText] = useState("View All");
   const [buttonLink, setButtonLink] = useState("/");
+  const [viewAllLink, setViewAllLink] = useState("/tag/popular-pics/");
   const [isActive, setIsActive] = useState(true);
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -201,6 +202,7 @@ export default function PromoPanelEditor({
         setTitle(s.title || "");
         setButtonText(s.buttonText || "View All");
         setButtonLink(s.buttonLink || "/");
+        setViewAllLink(s.viewAllLink || "/tag/popular-pics/");
         setIsActive(s.isActive !== false);
         setSelectedProducts(s.productIds || []);
       })
@@ -233,6 +235,7 @@ export default function PromoPanelEditor({
         title,
         buttonText,
         buttonLink,
+        viewAllLink,
         isActive,
         productIds: selectedProducts.map((p) => p._id || p.id),
       };
@@ -401,6 +404,22 @@ export default function PromoPanelEditor({
             className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-1">
+          "View All" Link (header, top-right of Popular Picks)
+        </label>
+        <input
+          value={viewAllLink}
+          onChange={(e) => setViewAllLink(e.target.value)}
+          placeholder="/tag/popular-pics/"
+          className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <p className="text-xs text-gray-400 mt-1">
+          Controls where the "View All" link at the top of the Popular Picks
+          section points to.
+        </p>
       </div>
 
       {/* Product selection */}

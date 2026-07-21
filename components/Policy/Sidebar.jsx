@@ -4,8 +4,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 // simple sidebar for policy/help pages
+// strip a trailing slash so '/shipping/' matches href '/shipping'
+// (site uses trailingSlash: true, but hrefs below are written without it)
+const normalize = (p) => (p.length > 1 ? p.replace(/\/$/, '') : p);
+
 export default function PolicySidebar() {
-  const pathname = usePathname() || '';
+  const pathname = normalize(usePathname() || '');
 
   const items = [
     { key: 'shipping', label: 'Shipping & Delivery', href: '/shipping', icon: (
@@ -58,7 +62,7 @@ export default function PolicySidebar() {
   return (
     <nav className="space-y-4 bg-[#FFF5ED] p-4 rounded-lg">
       {items.map(i => {
-        const active = pathname === i.href;
+        const active = pathname === normalize(i.href);
         return (
           <Link key={i.key} href={i.href} className={`flex items-center gap-3 p-2 rounded-lg text-sm font-medium transition ${active ? 'bg-rose-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}>
             {i.icon}

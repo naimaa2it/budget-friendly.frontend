@@ -14,12 +14,29 @@ import CategorySidebar from "../home/CategorySidebar";
 import { useLanguage } from "@/components/context/LanguageContext";
 import { cdnImageUrl } from "@/lib/cdnImage";
 
+function CountBadge({ count }) {
+  if (!count) return null;
+  return (
+    <span className="ml-auto inline-flex items-center justify-center min-w-4.5 h-4.5 px-1 text-[11px] font-bold leading-none text-white bg-red-600 rounded-full">
+      {count}
+    </span>
+  );
+}
+
 function ProfileMenu() {
   const { user, setUser, refreshUser } = useUser();
+  const { getCartCount, getWishlistCount } = useCart();
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [counts, setCounts] = useState({
+    orders: null,
+    reviews: null,
+    rewards: null,
+    coupons: null,
+    addresses: null,
+  });
   const ref = useRef(null);
   const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
@@ -30,6 +47,43 @@ function ProfileMenu() {
     document.addEventListener("click", handleClick);
     return () => document.removeEventListener("click", handleClick);
   }, []);
+
+  useEffect(() => {
+    if (!open || !user) return;
+    let cancelled = false;
+    const safeJson = (r) => (r.ok ? r.json() : null);
+    Promise.all([
+      fetch(`${API}/api/orders/my`, { credentials: "include" })
+        .then(safeJson)
+        .catch(() => null),
+      fetch(`${API}/api/products/my-reviews`, { credentials: "include" })
+        .then(safeJson)
+        .catch(() => null),
+      fetch(`${API}/api/user/rewards`, { credentials: "include" })
+        .then(safeJson)
+        .catch(() => null),
+      fetch(`${API}/api/coupons`, { credentials: "include" })
+        .then(safeJson)
+        .catch(() => null),
+      fetch(`${API}/api/user/addresses`, { credentials: "include" })
+        .then(safeJson)
+        .catch(() => null),
+    ]).then(([ordersRes, reviewsRes, rewardsRes, couponsRes, addressesRes]) => {
+      if (cancelled) return;
+      setCounts({
+        orders: ordersRes?.orders?.length ?? null,
+        reviews: reviewsRes?.reviews?.length ?? null,
+        rewards: rewardsRes?.balance ?? null,
+        coupons: Array.isArray(couponsRes?.eligible)
+          ? couponsRes.eligible.filter((c) => c.canApply).length
+          : null,
+        addresses: addressesRes?.addresses?.length ?? null,
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, user, API]);
 
   async function handleLogout() {
     try {
@@ -155,6 +209,7 @@ function ProfileMenu() {
                       <path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 0 0-7.1 7.1L12 21l8.8-9.3a5 5 0 0 0 0-7.1z" />
                     </svg>
                     <span>{t("profile.favourites")}</span>
+                    <CountBadge count={getWishlistCount()} />
                   </Link>
                 </div>
 
@@ -177,6 +232,7 @@ function ProfileMenu() {
                       <path d="M9 2H4a2 2 0 0 0-2 2v5m0 9v3a2 2 0 0 0 2 2h5M15 2h5a2 2 0 0 1 2 2v5m0 9v3a2 2 0 0 1-2 2h-5" />
                     </svg>
                     <span>{t("profile.orders")}</span>
+                    <CountBadge count={counts.orders} />
                   </Link>
                   <Link
                     href="/user/address"
@@ -193,6 +249,7 @@ function ProfileMenu() {
                       <circle cx="12" cy="10" r="3" />
                     </svg>
                     <span>{t("profile.my_address")}</span>
+                    <CountBadge count={counts.addresses} />
                   </Link>
                 </div>
 
@@ -215,6 +272,7 @@ function ProfileMenu() {
                       <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
                     </svg>
                     <span>{t("profile.my_reviews")}</span>
+                    <CountBadge count={counts.reviews} />
                   </Link>
                   <Link
                     href="/user/rewards"
@@ -230,6 +288,7 @@ function ProfileMenu() {
                       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                     </svg>
                     <span>{t("profile.my_rewards")}</span>
+                    <CountBadge count={counts.rewards} />
                   </Link>
                   <Link
                     href="/user/coupons"
@@ -248,6 +307,7 @@ function ProfileMenu() {
                       <line x1="15" y1="9" x2="9" y2="15" />
                     </svg>
                     <span>{t("profile.my_coupons")}</span>
+                    <CountBadge count={counts.coupons} />
                   </Link>
                   <Link
                     href="/cart"
@@ -265,6 +325,7 @@ function ProfileMenu() {
                       <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
                     </svg>
                     <span>{t("profile.cart")}</span>
+                    <CountBadge count={getCartCount()} />
                   </Link>
                 </div>
               </div>

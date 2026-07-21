@@ -16,6 +16,23 @@ import {
   Cell,
   Sector,
 } from "recharts";
+import {
+  FiDollarSign,
+  FiPackage,
+  FiTrendingUp,
+  FiTarget,
+  FiSearch,
+  FiChevronLeft,
+  FiChevronRight,
+  FiChevronDown,
+  FiEdit2,
+  FiBarChart2,
+  FiPieChart,
+  FiRefreshCw,
+  FiLock,
+  FiInbox,
+  FiInfo,
+} from "react-icons/fi";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
@@ -103,20 +120,30 @@ function KpiCard({
   sub,
   valueColor = "text-gray-900",
   icon,
+  iconBg = "bg-gray-100 text-gray-500",
+  accent = "before:bg-gray-200",
   trend,
 }) {
   const trendColor =
     trend > 0 ? "text-green-600" : trend < 0 ? "text-red-600" : "text-gray-400";
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-1">
+    <div
+      className={`relative overflow-hidden bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow p-4 flex flex-col gap-1.5 before:absolute before:inset-x-0 before:top-0 before:h-1 ${accent}`}
+    >
       <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
           {label}
         </p>
-        {icon && <span className="text-base">{icon}</span>}
+        {icon && (
+          <span
+            className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${iconBg}`}
+          >
+            {icon}
+          </span>
+        )}
       </div>
       <p
-        className={`text-xl font-bold tabular-nums leading-tight ${valueColor}`}
+        className={`text-2xl font-bold tabular-nums leading-tight ${valueColor}`}
       >
         {value}
       </p>
@@ -136,10 +163,19 @@ function FilterCard({ label, value, color, onClick, active }) {
   return (
     <button
       onClick={onClick}
-      className={`rounded-xl border p-3 text-left w-full transition shadow-sm hover:shadow-md ${active ? "ring-2 ring-rose-400 border-rose-200 bg-rose-50" : "bg-white border-gray-100"}`}
+      className={`rounded-xl border p-3.5 text-left w-full transition shadow-sm hover:shadow-md ${active ? "ring-2 ring-indigo-400 border-indigo-200 bg-indigo-50" : "bg-white border-gray-100 hover:border-gray-200"}`}
     >
-      <p className="text-xs text-gray-500 mb-0.5">{label}</p>
-      <p className={`text-xl font-bold ${color}`}>{value ?? "—"}</p>
+      <p className="text-xs font-medium text-gray-500 mb-1">{label}</p>
+      <div className="flex items-center gap-2">
+        <p className={`text-xl font-bold tabular-nums ${color}`}>
+          {value ?? "—"}
+        </p>
+        {active && (
+          <span className="text-[10px] font-semibold text-indigo-500 bg-indigo-100 px-1.5 py-0.5 rounded-full">
+            Active
+          </span>
+        )}
+      </div>
     </button>
   );
 }
@@ -161,8 +197,11 @@ function VariantMarginRows({ variants }) {
           )}
           <div className="flex items-center gap-4 flex-wrap">
             <span className="shrink-0">
-              Buy:{" "}
-              <strong className="text-gray-800">{fmt(v.bp || null)}</strong>
+              Cost/Item:{" "}
+              <strong className="text-gray-800">{fmt(v.cpi || null)}</strong>
+              {v.hasData && v.cpi > v.bp && (
+                <span className="text-gray-400"> (buy {fmt(v.bp)})</span>
+              )}
             </span>
             <span className="shrink-0">
               Sell:{" "}
@@ -215,19 +254,7 @@ function ProfitBarChart({ data }) {
   if (!data?.length) {
     return (
       <div className="h-56 flex flex-col items-center justify-center gap-2 text-gray-300">
-        <svg
-          className="w-10 h-10"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-          />
-        </svg>
+        <FiBarChart2 className="w-9 h-9" strokeWidth={1.5} />
         <p className="text-sm">No order data yet</p>
       </div>
     );
@@ -321,19 +348,7 @@ function MarginPieChart({ summary }) {
   if (!data.length) {
     return (
       <div className="h-56 flex flex-col items-center justify-center gap-2 text-gray-300">
-        <svg
-          className="w-10 h-10"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"
-          />
-        </svg>
+        <FiPieChart className="w-9 h-9" strokeWidth={1.5} />
         <p className="text-sm">No product data</p>
       </div>
     );
@@ -418,6 +433,7 @@ function PeriodPieChart({ data }) {
   if (!positiveData.length) {
     return (
       <div className="h-56 flex flex-col items-center justify-center gap-2 text-gray-300">
+        <FiPieChart className="w-9 h-9" strokeWidth={1.5} />
         <p className="text-sm">No positive profit periods</p>
       </div>
     );
@@ -593,11 +609,14 @@ export default function ProfitMarginManager() {
 
   if (forbidden) {
     return (
-      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-8 text-center">
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-10 text-center flex flex-col items-center gap-2">
+        <span className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center">
+          <FiLock className="w-6 h-6" />
+        </span>
         <p className="text-lg font-semibold text-amber-800">
           Access restricted
         </p>
-        <p className="mt-1 text-sm text-amber-700">
+        <p className="text-sm text-amber-700 max-w-sm">
           You do not have permission to view profit margin data. Please contact
           an administrator.
         </p>
@@ -605,8 +624,27 @@ export default function ProfitMarginManager() {
     );
   }
 
+  const refreshAll = () => {
+    fetchData();
+    fetchAnalytics();
+  };
+
   return (
     <div className="space-y-5">
+      {/* ── Toolbar: refresh ── */}
+      <div className="flex justify-end">
+        <button
+          onClick={refreshAll}
+          disabled={loading || analyticsLoading}
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-indigo-600 border border-gray-200 hover:border-indigo-200 bg-white rounded-lg px-3 py-1.5 shadow-sm transition disabled:opacity-50"
+        >
+          <FiRefreshCw
+            className={`w-3.5 h-3.5 ${loading || analyticsLoading ? "animate-spin" : ""}`}
+          />
+          Refresh
+        </button>
+      </div>
+
       {/* ── Financial KPI cards ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <KpiCard
@@ -618,7 +656,9 @@ export default function ProfitMarginManager() {
               : "From sold orders"
           }
           valueColor="text-indigo-600"
-          icon="💰"
+          icon={<FiDollarSign className="w-4 h-4" />}
+          iconBg="bg-indigo-50 text-indigo-500"
+          accent="before:bg-indigo-400"
         />
         <KpiCard
           label="Est. COGS"
@@ -629,7 +669,9 @@ export default function ProfitMarginManager() {
               : "Cost of goods sold"
           }
           valueColor="text-orange-500"
-          icon="📦"
+          icon={<FiPackage className="w-4 h-4" />}
+          iconBg="bg-orange-50 text-orange-500"
+          accent="before:bg-orange-400"
         />
         <KpiCard
           label="Net Profit"
@@ -646,7 +688,9 @@ export default function ProfitMarginManager() {
                 ? "text-red-600"
                 : "text-gray-400"
           }
-          icon="📈"
+          icon={<FiTrendingUp className="w-4 h-4" />}
+          iconBg="bg-green-50 text-green-600"
+          accent="before:bg-green-400"
         />
         <KpiCard
           label="Net Margin"
@@ -657,7 +701,9 @@ export default function ProfitMarginManager() {
               : "Profit ÷ Revenue"
           }
           valueColor={netMarginColor}
-          icon="🎯"
+          icon={<FiTarget className="w-4 h-4" />}
+          iconBg="bg-purple-50 text-purple-500"
+          accent="before:bg-purple-400"
         />
       </div>
 

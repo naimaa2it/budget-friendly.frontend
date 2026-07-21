@@ -285,6 +285,7 @@ export default function MegaMenuNavbar() {
                                 src={subcategory.images[0].url}
                                 alt={subcategory.name}
                                 fill
+                                sizes="36px"
                                 className="object-cover"
                               />
                             </div>

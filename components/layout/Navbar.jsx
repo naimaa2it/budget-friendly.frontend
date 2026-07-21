@@ -71,6 +71,8 @@ function ProfileMenu() {
             <img
               src={cdnImageUrl(user.image, 64)}
               alt={user.name || "User"}
+              width={24}
+              height={24}
               className="w-6 h-6 rounded-full object-cover"
               onError={() => setImgError(true)}
             />

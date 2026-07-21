@@ -1,6 +1,5 @@
 ﻿import Home from "@/components/home/Home";
 import { getStoreName } from "@/lib/storeMeta";
-import { getBanners } from "@/lib/banners";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://pickob.com";
@@ -22,7 +21,6 @@ export async function generateMetadata() {
   };
 }
 
-export default async function Page() {
-  const initialSlides = await getBanners();
-  return <Home initialSlides={initialSlides} />;
+export default function Page() {
+  return <Home />;
 }

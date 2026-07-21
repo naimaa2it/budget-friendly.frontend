@@ -185,6 +185,7 @@ export default function ShopByCategory() {
                           src={encodeURI(cat.image)}
                           alt={cat.name}
                           fill
+                          sizes="(max-width: 640px) 64px, (max-width: 768px) 80px, (max-width: 1024px) 112px, 128px"
                           style={{ objectFit: "cover" }}
                           loading="lazy"
                           decoding="async"

@@ -14,7 +14,13 @@ const WebsiteLogo = ({ className = "h-7 mb-0 object-contain" }) => {
     <div>
       <Link href="/">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={cdnImageUrl(logoUrl)} alt={storeName || "Store logo"} className={className} />
+        <img
+          src={cdnImageUrl(logoUrl)}
+          alt={storeName || "Store logo"}
+          width={120}
+          height={28}
+          className={className}
+        />
       </Link>
     </div>
   );

@@ -117,6 +117,8 @@ export default function PromoStripSection() {
                   <img
                     src={cdnImageUrl(item.image.url, 160)}
                     alt={item.title || "Offer"}
+                    width={160}
+                    height={160}
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       e.currentTarget.src = "/assets/placeholder.svg";

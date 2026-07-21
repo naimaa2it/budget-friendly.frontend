@@ -21,6 +21,8 @@ import GlobalScrollFix from "@/components/ui/GlobalScrollFix";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://pickob.com";
+const API_ORIGIN =
+  process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 const workSans = Work_Sans({
   variable: "--font-work-sans",
@@ -133,6 +135,14 @@ export default async function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
+        {/* Start the connection (DNS+TLS) to the API and image CDN while
+            the JS bundle is still downloading, so the client-side data
+            fetches and Cloudinary images that follow don't pay that
+            latency on top of the fetch itself. */}
+        <link rel="preconnect" href={API_ORIGIN} />
+        <link rel="dns-prefetch" href={API_ORIGIN} />
+        <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

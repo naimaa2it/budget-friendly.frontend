@@ -321,7 +321,7 @@ export default function ProductInfoTabs({ product }) {
 
   return (
     <section className="w-full bg-white mt-10 mb-6">
-      <div className="max-w-7xl mx-auto px-2 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 lg:px-8">
         {/* ── Tab bar ── */}
         <div className="flex gap-1 overflow-x-auto whitespace-nowrap border-b border-gray-200 mb-6">
           {[
@@ -387,8 +387,8 @@ export default function ProductInfoTabs({ product }) {
               product.detailedDescription ? (
                 <div
                   className="mt-4 prose prose-sm max-w-none text-gray-700
-                    [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1
-                    [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-1
+                    [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:space-y-1
+                    [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:space-y-1
                     [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-3
                     [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-2
                     [&_strong]:font-semibold [&_em]:italic"
@@ -591,8 +591,8 @@ export default function ProductInfoTabs({ product }) {
               {product?.guidelines ? (
                 <div
                   className="prose prose-sm max-w-none text-gray-700
-                    [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1
-                    [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-1
+                    [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:space-y-1
+                    [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:space-y-1
                     [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-3
                     [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-2
                     [&_strong]:font-semibold [&_em]:italic"

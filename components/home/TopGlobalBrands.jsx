@@ -10,6 +10,7 @@ const SLIDE_INTERVAL = 3000;
 export default function TopGlobalBrands() {
   const { t } = useLanguage();
   const [brands, setBrands] = useState([]);
+  const [brokenIds, setBrokenIds] = useState(() => new Set());
   const [perPage, setPerPage] = useState(5);
   const [current, setCurrent] = useState(0);
   const paused = useRef(false);
@@ -24,9 +25,9 @@ export default function TopGlobalBrands() {
   useEffect(() => {
     const updatePerPage = () => {
       const w = window.innerWidth;
-      if (w < 400) setPerPage(3);
-      else if (w < 640) setPerPage(4);
-      else if (w < 768) setPerPage(5);
+      if (w < 400) setPerPage(4);
+      else if (w < 640) setPerPage(5);
+      else if (w < 768) setPerPage(6);
       else if (w < 1024) setPerPage(8);
       else setPerPage(10);
     };
@@ -35,7 +36,8 @@ export default function TopGlobalBrands() {
     return () => window.removeEventListener("resize", updatePerPage);
   }, []);
 
-  const maxIndex = Math.max(0, brands.length - perPage);
+  const visibleBrands = brands.filter((b) => !brokenIds.has(b._id));
+  const maxIndex = Math.max(0, visibleBrands.length - perPage);
 
   useEffect(() => {
     if (maxIndex <= 0) return;
@@ -52,9 +54,9 @@ export default function TopGlobalBrands() {
   const cardPct = 100 / perPage;
 
   return (
-    <div className="max-w-screen-xl mx-auto px-3 md:px-6 py-6">
+    <div className="max-w-screen-xl mx-auto px-4 md:px-6 py-6">
       {/* Header */}
-      <h2 className="flex items-center justify-center gap-2 text-sm md:text-xl font-bold text-gray-900 uppercase tracking-wide mb-5">
+      <h2 className="flex items-center justify-center gap-1.5 sm:gap-2 text-sm md:text-xl font-bold text-gray-900 uppercase tracking-wide mb-5">
         <span aria-hidden="true">⭐</span>
         {t("home.top_brands_title")}
       </h2>
@@ -73,10 +75,10 @@ export default function TopGlobalBrands() {
           className="flex transition-transform duration-700 ease-in-out"
           style={{ transform: `translateX(-${safeCurrent * cardPct}%)` }}
         >
-          {brands.map((brand) => (
+          {visibleBrands.map((brand) => (
             <div
               key={brand._id}
-              className="flex items-center justify-center shrink-0 px-2 sm:px-3"
+              className="flex items-center justify-center shrink-0 px-1.5 sm:px-3"
               style={{ width: `${cardPct}%` }}
             >
               <img
@@ -84,6 +86,9 @@ export default function TopGlobalBrands() {
                 alt={brand.name}
                 title={brand.name}
                 loading="lazy"
+                onError={() =>
+                  setBrokenIds((prev) => new Set(prev).add(brand._id))
+                }
                 className="h-7 sm:h-9 md:h-12 lg:h-16 w-auto max-w-full object-contain hover:scale-105 transition duration-300"
               />
             </div>

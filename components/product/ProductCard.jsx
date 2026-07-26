@@ -19,6 +19,7 @@ import WaitlistModal from "@/components/cart/WaitlistModal";
 import { getVariantColors } from "@/components/cart/VariantEditModal";
 import { getDisplayPrice } from "@/lib/pricing";
 import { trackAddToCart } from "@/lib/metaPixel";
+import { gtmAddToCart } from "@/lib/gtmEvents";
 import { useCompare } from "@/components/context/CompareContext";
 import { useLanguage } from "@/components/context/LanguageContext";
 import Skeleton from "@/components/ui/Skeleton";
@@ -247,8 +248,13 @@ export default function ProductCard({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
+                  console.log(
+                    "[Button] Add to Cart (quick) clicked:",
+                    product.title || product.name,
+                  );
                   addToCart(product, 1);
                   trackAddToCart(product, 1, price);
+                  gtmAddToCart(product, 1, price);
                 }}
                 className="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 hover:text-white transition-colors"
                 title="Add to cart"
@@ -374,8 +380,13 @@ export default function ProductCard({
             <button
               onClick={(e) => {
                 e.stopPropagation();
+                console.log(
+                  "[Button] Add to Cart clicked:",
+                  product.title || product.name,
+                );
                 addToCart(product, 1);
                 trackAddToCart(product, 1, price);
+                gtmAddToCart(product, 1, price);
               }}
               className="relative z-[2] w-full bg-red-600 text-white py-2 rounded-md font-medium hover:bg-red-700 transition mt-auto"
             >

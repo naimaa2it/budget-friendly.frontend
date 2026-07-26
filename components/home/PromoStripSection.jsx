@@ -61,11 +61,11 @@ export default function PromoStripSection() {
             <button
               type="button"
               onClick={() => scrollByAmount(-1)}
-              className="flex absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white border border-rose-100 text-rose-500 items-center justify-center hover:text-rose-600 hover:border-rose-200 transition shadow"
+              className="flex absolute -left-4 md:-left-2 top-1/2 -translate-y-1/2 z-20 w-6 h-6 md:w-7 md:h-7 rounded-full bg-white border border-rose-100 text-rose-500 items-center justify-center hover:text-rose-600 hover:border-rose-200 transition shadow"
               aria-label="Scroll promo left"
             >
               <svg
-                className="w-3 h-3"
+                className="w-3.5 h-3.5 md:w-3 md:h-3"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -81,11 +81,11 @@ export default function PromoStripSection() {
             <button
               type="button"
               onClick={() => scrollByAmount(1)}
-              className="flex absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white border border-rose-100 text-rose-500 items-center justify-center hover:text-rose-600 hover:border-rose-200 transition shadow"
+              className="flex absolute -right-4 md:-right-2 top-1/2 -translate-y-1/2 z-20 w-6 h-6 md:w-7 md:h-7 rounded-full bg-white border border-rose-100 text-rose-500 items-center justify-center hover:text-rose-600 hover:border-rose-200 transition shadow"
               aria-label="Scroll promo right"
             >
               <svg
-                className="w-3 h-3"
+                className="w-3.5 h-3.5 md:w-3 md:h-3"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -103,15 +103,15 @@ export default function PromoStripSection() {
 
         <div
           ref={stripRef}
-          className="flex items-stretch overflow-x-auto promo-strip-scroll md:px-1"
+          className="flex items-center overflow-x-auto promo-strip-scroll snap-x snap-mandatory md:snap-none gap-2 px-3 py-1.5 md:gap-0 md:px-1 md:py-0 md:items-stretch"
         >
           {items.map((item, idx) => (
             <Link
               key={item._id || idx}
               href={item.link || "#"}
-              className="group shrink-0 min-w-[33.333%] md:min-w-[16.666%] flex items-center gap-1.5 px-1.5 py-0.5"
+              className="group shrink-0 snap-start flex flex-row items-center min-w-[46%] gap-1.5 py-0.5 md:min-w-[16.666%] md:gap-1.5 md:px-1.5"
             >
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden bg-white border border-rose-100 shadow-[0_1px_4px_rgba(244,63,94,0.12)] shrink-0">
+              <div className="w-11 h-11 md:w-20 md:h-20 rounded-lg overflow-hidden bg-white border border-rose-100 shadow-[0_1px_4px_rgba(244,63,94,0.12)] shrink-0">
                 {item.image?.url ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img
@@ -132,11 +132,15 @@ export default function PromoStripSection() {
               </div>
 
               <div className="min-w-0 flex-1 bg-white/70 backdrop-blur-sm border border-transparent group-hover:border-rose-100 rounded-lg px-0.5 py-1 transition-all duration-200 group-hover:shadow-[0_2px_8px_rgba(244,63,94,0.15)] group-hover:bg-white">
-                <p className="text-[13px] font-extrabold leading-none tracking-tight uppercase">
-                  {renderTitle(item.title, item.highlightWord, item.highlightColor)}
+                <p className="text-[10.5px] md:text-[13px] font-extrabold leading-tight tracking-tight uppercase line-clamp-2 md:line-clamp-1">
+                  {renderTitle(
+                    item.title,
+                    item.highlightWord,
+                    item.highlightColor,
+                  )}
                 </p>
                 {item.subtitle && (
-                  <p className="mt-0.5 text-[13px] leading-tight font-semibold text-slate-700 line-clamp-2">
+                  <p className="mt-0.5 text-[9.5px] md:text-[13px] leading-tight font-semibold text-slate-700 line-clamp-1 md:line-clamp-2">
                     {item.subtitle}
                   </p>
                 )}

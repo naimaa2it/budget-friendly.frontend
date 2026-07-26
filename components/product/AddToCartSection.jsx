@@ -13,6 +13,7 @@ import {
 import { FaBell, FaClock } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { trackAddToCart } from "@/lib/metaPixel";
+import { gtmAddToCart } from "@/lib/gtmEvents";
 
 const STORAGE_KEY = (id) => `waitlist_joined_${id}`;
 
@@ -88,15 +89,18 @@ export default function AddToCartSection({
     : null;
 
   const handleAdd = () => {
+    console.log("[Button] Add to Cart clicked:", product.title || product.name);
     addToCart(product, qty, {
       selectedColor: selectedColor || null,
       selectedSize: selectedSize || null,
       selectedVariant,
     });
     trackAddToCart(product, qty, effectivePrice);
+    gtmAddToCart(product, qty, effectivePrice);
   };
 
   const handleBuyNow = () => {
+    console.log("[Button] Buy Now clicked:", product.title || product.name);
     addToCart(product, qty, {
       selectedColor: selectedColor || null,
       selectedSize: selectedSize || null,
@@ -104,6 +108,7 @@ export default function AddToCartSection({
       silent: true,
     });
     trackAddToCart(product, qty, effectivePrice);
+    gtmAddToCart(product, qty, effectivePrice);
     router.push("/checkout");
   };
 

@@ -8,6 +8,7 @@ import { useCart } from "@/components/context/CartContext";
 import { useLanguage } from "@/components/context/LanguageContext";
 import { useStoreSettings } from "@/components/context/StoreSettingsContext";
 import { trackPurchase } from "@/lib/metaPixel";
+import { gtmPurchase } from "@/lib/gtmEvents";
 
 // Social icon components
 const Facebook = () => (
@@ -216,7 +217,9 @@ function SuccessContent() {
         const o = data.order || null;
         setOrder(o);
         if (o) {
+          console.log("[ThankYou] purchase:", o._id || o.orderId);
           trackPurchase(o);
+          gtmPurchase(o);
           setEditBilling({
             name: o.billingDetails?.name || "",
             email: o.billingDetails?.email || "",

@@ -27,6 +27,7 @@ import SearchableSelect from "@/components/ui/SearchableSelect";
 import { toast } from "react-hot-toast";
 import { useLanguage } from "@/components/context/LanguageContext";
 import { trackInitiateCheckout } from "@/lib/metaPixel";
+import { gtmBeginCheckout } from "@/lib/gtmEvents";
 import "animate.css";
 
 export default function CheckoutPage() {
@@ -291,7 +292,9 @@ export default function CheckoutPage() {
       (sum, item) => sum + getItemPrice(item) * item.quantity,
       0,
     );
+    console.log("[Checkout] begin_checkout:", { items: cartItems.length, total });
     trackInitiateCheckout(cartItems, total);
+    gtmBeginCheckout(cartItems, total);
   }, [cartHydrated, cartItems]);
 
   useEffect(() => {

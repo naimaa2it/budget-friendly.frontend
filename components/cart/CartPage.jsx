@@ -19,6 +19,7 @@ import VariantEditModal, {
 } from "@/components/cart/VariantEditModal";
 import WaitlistModal from "@/components/cart/WaitlistModal";
 import { useLanguage } from "@/components/context/LanguageContext";
+import { gtmViewCart } from "@/lib/gtmEvents";
 
 export default function CartPage() {
   const router = useRouter();
@@ -93,6 +94,13 @@ export default function CartPage() {
   );
   const saved = Math.max(0, originalTotal - subtotal);
 
+  // Report view_cart to GTM once the cart has hydrated with items
+  useEffect(() => {
+    if (!cartHydrated || !cartItems.length) return;
+    gtmViewCart(cartItems, subtotal);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartHydrated, cartItems.length]);
+
   // Fetch recommended products — tries popular_pics badge first, falls back to recent
   useEffect(() => {
     const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
@@ -115,6 +123,7 @@ export default function CartPage() {
   }, []);
 
   const handleCheckout = () => {
+    console.log("[Button] Proceed to Checkout clicked");
     router.push("/checkout");
   };
 

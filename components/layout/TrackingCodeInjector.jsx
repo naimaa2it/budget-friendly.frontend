@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { gtmPageView } from "@/lib/gtmEvents";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 const CACHE_KEY = "custom_code_cfg";
@@ -55,6 +57,8 @@ function writeCache(data) {
 }
 
 export default function TrackingCodeInjector() {
+  const pathname = usePathname();
+
   useEffect(() => {
     if (injected) return;
     injected = true;
@@ -64,6 +68,7 @@ export default function TrackingCodeInjector() {
       injectHTML(cached.headerCode, document.head, "end");
       injectHTML(cached.bodyCode, document.body, "start");
       injectHTML(cached.footerCode, document.body, "end");
+      console.log("[TrackingCodeInjector] custom code injected (from cache)");
       return;
     }
 
@@ -74,9 +79,22 @@ export default function TrackingCodeInjector() {
         injectHTML(data.headerCode, document.head, "end");
         injectHTML(data.bodyCode, document.body, "start");
         injectHTML(data.footerCode, document.body, "end");
+        console.log("[TrackingCodeInjector] custom code injected");
       })
       .catch(() => {});
   }, []);
+
+  // The pasted GTM/pixel snippet above only ever executes once, on the very
+  // first page load — Next.js client-side navigation never remounts this
+  // component, so a GTM container's default "All Pages" trigger (bound to
+  // its one-time gtm.js bootstrap event) never fires again for later
+  // navigations (Home -> Cart -> Checkout -> Thank You). Pushing a `page_view`
+  // event to dataLayer on every pathname change gives GTM a signal to build
+  // a "Page View" trigger (Trigger type: Custom Event, event name: page_view)
+  // that actually fires on every step of the funnel.
+  useEffect(() => {
+    gtmPageView(pathname);
+  }, [pathname]);
 
   return null;
 }

@@ -322,7 +322,7 @@ export default function PopularPicks() {
               {/* Navigation Buttons */}
               <button
                 onClick={() => prevSlide(true)}
-                className="absolute left-1 sm:-left-4 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center shadow-lg hover:shadow-xl hover:border hover:border-red-600 transition-shadow"
+                className="absolute left-1 sm:-left-4 top-16 sm:top-20 lg:top-24 transform -translate-y-1/2 z-10 bg-white rounded-full w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center shadow-lg hover:shadow-xl hover:border hover:border-red-600 transition-shadow"
               >
                 <svg
                   className="w-4 h-4 text-gray-700"
@@ -341,7 +341,7 @@ export default function PopularPicks() {
 
               <button
                 onClick={() => nextSlide(true)}
-                className="absolute right-1 sm:-right-4 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center shadow-lg hover:shadow-xl hover:border hover:border-red-600 transition-shadow"
+                className="absolute right-1 sm:-right-4 top-16 sm:top-20 lg:top-24 transform -translate-y-1/2 z-10 bg-white rounded-full w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center shadow-lg hover:shadow-xl hover:border hover:border-red-600 transition-shadow"
               >
                 <svg
                   className="w-4 h-4 text-gray-700"
@@ -383,7 +383,7 @@ export default function PopularPicks() {
                         className="bg-white border border-[#F1E4D8] rounded-xl shadow-sm overflow-hidden group hover:shadow-xl transition-all duration-300 cursor-pointer h-full flex flex-col"
                       >
                         {/* Product Image Container */}
-                        <div className="relative bg-white  rounded-xl p-1 h-54 flex items-center justify-center overflow-hidden">
+                        <div className="relative bg-white rounded-xl p-1 aspect-square lg:aspect-auto lg:h-54 flex items-center justify-center overflow-hidden">
                           <Image
                             src={encodeURI(
                               activeImageIndex[product.id] != null
@@ -393,7 +393,7 @@ export default function PopularPicks() {
                                   ? product.secondImage
                                   : product.image,
                             )}
-                            alt={product.subtitle}
+                            alt={product.title}
                             width={300}
                             height={300}
                             loading="lazy"
@@ -548,34 +548,37 @@ export default function PopularPicks() {
                         </div>
 
                         {/* Product Info */}
-                        <div className="px-4 py-2 pb-14 relative flex-1">
-                          <p className="text-sm text-gray-600 mb-1">
+                        <div className="px-3 sm:px-4 py-2 flex-1 flex flex-col">
+                          <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-1 line-clamp-2 min-h-[2.5em] sm:min-h-[3em]">
                             {product.title}
-                          </p>
-                          <h3 className="text-base font-semibold text-gray-900 mb-1 line-clamp-2">
-                            {product.subtitle}
                           </h3>
+                          {product.subtitle &&
+                            product.subtitle !== product.title && (
+                              <p className="text-xs sm:text-sm text-gray-500 mb-1 line-clamp-1">
+                                {product.subtitle}
+                              </p>
+                            )}
 
                           {/* Rating */}
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="flex items-center gap-2 mb-1 text-xs sm:text-sm">
                             {renderStars(product.rating)}
                           </div>
 
                           {/* Price + Stock Status */}
-                          <div className="mb-2 flex items-center gap-2 flex-wrap">
-                            <span className="text-lg font-bold text-red-600">
+                          <div className="mb-1.5 sm:mb-2 flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                            <span className="text-base sm:text-lg font-bold text-red-600">
                               ৳{product.price?.toLocaleString()}
                             </span>
                             {product.compareAtPrice &&
                               product.compareAtPrice > product.price && (
-                                <span className="text-sm text-gray-400 line-through">
+                                <span className="text-xs sm:text-sm text-gray-400 line-through">
                                   ৳{product.compareAtPrice?.toLocaleString()}
                                 </span>
                               )}
                             {product.status === "In Stock" ? (
-                              <span className="flex items-center gap-1 text-green-600 text-sm">
+                              <span className="flex items-center gap-1 text-green-600 text-xs sm:text-sm">
                                 <svg
-                                  className="w-4 h-4"
+                                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
                                   fill="currentColor"
                                   viewBox="0 0 20 20"
                                 >
@@ -590,9 +593,9 @@ export default function PopularPicks() {
                                 </span>
                               </span>
                             ) : (
-                              <span className="flex items-center gap-1 text-red-600 text-sm">
+                              <span className="flex items-center gap-1 text-red-600 text-xs sm:text-sm">
                                 <svg
-                                  className="w-4 h-4"
+                                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
                                   fill="currentColor"
                                   viewBox="0 0 20 20"
                                 >
@@ -609,41 +612,43 @@ export default function PopularPicks() {
                             )}
                           </div>
                           {product.freeShipping && (
-                            <p className="text-sm font-semibold text-green-700 mb-2">
+                            <p className="text-xs sm:text-sm font-semibold text-green-700 mb-1.5 sm:mb-2">
                               {t("home.free_shipping")}
                             </p>
                           )}
 
-                          {/* Add to Cart / Out of Stock Button - appears on hover */}
-                          {product.status === "Stock Out" ? (
-                            <div className="absolute bottom-4 left-4 right-4 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                              <button
-                                disabled
-                                className="flex-none bg-gray-100 text-red-500 py-2 px-2 rounded-md text-xs font-medium cursor-not-allowed whitespace-nowrap"
-                              >
-                                {t("home.out_of_stock")}
-                              </button>
+                          {/* Add to Cart / Out of Stock Button */}
+                          <div className="mt-auto pt-1">
+                            {product.status === "Stock Out" ? (
+                              <div className="flex gap-1.5">
+                                <button
+                                  disabled
+                                  className="flex-none bg-gray-100 text-red-500 py-2 px-2 rounded-md text-xs font-medium cursor-not-allowed whitespace-nowrap"
+                                >
+                                  {t("home.out_of_stock")}
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setWaitlistProduct(product);
+                                  }}
+                                  className="flex-1 flex items-center justify-center gap-1 border border-teal-500 text-teal-700 py-2 rounded-md text-xs font-semibold hover:bg-teal-50 transition"
+                                >
+                                  <FaBell className="w-3 h-3" /> Join Waitlist
+                                </button>
+                              </div>
+                            ) : (
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setWaitlistProduct(product);
+                                  addToCart(product, 1);
                                 }}
-                                className="flex-1 flex items-center justify-center gap-1 border border-teal-500 text-teal-700 py-2 rounded-md text-xs font-semibold hover:bg-teal-50 transition"
+                                className="w-full bg-red-600 text-white py-2 rounded-md font-medium text-sm hover:bg-red-700 transition-colors"
                               >
-                                <FaBell className="w-3 h-3" /> Join Waitlist
+                                {t("home.add_to_cart")}
                               </button>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                addToCart(product, 1);
-                              }}
-                              className="absolute bottom-4 left-4 right-4 bg-red-600 text-white py-2 rounded-md font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-red-700"
-                            >
-                              {t("home.add_to_cart")}
-                            </button>
-                          )}
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}

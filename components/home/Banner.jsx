@@ -122,7 +122,7 @@ const Banner = () => {
                     e.stopPropagation();
                     go(-1);
                   }}
-                  className="absolute left-2 md:left-3 top-1/2 -translate-y-1/2 w-7 h-7 md:w-9 md:h-9 bg-white/75 hover:bg-white rounded-full flex items-center justify-center shadow-md text-gray-700 backdrop-blur-sm transition z-10"
+                  className="absolute left-1 md:left-3 top-1/2 -translate-y-1/2 w-6 h-6 md:w-9 md:h-9 bg-white/75 hover:bg-white rounded-full flex items-center justify-center shadow-md text-gray-700 backdrop-blur-sm transition z-10"
                 >
                   <svg
                     className="w-3.5 h-3.5 md:w-4 md:h-4"
@@ -143,7 +143,7 @@ const Banner = () => {
                     e.stopPropagation();
                     go(1);
                   }}
-                  className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 w-7 h-7 md:w-9 md:h-9 bg-white/75 hover:bg-white rounded-full flex items-center justify-center shadow-md text-gray-700 backdrop-blur-sm transition z-10"
+                  className="absolute right-1 md:right-3 top-1/2 -translate-y-1/2 w-6 h-6 md:w-9 md:h-9 bg-white/75 hover:bg-white rounded-full flex items-center justify-center shadow-md text-gray-700 backdrop-blur-sm transition z-10"
                 >
                   <svg
                     className="w-3.5 h-3.5 md:w-4 md:h-4"

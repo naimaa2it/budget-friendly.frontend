@@ -233,9 +233,9 @@ export default function CartPage() {
                 key={cartKey}
                 className="p-3 md:p-6 border-b last:border-b-0"
               >
-                <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6 relative">
+                <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-6 relative">
                   {/* Product Image */}
-                  <div className="shrink-0 self-start">
+                  <div className="shrink-0 self-start bg-gray-50 md:bg-transparent rounded-xl md:rounded-none p-2 md:p-0 border border-gray-100 md:border-0">
                     <a href={`/product/${product._id}/`} className="block">
                       <Image
                         src={encodeURI(image)}
@@ -349,22 +349,22 @@ export default function CartPage() {
                       </button>
                     )}
 
-                    <div className="flex flex-wrap items-center gap-4 md:gap-6">
-                      <div className="flex items-center gap-3 md:gap-4">
+                    <div className="flex flex-wrap items-center gap-3 md:gap-6">
+                      <div className="flex items-center gap-1 md:gap-4 bg-gray-100 md:bg-transparent rounded-full md:rounded-none p-1 md:p-0">
                         <button
                           onClick={() =>
                             updateQty(cartKey, Math.max(1, quantity - 1))
                           }
-                          className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 text-base md:text-lg font-semibold"
+                          className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-full md:rounded md:border md:border-gray-300 bg-white md:bg-transparent shadow-sm md:shadow-none hover:bg-gray-50 md:hover:bg-gray-100 text-base md:text-lg font-semibold"
                         >
                           -
                         </button>
-                        <span className="w-10 md:w-12 text-center font-medium">
+                        <span className="w-8 md:w-12 text-center text-sm md:text-base font-medium">
                           {quantity}
                         </span>
                         <button
                           onClick={() => updateQty(cartKey, quantity + 1)}
-                          className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 text-base md:text-lg font-semibold"
+                          className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-full md:rounded md:border md:border-gray-300 bg-white md:bg-transparent shadow-sm md:shadow-none hover:bg-gray-50 md:hover:bg-gray-100 text-base md:text-lg font-semibold"
                         >
                           +
                         </button>
@@ -378,7 +378,7 @@ export default function CartPage() {
                         </span>
                       </div>
                       {itemSaved > 0 && (
-                        <div className="text-sm text-green-600">
+                        <div className="text-xs md:text-sm text-green-700 md:text-green-600 bg-green-50 md:bg-transparent rounded-full md:rounded-none px-2.5 py-1 md:px-0 md:py-0">
                           {t("cart.saved")}{" "}
                           <span className="font-semibold">
                             ৳{itemSaved.toFixed(2)}
@@ -391,7 +391,7 @@ export default function CartPage() {
                   {/* Remove Button */}
                   <button
                     onClick={() => removeFromCart(cartKey)}
-                    className="absolute top-0 right-0 md:static text-red-600 hover:text-red-700 p-1.5 md:p-2"
+                    className="absolute top-0 right-0 md:static text-red-600 hover:text-red-700 p-1.5 md:p-2 bg-red-50 md:bg-transparent rounded-full md:rounded-none"
                     title="Remove item"
                   >
                     <FaTrash className="w-4 h-4 md:w-5 md:h-5" />
@@ -403,13 +403,13 @@ export default function CartPage() {
         </div>
 
         {/* Cart Summary */}
-        <div className="bg-[#FFF5ED] rounded-lg shadow p-6 mb-6 -mt-6">
+        <div className="bg-[#FFF5ED] rounded-2xl md:rounded-lg shadow p-4 md:p-6 mb-6 -mt-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-2 md:mb-6">
             <div>
-              <h2 className="text-2xl font-bold mb-2">
+              <h2 className="text-xl md:text-2xl font-bold mb-1.5 md:mb-2">
                 {t("cart.cart_total")}
               </h2>
-              <p className="text-3xl font-bold text-red-600">
+              <p className="text-2xl md:text-3xl font-bold text-red-600">
                 ৳{subtotal.toFixed(2)}
               </p>
               {saved > 0 && (
@@ -428,14 +428,15 @@ export default function CartPage() {
               <button
                 onClick={handleShare}
                 disabled={sharing}
-                className="flex items-center justify-center gap-2 border border-gray-300 text-gray-700 px-2 py-2 rounded-lg font-medium hover:bg-gray-50 transition disabled:opacity-50"
+                className="flex items-center justify-center gap-1.5 md:gap-2 border border-gray-300 text-gray-700 px-2.5 py-2 md:px-2 md:py-2 rounded-full md:rounded-lg font-medium hover:bg-gray-50 transition disabled:opacity-50 text-xs md:text-base whitespace-nowrap"
                 title="Share this cart"
               >
-                <FaShareAlt className="w-4 h-4" /> {t("cart.share_cart")}
+                <FaShareAlt className="w-3.5 h-3.5 md:w-4 md:h-4" />{" "}
+                {t("cart.share_cart")}
               </button>
               <button
                 onClick={handleCheckout}
-                className="flex-1 md:flex-none bg-rose-500 text-white px-2 py-2 rounded-md font-semibold hover:bg-rose-700 transition text-base md:text-lg"
+                className="flex-1 md:flex-none bg-rose-500 text-white px-3 py-2 md:px-2 md:py-2 rounded-xl md:rounded-md font-semibold hover:bg-rose-700 transition text-sm md:text-lg whitespace-nowrap shadow-md shadow-rose-200 md:shadow-none"
               >
                 {t("cart.proceed_checkout")}
               </button>

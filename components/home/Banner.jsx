@@ -9,7 +9,7 @@ import CategorySidebar from "./CategorySidebar";
 const FALLBACK = [
   {
     _id: "fallback-1",
-    image: { url: "/banner/Oven_Big_banner_1.jpg" },
+    image: { url: "/banner/hero-fallback.webp" },
     title: "",
     subtitle: "",
     buttonText: "",
@@ -21,7 +21,11 @@ const FALLBACK = [
 const Banner = () => {
   const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
   const router = useRouter();
-  const [slides, setSlides] = useState([]);
+  // Seeded with FALLBACK (not []) so the static export ships a real <img> in
+  // the prerendered HTML and the browser can start the LCP image request
+  // immediately from markup, instead of waiting for hydration + the
+  // /api/banners round trip before anything paints in the hero slot.
+  const [slides, setSlides] = useState(FALLBACK);
   const [current, setCurrent] = useState(0);
   const autoRef = useRef(null);
 

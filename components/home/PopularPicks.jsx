@@ -322,10 +322,10 @@ export default function PopularPicks() {
               {/* Navigation Buttons */}
               <button
                 onClick={() => prevSlide(true)}
-                className="absolute left-1 sm:-left-4 top-16 sm:top-20 lg:top-24 transform -translate-y-1/2 z-10 bg-white rounded-full w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center shadow-lg hover:shadow-xl hover:border hover:border-red-600 transition-shadow"
+                className="absolute -left-1 md:left-1 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full w-6 h-6 sm:w-9 sm:h-9 flex items-center justify-center shadow-lg hover:shadow-xl hover:border hover:border-red-600 transition-shadow"
               >
                 <svg
-                  className="w-4 h-4 text-gray-700"
+                  className="w-3 h-3 sm:w-4 sm:h-4 text-gray-700"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -341,10 +341,10 @@ export default function PopularPicks() {
 
               <button
                 onClick={() => nextSlide(true)}
-                className="absolute right-1 sm:-right-4 top-16 sm:top-20 lg:top-24 transform -translate-y-1/2 z-10 bg-white rounded-full w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center shadow-lg hover:shadow-xl hover:border hover:border-red-600 transition-shadow"
+                className="absolute -right-1 md:right-1 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full w-6 h-6 sm:w-9 sm:h-9 flex items-center justify-center shadow-lg hover:shadow-xl hover:border hover:border-red-600 transition-shadow"
               >
                 <svg
-                  className="w-4 h-4 text-gray-700"
+                  className="w-3 h-3 sm:w-4 sm:h-4 text-gray-700"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -643,7 +643,7 @@ export default function PopularPicks() {
                                   e.stopPropagation();
                                   addToCart(product, 1);
                                 }}
-                                className="w-full bg-red-600 text-white py-2 rounded-md font-medium text-sm hover:bg-red-700 transition-colors"
+                                className="block mx-auto bg-red-600 text-white py-2 px-6 rounded-md font-medium text-sm hover:bg-red-700 transition-colors"
                               >
                                 {t("home.add_to_cart")}
                               </button>

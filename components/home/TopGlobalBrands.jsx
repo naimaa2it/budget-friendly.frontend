@@ -54,9 +54,9 @@ export default function TopGlobalBrands() {
   const cardPct = 100 / perPage;
 
   return (
-    <div className="max-w-screen-xl mx-auto px-4 md:px-6 py-6">
+    <div className="max-w-screen-xl mx-auto px-2 sm:px-4 md:px-6 py-4 sm:py-6">
       {/* Header */}
-      <h2 className="flex items-center justify-center gap-1.5 sm:gap-2 text-sm md:text-xl font-bold text-gray-900 uppercase tracking-wide mb-5">
+      <h2 className="flex items-center justify-center gap-1.5 sm:gap-2 text-sm md:text-xl font-bold text-gray-900 uppercase tracking-wide mb-3 sm:mb-5">
         <span aria-hidden="true">⭐</span>
         {t("home.top_brands_title")}
       </h2>
@@ -78,7 +78,7 @@ export default function TopGlobalBrands() {
           {visibleBrands.map((brand) => (
             <div
               key={brand._id}
-              className="flex items-center justify-center shrink-0 px-1.5 sm:px-3"
+              className="flex items-center justify-center shrink-0 px-1 sm:px-3"
               style={{ width: `${cardPct}%` }}
             >
               <img
@@ -95,6 +95,22 @@ export default function TopGlobalBrands() {
           ))}
         </div>
       </div>
+
+      {/* Dot indicators — mobile only, so the current position is clear */}
+      {maxIndex > 0 && (
+        <div className="flex sm:hidden justify-center gap-1.5 mt-3">
+          {Array.from({ length: maxIndex + 1 }).map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrent(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              className={`h-1.5 rounded-full transition-all ${
+                i === safeCurrent ? "bg-red-500 w-4" : "bg-gray-300 w-1.5"
+              }`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

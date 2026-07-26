@@ -11,7 +11,7 @@ import {
 } from "@/components/context/CartContext";
 import { getVariantColors } from "@/components/cart/VariantEditModal";
 import { useUser } from "@/components/context/UserContext";
-import AuthModal from "@/components/auth/AuthModal";
+import AuthModal from "@/components/auth/AuthModalLazy";
 import Image from "next/image";
 import {
   FaChevronDown,

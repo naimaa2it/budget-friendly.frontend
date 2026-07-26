@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import WebsiteLogo from "@/components/ui/WebsiteLogo";
-import AuthModal from "@/components/auth/AuthModal";
+import AuthModal from "@/components/auth/AuthModalLazy";
 import { useUser } from "@/components/context/UserContext";
 import { useStoreSettings } from "@/components/context/StoreSettingsContext";
 import { useLanguage } from "@/components/context/LanguageContext";

@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import WebsiteLogo from "@/components/ui/WebsiteLogo";
-import AuthModal from "@/components/auth/AuthModal";
+import AuthModal from "@/components/auth/AuthModalLazy";
 
 // Simple profile menu that uses UserContext so UI updates immediately on auth changes
 import { useUser } from "@/components/context/UserContext";

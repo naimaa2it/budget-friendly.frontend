@@ -4,7 +4,7 @@ import React from 'react';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { useCart } from '@/components/context/CartContext';
 import { useUser } from '@/components/context/UserContext';
-import AuthModal from '@/components/auth/AuthModal';
+import AuthModal from '@/components/auth/AuthModalLazy';
 import { useLanguage } from '@/components/context/LanguageContext';
 
 export default function WishlistButton({ product }) {

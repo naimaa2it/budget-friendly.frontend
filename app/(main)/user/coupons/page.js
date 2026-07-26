@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useUser } from "@/components/context/UserContext";
 import { useCart } from "@/components/context/CartContext";
-import AuthModal from "@/components/auth/AuthModal";
+import AuthModal from "@/components/auth/AuthModalLazy";
 import {
   FaTicketAlt,
   FaCheckCircle,

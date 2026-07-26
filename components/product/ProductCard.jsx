@@ -14,7 +14,7 @@ import {
 } from "react-icons/fa";
 import { useCart } from "@/components/context/CartContext";
 import { useUser } from "@/components/context/UserContext";
-import AuthModal from "@/components/auth/AuthModal";
+import AuthModal from "@/components/auth/AuthModalLazy";
 import WaitlistModal from "@/components/cart/WaitlistModal";
 import { getVariantColors } from "@/components/cart/VariantEditModal";
 import { getDisplayPrice } from "@/lib/pricing";

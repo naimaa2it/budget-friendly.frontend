@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useUser } from "@/components/context/UserContext";
 import toast from "react-hot-toast";
-import AuthModal from "@/components/auth/AuthModal";
+import AuthModal from "@/components/auth/AuthModalLazy";
 import Image from "next/image";
 import { FaCamera, FaTimes } from "react-icons/fa";
 import { uploadUserImage } from "@/lib/uploadImage";

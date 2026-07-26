@@ -12,7 +12,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useCart } from "@/components/context/CartContext";
 import { useUser } from "@/components/context/UserContext";
-import AuthModal from "@/components/auth/AuthModal";
+import AuthModal from "@/components/auth/AuthModalLazy";
 import WaitlistModal from "@/components/cart/WaitlistModal";
 import { getDisplayPrice } from "@/lib/pricing";
 import { useLanguage } from "@/components/context/LanguageContext";

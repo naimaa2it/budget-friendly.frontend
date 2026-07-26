@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useUser } from "@/components/context/UserContext";
 import { useParams, useRouter } from "next/navigation";
-import AuthModal from "@/components/auth/AuthModal";
+import AuthModal from "@/components/auth/AuthModalLazy";
 import { useLanguage } from "@/components/context/LanguageContext";
 import WishlistPage from "@/components/cart/WishlistPage";
 import AddressManager from "@/components/user/AddressManager";

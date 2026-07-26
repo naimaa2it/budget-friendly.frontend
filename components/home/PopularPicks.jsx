@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { FaEye, FaShoppingCart, FaHeart, FaBell } from "react-icons/fa";
 import { useCart } from "@/components/context/CartContext";
 import { useUser } from "@/components/context/UserContext";
-import AuthModal from "@/components/auth/AuthModal";
+import AuthModal from "@/components/auth/AuthModalLazy";
 import Skeleton from "@/components/ui/Skeleton";
 import WaitlistModal from "@/components/cart/WaitlistModal";
 import Link from "next/link";

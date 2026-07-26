@@ -75,17 +75,17 @@ export default function DetailedDescriptionRenderer({ value }) {
                 : cols === 2
                   ? "grid-cols-2"
                   : cols === 3
-                    ? "grid-cols-3"
-                    : "grid-cols-4";
+                    ? "grid-cols-2 sm:grid-cols-3"
+                    : "grid-cols-2 sm:grid-cols-4";
             return (
               <div
                 key={block.id || i}
-                className={`grid gap-1 ${gridClass} py-1`}
+                className={`grid gap-2 ${gridClass} py-1`}
               >
                 {imgs.map((img, idx) => (
                   <div
                     key={idx}
-                    className="h-64 overflow-hidden cursor-zoom-in"
+                    className="aspect-square overflow-hidden rounded-lg cursor-zoom-in"
                     onClick={() => setPreviewUrl(img.url)}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}

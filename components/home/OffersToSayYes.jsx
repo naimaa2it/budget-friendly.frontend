@@ -189,7 +189,7 @@ export default function OffersToSayYes() {
           <button
             onClick={prev}
             aria-label="Previous"
-            className="absolute -left-1 md:left-1 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full w-7 md:w-9 h-7 md:h-9 flex items-center justify-center shadow-lg hover:shadow-xl hover:border hover:border-red-600 transition"
+            className="absolute -left-1 md:-left-3 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full w-7 md:w-9 h-7 md:h-9 flex items-center justify-center shadow-lg hover:shadow-xl hover:border hover:border-red-600 transition"
           >
             <FaChevronLeft className="w-4 h-4" />
           </button>
@@ -198,7 +198,7 @@ export default function OffersToSayYes() {
           <button
             onClick={next}
             aria-label="Next"
-            className="absolute -right-1 md:right-1 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full w-7 h-7 md:w-9 md:h-9 flex items-center justify-center shadow-lg hover:shadow-xl hover:border hover:border-red-600 transition"
+            className="absolute -right-1 md:-right-3 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full w-7 h-7 md:w-9 md:h-9 flex items-center justify-center shadow-lg hover:shadow-xl hover:border hover:border-red-600 transition"
           >
             <FaChevronRight className="w-4 h-4" />
           </button>

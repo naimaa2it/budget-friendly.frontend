@@ -64,7 +64,7 @@ function FeaturedSlider({ products }) {
       {maxIndex > 0 && (
         <button
           onClick={() => go(-1)}
-          className="absolute -left-1 md:left-1 top-1/2 -translate-y-1/2 z-10 w-7 h-7 bg-white shadow-md rounded-full flex items-center justify-center text-gray-600 hover:bg-rose-600 hover:text-white transition sm:-translate-x-4"
+          className="absolute -left-1 md:-left-1 top-1/2 -translate-y-1/2 z-10 w-7 h-7 md:w-8 md:h-8 bg-white shadow-md rounded-full flex items-center justify-center text-gray-600 hover:bg-rose-600 hover:text-white transition sm:-translate-x-4"
           aria-label="Previous"
         >
           ‹
@@ -98,7 +98,7 @@ function FeaturedSlider({ products }) {
       {maxIndex > 0 && (
         <button
           onClick={() => go(1)}
-          className="absolute -right-1 md:right-1 top-1/2 -translate-y-1/2 z-10 w-7 h-7 bg-white shadow-md rounded-full flex items-center justify-center text-gray-600 hover:bg-rose-600 hover:text-white transition sm:translate-x-4"
+          className="absolute -right-1 md:-right-1 top-1/2 -translate-y-1/2 z-10 w-7 h-7 md:w-8 md:h-8 bg-white shadow-md rounded-full flex items-center justify-center text-gray-600 hover:bg-rose-600 hover:text-white transition sm:translate-x-4"
           aria-label="Next"
         >
           ›

@@ -548,15 +548,21 @@ export default function PopularPicks() {
                         </div>
 
                         {/* Product Info */}
-                        <div className="px-4 py-2 relative flex-1">
+                        <div className="px-4 py-2 pb-14 relative flex-1">
                           <p className="text-sm text-gray-600 mb-1">
                             {product.title}
                           </p>
                           <h3 className="text-base font-semibold text-gray-900 mb-1 line-clamp-2">
                             {product.subtitle}
                           </h3>
-                          {/* Price */}
-                          <div className="mb-2 flex items-baseline gap-2 flex-wrap">
+
+                          {/* Rating */}
+                          <div className="flex items-center gap-2 mb-1">
+                            {renderStars(product.rating)}
+                          </div>
+
+                          {/* Price + Stock Status */}
+                          <div className="mb-2 flex items-center gap-2 flex-wrap">
                             <span className="text-lg font-bold text-red-600">
                               ৳{product.price?.toLocaleString()}
                             </span>
@@ -566,53 +572,46 @@ export default function PopularPicks() {
                                   ৳{product.compareAtPrice?.toLocaleString()}
                                 </span>
                               )}
+                            {product.status === "In Stock" ? (
+                              <span className="flex items-center gap-1 text-green-600 text-sm">
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                                <span className="font-medium">
+                                  {t("product.in_stock")}
+                                </span>
+                              </span>
+                            ) : (
+                              <span className="flex items-center gap-1 text-red-600 text-sm">
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                                <span className="font-medium">
+                                  {t("home.out_of_stock")}
+                                </span>
+                              </span>
+                            )}
                           </div>
                           {product.freeShipping && (
-                            <p className="text-sm font-semibold text-green-700">
+                            <p className="text-sm font-semibold text-green-700 mb-2">
                               {t("home.free_shipping")}
                             </p>
-                          )}
-
-                          {/* Rating and Reviews */}
-                          <div className="flex items-center gap-2 mb-2">
-                            {renderStars(product.rating)}
-                          </div>
-
-                          {/* Stock Status */}
-                          {product.status === "In Stock" ? (
-                            <div className="flex items-center gap-2 text-green-600 text-sm mb-2">
-                              <svg
-                                className="w-4 h-4"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                              <span className="font-medium">
-                                {t("product.in_stock")}
-                              </span>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2 text-red-600 text-sm mb-3">
-                              <svg
-                                className="w-4 h-4"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                              <span className="font-medium">
-                                {t("home.out_of_stock")}
-                              </span>
-                            </div>
                           )}
 
                           {/* Add to Cart / Out of Stock Button - appears on hover */}

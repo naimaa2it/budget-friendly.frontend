@@ -213,14 +213,14 @@ function TopBanner() {
   return null;
 }
 
-export default function LayoutWrapper({ children }) {
+export default function LayoutWrapper({ children, initialStoreSettings }) {
   const pathname = usePathname() || "";
   const hideNav =
     pathname.startsWith("/dashboard") ||
     (pathname.startsWith("/user/orders/") && pathname.endsWith("/invoice"));
 
   return (
-    <StoreSettingsProvider>
+    <StoreSettingsProvider initialSettings={initialStoreSettings}>
       <div className="flex min-h-screen flex-col">
         {/* Tracking pixels — only on storefront, not dashboard */}
         {!hideNav && <TrackingScripts />}

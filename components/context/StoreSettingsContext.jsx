@@ -26,17 +26,24 @@ const StoreSettingsContext = createContext({
   footerLinks: EMPTY_FOOTER_LINKS,
 });
 
-export function StoreSettingsProvider({ children }) {
-  const [settings, setSettings] = useState({
-    storeName: "",
-    logoUrl: "",
-    footerInfo: { phone: "", email: "", address: "" },
-    contactInfo: { phone: "", email: "", address: "" },
-    supportInfo: { phone: "", email: "" },
-    socialLinks: {},
-    policyContent: EMPTY_POLICY,
-    footerLinks: EMPTY_FOOTER_LINKS,
-  });
+const EMPTY_SETTINGS = {
+  storeName: "",
+  logoUrl: "",
+  footerInfo: { phone: "", email: "", address: "" },
+  contactInfo: { phone: "", email: "", address: "" },
+  supportInfo: { phone: "", email: "" },
+  socialLinks: {},
+  policyContent: EMPTY_POLICY,
+  footerLinks: EMPTY_FOOTER_LINKS,
+};
+
+// initialSettings comes from RootLayout's build-time getStoreSettings() call
+// (same /api/admin/top-banner data), so the header logo and footer contact
+// info render in the static HTML immediately instead of staying blank until
+// this provider's own client-side fetch resolves. The fetch below still runs
+// in the background to pick up admin edits made since the last deploy.
+export function StoreSettingsProvider({ children, initialSettings }) {
+  const [settings, setSettings] = useState(initialSettings || EMPTY_SETTINGS);
 
   useEffect(() => {
     fetch(`${API}/api/admin/top-banner`)

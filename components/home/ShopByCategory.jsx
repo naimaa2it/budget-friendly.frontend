@@ -187,7 +187,7 @@ export default function ShopByCategory() {
                           fill
                           sizes="(max-width: 640px) 64px, (max-width: 768px) 80px, (max-width: 1024px) 112px, 128px"
                           style={{ objectFit: "cover" }}
-                          loading="lazy"
+                          loading="eager"
                           decoding="async"
                           onError={(e) => {
                             e.currentTarget.onerror = null;

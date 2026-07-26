@@ -14,7 +14,7 @@ import TrackingCodeInjector from "@/components/layout/TrackingCodeInjector";
 import ScrollToTop from "@/components/ui/ScrollToTopLazy";
 // import FloatingWhatsApp from "@/components/ui/FloatingWhatsApp";
 import PopupBanner from "@/components/ui/PopupBanner";
-import { getStoreName, getFavicon } from "@/lib/storeMeta";
+import { getStoreName, getFavicon, getStoreSettings } from "@/lib/storeMeta";
 import { CompareProvider } from "@/components/context/CompareContext";
 import CompareBar from "@/components/product/CompareBar";
 import GlobalScrollFix from "@/components/ui/GlobalScrollFix";
@@ -101,7 +101,8 @@ export const viewport = {
 import Script from "next/script";
 
 export default async function RootLayout({ children }) {
-  const storeName = await getStoreName();
+  const storeSettings = await getStoreSettings();
+  const storeName = storeSettings.storeName;
 
   const organizationSchema = {
     "@context": "https://schema.org",
@@ -165,7 +166,9 @@ export default async function RootLayout({ children }) {
                 <CompareProvider>
                   <GlobalScrollFix />
                   <ScrollToTop />
-                  <LayoutWrapper>{children}</LayoutWrapper>
+                  <LayoutWrapper initialStoreSettings={storeSettings}>
+                    {children}
+                  </LayoutWrapper>
                   {/* <FloatingWhatsApp /> */}
                   {/* global UI overlays */}
                   <CartToast />

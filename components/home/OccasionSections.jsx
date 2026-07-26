@@ -77,10 +77,10 @@ function OccasionSlider({ section }) {
         <button
           onClick={prev}
           aria-label="Previous"
-          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-8 h-8 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:border hover:border-red-600 transition-colors"
+          className="absolute left-0.5 sm:left-0 top-1/2 -translate-y-1/2 sm:-translate-x-4 z-10 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:border hover:border-red-600 transition-colors"
         >
           <svg
-            className="w-3.5 h-3.5"
+            className="w-3 h-3 sm:w-3.5 sm:h-3.5"
             fill="none"
             stroke="currentColor"
             strokeWidth="2.5"
@@ -100,10 +100,10 @@ function OccasionSlider({ section }) {
         <button
           onClick={next}
           aria-label="Next"
-          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-8 h-8 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:border hover:border-red-600 transition-colors"
+          className="absolute right-0.5 sm:right-0 top-1/2 -translate-y-1/2 sm:translate-x-4 z-10 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:border hover:border-red-600 transition-colors"
         >
           <svg
-            className="w-3.5 h-3.5"
+            className="w-3 h-3 sm:w-3.5 sm:h-3.5"
             fill="none"
             stroke="currentColor"
             strokeWidth="2.5"
@@ -119,7 +119,7 @@ function OccasionSlider({ section }) {
       )}
 
       {/* Track wrapper — hides overflow */}
-      <div className="overflow-hidden">
+      <div className={showArrows ? "overflow-hidden px-7 sm:px-0" : "overflow-hidden"}>
         <div
           className="flex transition-transform duration-500 ease-in-out"
           style={{ transform: `translateX(-${translateX}%)` }}

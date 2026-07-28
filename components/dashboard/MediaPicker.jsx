@@ -1,7 +1,8 @@
 "use client";
 
 /**
- * MediaPicker — reusable modal to browse Cloudinary images and pick one or many.
+ * MediaPicker — reusable modal to browse uploaded images (this server's local
+ * storage, plus any legacy Cloudinary assets) and pick one or many.
  *
  * Props:
  *   open       — show/hide the modal

@@ -22,6 +22,7 @@ const nextConfig = {
     loaderFile: "./lib/imageLoader.js",
     remotePatterns: [
       { protocol: "https", hostname: "res.cloudinary.com" },
+      { protocol: "https", hostname: "api.pickob.com" },
       { protocol: "https", hostname: "download.logo.wine" },
       { protocol: "https", hostname: "img.icons8.com" },
       { protocol: "https", hostname: "lh3.googleusercontent.com" },

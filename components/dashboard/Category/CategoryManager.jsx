@@ -528,7 +528,7 @@ function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
     if (!name.trim()) return alert("Category name is required");
     setSaving(true);
     try {
-      // Detect removed images to delete from Cloudinary
+      // Detect removed images to delete from storage
       const originalImageIds = originalImages
         .map((img) => img.public_id)
         .filter(Boolean);
@@ -550,7 +550,7 @@ function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
       );
       payload.images = uploadedImages;
 
-      // Include removed images for Cloudinary cleanup
+      // Include removed images for cleanup
       if (removedImageIds.length > 0) {
         payload.removedImages = removedImageIds;
       }

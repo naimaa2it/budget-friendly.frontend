@@ -19,7 +19,7 @@ export async function generateStaticParams() {
   const params = [{ slug: "__placeholder__" }];
   try {
     const res = await fetch(`${API}/api/products/categories`, {
-      cache: "force-cache",
+      next: { revalidate: 30 },
     });
     if (!res.ok) return params;
     const { categories = [] } = await res.json();
@@ -41,7 +41,7 @@ export async function generateMetadata({ params }) {
   }
   try {
     const res = await fetch(`${API}/api/products/categories`, {
-      cache: "force-cache",
+      next: { revalidate: 30 },
     });
     if (!res.ok) throw new Error("not found");
     const { categories = [] } = await res.json();

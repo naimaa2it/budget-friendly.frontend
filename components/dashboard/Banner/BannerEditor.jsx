@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import MediaPicker from "@/components/dashboard/MediaPicker";
-import { uploadAdminImage } from "@/lib/uploadImage";
+import { uploadBannerImage } from "@/lib/uploadImage";
 
 export default function BannerEditor({ bannerId = null, onSuccess, onCancel }) {
   const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
@@ -46,7 +46,7 @@ export default function BannerEditor({ bannerId = null, onSuccess, onCancel }) {
     setImage({ url: preview, public_id: "", __uploading: true });
     setUploading(true);
     try {
-      const data = await uploadAdminImage(file, "Pickob/banners");
+      const data = await uploadBannerImage(file);
       setImage({ url: data.asset.url, public_id: data.asset.public_id });
     } catch (err) {
       alert("Image upload failed: " + err.message);

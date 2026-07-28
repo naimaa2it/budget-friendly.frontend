@@ -103,7 +103,7 @@ export default function PromoStripSection() {
 
         <div
           ref={stripRef}
-          className="flex items-center overflow-x-auto promo-strip-scroll snap-x snap-mandatory md:snap-none gap-2 px-3 py-1.5 md:gap-0 md:px-1 md:py-0 md:items-stretch"
+          className="flex items-center overflow-x-auto promo-strip-scroll snap-x snap-mandatory md:snap-none gap-2 px-3 py-1.5 md:gap-0 md:px-1 md:py-0 md:items-stretch ml-1"
         >
           {items.map((item, idx) => (
             <Link

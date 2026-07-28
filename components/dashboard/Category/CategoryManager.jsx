@@ -31,7 +31,11 @@ export default function CategoryManager() {
   const fetchCategories = useCallback(async () => {
     setLoading(true);
     try {
-      const resp = await fetch(`${API}/api/products/categories`);
+      // live admin endpoint (no cache) so create/edit/delete show up immediately,
+      // instead of the public storefront endpoint which is cached for up to 30s
+      const resp = await fetch(`${API}/api/admin/categories`, {
+        credentials: "include",
+      });
       const body = await resp.json();
       if (resp.ok) setCategories(body.categories || []);
     } catch (err) {
@@ -564,9 +568,11 @@ function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error);
 
-      // Create new children if any
-      for (const child of newChildren) {
-        if (child.name.trim()) {
+      // Create new children if any (in parallel — was sequential, so N rows
+      // used to take N round-trips)
+      const childrenToCreate = newChildren.filter((c) => c.name.trim());
+      await Promise.all(
+        childrenToCreate.map(async (child) => {
           const childPayload = {
             name: child.name.trim(),
             description: (child.description || "").trim(),
@@ -590,8 +596,8 @@ function EditCategoryModal({ API, category, userRole, onClose, onSuccess }) {
             const err = await childResp.json();
             throw new Error(err.error || "Failed to create child");
           }
-        }
-      }
+        }),
+      );
 
       onSuccess();
     } catch (err) {

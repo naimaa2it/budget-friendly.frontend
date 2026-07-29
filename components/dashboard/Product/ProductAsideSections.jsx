@@ -46,6 +46,7 @@ export default function ProductAsideSections({
   const [newPackagingValue, setNewPackagingValue] = useState("");
   const { user } = useUser();
   const canSeeBuyingPrice = hasPermission(user, "products.buying_price");
+  const canSeeCharges = hasPermission(user, "products.charges");
   const costPerItem =
     (Number(product.buyingPrice) || 0) +
     (Number(product.delivery?.value) || 0) +
@@ -501,6 +502,7 @@ export default function ProductAsideSections({
               placeholder="0"
             />
           </div>
+          {canSeeCharges && (
           <div>
             <label className={labelClass}>Delivery</label>
             <select
@@ -588,6 +590,8 @@ export default function ProductAsideSections({
               </button>
             )}
           </div>
+          )}
+          {canSeeCharges && (
           <div>
             <label className={labelClass}>Packaging</label>
             <select
@@ -675,6 +679,7 @@ export default function ProductAsideSections({
               </button>
             )}
           </div>
+          )}
           {canSeeBuyingPrice && (
             <div>
               <label className={labelClass}>Cost per item</label>

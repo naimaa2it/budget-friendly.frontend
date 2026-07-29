@@ -108,7 +108,11 @@ export const CartProvider = ({ children }) => {
       (item) => item.product && typeof item.product === "object",
     );
     if (hasFullProducts) {
-      // Migrate old format: keep full objects but save slim format going forward
+      // Old-format entries (and every entry saved since — toSlimItem always
+      // re-embeds the full product) never go through the batch refresh below,
+      // so their product snapshot (images, price, stock) can go stale forever.
+      // Paint instantly from the cached snapshot, then refresh in the
+      // background so images/price/stock stay current.
       const normalized = slimItems.map((item) => {
         if (item.cartKey) return item;
         const id = item.product?._id || item.product?.id || "unknown";
@@ -126,6 +130,28 @@ export const CartProvider = ({ children }) => {
       });
       setCartItems(normalized);
       setCartHydrated(true);
+
+      const ids = [
+        ...new Set(
+          normalized.map((i) => i.product?._id || i.product?.id).filter(Boolean),
+        ),
+      ];
+      if (ids.length) {
+        fetch(`${API}/api/products/batch?ids=${ids.join(",")}`)
+          .then((r) => (r.ok ? r.json() : { products: [] }))
+          .then(({ products = [] }) => {
+            if (!products.length) return;
+            const productMap = Object.fromEntries(products.map((p) => [p._id, p]));
+            setCartItems((prev) =>
+              prev.map((item) => {
+                const id = item.product?._id || item.product?.id;
+                const fresh = id && productMap[id];
+                return fresh ? { ...item, product: fresh } : item;
+              }),
+            );
+          })
+          .catch(() => {});
+      }
       return;
     }
 

@@ -989,6 +989,10 @@ export default function CheckoutPage() {
                           alt={title}
                           width={52}
                           height={52}
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = "/assets/placeholder.svg";
+                          }}
                           className="object-cover rounded-lg border border-gray-100 w-13 h-13 shrink-0"
                         />
                         <div className="flex-1 min-w-0">

@@ -15,8 +15,8 @@ export default function Home() {
   return (
     <>
       <Banner />
-      <ShopByCategory />
       <PromoStripSection />
+      <ShopByCategory />
       {/* <AdSlot page="homepage" className="max-w-7xl mx-auto px-2 py-3" /> */}
       <PopularPicks />
       <FeaturedSections />

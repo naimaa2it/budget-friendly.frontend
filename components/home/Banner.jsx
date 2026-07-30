@@ -118,53 +118,7 @@ const Banner = () => {
               </div>
             )}
 
-            {/* Prev / Next arrows */}
-            {total > 1 && (
-              <>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    go(-1);
-                  }}
-                  className="absolute left-1 md:left-3 top-1/2 -translate-y-1/2 w-6 h-6 md:w-9 md:h-9 bg-white/75 hover:bg-white rounded-full flex items-center justify-center shadow-md text-gray-700 backdrop-blur-sm transition z-10"
-                >
-                  <svg
-                    className="w-3.5 h-3.5 md:w-4 md:h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2.5}
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    go(1);
-                  }}
-                  className="absolute right-1 md:right-3 top-1/2 -translate-y-1/2 w-6 h-6 md:w-9 md:h-9 bg-white/75 hover:bg-white rounded-full flex items-center justify-center shadow-md text-gray-700 backdrop-blur-sm transition z-10"
-                >
-                  <svg
-                    className="w-3.5 h-3.5 md:w-4 md:h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2.5}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </button>
-              </>
-            )}
+           
 
             {/* Dots */}
             {total > 1 && (
@@ -177,7 +131,7 @@ const Banner = () => {
                       setCurrent(i);
                       startAuto();
                     }}
-                    className={`h-1.5 rounded-full transition-all ${i === current ? "bg-white w-5" : "bg-white/50 w-1.5"}`}
+                    className={`h-1.5 rounded-full transition-all ${i === current ? "bg-red-600 w-5 h-2 " : "bg-gray-600 w-1.5"}`}
                   />
                 ))}
               </div>

@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import ProductCard from "@/components/product/ProductCard";
 import ProductFilters from "@/components/product/ProductFilters";
@@ -15,7 +15,17 @@ import AdSlot from "@/components/ui/AdSlot";
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 const PRODUCTS_PER_PAGE = 20;
 
-export default function CategoryPageClient({ slug, parentSlug = null }) {
+export default function CategoryPageClient({
+  slug,
+  parentSlug = null,
+  initialCategory = null,
+  initialParentCategory = null,
+  initialImmediateChildren = [],
+  initialCategoryIdsParam = "",
+  initialProducts = [],
+  initialTotalProducts = 0,
+  initialBestSelling = [],
+}) {
   const router = useRouter();
   const {
     getCategoryBySlug,
@@ -23,20 +33,54 @@ export default function CategoryPageClient({ slug, parentSlug = null }) {
     categoriesMap,
     getSubcategories,
   } = useCategories();
-  const [category, setCategory] = useState(null);
-  const [parentCategory, setParentCategory] = useState(null);
+  // The build-time page.js only hands us initial* data for the exact slug it
+  // pre-rendered — true whenever this is a static page served directly
+  // (not the __placeholder__ shell), which is the vast majority of visits.
+  const hasInitialData = Boolean(initialCategory && initialCategory.slug === slug);
+  // Tracks which category's best-selling strip + product grid are currently
+  // loaded. CategoryContext always refetches once in the background (even
+  // when seeded, to pick up categories added after the last build), which
+  // changes `categoriesMap`'s reference and re-runs the effect below — this
+  // lets that re-run recognize "same category, nothing to do" instead of
+  // flashing a loading state over data we already have.
+  const initializedCategoryIdRef = useRef(
+    hasInitialData ? String(initialCategory._id) : null,
+  );
+  // Separately, the product-grid effect always runs once on mount
+  // regardless of whether categoryIdsParam "changed" (there's no previous
+  // value to bail against) — this one-shot flag skips just that first
+  // redundant fetch when we already have page 1 from the server.
+  const skipInitialProductsFetchRef = useRef(hasInitialData);
+  // Distinguishes "route actually changed" from "effect re-ran because
+  // categoriesMap's reference changed" (see the product-fetch effect).
+  const lastRouteKeyRef = useRef(
+    hasInitialData ? `${parentSlug || ""}/${slug}` : null,
+  );
+
+  const [category, setCategory] = useState(initialCategory);
+  const [parentCategory, setParentCategory] = useState(initialParentCategory);
   const [subcategories, setSubcategories] = useState([]);
-  const [immediateChildren, setImmediateChildren] = useState([]);
+  const [immediateChildren, setImmediateChildren] = useState(
+    initialImmediateChildren,
+  );
   const [descendantMap, setDescendantMap] = useState(new Map());
-  const [isSubcategoryPage, setIsSubcategoryPage] = useState(false);
-  const [products, setProducts] = useState([]);
-  const [totalProducts, setTotalProducts] = useState(0);
+  const [isSubcategoryPage, setIsSubcategoryPage] = useState(
+    Boolean(initialCategory?.parent),
+  );
+  const [products, setProducts] = useState(() =>
+    initialProducts.map((p) => ({ ...p, price: getDisplayPrice(p).price })),
+  );
+  const [totalProducts, setTotalProducts] = useState(initialTotalProducts);
   const [currentPage, setCurrentPage] = useState(1);
-  const [categoryIdsParam, setCategoryIdsParam] = useState("");
-  const [bestSelling, setBestSelling] = useState([]);
-  const [loadingBestSelling, setLoadingBestSelling] = useState(true);
-  const [loadingProducts, setLoadingProducts] = useState(true);
-  const [productsLoadedOnce, setProductsLoadedOnce] = useState(false);
+  const [categoryIdsParam, setCategoryIdsParam] = useState(
+    initialCategoryIdsParam,
+  );
+  const [bestSelling, setBestSelling] = useState(initialBestSelling);
+  const [loadingBestSelling, setLoadingBestSelling] = useState(
+    !hasInitialData,
+  );
+  const [loadingProducts, setLoadingProducts] = useState(!hasInitialData);
+  const [productsLoadedOnce, setProductsLoadedOnce] = useState(hasInitialData);
   const [showAllSubcategories, setShowAllSubcategories] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [subcategoryVisibleCount, setSubcategoryVisibleCount] = useState(8);
@@ -71,23 +115,27 @@ export default function CategoryPageClient({ slug, parentSlug = null }) {
   // fetch products using category from context
   useEffect(() => {
     if (!slug) return;
-    // when navigating to a new category reset sorting and filters/shows
-    setSortOption("position");
-    setCurrentPage(1);
-    setTotalProducts(0);
-    setCategoryIdsParam("");
-    setShowAllSubcategories(false);
-    setShowMobileFilters(false);
-    setBestSellingStartIndex(0);
-    setActiveFilters({
-      priceRange: [0, 0],
-      expandedSubIds: new Set(),
-      brands: new Set(),
-      minRating: null,
-    });
-    setLoadingBestSelling(true);
-    setLoadingProducts(true);
-    setProductsLoadedOnce(false);
+    // This effect also re-runs whenever CategoryContext's background
+    // refresh changes `categoriesMap`'s reference, with the *same* route —
+    // only reset sort/page/filters on an actual navigation, so that refresh
+    // can't silently discard a user's in-progress filter/sort/page choice.
+    const routeKey = `${parentSlug || ""}/${slug}`;
+    const isNewRoute = lastRouteKeyRef.current !== routeKey;
+    lastRouteKeyRef.current = routeKey;
+
+    if (isNewRoute) {
+      setSortOption("position");
+      setCurrentPage(1);
+      setShowAllSubcategories(false);
+      setShowMobileFilters(false);
+      setBestSellingStartIndex(0);
+      setActiveFilters({
+        priceRange: [0, 0],
+        expandedSubIds: new Set(),
+        brands: new Set(),
+        minRating: null,
+      });
+    }
     (async () => {
       let shouldLoadProducts = false;
       try {
@@ -97,16 +145,22 @@ export default function CategoryPageClient({ slug, parentSlug = null }) {
           : getCategoryBySlug(slug);
 
         if (!match) {
-          setCategory({ name: slug, description: "" });
-          setSubcategories([]);
-          setImmediateChildren([]);
-          setDescendantMap(new Map());
-          setProducts([]);
-          setBestSelling([]);
-          setCategoryIdsParam("");
-          setIsSubcategoryPage(false);
-          setLoadingBestSelling(false);
-          setLoadingProducts(false);
+          // Don't wipe out data we already have (e.g. from the server-
+          // rendered initial props) just because context hasn't resolved
+          // this slug yet on some re-run — only show the bare fallback if
+          // we truly have nothing.
+          if (initializedCategoryIdRef.current === null) {
+            setCategory({ name: slug, description: "" });
+            setSubcategories([]);
+            setImmediateChildren([]);
+            setDescendantMap(new Map());
+            setProducts([]);
+            setBestSelling([]);
+            setCategoryIdsParam("");
+            setIsSubcategoryPage(false);
+            setLoadingBestSelling(false);
+            setLoadingProducts(false);
+          }
           return;
         }
 
@@ -165,7 +219,21 @@ export default function CategoryPageClient({ slug, parentSlug = null }) {
         const ids = collectIds(match._id);
         const param = ids.join(",");
         setCategoryIdsParam(param);
+
+        // If this is the same category we already have best-selling +
+        // product data for (either from the server-rendered initial props,
+        // or from a previous run of this effect), there's nothing new to
+        // fetch — this branch mainly exists to survive CategoryContext's
+        // background refresh re-running this effect with an unchanged match.
+        if (initializedCategoryIdRef.current === String(match._id)) {
+          return;
+        }
+        initializedCategoryIdRef.current = String(match._id);
         shouldLoadProducts = true;
+        setTotalProducts(0);
+        setLoadingProducts(true);
+        setProductsLoadedOnce(false);
+        setLoadingBestSelling(true);
 
         // Best-selling strip — try category-specific first, fall back to global
         const bestResp = await fetch(
@@ -278,6 +346,12 @@ export default function CategoryPageClient({ slug, parentSlug = null }) {
 
   useEffect(() => {
     if (!categoryIdsParam) return;
+    if (skipInitialProductsFetchRef.current) {
+      // Server already rendered page 1 of this exact category's products —
+      // skip the redundant fetch on this first run only.
+      skipInitialProductsFetchRef.current = false;
+      return;
+    }
 
     const loadProducts = async () => {
       setLoadingProducts(true);

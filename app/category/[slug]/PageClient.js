@@ -4,15 +4,15 @@ import { Suspense } from 'react';
 import { useUrlParam } from '@/hooks/useUrlParam';
 import CategoryPageClient from '@/components/category/CategoryPageClient';
 
-function CategoryPageInner() {
+function CategoryPageInner(props) {
   const slug = useUrlParam();
-  return <CategoryPageClient slug={slug} />;
+  return <CategoryPageClient slug={slug} {...props} />;
 }
 
-export default function CategoryPageWrapper() {
+export default function CategoryPageWrapper(props) {
   return (
     <Suspense>
-      <CategoryPageInner />
+      <CategoryPageInner {...props} />
     </Suspense>
   );
 }

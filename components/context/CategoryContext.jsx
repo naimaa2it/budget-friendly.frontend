@@ -4,62 +4,75 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 
 const CategoryContext = createContext();
 
-export function CategoryProvider({ children }) {
-  const [categories, setCategories] = useState([]);
-  const [categoriesMap, setCategoriesMap] = useState({});
-  const [subcategories, setSubcategories] = useState({});
-  const [loading, setLoading] = useState(true);
+// Flatten the tree structure into { categories, categoriesMap, subcategories }
+// — shared by the build-time initial seed and the client-side refetch so
+// both produce identical shapes.
+function deriveCategoryState(tree) {
+  const flattenCategories = (cats, result = []) => {
+    cats.forEach((cat) => {
+      result.push({ ...cat, parent: cat.parent || null });
+      if (cat.children && cat.children.length > 0) {
+        flattenCategories(cat.children, result);
+      }
+    });
+    return result;
+  };
+
+  const allCategories = flattenCategories(tree || []);
+
+  const categories = allCategories.filter((cat) => cat.level === 0);
+
+  const categoriesMap = {};
+  allCategories.forEach((cat) => {
+    categoriesMap[cat._id] = cat;
+  });
+
+  const subcategories = {};
+  allCategories.forEach((cat) => {
+    if (cat.parent) {
+      if (!subcategories[cat.parent]) {
+        subcategories[cat.parent] = [];
+      }
+      subcategories[cat.parent].push(cat);
+    }
+  });
+
+  return { categories, categoriesMap, subcategories };
+}
+
+export function CategoryProvider({ children, initialCategories }) {
+  const initialState = deriveCategoryState(initialCategories);
+  const [categories, setCategories] = useState(initialState.categories);
+  const [categoriesMap, setCategoriesMap] = useState(
+    initialState.categoriesMap,
+  );
+  const [subcategories, setSubcategories] = useState(
+    initialState.subcategories,
+  );
+  // Nothing to wait on when the server already handed us a populated tree.
+  const [loading, setLoading] = useState(
+    initialState.categories.length === 0,
+  );
   const [error, setError] = useState(null);
   const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
   useEffect(() => {
+    // Refresh from the live API even when the server seed was present, so
+    // categories added after the last build still show up without a rebuild.
     fetchCategories();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchCategories = async () => {
     try {
-      setLoading(true);
       setError(null);
       const res = await fetch(`${API}/api/products/categories`);
       if (res.ok) {
         const data = await res.json();
-
-        // Flatten the tree structure
-        const flattenCategories = (cats, result = []) => {
-          cats.forEach((cat) => {
-            result.push({ ...cat, parent: cat.parent || null });
-            if (cat.children && cat.children.length > 0) {
-              flattenCategories(cat.children, result);
-            }
-          });
-          return result;
-        };
-
-        const allCategories = flattenCategories(data.categories || []);
-
-        // Get only level 0 (main) categories
-        const mainCategories = allCategories.filter((cat) => cat.level === 0);
-        setCategories(mainCategories);
-
-        // Create a map for quick lookup by ID
-        const map = {};
-        allCategories.forEach((cat) => {
-          map[cat._id] = cat;
-        });
-        setCategoriesMap(map);
-
-        // Organize subcategories by parent
-        const subMap = {};
-        allCategories.forEach((cat) => {
-          if (cat.parent) {
-            if (!subMap[cat.parent]) {
-              subMap[cat.parent] = [];
-            }
-            subMap[cat.parent].push(cat);
-          }
-        });
-        setSubcategories(subMap);
+        const derived = deriveCategoryState(data.categories || []);
+        setCategories(derived.categories);
+        setCategoriesMap(derived.categoriesMap);
+        setSubcategories(derived.subcategories);
       } else {
         throw new Error("Failed to fetch categories");
       }

@@ -15,6 +15,7 @@ import ScrollToTop from "@/components/ui/ScrollToTopLazy";
 // import FloatingWhatsApp from "@/components/ui/FloatingWhatsApp";
 import PopupBanner from "@/components/ui/PopupBanner";
 import { getStoreName, getFavicon, getStoreSettings } from "@/lib/storeMeta";
+import { getCategoriesTree } from "@/lib/categoriesMeta";
 import { CompareProvider } from "@/components/context/CompareContext";
 import CompareBar from "@/components/product/CompareBar";
 import GlobalScrollFix from "@/components/ui/GlobalScrollFix";
@@ -101,7 +102,10 @@ export const viewport = {
 import Script from "next/script";
 
 export default async function RootLayout({ children }) {
-  const storeSettings = await getStoreSettings();
+  const [storeSettings, initialCategories] = await Promise.all([
+    getStoreSettings(),
+    getCategoriesTree(),
+  ]);
   const storeName = storeSettings.storeName;
 
   const organizationSchema = {
@@ -162,7 +166,7 @@ export default async function RootLayout({ children }) {
         <LanguageProvider>
           <UserProvider>
             <CartProvider>
-              <CategoryProvider>
+              <CategoryProvider initialCategories={initialCategories}>
                 <CompareProvider>
                   <GlobalScrollFix />
                   <ScrollToTop />

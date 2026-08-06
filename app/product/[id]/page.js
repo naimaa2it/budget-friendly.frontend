@@ -22,6 +22,22 @@ export async function generateStaticParams() {
   return params;
 }
 
+// Shared build-time product fetch — used by both generateMetadata and the
+// page body so a real product only hits the API once per static page.
+async function fetchProduct(id) {
+  if (id === "__placeholder__") return null;
+  try {
+    const res = await fetch(`${API}/api/products/${id}`, {
+      cache: "force-cache",
+    });
+    if (!res.ok) return null;
+    const { product } = await res.json();
+    return product || null;
+  } catch {
+    return null;
+  }
+}
+
 export async function generateMetadata({ params }) {
   const { id } = await params;
   if (id === "__placeholder__") {
@@ -32,11 +48,8 @@ export async function generateMetadata({ params }) {
     };
   }
   try {
-    const res = await fetch(`${API}/api/products/${id}`, {
-      cache: "force-cache",
-    });
-    if (!res.ok) throw new Error("not found");
-    const { product } = await res.json();
+    const product = await fetchProduct(id);
+    if (!product) throw new Error("not found");
 
     const title = product?.seo?.title || product?.title || "Product Details";
     const description =
@@ -77,6 +90,65 @@ export async function generateMetadata({ params }) {
   }
 }
 
-export default function Page() {
-  return <ProductPageClient />;
+// Mirrors the related-products logic PageClient used to run client-side —
+// duplicated here (rather than shared) since one runs at build time against
+// `fetch`'s cache and the other runs in the browser.
+async function fetchRelatedProducts(product, id) {
+  const fetches = [];
+  if (product.categoryId) {
+    fetches.push(
+      fetch(
+        `${API}/api/products?categoryId=${product.categoryId}&limit=14`,
+        { cache: "force-cache" },
+      )
+        .then((r) => (r.ok ? r.json() : { items: [] }))
+        .then((d) => d.items || [])
+        .catch(() => []),
+    );
+  }
+  if (product.department) {
+    fetches.push(
+      fetch(
+        `${API}/api/products?brand=${encodeURIComponent(product.department)}&limit=14`,
+        { cache: "force-cache" },
+      )
+        .then((r) => (r.ok ? r.json() : { items: [] }))
+        .then((d) => d.items || [])
+        .catch(() => []),
+    );
+  }
+
+  let related = [];
+  if (fetches.length > 0) {
+    const results = await Promise.all(fetches);
+    const seen = new Set([String(id)]);
+    for (const arr of results) {
+      for (const p of arr) {
+        const pid = String(p._id);
+        if (!seen.has(pid)) {
+          seen.add(pid);
+          related.push(p);
+        }
+      }
+    }
+  }
+
+  if (related.length === 0) {
+    related = await fetch(`${API}/api/products?limit=14&sort=newest`, {
+      cache: "force-cache",
+    })
+      .then((r) => (r.ok ? r.json() : { items: [] }))
+      .then((d) => (d.items || []).filter((p) => String(p._id) !== String(id)))
+      .catch(() => []);
+  }
+
+  return related.slice(0, 12);
+}
+
+export default async function Page({ params }) {
+  const { id } = await params;
+  const product = await fetchProduct(id);
+  const related = product ? await fetchRelatedProducts(product, id) : [];
+
+  return <ProductPageClient initialProduct={product} initialRelated={related} />;
 }

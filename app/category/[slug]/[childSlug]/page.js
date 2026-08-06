@@ -1,4 +1,5 @@
 import ChildCategoryPageWrapper from "./PageClient";
+import { fetchCategoryPageData } from "@/lib/categoryPageData";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://pickob.com";
@@ -90,6 +91,30 @@ export async function generateMetadata({ params }) {
   }
 }
 
-export default function Page() {
-  return <ChildCategoryPageWrapper />;
+export default async function Page({ params }) {
+  const { slug, childSlug } = await params;
+  if (childSlug === "__placeholder__") {
+    return <ChildCategoryPageWrapper />;
+  }
+
+  try {
+    const res = await fetch(`${API}/api/products/categories`, {
+      next: { revalidate: 30 },
+    });
+    const { categories = [] } = res.ok ? await res.json() : {};
+    const data = await fetchCategoryPageData(categories, childSlug, slug);
+    return (
+      <ChildCategoryPageWrapper
+        initialCategory={data?.category}
+        initialParentCategory={data?.parentCategory}
+        initialImmediateChildren={data?.immediateChildren}
+        initialCategoryIdsParam={data?.categoryIdsParam}
+        initialProducts={data?.products}
+        initialTotalProducts={data?.totalProducts}
+        initialBestSelling={data?.bestSelling}
+      />
+    );
+  } catch {
+    return <ChildCategoryPageWrapper />;
+  }
 }

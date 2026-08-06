@@ -4,16 +4,16 @@ import { Suspense } from 'react';
 import { useUrlParam } from '@/hooks/useUrlParam';
 import CategoryPageClient from '@/components/category/CategoryPageClient';
 
-function ChildCategoryPageInner() {
+function ChildCategoryPageInner(props) {
   const childSlug = useUrlParam(0);
   const parentSlug = useUrlParam(1);
-  return <CategoryPageClient slug={childSlug} parentSlug={parentSlug} />;
+  return <CategoryPageClient slug={childSlug} parentSlug={parentSlug} {...props} />;
 }
 
-export default function ChildCategoryPageWrapper() {
+export default function ChildCategoryPageWrapper(props) {
   return (
     <Suspense>
-      <ChildCategoryPageInner />
+      <ChildCategoryPageInner {...props} />
     </Suspense>
   );
 }

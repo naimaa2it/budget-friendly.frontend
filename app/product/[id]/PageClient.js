@@ -6,14 +6,23 @@ import ProductDetails from "@/components/product/ProductDetails";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
-export default function ProductPageClient() {
+export default function ProductPageClient({
+  initialProduct = null,
+  initialRelated = [],
+}) {
   const id = useUrlParam();
-  const [product, setProduct] = useState(null);
-  const [related, setRelated] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // initialProduct comes from the build-time static page for this exact id
+  // (see app/product/[id]/page.js). The __placeholder__ shell (products
+  // created after the last build) never has one, so it falls through to the
+  // client fetch below exactly as before.
+  const hasInitialData = Boolean(initialProduct) && initialProduct._id === id;
+  const [product, setProduct] = useState(hasInitialData ? initialProduct : null);
+  const [related, setRelated] = useState(hasInitialData ? initialRelated : []);
+  const [loading, setLoading] = useState(!hasInitialData);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
+    if (hasInitialData) return;
     if (!id) {
       setLoading(false);
       return;
@@ -81,7 +90,7 @@ export default function ProductPageClient() {
         setNotFound(true);
         setLoading(false);
       });
-  }, [id]);
+  }, [id, hasInitialData]);
 
   if (loading) {
     return (

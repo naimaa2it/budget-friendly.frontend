@@ -46,7 +46,7 @@ export default async function sitemap() {
   // Static public routes
   const staticRoutes = [
     { url: SITE_URL, changeFrequency: "daily", priority: 1.0 },
-    { url: `${SITE_URL}/blog`, changeFrequency: "daily", priority: 0.8 },
+    { url: `${SITE_URL}/blog`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${SITE_URL}/about`, changeFrequency: "monthly", priority: 0.5 },
     { url: `${SITE_URL}/contact`, changeFrequency: "monthly", priority: 0.5 },
     { url: `${SITE_URL}/faq`, changeFrequency: "monthly", priority: 0.5 },
@@ -72,7 +72,7 @@ export default async function sitemap() {
     productRoutes = products.map((p) => ({
       url: `${SITE_URL}/product/${p.id}`,
       lastModified: p.updatedAt ? new Date(p.updatedAt) : new Date(),
-      changeFrequency: "weekly",
+      changeFrequency: "daily",
       priority: 0.8,
     }));
 

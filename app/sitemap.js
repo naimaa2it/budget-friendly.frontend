@@ -3,17 +3,21 @@
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://pickob.com";
 
-// Flatten a category tree into a flat array
-function flattenCategories(cats) {
-  const result = [];
-  const walk = (nodes) => {
+// Build category URL paths matching the app's actual routing/canonical URLs:
+// top-level categories live at /category/{slug}, and any category with a
+// parent lives at /category/{immediateParentSlug}/{slug} (see
+// app/category/[slug]/[childSlug]/page.js, which nests every non-root node
+// one level under its immediate parent, even grandchildren).
+function buildCategoryPaths(cats) {
+  const paths = [];
+  const walk = (nodes, parentSlug) => {
     for (const c of nodes) {
-      if (c.slug) result.push(c);
-      if (c.children?.length) walk(c.children);
+      if (c.slug) paths.push(parentSlug ? `${parentSlug}/${c.slug}` : c.slug);
+      if (c.children?.length) walk(c.children, c.slug);
     }
   };
-  walk(cats);
-  return result;
+  walk(cats, null);
+  return paths;
 }
 
 // Fetch all published products (paginated)
@@ -78,11 +82,11 @@ export default async function sitemap() {
 
     if (catRes.ok) {
       const { categories = [] } = await catRes.json();
-      categoryRoutes = flattenCategories(categories).map((c) => ({
-        url: `${SITE_URL}/category/${c.slug}`,
+      categoryRoutes = buildCategoryPaths(categories).map((path) => ({
+        url: `${SITE_URL}/category/${path}`,
         lastModified: new Date(),
         changeFrequency: "daily",
-        priority: 0.7,
+        priority: path.includes("/") ? 0.6 : 0.7,
       }));
     }
 

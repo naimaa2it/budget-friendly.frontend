@@ -32,11 +32,7 @@ export default function PrivacyPage() {
           </div>
         </div>
 
-        <LegalSections
-          policyKey="privacy"
-          borderColorClass="border-purple-200"
-          introText={(name) => `${name} আপনার ব্যক্তিগত তথ্য সুরক্ষায় প্রতিশ্রুতিবদ্ধ।`}
-        />
+        <LegalSections policyKey="privacy" borderColorClass="border-purple-200" />
       </div>
     </main>
   );

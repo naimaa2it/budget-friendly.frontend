@@ -32,11 +32,7 @@ export default function TermsPage() {
           </div>
         </div>
 
-        <LegalSections
-          policyKey="terms"
-          borderColorClass="border-gray-200"
-          introText={(name) => `${name} ব্যবহার করে আপনি এই শর্তাবলীতে সম্মত হচ্ছেন।`}
-        />
+        <LegalSections policyKey="terms" borderColorClass="border-gray-200" />
       </div>
     </main>
   );

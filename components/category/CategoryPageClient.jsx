@@ -306,7 +306,8 @@ export default function CategoryPageClient({
         setLoadingBestSelling(false);
       } catch (err) {
         console.error(err);
-        setProducts([]);
+        // This block only ever touches best-selling data (the product grid
+        // is a separate effect) — don't wipe it on a transient error.
         setBestSelling([]);
         setLoadingBestSelling(false);
         setLoadingProducts(false);
@@ -449,8 +450,11 @@ export default function CategoryPageClient({
         setProductsLoadedOnce(true);
       } catch (err) {
         console.error(err);
-        setProducts([]);
-        setTotalProducts(0);
+        // A network error shouldn't wipe out data we already have — this
+        // effect now always runs on mount (even over static build-time
+        // data), so a transient fetch failure here must not blank out a
+        // correctly-baked product grid. Only mark "loaded" so the skeleton
+        // doesn't hang forever; leave products/totalProducts untouched.
         setProductsLoadedOnce(true);
       } finally {
         setLoadingProducts(false);

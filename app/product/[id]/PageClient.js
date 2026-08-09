@@ -22,12 +22,18 @@ export default function ProductPageClient({
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    if (hasInitialData) return;
     if (!id) {
       setLoading(false);
       return;
     }
 
+    // Always revalidate against the live API, even when build-time data
+    // exists — a static page's product data is baked in at build time and
+    // never changes on its own, so edits/deletes made after the last build
+    // would otherwise never show up here. When hasInitialData is true this
+    // runs silently in the background (loading stays false, no spinner);
+    // when it's false (the __placeholder__ shell) it drives the loading UI
+    // exactly as before.
     fetch(`${API}/api/products/${id}`)
       .then((r) => (r.ok ? r.json() : null))
       .then(async (data) => {
@@ -87,7 +93,9 @@ export default function ProductPageClient({
         setLoading(false);
       })
       .catch(() => {
-        setNotFound(true);
+        // Network/API error: if we already have static build-time data,
+        // keep showing it rather than flashing "not found" over good data.
+        if (!hasInitialData) setNotFound(true);
         setLoading(false);
       });
   }, [id, hasInitialData]);

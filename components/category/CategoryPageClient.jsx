@@ -32,6 +32,7 @@ export default function CategoryPageClient({
     getCategoryBySlugAndParentSlug,
     categoriesMap,
     getSubcategories,
+    refreshedOnce: categoriesRefreshedOnce,
   } = useCategories();
   // The build-time page.js only hands us initial* data for the exact slug it
   // pre-rendered — true whenever this is a static page served directly
@@ -46,11 +47,11 @@ export default function CategoryPageClient({
   const initializedCategoryIdRef = useRef(
     hasInitialData ? String(initialCategory._id) : null,
   );
-  // Separately, the product-grid effect always runs once on mount
-  // regardless of whether categoryIdsParam "changed" (there's no previous
-  // value to bail against) — this one-shot flag skips just that first
-  // redundant fetch when we already have page 1 from the server.
-  const skipInitialProductsFetchRef = useRef(hasInitialData);
+  // The product-grid effect always live-fetches on mount too (even when we
+  // already have build-time initialProducts) so edits/deletes made after the
+  // last build show up without a full static rebuild — see the "Updating
+  // products..." indicator below, which covers this fetch without flashing
+  // the full skeleton over data we already have.
   // Distinguishes "route actually changed" from "effect re-ran because
   // categoriesMap's reference changed" (see the product-fetch effect).
   const lastRouteKeyRef = useRef(
@@ -58,6 +59,10 @@ export default function CategoryPageClient({
   );
 
   const [category, setCategory] = useState(initialCategory);
+  // True once a live CategoryContext refresh has confirmed this category no
+  // longer exists (e.g. deleted from the dashboard after this static page
+  // was built) — distinct from just "not resolved yet".
+  const [categoryGone, setCategoryGone] = useState(false);
   const [parentCategory, setParentCategory] = useState(initialParentCategory);
   const [subcategories, setSubcategories] = useState([]);
   const [immediateChildren, setImmediateChildren] = useState(
@@ -112,6 +117,41 @@ export default function CategoryPageClient({
     return () => window.removeEventListener("resize", updateResponsiveState);
   }, []);
 
+  // Silently revalidate the best-selling strip against the live API once on
+  // mount when we started from build-time data — badge/price changes made
+  // after the last build wouldn't otherwise show up (the effect below skips
+  // this same fetch on its first run since initializedCategoryIdRef already
+  // matches). Runs in the background; no loading state, so nothing flickers.
+  useEffect(() => {
+    if (!hasInitialData) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const bestResp = await fetch(
+          `${API}/api/products?categoryId=${encodeURIComponent(initialCategoryIdsParam)}&badge=best_seller&page=1&limit=50`,
+        );
+        const bestJson = await bestResp.json();
+        const catBest = bestJson.items || [];
+        if (cancelled) return;
+        if (catBest.length > 0) {
+          setBestSelling(catBest);
+        } else {
+          const globalResp = await fetch(
+            `${API}/api/products?badge=best_seller&page=1&limit=50`,
+          ).catch(() => null);
+          const globalJson = globalResp
+            ? await globalResp.json().catch(() => ({}))
+            : {};
+          if (!cancelled) setBestSelling(globalJson.items || []);
+        }
+      } catch {}
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // fetch products using category from context
   useEffect(() => {
     if (!slug) return;
@@ -160,9 +200,19 @@ export default function CategoryPageClient({
             setIsSubcategoryPage(false);
             setLoadingBestSelling(false);
             setLoadingProducts(false);
+          } else if (categoriesRefreshedOnce) {
+            // We had a real category (from build-time data), and a live
+            // refresh has now actually confirmed it's no longer in the
+            // taxonomy — e.g. deleted from the dashboard after this static
+            // page was built. Only trust this once refreshedOnce is true, so
+            // a network hiccup can't make a still-live category look gone.
+            setCategoryGone(true);
+            setLoadingBestSelling(false);
+            setLoadingProducts(false);
           }
           return;
         }
+        setCategoryGone(false);
 
         setCategory(match);
 
@@ -273,6 +323,7 @@ export default function CategoryPageClient({
     getCategoryBySlugAndParentSlug,
     categoriesMap,
     getSubcategories,
+    categoriesRefreshedOnce,
   ]);
 
   // Update document title, meta description, canonical link, and inject
@@ -346,12 +397,6 @@ export default function CategoryPageClient({
 
   useEffect(() => {
     if (!categoryIdsParam) return;
-    if (skipInitialProductsFetchRef.current) {
-      // Server already rendered page 1 of this exact category's products —
-      // skip the redundant fetch on this first run only.
-      skipInitialProductsFetchRef.current = false;
-      return;
-    }
 
     const loadProducts = async () => {
       setLoadingProducts(true);
@@ -436,6 +481,19 @@ export default function CategoryPageClient({
   useEffect(() => {
     setBestSellingStartIndex((prev) => Math.min(prev, maxBestSellingStart));
   }, [maxBestSellingStart]);
+
+  if (categoryGone) {
+    return (
+      <div className="py-24 text-center">
+        <p className="text-red-600 text-lg font-semibold">
+          Category not found
+        </p>
+        <p className="text-gray-500 mt-2 text-sm">
+          This category may have been removed or is unavailable.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <>

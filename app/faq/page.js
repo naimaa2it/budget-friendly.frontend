@@ -1,5 +1,5 @@
 ﻿import PolicySidebar from "@/components/Policy/Sidebar";
-import Accordion from "@/components/Policy/Accordion";
+import FaqAccordion from "@/components/Policy/FaqAccordion";
 import { siteTitle, getStoreName, getPolicyContent } from "@/lib/storeMeta";
 
 export async function generateMetadata() {
@@ -17,6 +17,9 @@ export async function generateMetadata() {
 }
 
 export default async function FaqPage() {
+  // Only used for the build-time JSON-LD snapshot below — the visible list
+  // (FaqAccordion) reads live data from StoreSettingsContext instead, so
+  // FAQ edits made from the dashboard show up without a full rebuild.
   const policyContent = await getPolicyContent();
   const faqs = policyContent?.faq || [];
 
@@ -56,11 +59,7 @@ export default async function FaqPage() {
               <p className="text-xs text-gray-500">আপনার প্রশ্নের উত্তর এখানে খুঁজুন</p>
             </div>
           </div>
-          {faqs.length > 0 ? (
-            <Accordion items={faqs} />
-          ) : (
-            <p className="text-sm text-gray-400">কোনো তথ্য পাওয়া যায়নি।</p>
-          )}
+          <FaqAccordion />
         </div>
       </main>
     </>

@@ -54,6 +54,12 @@ export function CategoryProvider({ children, initialCategories }) {
     initialState.categories.length === 0,
   );
   const [error, setError] = useState(null);
+  // True once a live fetch has actually succeeded — distinct from `loading`,
+  // which starts false whenever the build-time seed was non-empty. Consumers
+  // (e.g. a category page built from now-stale static data) need this to
+  // tell "context hasn't confirmed live state yet" apart from "confirmed —
+  // this category no longer exists" before treating a lookup miss as real.
+  const [refreshedOnce, setRefreshedOnce] = useState(false);
   const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
   useEffect(() => {
@@ -73,6 +79,9 @@ export function CategoryProvider({ children, initialCategories }) {
         setCategories(derived.categories);
         setCategoriesMap(derived.categoriesMap);
         setSubcategories(derived.subcategories);
+        // Only a successful fetch counts as "confirmed" — a network error
+        // shouldn't make a stale build-time category look deleted.
+        setRefreshedOnce(true);
       } else {
         throw new Error("Failed to fetch categories");
       }
@@ -134,6 +143,7 @@ export function CategoryProvider({ children, initialCategories }) {
     categoriesMap,
     subcategories,
     loading,
+    refreshedOnce,
     error,
     getCategoryById,
     getCategoryBySlug,

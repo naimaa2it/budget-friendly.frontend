@@ -1,5 +1,6 @@
 import PolicySidebar from "@/components/Policy/Sidebar";
-import { siteTitle, getStoreName, getPolicyContent } from "@/lib/storeMeta";
+import LegalSections from "@/components/Policy/LegalSections";
+import { siteTitle, getStoreName } from "@/lib/storeMeta";
 
 export async function generateMetadata() {
   const [title, storeName] = await Promise.all([
@@ -12,13 +13,7 @@ export async function generateMetadata() {
   };
 }
 
-export default async function TermsPage() {
-  const [storeName, policyContent] = await Promise.all([
-    getStoreName(),
-    getPolicyContent(),
-  ]);
-  const sections = policyContent?.terms || [];
-
+export default function TermsPage() {
   return (
     <main className="max-w-7xl mx-auto px-2 py-16 grid grid-cols-1 md:grid-cols-4 gap-8">
       <aside className="md:col-span-1">
@@ -37,23 +32,11 @@ export default async function TermsPage() {
           </div>
         </div>
 
-        {sections.length > 0 ? (
-          <>
-            <p className="text-sm text-gray-600 mb-6 leading-relaxed">
-              {storeName} ব্যবহার করে আপনি এই শর্তাবলীতে সম্মত হচ্ছেন।
-            </p>
-            <div className="space-y-6">
-              {sections.map((sec, i) => (
-                <section key={i} className="border-l-4 border-gray-200 pl-4">
-                  <h2 className="text-base font-semibold text-gray-800 mb-2">{sec.heading}</h2>
-                  <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{sec.content}</p>
-                </section>
-              ))}
-            </div>
-          </>
-        ) : (
-          <p className="text-sm text-gray-400">কোনো তথ্য পাওয়া যায়নি।</p>
-        )}
+        <LegalSections
+          policyKey="terms"
+          borderColorClass="border-gray-200"
+          introText={(name) => `${name} ব্যবহার করে আপনি এই শর্তাবলীতে সম্মত হচ্ছেন।`}
+        />
       </div>
     </main>
   );

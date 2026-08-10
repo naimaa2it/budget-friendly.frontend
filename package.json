@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build --webpack",
+    "build:fresh": "node -e \"const fs=require('fs');fs.rmSync('.next',{recursive:true,force:true});fs.rmSync('out',{recursive:true,force:true});\" && next build --webpack",
     "start": "next start",
     "lint": "eslint"
   },

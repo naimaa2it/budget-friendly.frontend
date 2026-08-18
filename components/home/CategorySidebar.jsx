@@ -133,7 +133,7 @@ const CategorySidebar = ({ onLinkClick }) => {
                   >
                     <Link
                       href={`/category/${category.slug}/`}
-                      className="flex items-center gap-3 flex-1 px-4 py-2"
+                      className="flex items-center gap-2 flex-1 min-w-0 pl-4 pr-0 py-2"
                       onClick={handleLinkClick}
                     >
                       <span className="text-xl">{category.icon}</span>
@@ -150,7 +150,7 @@ const CategorySidebar = ({ onLinkClick }) => {
                     {hasSubs && (
                       <button
                         onClick={() => toggleCategory(category._id)}
-                        className="px-3 py-2 shrink-0"
+                        className="flex items-center justify-center w-6 py-2 shrink-0"
                         aria-label="Expand subcategories"
                       >
                         <svg

@@ -21,14 +21,14 @@ export default function AllProductsClient() {
   const [productsLoadedOnce, setProductsLoadedOnce] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
-  const [sortOption, setSortOption] = useState("ratingHigh");
+  const [sortOption, setSortOption] = useState("position");
   const [mainCategories, setMainCategories] = useState([]);
   const [descendantMap, setDescendantMap] = useState(() => new Map());
   const [activeFilters, setActiveFilters] = useState({
     priceRange: [0, 0],
     expandedSubIds: new Set(),
     brands: new Set(),
-    minRating: null,
+    minRating: 5,
   });
 
   useEffect(() => {
@@ -104,11 +104,13 @@ export default function AllProductsClient() {
           params.set("brand", Array.from(activeFilters.brands).join(","));
         }
 
+        // Rating widget drives ordering here (not a filter): picked rating shows
+        // first, then the rest in descending order. See ?ratingSort on the API.
         if (
           activeFilters.minRating !== null &&
           activeFilters.minRating !== undefined
         ) {
-          params.set("minRating", String(activeFilters.minRating));
+          params.set("ratingSort", String(activeFilters.minRating));
         }
 
         const response = await fetch(
@@ -236,6 +238,8 @@ export default function AllProductsClient() {
                     descendantMap={descendantMap}
                     subcategoriesTitle="Categories"
                     showBrands={false}
+                    defaultMinRating={5}
+                    ratingMode="sort"
                     onChange={(f) => {
                       setActiveFilters(f);
                       setCurrentPage(1);
@@ -256,6 +260,8 @@ export default function AllProductsClient() {
                 descendantMap={descendantMap}
                 subcategoriesTitle="Categories"
                 showBrands={false}
+                defaultMinRating={5}
+                ratingMode="sort"
                 onChange={(f) => {
                   setActiveFilters(f);
                   setCurrentPage(1);

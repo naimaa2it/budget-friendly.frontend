@@ -49,8 +49,12 @@ export default function ProductFilters({
   // Title for the category checkbox section (main categories vs subcategories).
   subcategoriesTitle = "Subcategories",
   // Rating the star picker starts on. All-products & category pages pass 5 so
-  // the filter defaults to "5 stars & up"; other pages leave it null (no filter).
+  // the widget defaults to 5★; other pages leave it null.
   defaultMinRating = null,
+  // 'filter' → widget acts as a "N stars & up" minimum-rating filter (default).
+  // 'sort'   → widget re-orders products so the picked rating shows first, then
+  //            the rest in descending order (nothing is hidden).
+  ratingMode = "filter",
 }) {
   // ── derive brand options from products ───────────────────────────────
   const brandOptions = useMemo(() => {
@@ -392,19 +396,27 @@ export default function ProductFilters({
           </div>
           {minRating ? (
             <p className="text-xs text-gray-500 mt-1">
-              {minRating} star{minRating > 1 ? 's' : ''} &amp; up
+              {ratingMode === 'sort'
+                ? `${minRating} star${minRating > 1 ? 's' : ''} shown first`
+                : `${minRating} star${minRating > 1 ? 's' : ''} & up`}
               <button
                 type="button"
-                onClick={() => setMinRating(null)}
+                onClick={() => setMinRating(defaultMinRating)}
                 className="ml-2 text-red-500 hover:text-red-700 font-medium"
               >
                 ✕ clear
               </button>
             </p>
           ) : hoverRating ? (
-            <p className="text-xs text-gray-400 mt-1">{hoverRating} star{hoverRating > 1 ? 's' : ''} &amp; up</p>
+            <p className="text-xs text-gray-400 mt-1">
+              {ratingMode === 'sort'
+                ? `${hoverRating} star${hoverRating > 1 ? 's' : ''} shown first`
+                : `${hoverRating} star${hoverRating > 1 ? 's' : ''} & up`}
+            </p>
           ) : (
-            <p className="text-xs text-gray-400 mt-1">Select minimum rating</p>
+            <p className="text-xs text-gray-400 mt-1">
+              {ratingMode === 'sort' ? 'Pick a rating to show first' : 'Select minimum rating'}
+            </p>
           )}
         </div>
       </Section>

@@ -92,12 +92,12 @@ export default function CategoryPageClient({
   const [isMobileView, setIsMobileView] = useState(false);
   const [bestSellingStartIndex, setBestSellingStartIndex] = useState(0);
   const [bestSellingPerView, setBestSellingPerView] = useState(1);
-  const [sortOption, setSortOption] = useState("ratingHigh");
+  const [sortOption, setSortOption] = useState("position");
   const [activeFilters, setActiveFilters] = useState({
     priceRange: [0, 0],
     expandedSubIds: new Set(),
     brands: new Set(),
-    minRating: null,
+    minRating: 5,
   });
 
   useEffect(() => {
@@ -164,7 +164,7 @@ export default function CategoryPageClient({
     lastRouteKeyRef.current = routeKey;
 
     if (isNewRoute) {
-      setSortOption("ratingHigh");
+      setSortOption("position");
       setCurrentPage(1);
       setShowAllSubcategories(false);
       setShowMobileFilters(false);
@@ -173,7 +173,7 @@ export default function CategoryPageClient({
         priceRange: [0, 0],
         expandedSubIds: new Set(),
         brands: new Set(),
-        minRating: null,
+        minRating: 5,
       });
     }
     (async () => {
@@ -425,11 +425,13 @@ export default function CategoryPageClient({
           params.set("brand", Array.from(activeFilters.brands).join(","));
         }
 
+        // Rating widget drives ordering here (not a filter): picked rating shows
+        // first, then the rest in descending order. See ?ratingSort on the API.
         if (
           activeFilters.minRating !== null &&
           activeFilters.minRating !== undefined
         ) {
-          params.set("minRating", String(activeFilters.minRating));
+          params.set("ratingSort", String(activeFilters.minRating));
         }
 
         const response = await fetch(
@@ -740,6 +742,8 @@ export default function CategoryPageClient({
                     products={products}
                     subcategories={subcategories}
                     descendantMap={descendantMap}
+                    defaultMinRating={5}
+                    ratingMode="sort"
                     onChange={(f) => {
                       setActiveFilters(f);
                       setCurrentPage(1);
@@ -759,6 +763,8 @@ export default function CategoryPageClient({
                 products={products}
                 subcategories={subcategories}
                 descendantMap={descendantMap}
+                defaultMinRating={5}
+                ratingMode="sort"
                 onChange={(f) => {
                   setActiveFilters(f);
                   setCurrentPage(1);

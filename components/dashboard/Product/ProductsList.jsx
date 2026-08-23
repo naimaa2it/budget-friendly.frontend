@@ -17,6 +17,20 @@ const LIMIT = 20;
 // Must match TRASH_RETENTION_MS on the backend (30 days).
 const TRASH_RETENTION_DAYS = 30;
 
+// Short date label for the "created by / edited by" audit trail.
+const fmtAuditDate = (d) => {
+  if (!d) return "";
+  try {
+    return new Date(d).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return "";
+  }
+};
+
 // Days left before a trashed product is permanently purged by the cron job.
 const daysLeftInTrash = (deletedAt) => {
   if (!deletedAt) return null;
@@ -392,6 +406,9 @@ export default function ProductsList() {
                 <th className="py-2 px-3 whitespace-nowrap">Price</th>
                 <th className="py-2 px-3 whitespace-nowrap">Inventory</th>
                 <th className="py-2 px-3 whitespace-nowrap">Status</th>
+                {!viewTrash && (
+                  <th className="py-2 px-3 whitespace-nowrap">Created / Edited by</th>
+                )}
                 <th className="py-2 px-3">Actions</th>
               </tr>
             </thead>
@@ -455,9 +472,9 @@ export default function ProductsList() {
                     </td>
                     <td className="py-3 px-3 whitespace-nowrap">
                       {p.price
-                        ? `₹${p.price}`
+                        ? `৳${p.price}`
                         : p.variants?.[0]?.price
-                          ? `₹${p.variants[0].price}`
+                          ? `৳${p.variants[0].price}`
                           : "-"}
                     </td>
                     <td className="py-3 px-3 whitespace-nowrap">
@@ -475,6 +492,44 @@ export default function ProductsList() {
                         {p.status}
                       </span>
                     </td>
+                    {!viewTrash && (
+                      <td className="py-3 px-3 align-top">
+                        {Array.isArray(p.auditTrail) &&
+                        p.auditTrail.length > 0 ? (
+                          <div className="space-y-0.5">
+                            {p.auditTrail.slice(-5).map((a, i) => (
+                              <div
+                                key={i}
+                                className="text-[11px] leading-tight whitespace-nowrap"
+                              >
+                                <span
+                                  className={
+                                    a.action === "created"
+                                      ? "text-green-600"
+                                      : "text-blue-500"
+                                  }
+                                >
+                                  {a.action === "created"
+                                    ? "Created by"
+                                    : "Edited by"}
+                                </span>{" "}
+                                <span className="text-gray-700 font-medium">
+                                  {a.name || "Unknown"}
+                                </span>
+                                {a.at && (
+                                  <span className="text-gray-400">
+                                    {" "}
+                                    · {fmtAuditDate(a.at)}
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-400">—</span>
+                        )}
+                      </td>
+                    )}
                     <td className="py-3 px-3">
                       <div className="flex flex-wrap gap-1.5">
                         {viewTrash ? (

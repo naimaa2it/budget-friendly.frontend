@@ -531,7 +531,7 @@ export default function Sidebar({
   const pathname = usePathname() || "/dashboard";
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, refreshUser } = useUser();
+  const { user, setUser } = useUser();
   const { storeName, logoUrl } = useStoreSettings();
 
   const [openSections, setOpenSections] = useState({
@@ -561,8 +561,12 @@ export default function Sidebar({
     } catch (err) {
       // ignore
     }
-    await refreshUser();
-    router.push("/");
+    // Clear the session client-side straight away instead of re-fetching
+    // /api/auth/me — that round-trip flips the context back into `loading`,
+    // which re-renders the dashboard's "Please wait…" spinner and stalls the
+    // redirect. We already know the user is gone, so just clear and go.
+    setUser(null);
+    router.replace("/auth/adminlogin");
   };
 
   const isActivePath = (href) =>

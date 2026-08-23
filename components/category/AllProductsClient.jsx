@@ -21,7 +21,9 @@ export default function AllProductsClient() {
   const [productsLoadedOnce, setProductsLoadedOnce] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
-  const [sortOption, setSortOption] = useState("position");
+  const [sortOption, setSortOption] = useState("ratingHigh");
+  const [mainCategories, setMainCategories] = useState([]);
+  const [descendantMap, setDescendantMap] = useState(() => new Map());
   const [activeFilters, setActiveFilters] = useState({
     priceRange: [0, 0],
     expandedSubIds: new Set(),
@@ -34,6 +36,41 @@ export default function AllProductsClient() {
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
+  }, []);
+
+  // Load the main (top-level) categories to show in the filter sidebar, along
+  // with a map of each main category → all its descendant ids so selecting one
+  // returns products from the whole branch.
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const res = await fetch(`${API}/api/products/categories`);
+        const json = await res.json();
+        const roots = json.categories || [];
+
+        const collectDescendants = (node) => {
+          let ids = [];
+          (node.children || []).forEach((child) => {
+            ids.push(String(child._id));
+            ids = ids.concat(collectDescendants(child));
+          });
+          return ids;
+        };
+
+        const map = new Map();
+        const mains = roots.map((root) => {
+          map.set(String(root._id), new Set(collectDescendants(root)));
+          return { _id: String(root._id), name: root.name, depth: 0 };
+        });
+
+        setMainCategories(mains);
+        setDescendantMap(map);
+      } catch {
+        setMainCategories([]);
+        setDescendantMap(new Map());
+      }
+    };
+    loadCategories();
   }, []);
 
   useEffect(() => {
@@ -195,7 +232,10 @@ export default function AllProductsClient() {
                 <div className="pt-2">
                   <ProductFilters
                     products={products}
-                    subcategories={[]}
+                    subcategories={mainCategories}
+                    descendantMap={descendantMap}
+                    subcategoriesTitle="Categories"
+                    showBrands={false}
                     onChange={(f) => {
                       setActiveFilters(f);
                       setCurrentPage(1);
@@ -212,7 +252,10 @@ export default function AllProductsClient() {
             <div className="hidden lg:block col-span-12 lg:col-span-3">
               <ProductFilters
                 products={products}
-                subcategories={[]}
+                subcategories={mainCategories}
+                descendantMap={descendantMap}
+                subcategoriesTitle="Categories"
+                showBrands={false}
                 onChange={(f) => {
                   setActiveFilters(f);
                   setCurrentPage(1);

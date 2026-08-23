@@ -2,6 +2,7 @@ import React from 'react';
 
 // reuseable sort dropdown used across product listing pages
 export const SORT_OPTIONS = [
+  { value: 'ratingHigh', label: 'Top Rated' },
   { value: 'position', label: 'Default' },
   { value: 'newest', label: 'Newest First' },
   { value: 'oldest', label: 'Oldest First' },

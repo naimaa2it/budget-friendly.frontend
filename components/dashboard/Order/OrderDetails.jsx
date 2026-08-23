@@ -215,8 +215,6 @@ export default function OrderDetails({ orderId }) {
   };
 
   const updateStatus = async () => {
-    if (!statusModal.reason.trim())
-      return alert("Status update reason is required.");
     setStatusModal((prev) => ({ ...prev, submitting: true }));
     try {
       const r = await fetch(`${API}/api/admin/orders/${orderId}/status`, {
@@ -847,7 +845,7 @@ export default function OrderDetails({ orderId }) {
             </div>
             <div>
               <label className="block text-xs text-gray-500 mb-1">
-                Reason <span className="text-rose-600">*</span>
+                Reason <span className="text-gray-400">(optional)</span>
               </label>
               <textarea
                 value={statusModal.reason}

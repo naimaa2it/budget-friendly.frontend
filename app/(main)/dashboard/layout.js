@@ -27,6 +27,12 @@ export default function DashboardLayout({ children }) {
     if (!user && !loading) refreshUser();
   }, [user, loading, refreshUser]);
 
+  // Once the session check has finished with no logged-in user, send them to
+  // the admin login page (not the storefront homepage).
+  useEffect(() => {
+    if (!loading && !user) router.replace("/auth/adminlogin");
+  }, [loading, user, router]);
+
   // ── Still fetching session ────────────────────────────────────────────────
   if (loading) {
     return (
@@ -68,10 +74,10 @@ export default function DashboardLayout({ children }) {
           Please log in to access the dashboard.
         </p>
         <button
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/auth/adminlogin")}
           className="px-4 py-2 bg-gray-800 text-white rounded text-sm hover:bg-gray-700 transition"
         >
-          Go to Homepage
+          Go to Login
         </button>
       </div>
     );

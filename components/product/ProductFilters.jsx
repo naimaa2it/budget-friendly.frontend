@@ -43,6 +43,14 @@ export default function ProductFilters({
   onChange,
   sticky = true,
   showSkincareFilters = false,
+  // When true the Brands section is rendered (default). The all-products page
+  // hides it and shows main categories in its place instead.
+  showBrands = true,
+  // Title for the category checkbox section (main categories vs subcategories).
+  subcategoriesTitle = "Subcategories",
+  // Rating the star picker starts on. All-products & category pages pass 5 so
+  // the filter defaults to "5 stars & up"; other pages leave it null (no filter).
+  defaultMinRating = null,
 }) {
   // ── derive brand options from products ───────────────────────────────
   const brandOptions = useMemo(() => {
@@ -81,7 +89,7 @@ export default function ProductFilters({
   const [priceRange, setPriceRange] = useState([0, 10000]);
   const [subIds, setSubIds] = useState(new Set());
   const [brands, setBrands] = useState(new Set());
-  const [minRating, setMinRating] = useState(null);
+  const [minRating, setMinRating] = useState(defaultMinRating);
   const [hoverRating, setHoverRating] = useState(0);
   const [selectedSkinTypes, setSelectedSkinTypes] = useState(new Set());
   const [selectedFormulations, setSelectedFormulations] = useState(new Set());
@@ -192,7 +200,7 @@ export default function ProductFilters({
 
   const hasActiveFilters = initializedRef.current && (
     priceRange[0] !== absMin || priceRange[1] !== absMax ||
-    subIds.size > 0 || brands.size > 0 || minRating !== null ||
+    subIds.size > 0 || brands.size > 0 || minRating !== defaultMinRating ||
     selectedSkinTypes.size > 0 || selectedFormulations.size > 0 ||
     freeFrom.size > 0 || skincareFlags.crueltyFree || skincareFlags.vegan
   );
@@ -204,12 +212,12 @@ export default function ProductFilters({
     setMaxInputValue(String(max));
     setSubIds(new Set());
     setBrands(new Set());
-    setMinRating(null);
+    setMinRating(defaultMinRating);
     setSelectedSkinTypes(new Set());
     setSelectedFormulations(new Set());
     setFreeFrom(new Set());
     setSkincareFlags({ crueltyFree: false, vegan: false });
-  }, []);
+  }, [defaultMinRating]);
 
   const span = Math.max(absMax - absMin, 1);
 
@@ -304,7 +312,7 @@ export default function ProductFilters({
 
       {/* ── Subcategories (nested with depth indentation) ────────────── */}
       {subcategories.length > 0 && (
-        <Section id="sub" title="Subcategories" isOpen={openSections.sub} onToggle={toggleSection}>
+        <Section id="sub" title={subcategoriesTitle} isOpen={openSections.sub} onToggle={toggleSection}>
           <div className="space-y-1 max-h-52 overflow-y-auto pr-1">
             {subcategories.map(sub => {
               const id = String(sub._id);
@@ -332,7 +340,7 @@ export default function ProductFilters({
       )}
 
       {/* ── Brands ──────────────────────────────────────────────────── */}
-      {brandOptions.length > 0 && (
+      {showBrands && brandOptions.length > 0 && (
         <Section id="brand" title="Brands" isOpen={openSections.brand} onToggle={toggleSection}>
           <div className="space-y-1.5 max-h-44 overflow-y-auto pr-1">
             {brandOptions.map(b => (

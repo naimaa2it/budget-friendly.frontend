@@ -341,10 +341,6 @@ function StatusUpdateModal({ order, onClose, onUpdated }) {
   const [submitting, setSubmitting] = useState(false);
 
   const submit = async () => {
-    if (!reason.trim()) {
-      setError("Status update reason is required.");
-      return;
-    }
     setSubmitting(true);
     setError("");
     try {
@@ -399,7 +395,7 @@ function StatusUpdateModal({ order, onClose, onUpdated }) {
         </div>
         <div>
           <label className="block text-xs font-medium text-gray-500 mb-1">
-            Reason <span className="text-rose-600">*</span>
+            Reason <span className="text-gray-400">(optional)</span>
           </label>
           <textarea
             autoFocus

@@ -92,7 +92,7 @@ export default function CategoryPageClient({
   const [isMobileView, setIsMobileView] = useState(false);
   const [bestSellingStartIndex, setBestSellingStartIndex] = useState(0);
   const [bestSellingPerView, setBestSellingPerView] = useState(1);
-  const [sortOption, setSortOption] = useState("position");
+  const [sortOption, setSortOption] = useState("ratingHigh");
   const [activeFilters, setActiveFilters] = useState({
     priceRange: [0, 0],
     expandedSubIds: new Set(),
@@ -164,7 +164,7 @@ export default function CategoryPageClient({
     lastRouteKeyRef.current = routeKey;
 
     if (isNewRoute) {
-      setSortOption("position");
+      setSortOption("ratingHigh");
       setCurrentPage(1);
       setShowAllSubcategories(false);
       setShowMobileFilters(false);

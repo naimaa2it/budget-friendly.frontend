@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation";
 import Sidebar from "@/components/dashboard/Sidebar";
 import NotificationBell from "@/components/dashboard/NotificationBell";
 import { useUser } from "@/components/context/UserContext";
+import { hasPermission } from "@/lib/permissions";
 import { useGlobalBarcodeScan } from "@/hooks/useGlobalBarcodeScan";
+
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 export default function DashboardLayout({ children }) {
   const { user, loading, refreshUser } = useUser();
@@ -91,6 +95,40 @@ export default function DashboardLayout({ children }) {
         <p className="mt-2 text-sm text-gray-600">
           You must be an admin or moderator to view this area.
         </p>
+      </div>
+    );
+  }
+
+  // ── Moderator without dashboard access ─────────────────────────────────────
+  // Admins always pass. A moderator can only enter the dashboard when an admin
+  // has granted the "View dashboard" permission in dashboard/authorized/. Until
+  // then the whole dashboard (every sub-page) stays locked.
+  if (!hasPermission(user, "dashboard.view")) {
+    const signOutAndLeave = async () => {
+      try {
+        await fetch(`${API_URL}/api/auth/logout`, {
+          method: "POST",
+          credentials: "include",
+        });
+      } catch {
+        // ignore
+      }
+      await refreshUser();
+      router.replace("/auth/adminlogin");
+    };
+    return (
+      <div className="max-w-3xl mx-auto mt-12 p-6 bg-white rounded shadow text-center">
+        <h2 className="text-xl font-semibold">Access denied</h2>
+        <p className="mt-2 text-sm text-gray-600">
+          Your account doesn&apos;t have dashboard access. Please contact an
+          administrator to be granted access.
+        </p>
+        <button
+          onClick={signOutAndLeave}
+          className="mt-4 px-4 py-2 bg-gray-800 text-white rounded text-sm hover:bg-gray-700 transition"
+        >
+          Sign out
+        </button>
       </div>
     );
   }

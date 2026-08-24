@@ -26,10 +26,11 @@ export default function DashboardLayout({ children }) {
     else router.push("/dashboard");
   };
 
-  // Refresh user data if it hasn't been loaded yet
-  useEffect(() => {
-    if (!user && !loading) refreshUser();
-  }, [user, loading, refreshUser]);
+  // NOTE: we intentionally do NOT auto-call refreshUser() here. The
+  // UserProvider already loads the session once on mount, and re-fetching from
+  // this layout created an infinite loop: refreshUser toggles `loading`, and an
+  // effect that depends on `loading` re-fires every time it toggles, hammering
+  // /api/auth/me. A genuinely logged-out user is handled by the redirect below.
 
   // Once the session check has finished with no logged-in user, send them to
   // the admin login page (not the storefront homepage).
@@ -37,8 +38,13 @@ export default function DashboardLayout({ children }) {
     if (!loading && !user) router.replace("/auth/adminlogin");
   }, [loading, user, router]);
 
-  // ── Still fetching session ────────────────────────────────────────────────
-  if (loading) {
+  // ── Still fetching session, or logged out and being redirected ────────────
+  // While the session is loading *or* there is no user (e.g. right after a
+  // sign-out, when the redirect effect above is sending us to the admin login
+  // page) we show a single quiet spinner. Rendering the same placeholder in
+  // both states means logging out slides straight to /auth/adminlogin with no
+  // "Session expired" card flashing in between — no blink, no glitch.
+  if (loading || !user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -63,26 +69,6 @@ export default function DashboardLayout({ children }) {
           </svg>
           <p className="text-sm text-gray-400">Please wait…</p>
         </div>
-      </div>
-    );
-  }
-
-  // ── Not logged in ─────────────────────────────────────────────────────────
-  if (!user) {
-    return (
-      <div className="max-w-3xl mx-auto mt-12 p-6 bg-white rounded shadow text-center">
-        <h2 className="text-lg font-semibold text-gray-800 mb-2">
-          Session expired
-        </h2>
-        <p className="text-sm text-gray-500 mb-4">
-          Please log in to access the dashboard.
-        </p>
-        <button
-          onClick={() => router.push("/auth/adminlogin")}
-          className="px-4 py-2 bg-gray-800 text-white rounded text-sm hover:bg-gray-700 transition"
-        >
-          Go to Login
-        </button>
       </div>
     );
   }

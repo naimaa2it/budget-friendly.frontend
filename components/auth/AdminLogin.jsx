@@ -47,9 +47,13 @@ export default function AdminLogin() {
         throw new Error(body.error || `Server responded ${resp.status}`);
       }
 
-      await refreshUser();
+      const loggedInUser = await refreshUser();
+      // Admins land on the dashboard overview; moderators (any non-admin
+      // role) land on the products page.
+      const destination =
+        loggedInUser?.role === "admin" ? "/dashboard" : "/dashboard/products";
       showMessage("Login successful — redirecting...", "success");
-      setTimeout(() => router.push("/dashboard/products"), 1000);
+      setTimeout(() => router.replace(destination), 1000);
     } catch (err) {
       console.error("Admin login error:", err);
       showMessage(err.message || "Login failed");

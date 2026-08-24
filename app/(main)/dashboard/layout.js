@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, Suspense } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Sidebar from "@/components/dashboard/Sidebar";
 import NotificationBell from "@/components/dashboard/NotificationBell";
 import { useUser } from "@/components/context/UserContext";
@@ -14,6 +14,7 @@ const API_URL =
 export default function DashboardLayout({ children }) {
   const { user, loading, refreshUser } = useUser();
   const router = useRouter();
+  const pathname = usePathname() || "/dashboard";
   const [mobileSidebarOpen, setMobileSidebarOpen] = React.useState(false);
   const [collapsed, setCollapsed] = React.useState(false);
 
@@ -37,6 +38,21 @@ export default function DashboardLayout({ children }) {
   useEffect(() => {
     if (!loading && !user) router.replace("/auth/adminlogin");
   }, [loading, user, router]);
+
+  // The overview (/dashboard) is the only page that needs the "View dashboard"
+  // permission. A moderator without it — but with other grants (e.g. products)
+  // — should not see an Access-denied wall; send them straight to their
+  // products page instead. Admins always have dashboard.view so they stay put.
+  useEffect(() => {
+    if (
+      !loading &&
+      user &&
+      pathname === "/dashboard" &&
+      !hasPermission(user, "dashboard.view")
+    ) {
+      router.replace("/dashboard/products");
+    }
+  }, [loading, user, pathname, router]);
 
   // ── Still fetching session, or logged out and being redirected ────────────
   // While the session is loading *or* there is no user (e.g. right after a
@@ -85,11 +101,16 @@ export default function DashboardLayout({ children }) {
     );
   }
 
-  // ── Moderator without dashboard access ─────────────────────────────────────
-  // Admins always pass. A moderator can only enter the dashboard when an admin
-  // has granted the "View dashboard" permission in dashboard/authorized/. Until
-  // then the whole dashboard (every sub-page) stays locked.
-  if (!hasPermission(user, "dashboard.view")) {
+  // ── Moderator with no access at all ────────────────────────────────────────
+  // Admins always pass. A moderator needs at least one granted permission to
+  // enter the dashboard; each sub-page then enforces its own permission and the
+  // sidebar only shows what they can reach. Only a moderator with an empty
+  // permission set is fully locked out.
+  const hasNoAccess =
+    user.role !== "admin" &&
+    (!Array.isArray(user.permissions) || user.permissions.length === 0);
+
+  if (hasNoAccess) {
     const signOutAndLeave = async () => {
       try {
         await fetch(`${API_URL}/api/auth/logout`, {
@@ -115,6 +136,38 @@ export default function DashboardLayout({ children }) {
         >
           Sign out
         </button>
+      </div>
+    );
+  }
+
+  // ── Overview page, moderator without dashboard.view ────────────────────────
+  // The redirect effect above is sending them to /dashboard/products. Show a
+  // quiet spinner instead of flashing the overview they aren't allowed to see.
+  if (pathname === "/dashboard" && !hasPermission(user, "dashboard.view")) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <svg
+            className="animate-spin w-10 h-10 text-gray-400"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v8H4z"
+            />
+          </svg>
+          <p className="text-sm text-gray-400">Please wait…</p>
+        </div>
       </div>
     );
   }

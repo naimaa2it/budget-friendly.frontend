@@ -19,9 +19,6 @@ function Toggle({ checked, onChange }) {
   );
 }
 
-
-"suno chatbot er kaj hocche emn hbe like keuami chatbot k train korabo mane ami dashbaord theke question dibo and answer dibo and then ai chatbot ke train korbo and then ai chatbot ke ami amar website e use korbo like customer support er jonno. and okahn theke order o kora jbe mane chatbot order o confirm kore dite parbe. jokhn keu kono product er naam likhbe tkhn sei produt er details bolbe amr db theke niye ashe and jkhn keu bolbe like emn j 6 antenna router tkhn she db theke kjhuje ene price blbe and db te same entry thakle thkhn hocche sobgulo show krbe and ask korbe j apni konta order korte chan and then she order confirm korbe and then she order confirmation er por amr db te oi order er entry save hbe and then ami oi order er details dekhte parbo. and okhn keu bolbe like emn j 6 antenna router tkhn she db theke kjhuje ene price blbe and db te same entry thakle thkhn hocche sobgulo show krbe and ask korbe j apni konta order korte chan and then she order confirm korbe and then she order confirmation er por amr db te oi order er entry save hbe and then ami oi order er details dekhte parbo.and user theke order confirm er jonne name ,email,phone number,full address chaibe. phone number hocche bangladeshi hte hbe and address o bangl;adesh location data onujayi check kore dekhbe thik ache kina.and order confirm er por custoner er deya mail e mail jbe j order confirm hyse. "
-
 export default function TikTokPixelForm() {
   const router = useRouter();
   const [cfg, setCfg] = useState({

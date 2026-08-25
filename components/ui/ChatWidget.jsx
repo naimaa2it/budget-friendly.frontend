@@ -87,10 +87,33 @@ export default function ChatWidget() {
     })
       .then((r) => r.json())
       .then((d) => {
-        if (d.messages) setMessages(d.messages);
+        if (d.messages) {
+          setMessages(d.messages);
+        } else if (d.error) {
+          // server error — keep the sent message visible and show a friendly note
+          setMessages((m) => [
+            ...m,
+            {
+              _id: "err-" + Date.now(),
+              sender: "bot",
+              body: "একটু সমস্যা হলো 🙈 আবার চেষ্টা করুন।",
+              createdAt: new Date().toISOString(),
+            },
+          ]);
+        }
         if (d.quickReplies?.length) setQuick(d.quickReplies);
       })
-      .catch(() => {})
+      .catch(() => {
+        setMessages((m) => [
+          ...m,
+          {
+            _id: "err-" + Date.now(),
+            sender: "bot",
+            body: "নেটওয়ার্ক সমস্যা 🙈 আবার চেষ্টা করুন।",
+            createdAt: new Date().toISOString(),
+          },
+        ]);
+      })
       .finally(() => {
         setSending(false);
         scrollToBottom();

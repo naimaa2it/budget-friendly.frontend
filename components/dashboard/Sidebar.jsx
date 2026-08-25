@@ -40,13 +40,20 @@ const SECTIONS = [
     key: "support",
     label: "Support",
     icon: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",
-    matchPrefixes: ["/dashboard/chat"],
+    matchPrefixes: ["/dashboard/chat", "/dashboard/chatbot-training"],
     items: [
       {
         key: "live-chat",
         label: "Live Chat Inbox",
         href: "/dashboard/chat",
         icon: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",
+        permissionKey: "chat.manage",
+      },
+      {
+        key: "chatbot-training",
+        label: "Chatbot Training",
+        href: "/dashboard/chatbot-training",
+        icon: "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .7-1 1.2M12 16h.01",
         permissionKey: "chat.manage",
       },
     ],

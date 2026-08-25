@@ -13,6 +13,7 @@ import LayoutWrapper from "@/components/layout/LayoutWrapper";
 import TrackingCodeInjector from "@/components/layout/TrackingCodeInjector";
 import ScrollToTop from "@/components/ui/ScrollToTopLazy";
 // import FloatingWhatsApp from "@/components/ui/FloatingWhatsApp";
+import ChatWidget from "@/components/ui/ChatWidget";
 import PopupBanner from "@/components/ui/PopupBanner";
 import { getStoreName, getFavicon, getStoreSettings } from "@/lib/storeMeta";
 import { getCategoriesTree } from "@/lib/categoriesMeta";
@@ -180,6 +181,7 @@ export default async function RootLayout({ children }) {
                   <CartFloating />
                   <ToastProvider />
                   <PopupBanner />
+                  <ChatWidget />
                   <FrequentlyBoughtTogetherModal />
                   <CompareBar />
                 </CompareProvider>

@@ -125,6 +125,13 @@ const PERMISSION_GROUPS = [
     ],
   },
   {
+    groupKey: "support",
+    label: "Support",
+    permissions: [
+      { key: "chat.manage", label: "Live chat inbox" },
+    ],
+  },
+  {
     groupKey: "system",
     label: "System",
     permissions: [

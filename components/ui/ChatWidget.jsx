@@ -1,0 +1,204 @@
+"use client";
+
+import React, { useState, useEffect, useRef, useCallback } from "react";
+
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
+const VISITOR_KEY = "Pickob-chat-visitor";
+const POLL_MS = 5000;
+
+// fallback menu (also comes from the server so it stays in sync)
+const DEFAULT_QUICK = [
+  { key: "track", emoji: "📦", label: "Track Order", text: "Track order" },
+  { key: "delivery", emoji: "🚚", label: "Delivery", text: "Delivery charge koto?" },
+  { key: "products", emoji: "🛍️", label: "Products", text: "Products dekhte chai" },
+  { key: "agent", emoji: "👤", label: "Agent", text: "Agent er sathe kotha bolbo" },
+];
+
+function getVisitorId() {
+  if (typeof window === "undefined") return "";
+  let id = localStorage.getItem(VISITOR_KEY);
+  if (!id) {
+    id = "v_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    localStorage.setItem(VISITOR_KEY, id);
+  }
+  return id;
+}
+
+export default function ChatWidget() {
+  const [open, setOpen] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [quick, setQuick] = useState(DEFAULT_QUICK);
+  const [input, setInput] = useState("");
+  const [sending, setSending] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const visitorId = useRef("");
+  const scrollRef = useRef(null);
+  const pollRef = useRef(null);
+
+  useEffect(() => {
+    visitorId.current = getVisitorId();
+  }, []);
+
+  const scrollToBottom = () => {
+    requestAnimationFrame(() => {
+      if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    });
+  };
+
+  const fetchThread = useCallback(() => {
+    if (!visitorId.current) return;
+    fetch(`${API}/api/chat/thread?visitorId=${encodeURIComponent(visitorId.current)}`)
+      .then((r) => r.json())
+      .then((d) => {
+        setMessages(d.messages || []);
+        if (d.quickReplies?.length) setQuick(d.quickReplies);
+        setLoaded(true);
+      })
+      .catch(() => {})
+      .finally(scrollToBottom);
+  }, []);
+
+  useEffect(() => {
+    if (!open) {
+      if (pollRef.current) clearInterval(pollRef.current);
+      return;
+    }
+    fetchThread();
+    pollRef.current = setInterval(fetchThread, POLL_MS);
+    return () => pollRef.current && clearInterval(pollRef.current);
+  }, [open, fetchThread]);
+
+  // send a message (typed, or a quick-reply button's text)
+  const send = (overrideText) => {
+    const body = (overrideText ?? input).trim();
+    if (!body || sending) return;
+    setSending(true);
+    setMessages((m) => [
+      ...m,
+      { _id: "tmp-" + Date.now(), sender: "visitor", body, createdAt: new Date().toISOString() },
+    ]);
+    if (overrideText == null) setInput("");
+    scrollToBottom();
+
+    fetch(`${API}/api/chat/message`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ visitorId: visitorId.current, body }),
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.messages) setMessages(d.messages);
+        if (d.quickReplies?.length) setQuick(d.quickReplies);
+      })
+      .catch(() => {})
+      .finally(() => {
+        setSending(false);
+        scrollToBottom();
+      });
+  };
+
+  const bubbleLabel = { visitor: null, bot: "Bot", admin: "Team" };
+
+  return (
+    <>
+      {/* Launcher */}
+      <button
+        onClick={() => setOpen((o) => !o)}
+        aria-label="Chat with us"
+        className="fixed bottom-14 right-4 z-[60] flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition hover:bg-blue-700"
+      >
+        {open ? (
+          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
+          </svg>
+        ) : (
+          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
+      </button>
+
+      {/* Panel */}
+      {open && (
+        <div className="fixed bottom-24 right-4 z-[60] flex h-[70vh] max-h-[540px] w-[92vw] max-w-sm flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
+          {/* header */}
+          <div className="flex items-center gap-3 bg-blue-600 px-4 py-3 text-white">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-lg">💬</div>
+            <div>
+              <p className="text-sm font-semibold leading-tight">Support</p>
+              <p className="text-xs text-blue-100">Usually replies instantly</p>
+            </div>
+          </div>
+
+          {/* messages */}
+          <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto bg-gray-50 p-3">
+            {loaded && messages.length === 0 && (
+              <p className="mt-6 text-center text-xs text-gray-400">
+                Kono kichu janar thakle likhun 👇
+              </p>
+            )}
+            {messages.map((m) => {
+              const mine = m.sender === "visitor";
+              return (
+                <div key={m._id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
+                  <div
+                    className={`max-w-[80%] whitespace-pre-line rounded-2xl px-3 py-2 text-sm ${
+                      mine
+                        ? "rounded-br-sm bg-blue-600 text-white"
+                        : m.sender === "bot"
+                          ? "rounded-bl-sm border border-gray-200 bg-white text-gray-700"
+                          : "rounded-bl-sm bg-indigo-600 text-white"
+                    }`}
+                  >
+                    {!mine && bubbleLabel[m.sender] && (
+                      <span className="mb-0.5 block text-[10px] font-semibold opacity-70">
+                        {bubbleLabel[m.sender]}
+                      </span>
+                    )}
+                    {m.body}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* quick-reply menu buttons */}
+          <div className="flex gap-2 overflow-x-auto border-t border-gray-100 px-3 py-2">
+            {quick.map((q) => (
+              <button
+                key={q.key}
+                onClick={() => send(q.text)}
+                disabled={sending}
+                className="flex shrink-0 items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition hover:bg-blue-100 disabled:opacity-50"
+              >
+                <span>{q.emoji}</span>
+                <span>{q.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* input */}
+          <div className="flex items-center gap-2 border-t border-gray-100 p-2">
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && send()}
+              placeholder="Message likhun…"
+              className="flex-1 rounded-full border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none"
+            />
+            <button
+              onClick={() => send()}
+              disabled={sending || !input.trim()}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-white transition hover:bg-blue-700 disabled:opacity-50"
+              aria-label="Send"
+            >
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3 20l18-8L3 4v6l12 2-12 2z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

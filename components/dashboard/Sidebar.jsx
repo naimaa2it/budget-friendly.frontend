@@ -37,6 +37,21 @@ const SECTIONS = [
     ],
   },
   {
+    key: "support",
+    label: "Support",
+    icon: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",
+    matchPrefixes: ["/dashboard/chat"],
+    items: [
+      {
+        key: "live-chat",
+        label: "Live Chat Inbox",
+        href: "/dashboard/chat",
+        icon: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",
+        permissionKey: "chat.manage",
+      },
+    ],
+  },
+  {
     key: "catalog",
     label: "Catalog",
     icon: SECTION_ICONS.catalog,

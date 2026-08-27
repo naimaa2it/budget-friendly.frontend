@@ -3146,12 +3146,16 @@ function CreateOrderModal({ initial, sessionId, cartUserId, onClose, onCreated }
   const [name, setName] = useState(initial?.name || "");
   const [phone, setPhone] = useState(initial?.phone || "");
   const [email, setEmail] = useState(initial?.email || "");
-  const [address, setAddress] = useState("");
-  const [note, setNote] = useState("");
-  const [city, setCity] = useState("");
+  const [address, setAddress] = useState(initial?.address || "");
+  const [note, setNote] = useState(initial?.note || "");
+  // City is a select; prefilled city that isn't a known option falls back to
+  // the "other" custom input once the location list loads (see effect below).
+  const [city, setCity] = useState(initial?.city || "");
   const [customCity, setCustomCity] = useState("");
-  const [zone, setZone] = useState("");
-  const [area, setArea] = useState("");
+  // Zone/area are free text (with datalist suggestions) so any prefilled value
+  // from the abandoned session/address survives editing.
+  const [zone, setZone] = useState(initial?.zone || "");
+  const [area, setArea] = useState(initial?.area || "");
   const [items, setItems] = useState(
     (initial?.items || []).map((i) => ({
       productId: i.productId,
@@ -3186,6 +3190,17 @@ function CreateOrderModal({ initial, sessionId, cartUserId, onClose, onCreated }
     city && zone && locationData[city]?.zones?.[zone]
       ? locationData[city].zones[zone] || []
       : [];
+
+  // Once the city list loads, if the prefilled city isn't a known option (e.g.
+  // a district name typed at checkout), switch to the custom "other" input so
+  // it stays visible and editable instead of silently disappearing.
+  useEffect(() => {
+    if (!cities.length) return;
+    if (city && city !== "other" && !cities.includes(city)) {
+      setCustomCity(city);
+      setCity("other");
+    }
+  }, [cities.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const resolvedCity = city === "other" ? customCity.trim() : city;
   const cartValue = items.reduce(
@@ -3232,8 +3247,8 @@ function CreateOrderModal({ initial, sessionId, cartUserId, onClose, onCreated }
             phone: phone.trim(),
             email: email.trim(),
             city: resolvedCity,
-            zone: zone === "other" ? "" : zone,
-            area: area === "other" ? "" : area,
+            zone: zone.trim(),
+            area: area.trim(),
             address: address.trim(),
             note: note.trim(),
           },
@@ -3352,50 +3367,36 @@ function CreateOrderModal({ initial, sessionId, cartUserId, onClose, onCreated }
               <label className="block text-xs font-medium text-gray-500 mb-1">
                 থানা/জোন (optional)
               </label>
-              {zones.length ? (
-                <select
-                  value={zone}
-                  onChange={(e) => {
-                    setZone(e.target.value);
-                    setArea("");
-                  }}
-                  className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
-                >
-                  <option value="">সিলেক্ট করুন…</option>
-                  {zones.map((z) => (
-                    <option key={z} value={z}>
-                      {z}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  value={zone}
-                  onChange={(e) => setZone(e.target.value)}
-                  placeholder="থানা/জোন"
-                  className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
-                />
-              )}
+              <input
+                list="co-zone-list"
+                value={zone}
+                onChange={(e) => setZone(e.target.value)}
+                placeholder="থানা/জোন"
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
+              />
+              <datalist id="co-zone-list">
+                {zones.map((z) => (
+                  <option key={z} value={z} />
+                ))}
+              </datalist>
             </div>
-            {areas.length > 0 && (
-              <div className="col-span-2">
-                <label className="block text-xs font-medium text-gray-500 mb-1">
-                  এলাকা (optional)
-                </label>
-                <select
-                  value={area}
-                  onChange={(e) => setArea(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
-                >
-                  <option value="">সিলেক্ট করুন…</option>
-                  {areas.map((a) => (
-                    <option key={a} value={a}>
-                      {a}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
+            <div className="col-span-2">
+              <label className="block text-xs font-medium text-gray-500 mb-1">
+                এলাকা (optional)
+              </label>
+              <input
+                list="co-area-list"
+                value={area}
+                onChange={(e) => setArea(e.target.value)}
+                placeholder="এলাকা"
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
+              />
+              <datalist id="co-area-list">
+                {areas.map((a) => (
+                  <option key={a} value={a} />
+                ))}
+              </datalist>
+            </div>
             <div className="col-span-2">
               <label className="block text-xs font-medium text-gray-500 mb-1">
                 সম্পূর্ণ ঠিকানা *
@@ -3627,6 +3628,40 @@ function AbandonedCartModal({ user, onClose, onCreateOrder }) {
             </div>
           </div>
 
+          {/* Saved delivery address (from the customer's profile) */}
+          {user.addresses?.[0] &&
+            (user.addresses[0].address ||
+              user.addresses[0].city ||
+              user.addresses[0].zone) && (
+              <div className="px-6 py-4 border-b">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+                  Saved Address
+                </p>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <p className="text-xs text-gray-400 mb-0.5">শহর/জেলা</p>
+                    <p className="font-medium text-gray-800">
+                      {user.addresses[0].city || "—"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 mb-0.5">থানা/জোন</p>
+                    <p className="font-medium text-gray-800">
+                      {user.addresses[0].zone || "—"}
+                    </p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-xs text-gray-400 mb-0.5">
+                      সম্পূর্ণ ঠিকানা
+                    </p>
+                    <p className="font-medium text-gray-800">
+                      {user.addresses[0].address || "—"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
           {/* Cart items */}
           <div className="px-6 py-4 border-b">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
@@ -3774,11 +3809,19 @@ function AbandonedCartSection() {
 
   const openCreate = (u) => {
     setSelectedUser(null);
+    // Prefill from the customer's saved default address (most recent first) if
+    // they have one on file — they haven't typed a checkout address yet.
+    const addr = u.addresses?.[0] || {};
     setCreateFor({
       initial: {
-        name: u.name || "",
-        phone: u.mobile || "",
-        email: u.email || "",
+        name: u.name || addr.fullName || "",
+        phone: u.mobile || addr.phone || "",
+        email: u.email || addr.email || "",
+        city: addr.city || "",
+        zone: addr.zone || "",
+        area: "",
+        address: addr.address || "",
+        note: "",
         items: u.savedCart?.items || [],
       },
       cartUserId: u._id,
@@ -4380,6 +4423,54 @@ function CheckoutSessionModal({ session, onClose, onCreateOrder }) {
             </div>
           </div>
 
+          {/* Delivery address the customer typed at checkout */}
+          {(session.userAddress ||
+            session.userCity ||
+            session.userZone ||
+            session.userArea) && (
+            <div className="px-6 py-4 border-b">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+                Delivery Address (checkout-এ দেওয়া)
+              </p>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <p className="text-xs text-gray-400 mb-0.5">শহর/জেলা</p>
+                  <p className="font-medium text-gray-800">
+                    {session.userCity || "—"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400 mb-0.5">থানা/জোন</p>
+                  <p className="font-medium text-gray-800">
+                    {session.userZone || "—"}
+                  </p>
+                </div>
+                {session.userArea && (
+                  <div>
+                    <p className="text-xs text-gray-400 mb-0.5">এলাকা</p>
+                    <p className="font-medium text-gray-800">
+                      {session.userArea}
+                    </p>
+                  </div>
+                )}
+                <div className="col-span-2">
+                  <p className="text-xs text-gray-400 mb-0.5">সম্পূর্ণ ঠিকানা</p>
+                  <p className="font-medium text-gray-800">
+                    {session.userAddress || "—"}
+                  </p>
+                </div>
+                {session.userNote && (
+                  <div className="col-span-2">
+                    <p className="text-xs text-gray-400 mb-0.5">নোট</p>
+                    <p className="font-medium text-gray-800">
+                      {session.userNote}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Abandoned cart items */}
           <div className="px-6 py-4 border-b">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
@@ -4524,6 +4615,11 @@ function AbandonCheckoutSection() {
         name: s.userName || "",
         phone: s.userPhone || "",
         email: s.userEmail || "",
+        city: s.userCity || "",
+        zone: s.userZone || "",
+        area: s.userArea || "",
+        address: s.userAddress || "",
+        note: s.userNote || "",
         items: s.items || [],
       },
       sessionId: s._id,

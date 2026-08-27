@@ -154,8 +154,21 @@ export default function CheckoutPage() {
   // The null check is INSIDE the timeout so it still works if POST response
   // is still pending when the user starts typing.
   useEffect(() => {
-    const { name, phone, email } = formData;
-    if (!name && !phone && !email) return;
+    const { name, phone, email, zone, area, address, note } = formData;
+    const city = formData.city === "other" ? customCity : formData.city;
+    const resolvedZone = zone === "other" ? customZone : zone;
+    const resolvedArea = area === "other" ? customArea : area;
+    if (
+      !name &&
+      !phone &&
+      !email &&
+      !city &&
+      !resolvedZone &&
+      !resolvedArea &&
+      !address &&
+      !note
+    )
+      return;
     clearTimeout(sessionPatchTimer.current);
     sessionPatchTimer.current = setTimeout(() => {
       if (!checkoutSessionId.current) return;
@@ -168,11 +181,28 @@ export default function CheckoutPage() {
           userName: name || undefined,
           userPhone: phone || undefined,
           userEmail: email || undefined,
+          userCity: city || undefined,
+          userZone: resolvedZone || undefined,
+          userArea: resolvedArea || undefined,
+          userAddress: address || undefined,
+          userNote: note || undefined,
         }),
       }).catch(() => {});
     }, 2000);
     return () => clearTimeout(sessionPatchTimer.current);
-  }, [formData.name, formData.phone, formData.email]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [
+    formData.name,
+    formData.phone,
+    formData.email,
+    formData.city,
+    formData.zone,
+    formData.area,
+    formData.address,
+    formData.note,
+    customCity,
+    customZone,
+    customArea,
+  ]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Redirect if cart is empty — but NOT before hydration or after a successful order
   useEffect(() => {

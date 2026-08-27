@@ -3319,8 +3319,6 @@ function CreateOrderModal({
     if (!/^01[3-9]\d{8}$/.test(phone.replace(/\D/g, "").replace(/^88/, "")))
       return setError("সঠিক বাংলাদেশি মোবাইল নাম্বার দিন (যেমন 01712345678)।");
     if (!resolvedCity) return setError("শহর/জেলা সিলেক্ট করুন।");
-    if (address.trim().length < 6)
-      return setError("সম্পূর্ণ ঠিকানা একটু বিস্তারিত দিন।");
     if (!items.length) return setError("অন্তত একটি পণ্য থাকতে হবে।");
 
     setSubmitting(true);
@@ -3489,7 +3487,7 @@ function CreateOrderModal({
             </div>
             <div className="col-span-2">
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                সম্পূর্ণ ঠিকানা *
+                সম্পূর্ণ ঠিকানা (optional)
               </label>
               <textarea
                 rows={2}

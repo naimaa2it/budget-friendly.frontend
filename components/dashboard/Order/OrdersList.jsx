@@ -3212,6 +3212,14 @@ function CreateOrderModal({
   const [prodSearching, setProdSearching] = useState(false);
   const prodDebounce = useRef(null);
 
+  // Live quote — server-computed subtotal/shipping/total (same engine as the
+  // storefront checkout). Staff can override the shipping (delivery charge).
+  const [quote, setQuote] = useState(null);
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const [shipping, setShipping] = useState("");
+  const shippingTouched = useRef(false);
+  const quoteDebounce = useRef(null);
+
   // Load the same city/zone/area dataset the storefront checkout uses so
   // shipping is computed identically.
   useEffect(() => {
@@ -3302,6 +3310,51 @@ function CreateOrderModal({
     0,
   );
 
+  // Fetch a live quote (shipping/subtotal) whenever items or the address change,
+  // mirroring how the storefront checkout adds the delivery charge. Until staff
+  // edit the shipping field, it tracks the computed value.
+  useEffect(() => {
+    clearTimeout(quoteDebounce.current);
+    if (!items.length || !resolvedCity) {
+      setQuote(null);
+      return;
+    }
+    quoteDebounce.current = setTimeout(async () => {
+      setQuoteLoading(true);
+      try {
+        const r = await fetch(`${API}/api/orders/quote`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items: items.map((i) => ({
+              productId: i.productId,
+              quantity: i.quantity,
+              color: i.color || undefined,
+              size: i.size || undefined,
+            })),
+            city: resolvedCity,
+            zone: zone || undefined,
+            area: area || undefined,
+          }),
+        });
+        const b = r.ok ? await r.json() : null;
+        if (b && !b.error) {
+          setQuote(b);
+          if (!shippingTouched.current) setShipping(String(b.shipping ?? 0));
+        }
+      } catch {
+      } finally {
+        setQuoteLoading(false);
+      }
+    }, 400);
+    return () => clearTimeout(quoteDebounce.current);
+  }, [items, resolvedCity, zone, area]);
+
+  const subtotal = quote?.subtotal ?? cartValue;
+  const shippingNum = shipping === "" ? 0 : Number(shipping) || 0;
+  const grandTotal = subtotal + shippingNum;
+
   const updateQty = (idx, qty) => {
     setItems((prev) =>
       prev.map((it, i) =>
@@ -3344,6 +3397,7 @@ function CreateOrderModal({
             address: address.trim(),
             note: note.trim(),
           },
+          shipping: shipping === "" ? undefined : shippingNum,
           sessionId: sessionId || undefined,
           cartUserId: cartUserId || undefined,
         }),
@@ -3625,14 +3679,60 @@ function CreateOrderModal({
                 </p>
               )}
             </div>
-            <div className="flex justify-between items-center mt-3 pt-3 border-t text-sm">
-              <span className="text-gray-500">পণ্যের মোট (shipping ছাড়া)</span>
-              <span className="font-bold text-gray-900">
-                ৳{cartValue.toLocaleString("en-BD")}
-              </span>
+            {/* Totals — subtotal + editable delivery charge */}
+            <div className="mt-3 pt-3 border-t space-y-2 text-sm">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-500">Subtotal</span>
+                <span className="font-medium text-gray-800">
+                  ৳{subtotal.toLocaleString("en-BD")}
+                </span>
+              </div>
+              <div className="flex justify-between items-center gap-3">
+                <span className="text-gray-500 flex items-center gap-1">
+                  Delivery charge
+                  {quoteLoading && (
+                    <span className="text-[10px] text-gray-400">
+                      (হিসাব হচ্ছে…)
+                    </span>
+                  )}
+                </span>
+                <div className="flex items-center gap-1">
+                  <span className="text-gray-400">৳</span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={shipping}
+                    onChange={(e) => {
+                      shippingTouched.current = true;
+                      setShipping(e.target.value);
+                    }}
+                    placeholder="0"
+                    className="w-24 border rounded-lg px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-rose-300"
+                  />
+                  {shippingTouched.current && quote && (
+                    <button
+                      type="button"
+                      title="Auto delivery charge-এ ফিরে যান"
+                      onClick={() => {
+                        shippingTouched.current = false;
+                        setShipping(String(quote.shipping ?? 0));
+                      }}
+                      className="text-[11px] text-indigo-500 hover:underline ml-1"
+                    >
+                      auto
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t">
+                <span className="font-semibold text-gray-700">সর্বমোট</span>
+                <span className="font-bold text-gray-900 text-base">
+                  ৳{grandTotal.toLocaleString("en-BD")}
+                </span>
+              </div>
             </div>
             <p className="text-[11px] text-gray-400 mt-1">
-              চূড়ান্ত shipping ও total সার্ভারে হিসাব হবে।
+              Delivery charge শহর/জোন অনুযায়ী auto আসে — দরকারে edit করুন।
             </p>
           </div>
 

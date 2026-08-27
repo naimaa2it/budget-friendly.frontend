@@ -109,6 +109,20 @@ function fmtDate(date) {
   });
 }
 
+// Latest status-change entry — who last changed the order and to what.
+// changedBy is an admin email/name (recent changes), or "system" / "customer".
+function lastStatusChange(order) {
+  const history = order.statusHistory || [];
+  if (!history.length) return null;
+  return history[history.length - 1];
+}
+
+function changedByLabel(who) {
+  if (!who || who === "system") return "System";
+  if (who === "customer") return "Customer";
+  return who;
+}
+
 function itemSummary(items) {
   if (!items?.length) return "—";
   const first = items[0].title || "Item";
@@ -434,6 +448,67 @@ function StatusUpdateModal({ order, onClose, onUpdated }) {
   );
 }
 
+// ─── Horizontal scroll with a sticky (always-visible) scrollbar ───────────────
+// Wide tables normally hide their horizontal scrollbar at the very bottom of the
+// content, forcing you to scroll the whole page down to reach it. This wrapper
+// mirrors the scroll position onto a thin bar pinned to the bottom of the
+// viewport so you can scroll sideways at any time.
+
+function StickyScrollX({ children }) {
+  const contentRef = useRef(null);
+  const barRef = useRef(null);
+  const [scrollWidth, setScrollWidth] = useState(0);
+  const [overflowing, setOverflowing] = useState(false);
+
+  useEffect(() => {
+    const content = contentRef.current;
+    if (!content) return;
+    const update = () => {
+      setScrollWidth(content.scrollWidth);
+      setOverflowing(content.scrollWidth - content.clientWidth > 1);
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(content);
+    window.addEventListener("resize", update);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, [children]);
+
+  const syncFromContent = () => {
+    if (barRef.current && contentRef.current)
+      barRef.current.scrollLeft = contentRef.current.scrollLeft;
+  };
+  const syncFromBar = () => {
+    if (barRef.current && contentRef.current)
+      contentRef.current.scrollLeft = barRef.current.scrollLeft;
+  };
+
+  return (
+    <>
+      <div
+        ref={contentRef}
+        onScroll={syncFromContent}
+        className="overflow-x-auto"
+      >
+        {children}
+      </div>
+      {overflowing && (
+        <div
+          ref={barRef}
+          onScroll={syncFromBar}
+          className="sticky bottom-0 z-20 overflow-x-auto bg-white/80 backdrop-blur border-t border-gray-100"
+          aria-hidden="true"
+        >
+          <div style={{ width: scrollWidth, height: 1 }} />
+        </div>
+      )}
+    </>
+  );
+}
+
 // ─── Reusable orders table ────────────────────────────────────────────────────
 
 function OrdersTable({
@@ -456,7 +531,7 @@ function OrdersTable({
 }) {
   const [statusOrder, setStatusOrder] = useState(null);
   return (
-    <div className="overflow-x-auto">
+    <StickyScrollX>
       {statusOrder && (
         <StatusUpdateModal
           order={statusOrder}
@@ -484,6 +559,7 @@ function OrdersTable({
             <th className="px-4 py-3 font-medium">Total</th>
             <th className="px-4 py-3 font-medium">Payment</th>
             <th className="px-4 py-3 font-medium">Status</th>
+            <th className="px-4 py-3 font-medium">Changed by</th>
             <th className="px-4 py-3 font-medium">Date</th>
             <th className="px-4 py-3 font-medium">Actions</th>
           </tr>
@@ -513,6 +589,8 @@ function OrdersTable({
               <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                 <Link
                   href={`/dashboard/orders/${order._id}`}
+                  target="_blank"
+                  rel="noopener"
                   className="font-mono text-xs bg-gray-100 rounded px-1.5 py-0.5 text-rose-600 hover:bg-rose-50 hover:underline"
                 >
                   {formatOrderId(order._id)}
@@ -590,6 +668,26 @@ function OrdersTable({
                   </button>
                 )}
               </td>
+              <td className="px-4 py-3">
+                {(() => {
+                  const change = lastStatusChange(order);
+                  if (!change)
+                    return <span className="text-xs text-gray-300">—</span>;
+                  return (
+                    <div className="leading-tight">
+                      <span className="block text-xs font-medium text-gray-700 capitalize">
+                        {change.newStatus}
+                      </span>
+                      <span
+                        className="block text-xs text-gray-400 truncate max-w-[12rem]"
+                        title={changedByLabel(change.changedBy)}
+                      >
+                        by {changedByLabel(change.changedBy)}
+                      </span>
+                    </div>
+                  );
+                })()}
+              </td>
               <td className="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
                 {fmt(order.createdAt)}
                 {trashMode && daysLeft !== null && (
@@ -633,7 +731,7 @@ function OrdersTable({
           })}
         </tbody>
       </table>
-    </div>
+    </StickyScrollX>
   );
 }
 
@@ -656,7 +754,7 @@ function CancelledOrdersTable({
   };
 
   return (
-    <div className="overflow-x-auto">
+    <StickyScrollX>
       <table className="w-full text-sm text-left">
         <thead>
           <tr className="text-xs text-gray-500 uppercase border-b bg-gray-50">
@@ -682,6 +780,8 @@ function CancelledOrdersTable({
                 <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                   <Link
                     href={`/dashboard/orders/${order._id}`}
+                    target="_blank"
+                    rel="noopener"
                     className="font-mono text-xs bg-gray-100 rounded px-1.5 py-0.5 text-rose-600 hover:underline"
                   >
                     {formatOrderId(order._id)}
@@ -770,6 +870,8 @@ function CancelledOrdersTable({
                   <div className="flex items-center gap-2">
                     <Link
                       href={`/dashboard/orders/${order._id}`}
+                      target="_blank"
+                      rel="noopener"
                       className="text-xs text-indigo-500 hover:underline"
                     >
                       View
@@ -792,7 +894,7 @@ function CancelledOrdersTable({
           })}
         </tbody>
       </table>
-    </div>
+    </StickyScrollX>
   );
 }
 
@@ -2038,7 +2140,9 @@ function AllOrdersSection() {
             orders={orders}
             onDelete={handleDelete}
             onStatusUpdated={refresh}
-            onRowClick={(id) => router.push(`/dashboard/orders/${id}`)}
+            onRowClick={(id) =>
+              window.open(`/dashboard/orders/${id}`, "_blank", "noopener")
+            }
             onCustomerClick={(order) =>
               setSelectedCustomer({
                 name: order.billingDetails?.name,
@@ -2240,7 +2344,11 @@ function FilteredOrdersSection({
                     <tr
                       key={order._id}
                       onClick={() =>
-                        router.push(`/dashboard/orders/${order._id}`)
+                        window.open(
+                          `/dashboard/orders/${order._id}`,
+                          "_blank",
+                          "noopener",
+                        )
                       }
                       className={`hover:bg-rose-50 transition cursor-pointer ${age?.color?.includes("red") ? "bg-red-50/30" : ""}`}
                     >
@@ -2328,7 +2436,9 @@ function FilteredOrdersSection({
           <CancelledOrdersTable
             orders={orders}
             onDelete={handleDelete}
-            onRowClick={(id) => router.push(`/dashboard/orders/${id}`)}
+            onRowClick={(id) =>
+              window.open(`/dashboard/orders/${id}`, "_blank", "noopener")
+            }
             onCustomerClick={openCustomer}
           />
         ) : (
@@ -2336,7 +2446,9 @@ function FilteredOrdersSection({
             orders={orders}
             onDelete={handleDelete}
             onStatusUpdated={() => fetch_(query, page, datePreset)}
-            onRowClick={(id) => router.push(`/dashboard/orders/${id}`)}
+            onRowClick={(id) =>
+              window.open(`/dashboard/orders/${id}`, "_blank", "noopener")
+            }
             onCustomerClick={openCustomer}
           />
         )}

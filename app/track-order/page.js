@@ -95,102 +95,70 @@ function OrderCard({ order, courierLabels, onSelect, selected }) {
   );
 }
 
+// Decide whether the entered value is a phone number or an order ID.
+// Phone: only digits/space/+/- and at least 10 digits. Everything else
+// (e.g. "518640AC") is treated as an order ID.
+function looksLikePhone(value) {
+  if (/[a-zA-Z]/.test(value)) return false;
+  const digits = value.replace(/\D/g, "");
+  return /^[0-9+\-\s]+$/.test(value) && digits.length >= 10;
+}
+
 export default function TrackOrderPage() {
-  const [mode, setMode] = useState("orderId");
-
-  // Order ID mode
-  const [orderId, setOrderId] = useState("");
+  const [query, setQuery] = useState("");
   const [order, setOrder] = useState(null);
-  const [courierLabels, setCourierLabels] = useState({});
-  const [orderLoading, setOrderLoading] = useState(false);
-  const [orderError, setOrderError] = useState("");
-  const [orderNotFound, setOrderNotFound] = useState(false);
-
-  // Phone mode
-  const [phone, setPhone] = useState("");
-  const [phoneOrders, setPhoneOrders] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [phoneLoading, setPhoneLoading] = useState(false);
-  const [phoneError, setPhoneError] = useState("");
-  const [phoneNotFound, setPhoneNotFound] = useState(false);
+  const [courierLabels, setCourierLabels] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [notFound, setNotFound] = useState(null); // null | "orderId" | "phone"
 
   const timelineRef = useRef(null);
 
-  const switchMode = (m) => {
-    setMode(m);
-    setOrderError("");
-    setPhoneError("");
-    setOrderNotFound(false);
-    setPhoneNotFound(false);
-    setOrder(null);
-    setPhoneOrders([]);
-    setSelectedOrder(null);
-  };
-
-  const handleTrackByOrderId = async (e) => {
+  const handleTrack = async (e) => {
     e.preventDefault();
-    setOrderError("");
-    setOrderNotFound(false);
+    setError("");
+    setNotFound(null);
     setOrder(null);
+    setOrders([]);
+    setSelectedOrder(null);
 
-    const val = orderId.trim();
+    const val = query.trim();
     if (!val) {
-      setOrderError("Please enter your Order ID.");
+      setError("Please enter your Order ID or phone number.");
       return;
     }
 
-    setOrderLoading(true);
+    const byPhone = looksLikePhone(val);
+
+    setLoading(true);
     try {
-      const params = new URLSearchParams({ orderId: val });
+      const params = new URLSearchParams(
+        byPhone ? { phone: val } : { orderId: val },
+      );
       const r = await fetch(`${API}/api/orders/track?${params}`);
       const data = await r.json();
       if (r.ok) {
-        setOrder(data.order);
+        if (byPhone) {
+          setOrders(data.orders || []);
+        } else {
+          setOrder(data.order);
+        }
         setCourierLabels(data.courierLabels || {});
       } else if (r.status === 404) {
-        setOrderNotFound(true);
+        setNotFound(byPhone ? "phone" : "orderId");
       } else {
-        setOrderError(data.error || "Something went wrong. Please try again.");
+        setError(data.error || "Something went wrong. Please try again.");
       }
     } catch {
-      setOrderError("Something went wrong. Please try again.");
+      setError("Something went wrong. Please try again.");
     } finally {
-      setOrderLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleTrackByPhone = async (e) => {
-    e.preventDefault();
-    setPhoneError("");
-    setPhoneNotFound(false);
-    setPhoneOrders([]);
-    setSelectedOrder(null);
-
-    const val = phone.trim();
-    if (!val) {
-      setPhoneError("Please enter your phone number.");
-      return;
-    }
-
-    setPhoneLoading(true);
-    try {
-      const params = new URLSearchParams({ phone: val });
-      const r = await fetch(`${API}/api/orders/track?${params}`);
-      const data = await r.json();
-      if (r.ok) {
-        setPhoneOrders(data.orders || []);
-        setCourierLabels(data.courierLabels || {});
-      } else if (r.status === 404) {
-        setPhoneNotFound(true);
-      } else {
-        setPhoneError(data.error || "Something went wrong. Please try again.");
-      }
-    } catch {
-      setPhoneError("Something went wrong. Please try again.");
-    } finally {
-      setPhoneLoading(false);
-    }
-  };
+  const phoneOrders = orders;
 
   return (
     <div className="min-h-screen bg-[#fffaf6] py-10 px-4">
@@ -203,98 +171,35 @@ export default function TrackOrderPage() {
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
-          {/* Mode tabs */}
-          <div className="flex rounded-lg border border-gray-200 p-1 gap-1 bg-gray-50">
-            {[
-              { key: "orderId", label: "Order ID" },
-              { key: "phone", label: "Phone Number" },
-            ].map((m) => (
-              <button
-                key={m.key}
-                type="button"
-                onClick={() => switchMode(m.key)}
-                className={`flex-1 px-2 py-2 text-xs font-medium rounded-md transition ${
-                  mode === m.key
-                    ? "bg-white text-rose-700 shadow-sm border border-gray-200"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                {m.label}
-              </button>
-            ))}
-          </div>
+          <form onSubmit={handleTrack} className="space-y-4">
+            <div>
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search by order id or phone number"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
+              />
+              <p className="text-xs text-gray-400 mt-1.5">
+                Order ID (e.g. 518640AC) অথবা phone number (e.g. 01712345678)
+                দিন
+              </p>
+            </div>
 
-          {/* Order ID form */}
-          {mode === "orderId" && (
-            <form onSubmit={handleTrackByOrderId} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Order ID
-                </label>
-                <input
-                  value={orderId}
-                  onChange={(e) => setOrderId(e.target.value)}
-                  placeholder="e.g. 518640AC"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
-                />
-                <p className="text-xs text-gray-400 mt-1.5">
-                  Confirmation email বা My Orders page থেকে নিন
-                </p>
-              </div>
+            {error && (
+              <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                {error}
+              </p>
+            )}
+            {notFound && <NotFoundHelp byPhone={notFound === "phone"} />}
 
-              {orderError && (
-                <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
-                  {orderError}
-                </p>
-              )}
-              {orderNotFound && <NotFoundHelp byPhone={false} />}
-
-              <button
-                type="submit"
-                disabled={orderLoading}
-                className="w-full py-3 rounded-xl bg-rose-600 text-white font-semibold text-sm hover:bg-rose-700 disabled:opacity-60 transition"
-              >
-                {orderLoading ? "Looking up order…" : "Track Order"}
-              </button>
-            </form>
-          )}
-
-          {/* Phone form */}
-          {mode === "phone" && (
-            <form onSubmit={handleTrackByPhone} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone Number
-                </label>
-                <input
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="e.g. 01712345678"
-                  type="tel"
-                  inputMode="numeric"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
-                />
-                <p className="text-xs text-gray-400 mt-1.5">
-                  অর্ডারে যে phone number দিয়েছিলেন সেটি দিন
-                </p>
-              </div>
-
-              {phoneError && (
-                <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
-                  {phoneError}
-                </p>
-              )}
-              {phoneNotFound && <NotFoundHelp byPhone={true} />}
-
-              <button
-                type="submit"
-                disabled={phoneLoading}
-                className="w-full py-3 rounded-xl bg-rose-600 text-white font-semibold text-sm hover:bg-rose-700 disabled:opacity-60 transition"
-              >
-                {phoneLoading ? "Searching…" : "Find Orders"}
-              </button>
-            </form>
-          )}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 rounded-xl bg-rose-600 text-white font-semibold text-sm hover:bg-rose-700 disabled:opacity-60 transition"
+            >
+              {loading ? "Searching…" : "Track Order"}
+            </button>
+          </form>
         </div>
 
         {/* Single order result (Order ID mode) */}
@@ -332,8 +237,8 @@ export default function TrackOrderPage() {
           </div>
         )}
 
-        {/* Phone mode results */}
-        {mode === "phone" && phoneOrders.length > 0 && (
+        {/* Phone lookup results */}
+        {phoneOrders.length > 0 && (
           <div className="mt-6 space-y-3">
             <p className="text-sm font-medium text-gray-600">
               {phoneOrders.length}টি অর্ডার পাওয়া গেছে — বিস্তারিত দেখতে select

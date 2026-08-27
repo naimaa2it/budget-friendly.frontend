@@ -85,6 +85,19 @@ export default function ChatInbox() {
       .catch((e) => toast.error(e.message));
   };
 
+  const deleteConvo = () => {
+    if (!activeId) return;
+    if (!window.confirm("Puro chat ta permanently delete hobe. Sure?")) return;
+    api(`/conversations/${activeId}`, { method: "DELETE" })
+      .then(() => {
+        toast.success("Deleted");
+        setActiveId(null);
+        setMessages([]);
+        loadConversations();
+      })
+      .catch((e) => toast.error(e.message));
+  };
+
   const active = conversations.find((c) => c._id === activeId);
 
   return (
@@ -139,9 +152,14 @@ export default function ChatInbox() {
                 <p className="text-sm font-semibold">{active?.name || active?.visitorId}</p>
                 {active?.email && <p className="text-xs text-gray-400">{active.email}</p>}
               </div>
-              <button onClick={closeConvo} className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs hover:bg-gray-50">
-                Close
-              </button>
+              <div className="flex items-center gap-2">
+                <button onClick={closeConvo} className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs hover:bg-gray-50">
+                  Close
+                </button>
+                <button onClick={deleteConvo} className="rounded-lg border border-red-300 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50">
+                  Delete
+                </button>
+              </div>
             </div>
 
             <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto bg-gray-50 p-4">

@@ -65,6 +65,10 @@ export default function ChatWidget() {
     fetch(`${API}/api/chat/thread?visitorId=${encodeURIComponent(visitorId.current)}`)
       .then((r) => r.json())
       .then((d) => {
+        // A send may have started while this poll was in flight. Applying now
+        // would replace the thread with a stale server copy that doesn't yet
+        // contain the just-typed message — making the text look "erased".
+        if (pendingSends.current > 0) return;
         applyMessages(seq, d.messages || []);
         if (d.quickReplies?.length) setQuick(d.quickReplies);
         setLoaded(true);
@@ -72,6 +76,23 @@ export default function ChatWidget() {
       .catch(() => {})
       .finally(scrollToBottom);
   }, []);
+
+  // Start a fresh conversation (e.g. after an order is confirmed and the
+  // customer wants to place another one). A new visitorId spins up a brand new
+  // thread server-side; the old one stays in the admin inbox.
+  const newChat = () => {
+    const id = "v_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    localStorage.setItem(VISITOR_KEY, id);
+    visitorId.current = id;
+    reqSeq.current = 0;
+    appliedSeq.current = 0;
+    pendingSends.current = 0;
+    setMessages([]);
+    setInput("");
+    setQuick(DEFAULT_QUICK);
+    setLoaded(false);
+    fetchThread();
+  };
 
   useEffect(() => {
     if (!open) {
@@ -169,6 +190,17 @@ export default function ChatWidget() {
               <p className="text-sm font-semibold leading-tight">Support</p>
               <p className="text-xs text-blue-100">Usually replies instantly</p>
             </div>
+            <button
+              onClick={newChat}
+              title="Notun chat / notun order shuru korun"
+              className="ml-auto flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-xs font-medium transition hover:bg-white/30"
+            >
+              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 12a9 9 0 1 1-3-6.7L21 8" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M21 3v5h-5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              New chat
+            </button>
           </div>
 
           {/* messages */}

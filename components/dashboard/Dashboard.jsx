@@ -24,10 +24,15 @@ const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
 const STATUS_STYLE = {
   pending: "bg-yellow-100 text-yellow-700",
+  accepted: "bg-teal-100 text-teal-700",
+  picked: "bg-teal-100 text-teal-700",
+  approved: "bg-teal-100 text-teal-700",
   confirmed: "bg-blue-100 text-blue-700",
   processing: "bg-indigo-100 text-indigo-700",
   shipped: "bg-purple-100 text-purple-700",
   delivered: "bg-green-100 text-green-700",
+  returned: "bg-orange-100 text-orange-700",
+  rejected: "bg-rose-100 text-rose-700",
   cancelled: "bg-gray-100 text-gray-600",
   failed: "bg-red-100 text-red-600",
 };
@@ -176,22 +181,34 @@ export default function Dashboard() {
     {
       label: "Total Orders",
       value: (overview.totalOrders ?? 0).toLocaleString("en-BD"),
-      accent: "text-gray-900",
+      icon: "🧾",
+      ring: "from-slate-500/10 to-slate-500/0",
+      accent: "text-slate-900",
+      iconBg: "bg-slate-100 text-slate-600",
     },
     {
       label: "Total Sales",
       value: money(overview.totalSales),
+      icon: "💰",
+      ring: "from-indigo-500/15 to-indigo-500/0",
       accent: "text-indigo-700",
+      iconBg: "bg-indigo-100 text-indigo-600",
     },
     {
       label: "Estimated Profit",
       value: money(overview.totalProfit),
-      accent: "text-green-700",
+      icon: "📈",
+      ring: "from-emerald-500/15 to-emerald-500/0",
+      accent: "text-emerald-700",
+      iconBg: "bg-emerald-100 text-emerald-600",
     },
     {
       label: "Pending Orders",
       value: (overview.pendingOrders ?? 0).toLocaleString("en-BD"),
-      accent: "text-yellow-700",
+      icon: "⏳",
+      ring: "from-amber-500/15 to-amber-500/0",
+      accent: "text-amber-700",
+      iconBg: "bg-amber-100 text-amber-600",
     },
   ];
 
@@ -202,43 +219,20 @@ export default function Dashboard() {
     { label: "Last 30 Days", key: "last30Days" },
   ];
 
-  const flowPieData = [
-    {
-      name: "Pending",
-      value: Number(orderFlow.pending || 0),
-      tone: "text-yellow-500",
-    },
-    {
-      name: "Confirmed",
-      value: Number(orderFlow.confirmed || 0),
-      tone: "text-blue-500",
-    },
-    {
-      name: "Processing",
-      value: Number(orderFlow.processing || 0),
-      tone: "text-indigo-500",
-    },
-    {
-      name: "Courier",
-      value: Number(orderFlow.sentToCourier || 0),
-      tone: "text-purple-500",
-    },
-    {
-      name: "Delivered",
-      value: Number(orderFlow.delivered || 0),
-      tone: "text-green-500",
-    },
-    {
-      name: "Cancelled",
-      value: Number(orderFlow.cancelled || 0),
-      tone: "text-gray-500",
-    },
-    {
-      name: "Failed",
-      value: Number(orderFlow.failed || 0),
-      tone: "text-red-500",
-    },
-  ].filter((item) => item.value > 0);
+  // Every status the backend reports, so the flow reconciles with "Created".
+  const flowRows = [
+    { name: "Pending", value: Number(orderFlow.pending || 0), tone: "text-yellow-500", chip: "bg-yellow-50 text-yellow-700" },
+    { name: "Accepted", value: Number(orderFlow.accepted || 0), tone: "text-teal-500", chip: "bg-teal-50 text-teal-700" },
+    { name: "Confirmed", value: Number(orderFlow.confirmed || 0), tone: "text-blue-500", chip: "bg-blue-50 text-blue-700" },
+    { name: "Processing", value: Number(orderFlow.processing || 0), tone: "text-indigo-500", chip: "bg-indigo-50 text-indigo-700" },
+    { name: "Sent to Courier", value: Number(orderFlow.sentToCourier || 0), tone: "text-purple-500", chip: "bg-purple-50 text-purple-700" },
+    { name: "Delivered", value: Number(orderFlow.delivered || 0), tone: "text-green-500", chip: "bg-green-50 text-green-700" },
+    { name: "Returned", value: Number(orderFlow.returned || 0), tone: "text-orange-500", chip: "bg-orange-50 text-orange-700" },
+    { name: "Rejected", value: Number(orderFlow.rejected || 0), tone: "text-rose-500", chip: "bg-rose-50 text-rose-700" },
+    { name: "Cancelled", value: Number(orderFlow.cancelled || 0), tone: "text-gray-400", chip: "bg-gray-50 text-gray-600" },
+    { name: "Failed", value: Number(orderFlow.failed || 0), tone: "text-red-500", chip: "bg-red-50 text-red-700" },
+  ];
+  const flowPieData = flowRows.filter((item) => item.value > 0);
 
   const reportChartData = reportCards.map((card) => {
     const row = reports[card.key] || {};
@@ -316,13 +310,25 @@ export default function Dashboard() {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             {statCards.map((card) => (
-              <div key={card.label} className="bg-white rounded-xl border p-4">
-                <p className="text-xs uppercase tracking-wide text-gray-500">
-                  {card.label}
-                </p>
-                <p className={`text-2xl font-bold mt-1 ${card.accent}`}>
-                  {card.value}
-                </p>
+              <div
+                key={card.label}
+                className={`relative overflow-hidden rounded-2xl border bg-white p-5 shadow-sm bg-linear-to-br ${card.ring}`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-xs uppercase tracking-wide text-gray-500">
+                      {card.label}
+                    </p>
+                    <p className={`text-2xl font-bold mt-2 ${card.accent}`}>
+                      {card.value}
+                    </p>
+                  </div>
+                  <span
+                    className={`shrink-0 grid place-items-center w-10 h-10 rounded-xl text-lg ${card.iconBg}`}
+                  >
+                    {card.icon}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
@@ -405,9 +411,14 @@ export default function Dashboard() {
           </div>
 
           <div className="bg-white rounded-xl border p-5">
-            <h2 className="text-base font-semibold mb-4">Order Flow Status</h2>
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <h2 className="text-base font-semibold">Order Flow Status</h2>
+              <span className="text-xs text-gray-400">
+                {(orderFlow.created ?? 0).toLocaleString("en-BD")} orders total
+              </span>
+            </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              <div className="h-72 rounded-lg border bg-gray-50 p-3">
+              <div className="relative h-72 rounded-lg border bg-gray-50 p-3">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -433,51 +444,31 @@ export default function Dashboard() {
                     />
                   </PieChart>
                 </ResponsiveContainer>
+                {/* Center total */}
+                <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-2xl font-bold text-gray-900">
+                    {(orderFlow.created ?? 0).toLocaleString("en-BD")}
+                  </span>
+                  <span className="text-xs text-gray-400">Total orders</span>
+                </div>
               </div>
-              <div className="space-y-2 text-sm">
-                <div className="rounded border p-3 bg-gray-50 flex justify-between">
-                  <span className="text-gray-600">Created</span>
-                  <span className="font-semibold text-gray-900">
-                    {orderFlow.created ?? 0}
-                  </span>
-                </div>
-                <div className="rounded border p-3 bg-yellow-50 flex justify-between">
-                  <span className="text-yellow-700">Pending</span>
-                  <span className="font-semibold text-yellow-800">
-                    {orderFlow.pending ?? 0}
-                  </span>
-                </div>
-                <div className="rounded border p-3 bg-blue-50 flex justify-between">
-                  <span className="text-blue-700">Confirmed</span>
-                  <span className="font-semibold text-blue-800">
-                    {orderFlow.confirmed ?? 0}
-                  </span>
-                </div>
-                <div className="rounded border p-3 bg-indigo-50 flex justify-between">
-                  <span className="text-indigo-700">Processing</span>
-                  <span className="font-semibold text-indigo-800">
-                    {orderFlow.processing ?? 0}
-                  </span>
-                </div>
-                <div className="rounded border p-3 bg-purple-50 flex justify-between">
-                  <span className="text-purple-700">Sent to Courier</span>
-                  <span className="font-semibold text-purple-800">
-                    {orderFlow.sentToCourier ?? 0}
-                  </span>
-                </div>
-                <div className="rounded border p-3 bg-green-50 flex justify-between">
-                  <span className="text-green-700">Delivered</span>
-                  <span className="font-semibold text-green-800">
-                    {orderFlow.delivered ?? 0}
-                  </span>
-                </div>
-                <div className="rounded border p-3 bg-red-50 flex justify-between">
-                  <span className="text-red-700">Cancelled + Failed</span>
-                  <span className="font-semibold text-red-800">
-                    {Number(orderFlow.cancelled || 0) +
-                      Number(orderFlow.failed || 0)}
-                  </span>
-                </div>
+              <div className="grid grid-cols-2 gap-2 text-sm content-start">
+                {flowRows.map((row) => (
+                  <div
+                    key={row.name}
+                    className={`rounded-lg border p-3 flex items-center justify-between gap-2 ${row.chip}`}
+                  >
+                    <span className="flex items-center gap-2 min-w-0">
+                      <span
+                        className={`w-2.5 h-2.5 rounded-full bg-current ${row.tone}`}
+                      />
+                      <span className="truncate">{row.name}</span>
+                    </span>
+                    <span className="font-semibold shrink-0">
+                      {row.value.toLocaleString("en-BD")}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -539,10 +530,13 @@ export default function Dashboard() {
                             className={`text-xs font-medium px-2 py-1 rounded-full border-0 focus:ring-2 focus:ring-indigo-200 ${STATUS_STYLE[order.status] || ""}`}
                           >
                             <option value="pending">Pending</option>
+                            <option value="accepted">Accepted</option>
                             <option value="confirmed">Confirmed</option>
                             <option value="processing">Processing</option>
                             <option value="shipped">Sent to Courier</option>
                             <option value="delivered">Delivered</option>
+                            <option value="returned">Returned</option>
+                            <option value="rejected">Rejected</option>
                             <option value="failed">Failed</option>
                             <option value="cancelled">Cancelled</option>
                           </select>

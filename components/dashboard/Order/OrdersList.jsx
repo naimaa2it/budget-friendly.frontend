@@ -1908,6 +1908,7 @@ function AllOrdersSection() {
   const [viewTrash, setViewTrash] = useState(false); // recycle-bin view
   const [selectedIds, setSelectedIds] = useState([]); // bulk-selected order ids
   const [bulkBusy, setBulkBusy] = useState(false);
+  const [showCreate, setShowCreate] = useState(false); // new-order modal
 
   const fetchOrders = useCallback(async (tab, q, pg, preset, trash) => {
     setLoading(true);
@@ -2068,6 +2069,15 @@ function AllOrdersSection() {
               <span className="text-xs text-gray-400">
                 {total} result{total !== 1 ? "s" : ""}
               </span>
+              {!viewTrash && (
+                <button
+                  type="button"
+                  onClick={() => setShowCreate(true)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 transition"
+                >
+                  + নতুন অর্ডার
+                </button>
+              )}
               {user?.role === "admin" && (
                 <button
                   type="button"
@@ -2202,6 +2212,21 @@ function AllOrdersSection() {
         <OrderCustomerModal
           {...selectedCustomer}
           onClose={() => setSelectedCustomer(null)}
+        />
+      )}
+
+      {/* Create a brand-new order from scratch */}
+      {showCreate && (
+        <CreateOrderModal
+          initial={{ items: [] }}
+          heading="🆕 নতুন অর্ডার তৈরি করুন"
+          subtitle="পণ্য খুঁজে যোগ করুন, কাস্টমার ও ঠিকানা দিন — confirmed COD order তৈরি হবে"
+          onClose={() => setShowCreate(false)}
+          onCreated={(orderId) => {
+            setShowCreate(false);
+            if (orderId) router.push(`/dashboard/orders/${orderId}`);
+            else refresh();
+          }}
         />
       )}
     </div>
@@ -3142,7 +3167,15 @@ function OrderTimelineSection() {
 // and cart items are pre-filled; staff add the delivery address. On success the
 // order lands in the normal orders dashboard as a confirmed COD order.
 
-function CreateOrderModal({ initial, sessionId, cartUserId, onClose, onCreated }) {
+function CreateOrderModal({
+  initial,
+  sessionId,
+  cartUserId,
+  heading = "📞 Manually Order তৈরি করুন",
+  subtitle = "কাস্টমার confirm করেছেন — ঠিকানা দিয়ে confirmed COD order তৈরি হবে",
+  onClose,
+  onCreated,
+}) {
   const [name, setName] = useState(initial?.name || "");
   const [phone, setPhone] = useState(initial?.phone || "");
   const [email, setEmail] = useState(initial?.email || "");
@@ -3172,6 +3205,13 @@ function CreateOrderModal({ initial, sessionId, cartUserId, onClose, onCreated }
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  // Product search — lets staff add products to a fully-new order (or add extra
+  // items to an abandoned one).
+  const [prodQuery, setProdQuery] = useState("");
+  const [prodResults, setProdResults] = useState([]);
+  const [prodSearching, setProdSearching] = useState(false);
+  const prodDebounce = useRef(null);
+
   // Load the same city/zone/area dataset the storefront checkout uses so
   // shipping is computed identically.
   useEffect(() => {
@@ -3180,6 +3220,60 @@ function CreateOrderModal({ initial, sessionId, cartUserId, onClose, onCreated }
       .then((json) => setLocationData(json.locationData || {}))
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    clearTimeout(prodDebounce.current);
+    if (!prodQuery.trim()) {
+      setProdResults([]);
+      return;
+    }
+    prodDebounce.current = setTimeout(async () => {
+      setProdSearching(true);
+      try {
+        const r = await fetch(
+          `${API}/api/products?q=${encodeURIComponent(prodQuery)}&limit=8`,
+        );
+        const b = r.ok ? await r.json() : {};
+        setProdResults(b.items || []);
+      } catch {
+        setProdResults([]);
+      } finally {
+        setProdSearching(false);
+      }
+    }, 300);
+    return () => clearTimeout(prodDebounce.current);
+  }, [prodQuery]);
+
+  const addProduct = (p) => {
+    const img = p.images?.[0]?.url || p.images?.[0] || null;
+    const price =
+      p.flashSale && p.flashSalePrice ? p.flashSalePrice : p.price || 0;
+    setItems((prev) => {
+      // Same product with no variant selected → just bump quantity.
+      const idx = prev.findIndex(
+        (i) => String(i.productId) === String(p._id) && !i.color && !i.size,
+      );
+      if (idx >= 0) {
+        return prev.map((it, i) =>
+          i === idx ? { ...it, quantity: it.quantity + 1 } : it,
+        );
+      }
+      return [
+        ...prev,
+        {
+          productId: p._id,
+          title: p.title,
+          image: img,
+          price,
+          quantity: 1,
+          color: null,
+          size: null,
+        },
+      ];
+    });
+    setProdQuery("");
+    setProdResults([]);
+  };
 
   const cities = Object.keys(locationData);
   const zones =
@@ -3280,12 +3374,8 @@ function CreateOrderModal({ initial, sessionId, cartUserId, onClose, onCreated }
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">
-              📞 Manually Order তৈরি করুন
-            </h3>
-            <p className="text-xs text-gray-400 mt-0.5">
-              কাস্টমার confirm করেছেন — ঠিকানা দিয়ে confirmed COD order তৈরি হবে
-            </p>
+            <h3 className="text-lg font-bold text-gray-900">{heading}</h3>
+            <p className="text-xs text-gray-400 mt-0.5">{subtitle}</p>
           </div>
           <button
             onClick={onClose}
@@ -3427,6 +3517,64 @@ function CreateOrderModal({ initial, sessionId, cartUserId, onClose, onCreated }
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
               পণ্য ({items.length})
             </p>
+
+            {/* Product search — add products to the order */}
+            <div className="relative mb-3">
+              <input
+                value={prodQuery}
+                onChange={(e) => setProdQuery(e.target.value)}
+                placeholder="🔍 পণ্য খুঁজে যোগ করুন (নাম দিয়ে)…"
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
+              />
+              {(prodResults.length > 0 || prodSearching) && (
+                <div className="absolute z-10 mt-1 w-full bg-white border rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                  {prodSearching && (
+                    <p className="px-3 py-2 text-xs text-gray-400">খুঁজছি…</p>
+                  )}
+                  {prodResults.map((p) => {
+                    const img = p.images?.[0]?.url || p.images?.[0] || null;
+                    const price =
+                      p.flashSale && p.flashSalePrice
+                        ? p.flashSalePrice
+                        : p.price || 0;
+                    return (
+                      <button
+                        key={p._id}
+                        type="button"
+                        onClick={() => addProduct(p)}
+                        className="w-full flex items-center gap-3 px-3 py-2 hover:bg-rose-50 text-left border-b last:border-0"
+                      >
+                        {img ? (
+                          <img
+                            src={img}
+                            alt=""
+                            className="w-9 h-9 rounded-lg object-cover border shrink-0"
+                          />
+                        ) : (
+                          <div className="w-9 h-9 rounded-lg bg-gray-100 shrink-0 flex items-center justify-center text-gray-300">
+                            📦
+                          </div>
+                        )}
+                        <span className="flex-1 min-w-0 text-sm text-gray-800 truncate">
+                          {p.title}
+                        </span>
+                        <span className="text-sm font-semibold text-gray-700 shrink-0">
+                          ৳{Number(price).toLocaleString("en-BD")}
+                        </span>
+                      </button>
+                    );
+                  })}
+                  {!prodSearching &&
+                    prodQuery.trim() &&
+                    prodResults.length === 0 && (
+                      <p className="px-3 py-2 text-xs text-gray-400">
+                        "{prodQuery}" — কোনো পণ্য পাওয়া যায়নি
+                      </p>
+                    )}
+                </div>
+              )}
+            </div>
+
             <div className="space-y-2">
               {items.map((it, idx) => (
                 <div

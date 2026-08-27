@@ -34,6 +34,17 @@ export default function ChatWidget() {
   const visitorId = useRef("");
   const scrollRef = useRef(null);
   const pollRef = useRef(null);
+  // Ordering guards so a slow/stale poll can never overwrite a newer result.
+  const reqSeq = useRef(0); // increments on every request we issue
+  const appliedSeq = useRef(0); // highest seq whose response we've applied
+  const pendingSends = useRef(0); // in-flight sends — pause polling while > 0
+
+  // Apply a server message list only if it isn't older than what we've shown.
+  const applyMessages = (seq, msgs) => {
+    if (seq < appliedSeq.current) return; // a newer request already won
+    appliedSeq.current = seq;
+    setMessages(msgs);
+  };
 
   useEffect(() => {
     visitorId.current = getVisitorId();
@@ -47,10 +58,14 @@ export default function ChatWidget() {
 
   const fetchThread = useCallback(() => {
     if (!visitorId.current) return;
+    // Don't poll over a message that's mid-send — the send's own response is
+    // authoritative and a poll here would briefly wipe the optimistic bubble.
+    if (pendingSends.current > 0) return;
+    const seq = ++reqSeq.current;
     fetch(`${API}/api/chat/thread?visitorId=${encodeURIComponent(visitorId.current)}`)
       .then((r) => r.json())
       .then((d) => {
-        setMessages(d.messages || []);
+        applyMessages(seq, d.messages || []);
         if (d.quickReplies?.length) setQuick(d.quickReplies);
         setLoaded(true);
       })
@@ -73,6 +88,8 @@ export default function ChatWidget() {
     const body = (overrideText ?? input).trim();
     if (!body || sending) return;
     setSending(true);
+    pendingSends.current += 1;
+    const seq = ++reqSeq.current;
     setMessages((m) => [
       ...m,
       { _id: "tmp-" + Date.now(), sender: "visitor", body, createdAt: new Date().toISOString() },
@@ -88,7 +105,7 @@ export default function ChatWidget() {
       .then((r) => r.json())
       .then((d) => {
         if (d.messages) {
-          setMessages(d.messages);
+          applyMessages(seq, d.messages);
         } else if (d.error) {
           // server error — keep the sent message visible and show a friendly note
           setMessages((m) => [
@@ -115,6 +132,7 @@ export default function ChatWidget() {
         ]);
       })
       .finally(() => {
+        pendingSends.current = Math.max(0, pendingSends.current - 1);
         setSending(false);
         scrollToBottom();
       });

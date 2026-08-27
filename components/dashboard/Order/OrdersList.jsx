@@ -624,6 +624,14 @@ function OrdersTable({
                     🤖 AI Bot
                   </span>
                 )}
+                {order.source === "manual" && (
+                  <span
+                    title="Manually placed by staff (abandoned cart/checkout follow-up)"
+                    className="ml-1.5 inline-flex items-center gap-0.5 rounded-full bg-rose-100 px-1.5 py-0.5 text-[10px] font-semibold text-rose-700 align-middle"
+                  >
+                    📞 Manual
+                  </span>
+                )}
               </td>
               <td
                 className="px-4 py-3"
@@ -3128,9 +3136,394 @@ function OrderTimelineSection() {
   );
 }
 
+// ─── Manual order creation (from abandoned cart / checkout) ──────────────────
+// Staff talk to a customer who abandoned their cart/checkout, get a verbal
+// confirmation, then place the order on their behalf. The customer name, phone
+// and cart items are pre-filled; staff add the delivery address. On success the
+// order lands in the normal orders dashboard as a confirmed COD order.
+
+function CreateOrderModal({ initial, sessionId, cartUserId, onClose, onCreated }) {
+  const [name, setName] = useState(initial?.name || "");
+  const [phone, setPhone] = useState(initial?.phone || "");
+  const [email, setEmail] = useState(initial?.email || "");
+  const [address, setAddress] = useState("");
+  const [note, setNote] = useState("");
+  const [city, setCity] = useState("");
+  const [customCity, setCustomCity] = useState("");
+  const [zone, setZone] = useState("");
+  const [area, setArea] = useState("");
+  const [items, setItems] = useState(
+    (initial?.items || []).map((i) => ({
+      productId: i.productId,
+      title: i.title,
+      image: i.image,
+      price: i.price || 0,
+      quantity: i.quantity || 1,
+      color: i.color || null,
+      size: i.size || null,
+    })),
+  );
+
+  const [locationData, setLocationData] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  // Load the same city/zone/area dataset the storefront checkout uses so
+  // shipping is computed identically.
+  useEffect(() => {
+    fetch("/api/locations")
+      .then((r) => (r.ok ? r.json() : { locationData: {} }))
+      .then((json) => setLocationData(json.locationData || {}))
+      .catch(() => {});
+  }, []);
+
+  const cities = Object.keys(locationData);
+  const zones =
+    city && city !== "other" && locationData[city]
+      ? Object.keys(locationData[city].zones || {})
+      : [];
+  const areas =
+    city && zone && locationData[city]?.zones?.[zone]
+      ? locationData[city].zones[zone] || []
+      : [];
+
+  const resolvedCity = city === "other" ? customCity.trim() : city;
+  const cartValue = items.reduce(
+    (s, i) => s + (i.price || 0) * (i.quantity || 1),
+    0,
+  );
+
+  const updateQty = (idx, qty) => {
+    setItems((prev) =>
+      prev.map((it, i) =>
+        i === idx ? { ...it, quantity: Math.max(1, qty) } : it,
+      ),
+    );
+  };
+  const removeItem = (idx) => {
+    setItems((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const submit = async () => {
+    setError("");
+    if (!name.trim()) return setError("কাস্টমারের নাম দিন।");
+    if (!/^01[3-9]\d{8}$/.test(phone.replace(/\D/g, "").replace(/^88/, "")))
+      return setError("সঠিক বাংলাদেশি মোবাইল নাম্বার দিন (যেমন 01712345678)।");
+    if (!resolvedCity) return setError("শহর/জেলা সিলেক্ট করুন।");
+    if (address.trim().length < 6)
+      return setError("সম্পূর্ণ ঠিকানা একটু বিস্তারিত দিন।");
+    if (!items.length) return setError("অন্তত একটি পণ্য থাকতে হবে।");
+
+    setSubmitting(true);
+    try {
+      const r = await fetch(`${API}/api/admin/orders/manual`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: items.map((i) => ({
+            productId: i.productId,
+            quantity: i.quantity,
+            color: i.color || undefined,
+            size: i.size || undefined,
+          })),
+          customer: {
+            name: name.trim(),
+            phone: phone.trim(),
+            email: email.trim(),
+            city: resolvedCity,
+            zone: zone === "other" ? "" : zone,
+            area: area === "other" ? "" : area,
+            address: address.trim(),
+            note: note.trim(),
+          },
+          sessionId: sessionId || undefined,
+          cartUserId: cartUserId || undefined,
+        }),
+      });
+      const body = await r.json();
+      if (!r.ok) throw new Error(body.error || "অর্ডার তৈরি করা যায়নি।");
+      onCreated?.(body.orderId);
+    } catch (e) {
+      setError(e.message || "অর্ডার তৈরি করা যায়নি।");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (typeof document === "undefined") return null;
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[120] flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.5)" }}
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[92vh] flex flex-col overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b">
+          <div>
+            <h3 className="text-lg font-bold text-gray-900">
+              📞 Manually Order তৈরি করুন
+            </h3>
+            <p className="text-xs text-gray-400 mt-0.5">
+              কাস্টমার confirm করেছেন — ঠিকানা দিয়ে confirmed COD order তৈরি হবে
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-700 text-xl leading-none"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
+          {/* Customer */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="col-span-2">
+              <label className="block text-xs font-medium text-gray-500 mb-1">
+                নাম *
+              </label>
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">
+                ফোন *
+              </label>
+              <input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="01712345678"
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">
+                ইমেইল (optional)
+              </label>
+              <input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
+              />
+            </div>
+          </div>
+
+          {/* Address */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">
+                শহর/জেলা *
+              </label>
+              <select
+                value={city}
+                onChange={(e) => {
+                  setCity(e.target.value);
+                  setZone("");
+                  setArea("");
+                }}
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
+              >
+                <option value="">সিলেক্ট করুন…</option>
+                {cities.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+                <option value="other">অন্য (custom)</option>
+              </select>
+              {city === "other" && (
+                <input
+                  value={customCity}
+                  onChange={(e) => setCustomCity(e.target.value)}
+                  placeholder="জেলার নাম লিখুন"
+                  className="mt-2 w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
+                />
+              )}
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">
+                থানা/জোন (optional)
+              </label>
+              {zones.length ? (
+                <select
+                  value={zone}
+                  onChange={(e) => {
+                    setZone(e.target.value);
+                    setArea("");
+                  }}
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
+                >
+                  <option value="">সিলেক্ট করুন…</option>
+                  {zones.map((z) => (
+                    <option key={z} value={z}>
+                      {z}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  value={zone}
+                  onChange={(e) => setZone(e.target.value)}
+                  placeholder="থানা/জোন"
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
+                />
+              )}
+            </div>
+            {areas.length > 0 && (
+              <div className="col-span-2">
+                <label className="block text-xs font-medium text-gray-500 mb-1">
+                  এলাকা (optional)
+                </label>
+                <select
+                  value={area}
+                  onChange={(e) => setArea(e.target.value)}
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
+                >
+                  <option value="">সিলেক্ট করুন…</option>
+                  {areas.map((a) => (
+                    <option key={a} value={a}>
+                      {a}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <div className="col-span-2">
+              <label className="block text-xs font-medium text-gray-500 mb-1">
+                সম্পূর্ণ ঠিকানা *
+              </label>
+              <textarea
+                rows={2}
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="বাসা/রোড/গ্রাম, এলাকা"
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 resize-none"
+              />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-xs font-medium text-gray-500 mb-1">
+                নোট (optional)
+              </label>
+              <input
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="অর্ডার সম্পর্কিত নোট"
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
+              />
+            </div>
+          </div>
+
+          {/* Items */}
+          <div>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+              পণ্য ({items.length})
+            </p>
+            <div className="space-y-2">
+              {items.map((it, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center gap-3 p-2.5 rounded-xl border"
+                >
+                  {it.image ? (
+                    <img
+                      src={it.image}
+                      alt=""
+                      className="w-10 h-10 rounded-lg object-cover border shrink-0"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-lg bg-gray-100 shrink-0 flex items-center justify-center text-gray-300">
+                      📦
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-800 truncate">
+                      {it.title || "—"}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      ৳{Number(it.price || 0).toLocaleString("en-BD")}
+                      {it.color ? ` · ${it.color}` : ""}
+                      {it.size ? ` · ${it.size}` : ""}
+                    </p>
+                  </div>
+                  <input
+                    type="number"
+                    min={1}
+                    value={it.quantity}
+                    onChange={(e) =>
+                      updateQty(idx, parseInt(e.target.value) || 1)
+                    }
+                    className="w-16 border rounded-lg px-2 py-1 text-sm text-center"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeItem(idx)}
+                    className="text-gray-300 hover:text-red-500 text-lg leading-none px-1"
+                    title="Remove"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+              {!items.length && (
+                <p className="text-xs text-gray-400 italic py-2">
+                  কোনো পণ্য নেই — অর্ডার তৈরি করা যাবে না।
+                </p>
+              )}
+            </div>
+            <div className="flex justify-between items-center mt-3 pt-3 border-t text-sm">
+              <span className="text-gray-500">পণ্যের মোট (shipping ছাড়া)</span>
+              <span className="font-bold text-gray-900">
+                ৳{cartValue.toLocaleString("en-BD")}
+              </span>
+            </div>
+            <p className="text-[11px] text-gray-400 mt-1">
+              চূড়ান্ত shipping ও total সার্ভারে হিসাব হবে।
+            </p>
+          </div>
+
+          {error && (
+            <p className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">
+              {error}
+            </p>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={submitting}
+            className="px-4 py-2 text-sm text-gray-600 border rounded-xl hover:bg-gray-50 disabled:opacity-60"
+          >
+            বাতিল
+          </button>
+          <button
+            type="button"
+            onClick={submit}
+            disabled={submitting || !items.length}
+            className="px-4 py-2 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-xl transition disabled:opacity-60"
+          >
+            {submitting ? "তৈরি হচ্ছে…" : "✅ Order তৈরি করুন"}
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
 // ─── Abandoned Carts ─────────────────────────────────────────────────────────
 
-function AbandonedCartModal({ user, onClose }) {
+function AbandonedCartModal({ user, onClose, onCreateOrder }) {
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const {
@@ -3192,12 +3585,22 @@ function AbandonedCartModal({ user, onClose }) {
                 : ""}
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-700 text-xl leading-none"
-          >
-            ×
-          </button>
+          <div className="flex items-center gap-2">
+            {onCreateOrder && (
+              <button
+                onClick={onCreateOrder}
+                className="text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-lg px-3 py-2"
+              >
+                ✅ Order তৈরি করুন
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-700 text-xl leading-none"
+            >
+              ×
+            </button>
+          </div>
         </div>
 
         <div className="overflow-y-auto flex-1">
@@ -3356,6 +3759,7 @@ function AbandonedCartModal({ user, onClose }) {
 
 function AbandonedCartSection() {
   const { user } = useUser();
+  const router = useRouter();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -3363,9 +3767,23 @@ function AbandonedCartSection() {
   const [total, setTotal] = useState(0);
   const [q, setQ] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
+  const [createFor, setCreateFor] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const searchRef = useRef(null);
   const PAGE_SIZE = 20;
+
+  const openCreate = (u) => {
+    setSelectedUser(null);
+    setCreateFor({
+      initial: {
+        name: u.name || "",
+        phone: u.mobile || "",
+        email: u.email || "",
+        items: u.savedCart?.items || [],
+      },
+      cartUserId: u._id,
+    });
+  };
 
   const load = useCallback(async (pg, query) => {
     setLoading(true);
@@ -3551,17 +3969,26 @@ function AbandonedCartSection() {
                         : "—"}
                     </td>
 
-                    {/* Delete */}
+                    {/* Actions */}
                     <td className="px-4 py-3">
-                      {user?.role === "admin" && (
+                      <div className="flex items-center gap-2 whitespace-nowrap">
                         <button
-                          onClick={() => deleteCart(u._id)}
-                          disabled={deletingId === u._id}
-                          className="text-xs text-red-500 hover:text-red-700 hover:underline disabled:opacity-40 font-medium"
+                          onClick={() => openCreate(u)}
+                          className="text-xs font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg px-2.5 py-1.5"
+                          title="কাস্টমার confirm করলে অর্ডার তৈরি করুন"
                         >
-                          {deletingId === u._id ? "…" : "Delete"}
+                          + Order
                         </button>
-                      )}
+                        {user?.role === "admin" && (
+                          <button
+                            onClick={() => deleteCart(u._id)}
+                            disabled={deletingId === u._id}
+                            className="text-xs text-red-500 hover:text-red-700 hover:underline disabled:opacity-40 font-medium"
+                          >
+                            {deletingId === u._id ? "…" : "Delete"}
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
@@ -3636,6 +4063,21 @@ function AbandonedCartSection() {
         <AbandonedCartModal
           user={selectedUser}
           onClose={() => setSelectedUser(null)}
+          onCreateOrder={() => openCreate(selectedUser)}
+        />
+      )}
+
+      {/* Manual order creation */}
+      {createFor && (
+        <CreateOrderModal
+          initial={createFor.initial}
+          cartUserId={createFor.cartUserId}
+          onClose={() => setCreateFor(null)}
+          onCreated={(orderId) => {
+            setCreateFor(null);
+            if (orderId) router.push(`/dashboard/orders/${orderId}`);
+            else router.push("/dashboard/orders");
+          }}
         />
       )}
     </div>
@@ -3813,7 +4255,7 @@ function OrderCustomerModal({ name, phone, email, userId, onClose }) {
   );
 }
 
-function CheckoutSessionModal({ session, onClose }) {
+function CheckoutSessionModal({ session, onClose, onCreateOrder }) {
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const {
@@ -3892,12 +4334,22 @@ function CheckoutSessionModal({ session, onClose }) {
               })()}
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-700 text-xl leading-none"
-          >
-            ×
-          </button>
+          <div className="flex items-center gap-2">
+            {onCreateOrder && (
+              <button
+                onClick={onCreateOrder}
+                className="text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-lg px-3 py-2"
+              >
+                ✅ Order তৈরি করুন
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-700 text-xl leading-none"
+            >
+              ×
+            </button>
+          </div>
         </div>
 
         <div className="overflow-y-auto flex-1">
@@ -4052,6 +4504,7 @@ function CheckoutSessionModal({ session, onClose }) {
 
 function AbandonCheckoutSection() {
   const { user } = useUser();
+  const router = useRouter();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -4059,9 +4512,23 @@ function AbandonCheckoutSection() {
   const [total, setTotal] = useState(0);
   const [q, setQ] = useState("");
   const [selectedSession, setSelectedSession] = useState(null);
+  const [createFor, setCreateFor] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const searchRef = useRef(null);
   const PAGE_SIZE = 20;
+
+  const openCreate = (s) => {
+    setSelectedSession(null);
+    setCreateFor({
+      initial: {
+        name: s.userName || "",
+        phone: s.userPhone || "",
+        email: s.userEmail || "",
+        items: s.items || [],
+      },
+      sessionId: s._id,
+    });
+  };
 
   const deleteSession = async (id) => {
     if (!confirm("এই record টি delete করবেন?")) return;
@@ -4267,18 +4734,27 @@ function AbandonCheckoutSection() {
                         : "—"}
                     </td>
 
-                    {/* Delete */}
+                    {/* Actions */}
                     <td className="px-4 py-3">
-                      {user?.role === "admin" && (
+                      <div className="flex items-center gap-2 whitespace-nowrap">
                         <button
-                          onClick={() => deleteSession(s._id)}
-                          disabled={deletingId === s._id}
-                          className="text-xs text-red-400 hover:text-red-600 hover:underline disabled:opacity-40"
-                          title="Delete record"
+                          onClick={() => openCreate(s)}
+                          className="text-xs font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg px-2.5 py-1.5"
+                          title="কাস্টমার confirm করলে অর্ডার তৈরি করুন"
                         >
-                          {deletingId === s._id ? "…" : "Delete"}
+                          + Order
                         </button>
-                      )}
+                        {user?.role === "admin" && (
+                          <button
+                            onClick={() => deleteSession(s._id)}
+                            disabled={deletingId === s._id}
+                            className="text-xs text-red-400 hover:text-red-600 hover:underline disabled:opacity-40"
+                            title="Delete record"
+                          >
+                            {deletingId === s._id ? "…" : "Delete"}
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
@@ -4361,6 +4837,21 @@ function AbandonCheckoutSection() {
         <CheckoutSessionModal
           session={selectedSession}
           onClose={() => setSelectedSession(null)}
+          onCreateOrder={() => openCreate(selectedSession)}
+        />
+      )}
+
+      {/* Manual order creation */}
+      {createFor && (
+        <CreateOrderModal
+          initial={createFor.initial}
+          sessionId={createFor.sessionId}
+          onClose={() => setCreateFor(null)}
+          onCreated={(orderId) => {
+            setCreateFor(null);
+            if (orderId) router.push(`/dashboard/orders/${orderId}`);
+            else router.push("/dashboard/orders");
+          }}
         />
       )}
     </div>

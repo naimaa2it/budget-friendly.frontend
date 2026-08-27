@@ -14,6 +14,28 @@ const DEFAULT_QUICK = [
   { key: "agent", emoji: "👤", label: "Agent", text: "Agent er sathe kotha bolbo" },
 ];
 
+// Chatbot availability — all in Bangladesh time (Asia/Dhaka):
+//   Sunday–Thursday: 5:00 PM → 9:00 AM (evening through the whole night)
+//   Friday & Saturday: open all day
+// Off-hours → the widget is hidden entirely.
+function isChatActive(now = new Date()) {
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Dhaka",
+      weekday: "short",
+      hour: "2-digit",
+      hour12: false,
+    }).formatToParts(now);
+    const wd = parts.find((p) => p.type === "weekday")?.value || "";
+    let hour = parseInt(parts.find((p) => p.type === "hour")?.value || "0", 10);
+    if (hour === 24) hour = 0; // some engines render midnight as "24"
+    if (wd === "Fri" || wd === "Sat") return true; // full day
+    return hour >= 17 || hour < 9; // evening (5 PM) → next morning
+  } catch {
+    return true; // if the timezone lookup ever fails, don't block support
+  }
+}
+
 function getVisitorId() {
   if (typeof window === "undefined") return "";
   let id = localStorage.getItem(VISITOR_KEY);
@@ -25,6 +47,7 @@ function getVisitorId() {
 }
 
 export default function ChatWidget() {
+  const [active, setActive] = useState(false); // within Dhaka active hours?
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [quick, setQuick] = useState(DEFAULT_QUICK);
@@ -48,6 +71,18 @@ export default function ChatWidget() {
 
   useEffect(() => {
     visitorId.current = getVisitorId();
+  }, []);
+
+  // Track Dhaka active hours; re-check each minute so it toggles without reload.
+  useEffect(() => {
+    const tick = () => {
+      const a = isChatActive();
+      setActive(a);
+      if (!a) setOpen(false); // going off-hours closes any open panel
+    };
+    tick();
+    const t = setInterval(tick, 60000);
+    return () => clearInterval(t);
   }, []);
 
   const scrollToBottom = () => {
@@ -160,6 +195,9 @@ export default function ChatWidget() {
   };
 
   const bubbleLabel = { visitor: null, bot: "Bot", admin: "Team" };
+
+  // Off-hours (outside Dhaka active hours) → hide the widget entirely.
+  if (!active) return null;
 
   return (
     <>

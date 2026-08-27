@@ -457,22 +457,39 @@ function StatusUpdateModal({ order, onClose, onUpdated }) {
 function StickyScrollX({ children }) {
   const contentRef = useRef(null);
   const barRef = useRef(null);
-  const [scrollWidth, setScrollWidth] = useState(0);
-  const [overflowing, setOverflowing] = useState(false);
+  const [bar, setBar] = useState({
+    left: 0,
+    width: 0,
+    scrollWidth: 0,
+    show: false,
+  });
 
   useEffect(() => {
     const content = contentRef.current;
     if (!content) return;
     const update = () => {
-      setScrollWidth(content.scrollWidth);
-      setOverflowing(content.scrollWidth - content.clientWidth > 1);
+      const rect = content.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const overflowing = content.scrollWidth - content.clientWidth > 1;
+      // Show the floating bar whenever the table is horizontally scrollable and
+      // any part of it is on screen — it stays pinned to the bottom of the
+      // viewport the whole time, like the navbar.
+      const inView = rect.top < vh && rect.bottom > 60;
+      setBar({
+        left: rect.left,
+        width: content.clientWidth,
+        scrollWidth: content.scrollWidth,
+        show: overflowing && inView,
+      });
     };
     update();
     const ro = new ResizeObserver(update);
     ro.observe(content);
+    window.addEventListener("scroll", update, true);
     window.addEventListener("resize", update);
     return () => {
       ro.disconnect();
+      window.removeEventListener("scroll", update, true);
       window.removeEventListener("resize", update);
     };
   }, [children]);
@@ -495,16 +512,20 @@ function StickyScrollX({ children }) {
       >
         {children}
       </div>
-      {overflowing && (
-        <div
-          ref={barRef}
-          onScroll={syncFromBar}
-          className="sticky bottom-0 z-20 overflow-x-auto bg-white/80 backdrop-blur border-t border-gray-100"
-          aria-hidden="true"
-        >
-          <div style={{ width: scrollWidth, height: 1 }} />
-        </div>
-      )}
+      {bar.show &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            ref={barRef}
+            onScroll={syncFromBar}
+            style={{ bottom: 0, left: bar.left, width: bar.width }}
+            className="fixed z-40 overflow-x-auto bg-white/95 backdrop-blur border-t border-gray-200 shadow-[0_-2px_6px_rgba(0,0,0,0.08)]"
+            aria-hidden="true"
+          >
+            <div style={{ width: bar.scrollWidth, height: 14 }} />
+          </div>,
+          document.body,
+        )}
     </>
   );
 }
@@ -2017,6 +2038,9 @@ function AllOrdersSection() {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border">
+        {/* Sticky toolbar — header, date filter and status tabs stay pinned to
+            the top of the viewport while the rows scroll underneath. */}
+        <div className="sticky top-0 z-30 bg-white rounded-t-xl">
         {/* Header */}
         <div className="px-5 py-4 border-b flex flex-col gap-3">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -2082,6 +2106,7 @@ function AllOrdersSection() {
             ))}
           </div>
         )}
+        </div>
 
         {/* Bulk action bar (admin only) */}
         {canPermanentDelete && selectedIds.length > 0 && (

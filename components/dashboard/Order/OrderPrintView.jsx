@@ -597,7 +597,7 @@ export default function OrderPrintView({
                   { label: "Order ID", value: `${formatOrderId(order)}` },
                   {
                     label: "Invoice No",
-                    value: `INV-${order._id?.slice(-6).toUpperCase()}`,
+                    value: `INV-${formatOrderId(order, { hash: false })}`,
                   },
                   { label: "Order Date", value: fmtDate(order.createdAt) },
                   { label: "Invoice Date", value: fmtDate(new Date()) },

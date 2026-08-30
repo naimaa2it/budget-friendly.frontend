@@ -6,7 +6,31 @@ import { useUser } from "@/components/context/UserContext";
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 const VISITOR_KEY = "Pickob-chat-visitor";
 const PHONE_KEY = "Pickob-chat-phone";
+const PHONE_TS_KEY = "Pickob-chat-phone-ts"; // last-activity time for the phone gate
+const PHONE_TTL_MS = 30 * 60 * 1000; // 30 min idle → must re-enter the number
 const POLL_MS = 5000;
+
+// Phone-gate persistence with a 30-min *idle* window. Any activity (opening the
+// widget, sending a message) refreshes the timer, so a continuous chat never
+// locks; but leaving and coming back after 30 idle minutes asks for the number
+// again.
+function loadPhone() {
+  try {
+    const p = localStorage.getItem(PHONE_KEY) || "";
+    const ts = parseInt(localStorage.getItem(PHONE_TS_KEY) || "0", 10);
+    if (p && ts && Date.now() - ts <= PHONE_TTL_MS) return p;
+  } catch {}
+  return "";
+}
+function savePhone(p) {
+  try {
+    localStorage.setItem(PHONE_KEY, p);
+    localStorage.setItem(PHONE_TS_KEY, String(Date.now()));
+  } catch {}
+}
+function touchPhone() {
+  try { localStorage.setItem(PHONE_TS_KEY, String(Date.now())); } catch {}
+}
 
 // Validate + normalise a Bangladeshi mobile number (accepts 01XXXXXXXXX,
 // +8801XXXXXXXXX, 8801XXXXXXXXX). Returns "" when it isn't a valid BD number.
@@ -148,22 +172,34 @@ export default function ChatWidget() {
 
   useEffect(() => {
     visitorId.current = getVisitorId();
-    try {
-      const saved = localStorage.getItem(PHONE_KEY) || "";
-      if (saved) setPhone(saved);
-    } catch {}
+    const saved = loadPhone();
+    if (saved) {
+      setPhone(saved);
+      touchPhone(); // they're back within the window → extend it
+    }
   }, []);
 
-  // A logged-in customer's own mobile satisfies the gate automatically.
+  // A logged-in customer's own mobile satisfies the gate automatically (and
+  // re-fills it even after the idle window expires — they stay identified).
   useEffect(() => {
     if (!phone && user?.mobile) {
       const n = normalizeBdPhone(user.mobile);
       if (n) {
         setPhone(n);
-        try { localStorage.setItem(PHONE_KEY, n); } catch {}
+        savePhone(n);
       }
     }
   }, [user, phone]);
+
+  // Enforce the 30-min idle window: once activity stops for that long, drop the
+  // phone so the gate reappears. Checked on a short interval while mounted.
+  useEffect(() => {
+    if (!phone) return;
+    const t = setInterval(() => {
+      if (!loadPhone()) setPhone(""); // expired → re-ask for the number
+    }, 30000);
+    return () => clearInterval(t);
+  }, [phone]);
 
   // Confirm the phone-gate form → unlock the chat.
   const submitPhone = () => {
@@ -174,7 +210,7 @@ export default function ChatWidget() {
     }
     setPhoneError("");
     setPhone(n);
-    try { localStorage.setItem(PHONE_KEY, n); } catch {}
+    savePhone(n);
   };
 
   // Track Dhaka active hours; re-check each minute so it toggles without reload.
@@ -246,15 +282,17 @@ export default function ChatWidget() {
       if (pollRef.current) clearInterval(pollRef.current);
       return;
     }
+    if (phone) touchPhone(); // opening/using the panel is activity
     fetchThread();
     pollRef.current = setInterval(fetchThread, POLL_MS);
     return () => pollRef.current && clearInterval(pollRef.current);
-  }, [open, fetchThread]);
+  }, [open, fetchThread, phone]);
 
   // send a message (typed, or a quick-reply button's text)
   const send = (overrideText) => {
     const body = (overrideText ?? input).trim();
     if (!body || sending) return;
+    touchPhone(); // sending is activity → keep the phone gate open
     setSending(true);
     pendingSends.current += 1;
     const seq = ++reqSeq.current;
@@ -448,7 +486,7 @@ export default function ChatWidget() {
           <div className="flex items-center gap-2 border-t border-gray-100 p-2">
             <input
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => { setInput(e.target.value); touchPhone(); }}
               onKeyDown={(e) => e.key === "Enter" && send()}
               placeholder="Message likhun…"
               className="flex-1 rounded-full border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none"

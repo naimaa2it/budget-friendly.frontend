@@ -159,8 +159,16 @@ export default function ChatWidget() {
   const [loaded, setLoaded] = useState(false);
   // Visitor's phone — gate the chat behind it so every conversation in the
   // inbox is tied to a real, identifiable number (and can be matched to orders).
-  const [phone, setPhone] = useState(""); // saved/confirmed number (gate key)
-  const [name, setName] = useState(""); // saved/confirmed name
+  // Restored from localStorage via a lazy initializer (not an effect) so we
+  // never call setState synchronously in an effect. Safe from hydration
+  // mismatch because the whole widget renders null until `active` flips on
+  // post-mount, so this initial value is never part of the SSR/first render.
+  const [phone, setPhone] = useState(() =>
+    typeof window === "undefined" ? "" : loadPhone()
+  ); // saved/confirmed number (gate key)
+  const [name, setName] = useState(() =>
+    typeof window === "undefined" ? "" : loadPhone() ? loadName() : ""
+  ); // saved/confirmed name
   const [phoneInput, setPhoneInput] = useState(""); // number being typed
   const [nameInput, setNameInput] = useState(""); // name being typed
   const [phoneError, setPhoneError] = useState("");
@@ -181,26 +189,27 @@ export default function ChatWidget() {
 
   useEffect(() => {
     visitorId.current = getVisitorId();
-    const saved = loadPhone();
-    if (saved) {
-      setPhone(saved);
-      setName(loadName());
-      touchPhone(); // they're back within the window → extend it
-    }
+    if (loadPhone()) touchPhone(); // returning within the window → extend it
   }, []);
 
   // A logged-in customer's own name + mobile satisfy the gate automatically (and
   // re-fill it even after the idle window expires — they stay identified).
+  // Derived during render (React's "adjust state while rendering" pattern)
+  // instead of in an effect, which avoids a synchronous setState-in-effect
+  // cascade. The `!phone` check converges it (once set, this no longer runs),
+  // so there's no loop. Persisting happens in the effect below.
+  const userPhone = normalizeBdPhone(user?.mobile || "");
+  if (!phone && userPhone) {
+    setPhone(userPhone);
+    setName(user?.name || "");
+  }
+
+  // Persist the confirmed gate (localStorage only — no setState, so this is a
+  // safe external-system sync). Covers the restored, user-derived, and manual
+  // paths, and refreshes the idle window whenever the gate is (re)established.
   useEffect(() => {
-    if (!phone && user?.mobile) {
-      const n = normalizeBdPhone(user.mobile);
-      if (n) {
-        setPhone(n);
-        setName(user.name || "");
-        saveGate(user.name || "", n);
-      }
-    }
-  }, [user, phone]);
+    if (phone) saveGate(name, phone);
+  }, [phone, name]);
 
   // Enforce the 10-min idle window: once activity stops for that long, drop the
   // phone so the gate reappears. Checked on a short interval while mounted.

@@ -155,7 +155,7 @@ export default function NotificationBell() {
                     {o.customerName}
                   </div>
                   <div className="text-xs text-gray-500">
-                    #{o.orderId} · {o.status}
+                    {o.orderNumber || `#${o.orderId}`} · {o.status}
                   </div>
                 </div>
                 <div className="shrink-0 text-right">

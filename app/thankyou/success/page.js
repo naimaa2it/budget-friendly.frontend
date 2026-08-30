@@ -427,7 +427,14 @@ function SuccessContent() {
     }
   };
 
-  const shortId = (id) => (id ? "#" + String(id).slice(-8).toUpperCase() : "");
+  const shortId = (o) => {
+    if (o && typeof o === "object") {
+      if (o.orderNumber) return o.orderNumber;
+      if (o.orderNo != null && o.orderNo !== "") return `pk${o.orderNo}`;
+      return o._id ? "#" + String(o._id).slice(-8).toUpperCase() : "";
+    }
+    return o ? "#" + String(o).slice(-8).toUpperCase() : "";
+  };
   const billing = order?.billingDetails || {};
   const addr = [billing.address, billing.area, billing.zone, billing.city]
     .filter(Boolean)
@@ -525,7 +532,9 @@ function SuccessContent() {
               <p className="text-gray-500 text-xs mb-1">
                 {t("success.order_id")}
               </p>
-              <p className="font-bold text-gray-900">{shortId(orderId)}</p>
+              <p className="font-bold text-gray-900">
+                {shortId(order || orderId)}
+              </p>
             </div>
             <div className="text-right">
               <p className="text-gray-500 text-xs mb-1">

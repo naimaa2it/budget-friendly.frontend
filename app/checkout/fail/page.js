@@ -2,7 +2,8 @@
 
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { formatOrderId } from "@/lib/orderId";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
@@ -12,6 +13,19 @@ function FailContent() {
   const reason = params.get("reason");
   const [retrying, setRetrying] = useState(false);
   const [retryError, setRetryError] = useState("");
+  const [orderNumber, setOrderNumber] = useState("");
+
+  // Fetch the human-facing order number (e.g. "pk100000").
+  useEffect(() => {
+    if (!orderId) return;
+    fetch(`${API}/api/orders/${orderId}`, { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => {
+        const o = d.order || d;
+        if (o?._id) setOrderNumber(formatOrderId(o, { hash: false }));
+      })
+      .catch(() => {});
+  }, [orderId]);
 
   const handleRetry = async () => {
     if (!orderId) return;
@@ -72,7 +86,7 @@ function FailContent() {
           <p className="text-sm text-gray-500 mt-3 mb-2">
             Reference:{" "}
             <span className="font-mono font-semibold text-gray-800">
-              {orderId.slice(-6).toUpperCase()}
+              {orderNumber || orderId.slice(-6).toUpperCase()}
             </span>
           </p>
         )}

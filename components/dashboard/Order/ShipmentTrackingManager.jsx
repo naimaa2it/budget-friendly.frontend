@@ -121,7 +121,7 @@ function OrderTrackingCard({
         <div className="flex-1 min-w-0 grid sm:grid-cols-4 gap-2 items-center">
           <div>
             <p className="font-mono text-sm font-bold text-gray-900">
-              {formatOrderId(order._id)}
+              {formatOrderId(order)}
             </p>
             <p className="text-xs text-gray-500 truncate">
               {order.billingDetails?.name}

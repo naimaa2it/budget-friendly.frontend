@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useStoreSettings } from "@/components/context/StoreSettingsContext";
+import { formatOrderId } from "@/lib/orderId";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 const STEP = { NUMBER: 1, TXID: 2, PROCESSING: 3 };
@@ -146,7 +147,20 @@ function PaymentPageInner() {
   const [txError, setTxError] = useState("");
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [switching, setSwitching] = useState(false);
+  const [orderNumber, setOrderNumber] = useState("");
   const submitted = useRef(false);
+
+  // Fetch the human-facing order number (e.g. "pk100000").
+  useEffect(() => {
+    if (!orderId) return;
+    fetch(`${API}/api/orders/${orderId}`, { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => {
+        const o = d.order || d;
+        if (o?._id) setOrderNumber(formatOrderId(o));
+      })
+      .catch(() => {});
+  }, [orderId]);
 
   const handleSwitchToCOD = async () => {
     setSwitching(true);
@@ -291,7 +305,7 @@ function PaymentPageInner() {
               </div>
               <div className="flex items-center justify-between mt-2">
                 <span className="text-white/80 text-xs">
-                  Order #{orderId.slice(-8).toUpperCase()}
+                  Order {orderNumber || `#${orderId.slice(-8).toUpperCase()}`}
                 </span>
                 <span className="text-white font-bold text-lg">
                   ৳{amount.toLocaleString("en-BD")}

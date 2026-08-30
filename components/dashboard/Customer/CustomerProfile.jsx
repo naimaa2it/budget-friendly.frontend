@@ -276,7 +276,7 @@ export default function CustomerProfile({ userId }) {
                           href={`/dashboard/orders/${order._id}`}
                           className="font-mono text-xs text-rose-600 hover:underline"
                         >
-                          {formatOrderId(order._id)}
+                          {formatOrderId(order)}
                         </Link>
                       </td>
                       <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">

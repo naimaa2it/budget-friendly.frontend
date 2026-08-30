@@ -457,9 +457,14 @@ function OrdersSection({ API }) {
     return v?.price ?? prod.price ?? null;
   };
 
-  const shortId = (id) => {
-    const suffix = String(id).slice(-8).toUpperCase();
-    return `#${suffix}`;
+  const shortId = (order) => {
+    if (order && typeof order === "object") {
+      if (order.orderNumber) return order.orderNumber;
+      if (order.orderNo != null && order.orderNo !== "")
+        return `pk${order.orderNo}`;
+      return `#${String(order._id || "").slice(-8).toUpperCase()}`;
+    }
+    return `#${String(order || "").slice(-8).toUpperCase()}`;
   };
   const fmtDate = (d) =>
     new Date(d).toLocaleDateString("en-GB", {
@@ -628,7 +633,7 @@ function OrdersSection({ API }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-bold text-gray-900">
-                    {shortId(order._id)}
+                    {shortId(order)}
                   </span>
                   <span
                     className={`text-xs px-2 py-0.5 rounded-full font-semibold capitalize ${STATUS_COLORS[order.status] || "bg-gray-100 text-gray-600"}`}

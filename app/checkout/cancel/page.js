@@ -2,7 +2,8 @@
 
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { formatOrderId } from "@/lib/orderId";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
@@ -11,6 +12,20 @@ function CancelContent() {
   const orderId = params.get("orderId");
   const [retrying, setRetrying] = useState(false);
   const [retryError, setRetryError] = useState("");
+  const [orderNumber, setOrderNumber] = useState("");
+
+  // Fetch the human-facing order number (e.g. "pk100000"); fall back to the
+  // legacy "#<_id suffix>" until it loads or if the order can't be read.
+  useEffect(() => {
+    if (!orderId) return;
+    fetch(`${API}/api/orders/${orderId}`, { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => {
+        const o = d.order || d;
+        if (o?._id) setOrderNumber(formatOrderId(o));
+      })
+      .catch(() => {});
+  }, [orderId]);
 
   const handleRetry = async () => {
     if (!orderId) return;
@@ -93,7 +108,7 @@ function CancelContent() {
               Order Reference
             </p>
             <p className="font-mono font-bold text-gray-800 text-lg tracking-widest">
-              #{orderId.slice(-8).toUpperCase()}
+              {orderNumber || `#${orderId.slice(-8).toUpperCase()}`}
             </p>
           </div>
         )}

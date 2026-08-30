@@ -131,7 +131,7 @@ export default function RewardsOverview() {
                           href={`/dashboard/orders/${o._id}`}
                           className="font-mono text-xs text-rose-600 hover:underline"
                         >
-                          {formatOrderId(o._id)}
+                          {formatOrderId(o)}
                         </Link>
                       </td>
                       <td className="px-4 py-3">{o.customerName || "—"}</td>

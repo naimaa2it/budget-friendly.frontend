@@ -41,10 +41,16 @@ function money(value) {
   return `৳${Number(value || 0).toLocaleString("en-BD")}`;
 }
 
-function shortId(id) {
-  return String(id || "")
-    .slice(-8)
-    .toUpperCase();
+// Full human-facing order number: "pk100000" for new orders, "#<suffix>" for
+// legacy. Accepts the order object.
+function shortId(order) {
+  if (order && typeof order === "object") {
+    if (order.orderNumber) return order.orderNumber;
+    if (order.orderNo != null && order.orderNo !== "")
+      return `pk${order.orderNo}`;
+    return `#${String(order._id || "").slice(-8).toUpperCase()}`;
+  }
+  return `#${String(order || "").slice(-8).toUpperCase()}`;
 }
 
 function dateTime(value) {
@@ -500,7 +506,7 @@ export default function Dashboard() {
                       <tr key={order._id} className="border-b last:border-0">
                         <td className="py-2 pr-3">
                           <div className="font-mono text-xs text-gray-700">
-                            #{shortId(order._id)}
+                            {shortId(order)}
                           </div>
                           <div className="text-xs text-gray-400">
                             {order.items?.length || 0} items

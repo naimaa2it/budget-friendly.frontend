@@ -93,7 +93,7 @@ export default function FollowUpManager() {
       {assignOrder && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
           <p className="text-sm font-semibold text-amber-900">
-            Assign follow-up for order {formatOrderId(assignOrder._id)}
+            Assign follow-up for order {formatOrderId(assignOrder)}
           </p>
           <p className="text-sm text-amber-800 mt-1">
             {assignOrder.billingDetails?.name} ·{" "}

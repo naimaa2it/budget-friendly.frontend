@@ -102,7 +102,7 @@ export default function OrderPrintView({
     try {
       const html2pdf = (await import("html2pdf.js")).default;
       const orderNum = order._id
-        ? String(order._id).slice(-8).toUpperCase()
+        ? formatOrderId(order, { hash: false })
         : "invoice";
       await html2pdf()
         .set({
@@ -280,7 +280,7 @@ export default function OrderPrintView({
                     margin: "2px 0 0",
                   }}
                 >
-                  Order {formatOrderId(order._id)}
+                  Order {formatOrderId(order)}
                 </p>
                 <p
                   style={{
@@ -594,7 +594,7 @@ export default function OrderPrintView({
                 }}
               >
                 {[
-                  { label: "Order ID", value: `${formatOrderId(order._id)}` },
+                  { label: "Order ID", value: `${formatOrderId(order)}` },
                   {
                     label: "Invoice No",
                     value: `INV-${order._id?.slice(-6).toUpperCase()}`,

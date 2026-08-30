@@ -6,14 +6,16 @@ import { useUser } from "@/components/context/UserContext";
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 const VISITOR_KEY = "Pickob-chat-visitor";
 const PHONE_KEY = "Pickob-chat-phone";
+const NAME_KEY = "Pickob-chat-name";
 const PHONE_TS_KEY = "Pickob-chat-phone-ts"; // last-activity time for the phone gate
-const PHONE_TTL_MS = 30 * 60 * 1000; // 30 min idle → must re-enter the number
+const PHONE_TTL_MS = 10 * 60 * 1000; // 10 min idle → must re-enter name + number
 const POLL_MS = 5000;
 
-// Phone-gate persistence with a 30-min *idle* window. Any activity (opening the
+// Phone-gate persistence with a 10-min *idle* window. Any activity (opening the
 // widget, sending a message) refreshes the timer, so a continuous chat never
-// locks; but leaving and coming back after 30 idle minutes asks for the number
-// again.
+// locks; but leaving and coming back after 10 idle minutes asks for name +
+// number again. The visitorId is unchanged, so the previous chat history
+// reappears once they re-enter.
 function loadPhone() {
   try {
     const p = localStorage.getItem(PHONE_KEY) || "";
@@ -22,9 +24,14 @@ function loadPhone() {
   } catch {}
   return "";
 }
-function savePhone(p) {
+function loadName() {
+  try { return localStorage.getItem(NAME_KEY) || ""; } catch { return ""; }
+}
+// Persist name + phone together and (re)start the idle window.
+function saveGate(name, phone) {
   try {
-    localStorage.setItem(PHONE_KEY, p);
+    localStorage.setItem(NAME_KEY, name);
+    localStorage.setItem(PHONE_KEY, phone);
     localStorage.setItem(PHONE_TS_KEY, String(Date.now()));
   } catch {}
 }
@@ -152,8 +159,10 @@ export default function ChatWidget() {
   const [loaded, setLoaded] = useState(false);
   // Visitor's phone — gate the chat behind it so every conversation in the
   // inbox is tied to a real, identifiable number (and can be matched to orders).
-  const [phone, setPhone] = useState(""); // saved/confirmed number
-  const [phoneInput, setPhoneInput] = useState(""); // what they're typing
+  const [phone, setPhone] = useState(""); // saved/confirmed number (gate key)
+  const [name, setName] = useState(""); // saved/confirmed name
+  const [phoneInput, setPhoneInput] = useState(""); // number being typed
+  const [nameInput, setNameInput] = useState(""); // name being typed
   const [phoneError, setPhoneError] = useState("");
   const visitorId = useRef("");
   const scrollRef = useRef(null);
@@ -175,42 +184,54 @@ export default function ChatWidget() {
     const saved = loadPhone();
     if (saved) {
       setPhone(saved);
+      setName(loadName());
       touchPhone(); // they're back within the window → extend it
     }
   }, []);
 
-  // A logged-in customer's own mobile satisfies the gate automatically (and
-  // re-fills it even after the idle window expires — they stay identified).
+  // A logged-in customer's own name + mobile satisfy the gate automatically (and
+  // re-fill it even after the idle window expires — they stay identified).
   useEffect(() => {
     if (!phone && user?.mobile) {
       const n = normalizeBdPhone(user.mobile);
       if (n) {
         setPhone(n);
-        savePhone(n);
+        setName(user.name || "");
+        saveGate(user.name || "", n);
       }
     }
   }, [user, phone]);
 
-  // Enforce the 30-min idle window: once activity stops for that long, drop the
+  // Enforce the 10-min idle window: once activity stops for that long, drop the
   // phone so the gate reappears. Checked on a short interval while mounted.
   useEffect(() => {
     if (!phone) return;
     const t = setInterval(() => {
-      if (!loadPhone()) setPhone(""); // expired → re-ask for the number
+      if (!loadPhone()) {
+        setPhone(""); // expired → gate reappears
+        setPhoneInput("");
+        setNameInput(""); // make them genuinely re-enter name + number
+      }
     }, 30000);
     return () => clearInterval(t);
   }, [phone]);
 
-  // Confirm the phone-gate form → unlock the chat.
+  // Confirm the gate form (name + number) → unlock the chat.
   const submitPhone = () => {
+    const nm = nameInput.trim();
+    if (nm.length < 2) {
+      setPhoneError("আপনার নামটি লিখুন।");
+      return;
+    }
     const n = normalizeBdPhone(phoneInput);
     if (!n) {
       setPhoneError("সঠিক মোবাইল নম্বর দিন (যেমন 01712345678)।");
       return;
     }
     setPhoneError("");
+    setName(nm);
     setPhone(n);
-    savePhone(n);
+    saveGate(nm, n);
   };
 
   // Track Dhaka active hours; re-check each minute so it toggles without reload.
@@ -310,13 +331,13 @@ export default function ChatWidget() {
         visitorId: visitorId.current,
         body,
         deviceId: getDeviceId(),
-        // The gate guarantees a phone; send it so the inbox always identifies
-        // this visitor (and can match them to past orders).
+        // The gate guarantees a name + phone; send them so the inbox always
+        // identifies this visitor (and can match them to past orders).
         phone,
+        name: name || user?.name || "",
         // If the customer is logged in, add their account details too.
         ...(user
           ? {
-              name: user.name || "",
               email: user.email || "",
               userId: user._id || user.id || undefined,
             }
@@ -411,11 +432,19 @@ export default function ChatWidget() {
             <div className="flex flex-1 flex-col items-center justify-center gap-3 bg-gray-50 px-6 text-center">
               <div className="text-3xl">📱</div>
               <p className="text-sm font-semibold text-gray-700">
-                চ্যাট শুরু করতে আপনার মোবাইল নম্বরটি দিন
+                চ্যাট শুরু করতে আপনার নাম ও মোবাইল নম্বর দিন
               </p>
               <p className="text-xs text-gray-400">
-                আপনাকে দ্রুত সাহায্য করতে ও অর্ডার আপডেট দিতে নম্বরটি লাগবে।
+                আপনাকে দ্রুত সাহায্য করতে ও অর্ডার আপডেট দিতে এগুলো লাগবে।
               </p>
+              <input
+                type="text"
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && submitPhone()}
+                placeholder="আপনার নাম"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 text-center text-sm focus:border-blue-500 focus:outline-none"
+              />
               <input
                 type="tel"
                 inputMode="numeric"

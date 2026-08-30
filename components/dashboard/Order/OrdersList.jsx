@@ -25,6 +25,24 @@ const daysLeftInTrash = (deletedAt) => {
   return Math.max(0, TRASH_RETENTION_DAYS - Math.floor(elapsed / 86400000));
 };
 
+// Absolute date + time, e.g. "26 October 2026, 3:23 am"
+const formatDateTime = (date) => {
+  if (!date) return "—";
+  const d = new Date(date);
+  if (isNaN(d)) return "—";
+  const day = d.getDate();
+  const month = d.toLocaleString("en-US", { month: "long" });
+  const year = d.getFullYear();
+  const time = d
+    .toLocaleString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })
+    .toLowerCase();
+  return `${day} ${month} ${year}, ${time}`;
+};
+
 function useCourierLifetime(phone) {
   const [lifetime, setLifetime] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -4251,10 +4269,10 @@ function AbandonedCartSection() {
                       ৳{cartValue.toLocaleString("en-BD")}
                     </td>
 
-                    {/* Time ago */}
+                    {/* Date & time */}
                     <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">
                       {u.savedCart?.updatedAt
-                        ? timeAgo(u.savedCart.updatedAt)
+                        ? formatDateTime(u.savedCart.updatedAt)
                         : "—"}
                     </td>
 
@@ -5069,7 +5087,7 @@ function AbandonCheckoutSection() {
                               </span>
                             ) : (
                               <span className="text-gray-400">
-                                {timeAgo(s.createdAt)}
+                                {formatDateTime(s.createdAt)}
                               </span>
                             );
                           })()

@@ -1,10 +1,23 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useUser } from "@/components/context/UserContext";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 const VISITOR_KEY = "Pickob-chat-visitor";
+const PHONE_KEY = "Pickob-chat-phone";
 const POLL_MS = 5000;
+
+// Validate + normalise a Bangladeshi mobile number (accepts 01XXXXXXXXX,
+// +8801XXXXXXXXX, 8801XXXXXXXXX). Returns "" when it isn't a valid BD number.
+function normalizeBdPhone(raw) {
+  let d = String(raw || "").replace(/[^\d]/g, "");
+  if (d.startsWith("880")) d = d.slice(3);
+  else if (d.startsWith("88")) d = d.slice(2);
+  if (d.length === 11 && /^01[3-9]\d{8}$/.test(d)) return d;
+  if (d.length === 10 && /^1[3-9]\d{8}$/.test(d)) return "0" + d;
+  return "";
+}
 
 // fallback menu (also comes from the server so it stays in sync)
 const DEFAULT_QUICK = [
@@ -14,23 +27,64 @@ const DEFAULT_QUICK = [
   { key: "agent", emoji: "👤", label: "Agent", text: "Agent er sathe kotha bolbo" },
 ];
 
-// Chatbot availability — all in Bangladesh time (Asia/Dhaka):
-//   Sunday–Thursday: 5:00 PM → 9:00 AM (evening through the whole night)
-//   Friday & Saturday: open all day
-// Off-hours → the widget is hidden entirely.
-function isChatActive(now = new Date()) {
+// Chatbot availability is controlled from the dashboard (Settings → Chatbot
+// Availability) and stored per-weekday in Asia/Dhaka time. The widget fetches
+// that schedule and hides itself during off-hours. Until the schedule loads (or
+// if the fetch fails), we fall back to the historical default below.
+//
+// Default: Sun–Thu evening→morning (5 PM–9 AM), Fri & Sat all day. Index 0 = Sun.
+const DEFAULT_SCHEDULE = {
+  enabled: true,
+  days: [
+    { mode: "range", start: "17:00", end: "09:00" }, // Sun
+    { mode: "range", start: "17:00", end: "09:00" }, // Mon
+    { mode: "range", start: "17:00", end: "09:00" }, // Tue
+    { mode: "range", start: "17:00", end: "09:00" }, // Wed
+    { mode: "range", start: "17:00", end: "09:00" }, // Thu
+    { mode: "allday", start: "00:00", end: "23:59" }, // Fri
+    { mode: "allday", start: "00:00", end: "23:59" }, // Sat
+  ],
+};
+
+const WEEKDAY_INDEX = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+
+// Parse "HH:MM" → minutes since midnight (safe fallback on bad input).
+function toMinutes(hhmm) {
+  const [h, m] = String(hhmm || "").split(":").map((n) => parseInt(n, 10));
+  if (Number.isNaN(h)) return 0;
+  return h * 60 + (Number.isNaN(m) ? 0 : m);
+}
+
+// Decide whether the widget should be visible right now, per the schedule.
+function isChatActive(schedule, now = new Date()) {
+  const sched = schedule || DEFAULT_SCHEDULE;
+  if (sched.enabled === false) return false; // master off
   try {
     const parts = new Intl.DateTimeFormat("en-US", {
       timeZone: "Asia/Dhaka",
       weekday: "short",
       hour: "2-digit",
+      minute: "2-digit",
       hour12: false,
     }).formatToParts(now);
     const wd = parts.find((p) => p.type === "weekday")?.value || "";
     let hour = parseInt(parts.find((p) => p.type === "hour")?.value || "0", 10);
     if (hour === 24) hour = 0; // some engines render midnight as "24"
-    if (wd === "Fri" || wd === "Sat") return true; // full day
-    return hour >= 17 || hour < 9; // evening (5 PM) → next morning
+    const minute = parseInt(parts.find((p) => p.type === "minute")?.value || "0", 10);
+    const nowMin = hour * 60 + minute;
+
+    const dayIdx = WEEKDAY_INDEX[wd] ?? 0;
+    const day = (sched.days && sched.days[dayIdx]) || DEFAULT_SCHEDULE.days[dayIdx];
+    if (!day || day.mode === "off") return false;
+    if (day.mode === "allday") return true;
+
+    // range: end < start ⇒ window wraps past midnight (e.g. 17:00→09:00).
+    const start = toMinutes(day.start);
+    const end = toMinutes(day.end);
+    if (start === end) return true; // treat as full-day
+    return start < end
+      ? nowMin >= start && nowMin < end
+      : nowMin >= start || nowMin < end;
   } catch {
     return true; // if the timezone lookup ever fails, don't block support
   }
@@ -46,14 +100,37 @@ function getVisitorId() {
   return id;
 }
 
+// Same device fingerprint the checkout uses (`_yh_did`), so a chat can be
+// linked to orders placed from this browser — surfacing the real customer.
+function getDeviceId() {
+  if (typeof window === "undefined") return "";
+  try {
+    let id = localStorage.getItem("_yh_did") || "";
+    if (!id) {
+      id = "dev-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem("_yh_did", id);
+    }
+    return id;
+  } catch {
+    return "";
+  }
+}
+
 export default function ChatWidget() {
+  const { user } = useUser(); // logged-in customer, so the inbox knows who's chatting
   const [active, setActive] = useState(false); // within Dhaka active hours?
+  const schedule = useRef(null); // dashboard-controlled availability schedule
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [quick, setQuick] = useState(DEFAULT_QUICK);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  // Visitor's phone — gate the chat behind it so every conversation in the
+  // inbox is tied to a real, identifiable number (and can be matched to orders).
+  const [phone, setPhone] = useState(""); // saved/confirmed number
+  const [phoneInput, setPhoneInput] = useState(""); // what they're typing
+  const [phoneError, setPhoneError] = useState("");
   const visitorId = useRef("");
   const scrollRef = useRef(null);
   const pollRef = useRef(null);
@@ -71,16 +148,51 @@ export default function ChatWidget() {
 
   useEffect(() => {
     visitorId.current = getVisitorId();
+    try {
+      const saved = localStorage.getItem(PHONE_KEY) || "";
+      if (saved) setPhone(saved);
+    } catch {}
   }, []);
 
+  // A logged-in customer's own mobile satisfies the gate automatically.
+  useEffect(() => {
+    if (!phone && user?.mobile) {
+      const n = normalizeBdPhone(user.mobile);
+      if (n) {
+        setPhone(n);
+        try { localStorage.setItem(PHONE_KEY, n); } catch {}
+      }
+    }
+  }, [user, phone]);
+
+  // Confirm the phone-gate form → unlock the chat.
+  const submitPhone = () => {
+    const n = normalizeBdPhone(phoneInput);
+    if (!n) {
+      setPhoneError("সঠিক মোবাইল নম্বর দিন (যেমন 01712345678)।");
+      return;
+    }
+    setPhoneError("");
+    setPhone(n);
+    try { localStorage.setItem(PHONE_KEY, n); } catch {}
+  };
+
   // Track Dhaka active hours; re-check each minute so it toggles without reload.
+  // The schedule comes from the dashboard (Settings → Chatbot Availability);
+  // fetch it once, then re-evaluate against it on each tick.
   useEffect(() => {
     const tick = () => {
-      const a = isChatActive();
+      const a = isChatActive(schedule.current);
       setActive(a);
       if (!a) setOpen(false); // going off-hours closes any open panel
     };
-    tick();
+    fetch(`${API}/api/admin/top-banner`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d && d.chatbotSchedule) schedule.current = d.chatbotSchedule;
+      })
+      .catch(() => {})
+      .finally(tick); // evaluate with whatever schedule we have (or the default)
     const t = setInterval(tick, 60000);
     return () => clearInterval(t);
   }, []);
@@ -156,7 +268,22 @@ export default function ChatWidget() {
     fetch(`${API}/api/chat/message`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ visitorId: visitorId.current, body }),
+      body: JSON.stringify({
+        visitorId: visitorId.current,
+        body,
+        deviceId: getDeviceId(),
+        // The gate guarantees a phone; send it so the inbox always identifies
+        // this visitor (and can match them to past orders).
+        phone,
+        // If the customer is logged in, add their account details too.
+        ...(user
+          ? {
+              name: user.name || "",
+              email: user.email || "",
+              userId: user._id || user.id || undefined,
+            }
+          : {}),
+      }),
     })
       .then((r) => r.json())
       .then((d) => {
@@ -241,6 +368,35 @@ export default function ChatWidget() {
             </button>
           </div>
 
+          {!phone ? (
+            /* phone gate — must give a number before chatting */
+            <div className="flex flex-1 flex-col items-center justify-center gap-3 bg-gray-50 px-6 text-center">
+              <div className="text-3xl">📱</div>
+              <p className="text-sm font-semibold text-gray-700">
+                চ্যাট শুরু করতে আপনার মোবাইল নম্বরটি দিন
+              </p>
+              <p className="text-xs text-gray-400">
+                আপনাকে দ্রুত সাহায্য করতে ও অর্ডার আপডেট দিতে নম্বরটি লাগবে।
+              </p>
+              <input
+                type="tel"
+                inputMode="numeric"
+                value={phoneInput}
+                onChange={(e) => setPhoneInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && submitPhone()}
+                placeholder="01712345678"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 text-center text-sm focus:border-blue-500 focus:outline-none"
+              />
+              {phoneError && <p className="text-xs text-red-500">{phoneError}</p>}
+              <button
+                onClick={submitPhone}
+                className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+              >
+                চ্যাট শুরু করুন
+              </button>
+            </div>
+          ) : (
+          <>
           {/* messages */}
           <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto bg-gray-50 p-3">
             {loaded && messages.length === 0 && (
@@ -308,6 +464,8 @@ export default function ChatWidget() {
               </svg>
             </button>
           </div>
+          </>
+          )}
         </div>
       )}
     </>

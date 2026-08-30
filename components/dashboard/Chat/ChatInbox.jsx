@@ -6,6 +6,38 @@ import toast from "react-hot-toast";
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 const POLL_MS = 6000;
 
+// Merge a conversation's own details with the customer linked from past orders,
+// so the inbox always shows the fullest picture of WHO is chatting.
+function customerOf(c) {
+  if (!c) return {};
+  const lc = c.linkedCustomer || {};
+  return {
+    name: c.name || lc.name || "",
+    phone: c.phone || lc.phone || "",
+    email: c.email || lc.email || "",
+    city: lc.city || "",
+    orderCount: lc.orderCount || 0,
+    visitorId: c.visitorId || "",
+  };
+}
+
+// A short, human-friendly device label from the raw user-agent string.
+function deviceLabel(ua = "") {
+  if (!ua) return "";
+  const os =
+    /android/i.test(ua) ? "Android" :
+    /iphone|ipad|ios/i.test(ua) ? "iOS" :
+    /windows/i.test(ua) ? "Windows" :
+    /mac os/i.test(ua) ? "Mac" :
+    /linux/i.test(ua) ? "Linux" : "";
+  const br =
+    /edg/i.test(ua) ? "Edge" :
+    /chrome|crios/i.test(ua) ? "Chrome" :
+    /firefox|fxios/i.test(ua) ? "Firefox" :
+    /safari/i.test(ua) ? "Safari" : "";
+  return [os, br].filter(Boolean).join(" · ");
+}
+
 async function api(path, opts = {}) {
   const res = await fetch(`${API}/api/chat${path}`, {
     credentials: "include",
@@ -120,8 +152,16 @@ export default function ChatInbox() {
             >
               <span className="flex items-center gap-2">
                 <span className="truncate text-sm font-medium">
-                  {c.name || c.visitorId}
+                  {customerOf(c).name || customerOf(c).phone || customerOf(c).email || c.visitorId}
                 </span>
+                {c.linkedCustomer && !c.name && (
+                  <span
+                    title={`${c.linkedCustomer.orderCount} order(s) from this device`}
+                    className="rounded bg-emerald-100 px-1 text-[9px] font-semibold text-emerald-700"
+                  >
+                    customer
+                  </span>
+                )}
                 {c.flagged && <span className="text-xs text-amber-500">⚑</span>}
                 {c.unreadForAdmin > 0 && (
                   <span className="ml-auto rounded-full bg-pink-600 px-1.5 text-[10px] text-white">
@@ -129,6 +169,18 @@ export default function ChatInbox() {
                   </span>
                 )}
               </span>
+              {(() => {
+                const cust = customerOf(c);
+                const primary = cust.name || cust.phone || cust.email || c.visitorId;
+                const details = [cust.phone, cust.email, c.visitorId].filter(
+                  (v) => v && v !== primary,
+                );
+                return details.length ? (
+                  <span className="truncate text-[11px] font-medium text-gray-500">
+                    {details.join(" · ")}
+                  </span>
+                ) : null;
+              })()}
               <span className="truncate text-xs text-gray-400">{c.lastMessage}</span>
               <span className="text-[10px] text-gray-300">
                 {c.status === "closed" ? "closed · " : ""}
@@ -148,10 +200,30 @@ export default function ChatInbox() {
         ) : (
           <>
             <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-              <div>
-                <p className="text-sm font-semibold">{active?.name || active?.visitorId}</p>
-                {active?.email && <p className="text-xs text-gray-400">{active.email}</p>}
-              </div>
+              {(() => {
+                const cust = customerOf(active);
+                const dev = deviceLabel(active?.userAgent);
+                return (
+                  <div>
+                    <p className="flex items-center gap-2 text-sm font-semibold">
+                      {cust.name || cust.phone || cust.email || active?.visitorId}
+                      {active?.linkedCustomer && !active?.name && (
+                        <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">
+                          {cust.orderCount} order{cust.orderCount > 1 ? "s" : ""}
+                        </span>
+                      )}
+                    </p>
+                    <div className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-gray-400">
+                      {cust.phone && <span>📞 {cust.phone}</span>}
+                      {cust.email && <span>✉️ {cust.email}</span>}
+                      {cust.city && <span>📍 {cust.city}</span>}
+                      {dev && <span>💻 {dev}</span>}
+                      {active?.clientIp && <span>🌐 {active.clientIp}</span>}
+                      <span>🆔 {active?.visitorId}</span>
+                    </div>
+                  </div>
+                );
+              })()}
               <div className="flex items-center gap-2">
                 <button onClick={closeConvo} className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs hover:bg-gray-50">
                   Close

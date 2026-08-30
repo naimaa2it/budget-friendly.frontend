@@ -44,6 +44,19 @@ function Field({ label, children }) {
 const INPUT =
   "w-full border border-gray-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300";
 
+// Chatbot availability — index 0 = Sunday (matches the backend schema order).
+const CHATBOT_DAYS = [
+  "রবিবার (Sun)",
+  "সোমবার (Mon)",
+  "মঙ্গলবার (Tue)",
+  "বুধবার (Wed)",
+  "বৃহস্পতিবার (Thu)",
+  "শুক্রবার (Fri)",
+  "শনিবার (Sat)",
+];
+
+const DEFAULT_CHATBOT_DAY = { mode: "range", start: "17:00", end: "09:00" };
+
 export default function SettingsForm() {
   const { user, refreshUser } = useUser();
   const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
@@ -208,6 +221,29 @@ export default function SettingsForm() {
       ...s,
       supportInfo: { ...s.supportInfo, [key]: val },
     }));
+
+  // Ensure a fully-formed chatbotSchedule (7 days) to edit against.
+  const chatbotSchedule = {
+    enabled: settings?.chatbotSchedule?.enabled !== false,
+    days: Array.from(
+      { length: 7 },
+      (_, i) => settings?.chatbotSchedule?.days?.[i] || { ...DEFAULT_CHATBOT_DAY },
+    ),
+  };
+
+  const setChatbotEnabled = (val) =>
+    setSettings((s) => ({
+      ...s,
+      chatbotSchedule: { ...chatbotSchedule, enabled: val },
+    }));
+
+  const setChatbotDay = (idx, patch) =>
+    setSettings((s) => {
+      const days = chatbotSchedule.days.map((d, i) =>
+        i === idx ? { ...d, ...patch } : d,
+      );
+      return { ...s, chatbotSchedule: { ...chatbotSchedule, days } };
+    });
 
   if (loading || !settings)
     return (
@@ -426,6 +462,88 @@ export default function SettingsForm() {
               placeholder="support@example.com"
             />
           </Field>
+        </div>
+      </Section>
+
+      {/* ── Chatbot Availability ─────────────────────────────────── */}
+      <Section
+        title="Chatbot Availability"
+        badge="Support Chat"
+        badgeColor="bg-blue-50 text-blue-600"
+        desc="ওয়েবসাইটে চ্যাটবট কখন দেখাবে তা এখান থেকে নিয়ন্ত্রণ করুন। সময় বাংলাদেশ সময় (Asia/Dhaka) অনুযায়ী। Save করলে পরিবর্তন কার্যকর হবে।"
+      >
+        {/* Master toggle */}
+        <label className="flex items-center gap-3 pb-4 mb-4 border-b border-gray-100 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={chatbotSchedule.enabled}
+            onChange={(e) => setChatbotEnabled(e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-200"
+          />
+          <span className="text-sm font-medium text-gray-700">
+            চ্যাটবট চালু রাখুন
+          </span>
+          <span className="text-xs text-gray-400">
+            (বন্ধ করলে নিচের সময়সূচি নির্বিশেষে চ্যাটবট কোথাও দেখাবে না)
+          </span>
+        </label>
+
+        <div
+          className={`space-y-2 transition ${
+            chatbotSchedule.enabled ? "" : "opacity-40 pointer-events-none"
+          }`}
+        >
+          {CHATBOT_DAYS.map((label, idx) => {
+            const day = chatbotSchedule.days[idx];
+            return (
+              <div
+                key={idx}
+                className="grid grid-cols-1 sm:grid-cols-[140px_130px_1fr] items-center gap-2 sm:gap-3 py-1.5"
+              >
+                <span className="text-sm text-gray-600">{label}</span>
+                <select
+                  value={day.mode}
+                  onChange={(e) => setChatbotDay(idx, { mode: e.target.value })}
+                  className={INPUT}
+                >
+                  <option value="off">বন্ধ (Off)</option>
+                  <option value="allday">সারাদিন (All day)</option>
+                  <option value="range">নির্দিষ্ট সময় (Range)</option>
+                </select>
+                {day.mode === "range" ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="time"
+                      value={day.start || "17:00"}
+                      onChange={(e) =>
+                        setChatbotDay(idx, { start: e.target.value })
+                      }
+                      className={INPUT}
+                    />
+                    <span className="text-xs text-gray-400">থেকে</span>
+                    <input
+                      type="time"
+                      value={day.end || "09:00"}
+                      onChange={(e) =>
+                        setChatbotDay(idx, { end: e.target.value })
+                      }
+                      className={INPUT}
+                    />
+                  </div>
+                ) : (
+                  <span className="text-xs text-gray-400">
+                    {day.mode === "allday"
+                      ? "২৪ ঘণ্টা দেখাবে"
+                      : "এই দিনে দেখাবে না"}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+          <p className="pt-2 text-[11px] text-gray-400">
+            শেষ সময় শুরুর সময়ের আগে দিলে সময়সীমা মধ্যরাত পার হয়ে যাবে (যেমন
+            17:00 → 09:00 মানে বিকেল ৫টা থেকে পরদিন সকাল ৯টা)।
+          </p>
         </div>
       </Section>
 

@@ -470,9 +470,9 @@ export default function ChatWidget() {
                 href={fbUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 rounded-xl border border-gray-100 px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                className="flex items-center gap-3 rounded-xl border border-gray-300 px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
               >
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0866FF] text-white">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0866FF] text-white ">
                   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2C6.48 2 2 6.14 2 11.25c0 2.88 1.43 5.45 3.67 7.15V22l3.36-1.84c.9.25 1.85.38 2.97.38 5.52 0 10-4.14 10-9.25S17.52 2 12 2zm1 12.4l-2.55-2.72-4.98 2.72 5.48-5.82 2.61 2.72 4.92-2.72-5.48 5.82z" />
                   </svg>
@@ -486,10 +486,10 @@ export default function ChatWidget() {
                   setView("chat");
                   setLoaded(false);
                 }}
-                className="flex items-center gap-3 rounded-xl border border-gray-100 px-3 py-2.5 text-left text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                className="flex items-center gap-3 rounded-xl border border-gray-300 px-3 py-2.5 text-left text-sm font-medium text-gray-700 transition hover:bg-gray-50"
               >
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-white text-lg">💬</span>
-                <span>Chat with us</span>
+                <span>Chat Here</span>
               </button>
             )}
             {showWa && (
@@ -497,7 +497,7 @@ export default function ChatWidget() {
                 href={waUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 rounded-xl border border-gray-100 px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                className="flex items-center gap-3 rounded-xl border border-gray-300 px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
               >
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#25D366] text-white">
                   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">

@@ -222,6 +222,12 @@ export default function SettingsForm() {
       supportInfo: { ...s.supportInfo, [key]: val },
     }));
 
+  const setChatWidget = (key, val) =>
+    setSettings((s) => ({
+      ...s,
+      chatWidget: { ...(s.chatWidget || {}), [key]: val },
+    }));
+
   // Ensure a fully-formed chatbotSchedule (7 days) to edit against.
   const chatbotSchedule = {
     enabled: settings?.chatbotSchedule?.enabled !== false,
@@ -545,6 +551,66 @@ export default function SettingsForm() {
             17:00 → 09:00 মানে বিকেল ৫টা থেকে পরদিন সকাল ৯টা)।
           </p>
         </div>
+      </Section>
+
+      {/* ── Chat Widget (floating launcher) ──────────────────────── */}
+      <Section
+        title="Chat Widget"
+        badge="Floating Launcher"
+        badgeColor="bg-purple-50 text-purple-600"
+        desc="সাইটের নিচে-ডানে ভাসমান চ্যাট বাটন। এখান থেকে Facebook Messenger ও WhatsApp লিংক দিন — যেটা খালি রাখবেন সেটা বাটনে দেখাবে না। পরিবর্তন Save করলে সাথে সাথে সাইটে কার্যকর হবে।"
+      >
+        {/* Master toggle */}
+        <label className="flex items-center gap-3 pb-4 mb-4 border-b border-gray-100 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={settings.chatWidget?.enabled !== false}
+            onChange={(e) => setChatWidget("enabled", e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-200"
+          />
+          <span className="text-sm font-medium text-gray-700">
+            চ্যাট উইজেট চালু রাখুন
+          </span>
+          <span className="text-xs text-gray-400">
+            (বন্ধ করলে ভাসমান বাটনটি কোথাও দেখাবে না)
+          </span>
+        </label>
+
+        <div
+          className={`grid grid-cols-1 sm:grid-cols-2 gap-4 transition ${
+            settings.chatWidget?.enabled !== false ? "" : "opacity-40 pointer-events-none"
+          }`}
+        >
+          <Field label="Facebook Messenger লিংক">
+            <input
+              value={settings.chatWidget?.facebookMessengerUrl || ""}
+              onChange={(e) => setChatWidget("facebookMessengerUrl", e.target.value)}
+              className={INPUT}
+              placeholder="https://m.me/yourpage"
+            />
+            <p className="mt-1 text-[11px] text-gray-400">
+              খালি রাখলে Messenger বাটন দেখাবে না।
+            </p>
+          </Field>
+          <Field label="WhatsApp নম্বর">
+            <input
+              value={settings.chatWidget?.whatsappNumber || ""}
+              onChange={(e) =>
+                setChatWidget("whatsappNumber", e.target.value.replace(/[^\d]/g, ""))
+              }
+              className={INPUT}
+              placeholder="8801XXXXXXXXX"
+              inputMode="numeric"
+            />
+            <p className="mt-1 text-[11px] text-gray-400">
+              শুধু ডিজিট, কান্ট্রি কোডসহ (যেমন 8801712345678)। খালি রাখলে WhatsApp বাটন দেখাবে না।
+            </p>
+          </Field>
+        </div>
+        <p className="mt-4 text-[11px] text-gray-400">
+          “Chat with us” অপশনটি উপরের <strong>Chatbot Availability</strong> সময়সূচি
+          অনুযায়ী দেখাবে; Facebook ও WhatsApp ২৪ ঘণ্টা দেখাবে।
+        </p>
       </Section>
 
       {/* ── Cloudinary Migration ────────────────────────────────── */}

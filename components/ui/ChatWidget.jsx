@@ -1,21 +1,27 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import { useUser } from "@/components/context/UserContext";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 const VISITOR_KEY = "Pickob-chat-visitor";
+const SESSION_KEY = "Pickob-chat-session"; // current conversation (New chat mints a fresh one)
 const PHONE_KEY = "Pickob-chat-phone";
 const NAME_KEY = "Pickob-chat-name";
 const PHONE_TS_KEY = "Pickob-chat-phone-ts"; // last-activity time for the phone gate
-const PHONE_TTL_MS = 10 * 60 * 1000; // 10 min idle → must re-enter name + number
+const PHONE_TTL_MS = 5 * 60 * 1000; // 5 min idle → must re-confirm name + number
 const POLL_MS = 5000;
 
-// Phone-gate persistence with a 10-min *idle* window. Any activity (opening the
+// Env fallbacks used only until the live admin config (chatWidget) loads.
+const ENV_FB = process.env.NEXT_PUBLIC_FB_MESSENGER_URL || "";
+const ENV_WA = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "";
+
+// Phone-gate persistence with a 5-min *idle* window. Any activity (opening the
 // widget, sending a message) refreshes the timer, so a continuous chat never
-// locks; but leaving and coming back after 10 idle minutes asks for name +
-// number again. The visitorId is unchanged, so the previous chat history
-// reappears once they re-enter.
+// locks; but leaving and coming back after 5 idle minutes asks the visitor to
+// confirm name + number again (pre-filled with what we know — one click). The
+// sessionId is unchanged, so the same chat history reappears once confirmed.
 function loadPhone() {
   try {
     const p = localStorage.getItem(PHONE_KEY) || "";
@@ -24,8 +30,13 @@ function loadPhone() {
   } catch {}
   return "";
 }
-function loadName() {
+// The last name/phone we ever had — persists past the idle window so the
+// re-confirm form can pre-fill it (making resume a single click).
+function knownName() {
   try { return localStorage.getItem(NAME_KEY) || ""; } catch { return ""; }
+}
+function knownPhone() {
+  try { return localStorage.getItem(PHONE_KEY) || ""; } catch { return ""; }
 }
 // Persist name + phone together and (re)start the idle window.
 function saveGate(name, phone) {
@@ -58,12 +69,11 @@ const DEFAULT_QUICK = [
   { key: "agent", emoji: "👤", label: "Agent", text: "Agent er sathe kotha bolbo" },
 ];
 
-// Chatbot availability is controlled from the dashboard (Settings → Chatbot
-// Availability) and stored per-weekday in Asia/Dhaka time. The widget fetches
-// that schedule and hides itself during off-hours. Until the schedule loads (or
+// Chatbot (in-site "Chat with us") availability is controlled from the
+// dashboard (Settings → Chatbot Availability) and stored per-weekday in
+// Asia/Dhaka time. Off-hours hide only the in-site chat option — the external
+// Facebook / WhatsApp buttons stay available 24/7. Until the schedule loads (or
 // if the fetch fails), we fall back to the historical default below.
-//
-// Default: Sun–Thu evening→morning (5 PM–9 AM), Fri & Sat all day. Index 0 = Sun.
 const DEFAULT_SCHEDULE = {
   enabled: true,
   days: [
@@ -86,7 +96,7 @@ function toMinutes(hhmm) {
   return h * 60 + (Number.isNaN(m) ? 0 : m);
 }
 
-// Decide whether the widget should be visible right now, per the schedule.
+// Decide whether the in-site chat should be offered right now, per the schedule.
 function isChatActive(schedule, now = new Date()) {
   const sched = schedule || DEFAULT_SCHEDULE;
   if (sched.enabled === false) return false; // master off
@@ -131,6 +141,18 @@ function getVisitorId() {
   return id;
 }
 
+// The current conversation's session. Persisted so a returning visitor resumes
+// the same thread; "＋ New chat" replaces it with a fresh one (see newChat).
+function getSessionId() {
+  if (typeof window === "undefined") return "";
+  let id = localStorage.getItem(SESSION_KEY);
+  if (!id) {
+    id = "s_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    localStorage.setItem(SESSION_KEY, id);
+  }
+  return id;
+}
+
 // Same device fingerprint the checkout uses (`_yh_did`), so a chat can be
 // linked to orders placed from this browser — surfacing the real customer.
 function getDeviceId() {
@@ -148,10 +170,19 @@ function getDeviceId() {
 }
 
 export default function ChatWidget() {
+  const pathname = usePathname() || "";
   const { user } = useUser(); // logged-in customer, so the inbox knows who's chatting
-  const [active, setActive] = useState(false); // within Dhaka active hours?
+  const [active, setActive] = useState(false); // within Dhaka active hours? (in-site chat)
   const schedule = useRef(null); // dashboard-controlled availability schedule
-  const [open, setOpen] = useState(false);
+  // Admin-configured launcher settings (master toggle + external links). Seeded
+  // from env as a fallback; overwritten once /top-banner loads.
+  const [cfg, setCfg] = useState({
+    enabled: true,
+    facebookMessengerUrl: ENV_FB,
+    whatsappNumber: ENV_WA,
+  });
+  const [open, setOpen] = useState(false); // launcher popup open?
+  const [view, setView] = useState("menu"); // "menu" (3 options) | "chat"
   const [messages, setMessages] = useState([]);
   const [quick, setQuick] = useState(DEFAULT_QUICK);
   const [input, setInput] = useState("");
@@ -159,20 +190,17 @@ export default function ChatWidget() {
   const [loaded, setLoaded] = useState(false);
   // Visitor's phone — gate the chat behind it so every conversation in the
   // inbox is tied to a real, identifiable number (and can be matched to orders).
-  // Restored from localStorage via a lazy initializer (not an effect) so we
-  // never call setState synchronously in an effect. Safe from hydration
-  // mismatch because the whole widget renders null until `active` flips on
-  // post-mount, so this initial value is never part of the SSR/first render.
   const [phone, setPhone] = useState(() =>
     typeof window === "undefined" ? "" : loadPhone()
   ); // saved/confirmed number (gate key)
   const [name, setName] = useState(() =>
-    typeof window === "undefined" ? "" : loadPhone() ? loadName() : ""
+    typeof window === "undefined" ? "" : loadPhone() ? knownName() : ""
   ); // saved/confirmed name
   const [phoneInput, setPhoneInput] = useState(""); // number being typed
   const [nameInput, setNameInput] = useState(""); // name being typed
   const [phoneError, setPhoneError] = useState("");
   const visitorId = useRef("");
+  const sessionId = useRef("");
   const scrollRef = useRef(null);
   const pollRef = useRef(null);
   // Ordering guards so a slow/stale poll can never overwrite a newer result.
@@ -189,37 +217,33 @@ export default function ChatWidget() {
 
   useEffect(() => {
     visitorId.current = getVisitorId();
+    sessionId.current = getSessionId();
     if (loadPhone()) touchPhone(); // returning within the window → extend it
   }, []);
 
   // A logged-in customer's own name + mobile satisfy the gate automatically (and
   // re-fill it even after the idle window expires — they stay identified).
-  // Derived during render (React's "adjust state while rendering" pattern)
-  // instead of in an effect, which avoids a synchronous setState-in-effect
-  // cascade. The `!phone` check converges it (once set, this no longer runs),
-  // so there's no loop. Persisting happens in the effect below.
   const userPhone = normalizeBdPhone(user?.mobile || "");
   if (!phone && userPhone) {
     setPhone(userPhone);
     setName(user?.name || "");
   }
 
-  // Persist the confirmed gate (localStorage only — no setState, so this is a
-  // safe external-system sync). Covers the restored, user-derived, and manual
-  // paths, and refreshes the idle window whenever the gate is (re)established.
+  // Persist the confirmed gate (localStorage only — no setState).
   useEffect(() => {
     if (phone) saveGate(name, phone);
   }, [phone, name]);
 
-  // Enforce the 10-min idle window: once activity stops for that long, drop the
-  // phone so the gate reappears. Checked on a short interval while mounted.
+  // Enforce the 5-min idle window: once activity stops for that long, drop the
+  // phone so the re-confirm form reappears — pre-filled with the name/number we
+  // already know, so resuming the previous chat is one click.
   useEffect(() => {
     if (!phone) return;
     const t = setInterval(() => {
       if (!loadPhone()) {
         setPhone(""); // expired → gate reappears
-        setPhoneInput("");
-        setNameInput(""); // make them genuinely re-enter name + number
+        setNameInput(knownName()); // pre-fill so re-confirm is one click
+        setPhoneInput(knownPhone());
       }
     }, 30000);
     return () => clearInterval(t);
@@ -243,19 +267,21 @@ export default function ChatWidget() {
     saveGate(nm, n);
   };
 
-  // Track Dhaka active hours; re-check each minute so it toggles without reload.
-  // The schedule comes from the dashboard (Settings → Chatbot Availability);
-  // fetch it once, then re-evaluate against it on each tick.
+  // Track Dhaka active hours + load the launcher config. Re-check each minute so
+  // in-site availability toggles without a reload.
   useEffect(() => {
-    const tick = () => {
-      const a = isChatActive(schedule.current);
-      setActive(a);
-      if (!a) setOpen(false); // going off-hours closes any open panel
-    };
+    const tick = () => setActive(isChatActive(schedule.current));
     fetch(`${API}/api/admin/top-banner`)
       .then((r) => r.json())
       .then((d) => {
         if (d && d.chatbotSchedule) schedule.current = d.chatbotSchedule;
+        if (d && d.chatWidget) {
+          setCfg({
+            enabled: d.chatWidget.enabled !== false,
+            facebookMessengerUrl: d.chatWidget.facebookMessengerUrl || "",
+            whatsappNumber: d.chatWidget.whatsappNumber || "",
+          });
+        }
       })
       .catch(() => {})
       .finally(tick); // evaluate with whatever schedule we have (or the default)
@@ -271,16 +297,15 @@ export default function ChatWidget() {
 
   const fetchThread = useCallback(() => {
     if (!visitorId.current) return;
-    // Don't poll over a message that's mid-send — the send's own response is
-    // authoritative and a poll here would briefly wipe the optimistic bubble.
     if (pendingSends.current > 0) return;
     const seq = ++reqSeq.current;
-    fetch(`${API}/api/chat/thread?visitorId=${encodeURIComponent(visitorId.current)}`)
+    fetch(
+      `${API}/api/chat/thread?visitorId=${encodeURIComponent(
+        visitorId.current
+      )}&sessionId=${encodeURIComponent(sessionId.current)}`
+    )
       .then((r) => r.json())
       .then((d) => {
-        // A send may have started while this poll was in flight. Applying now
-        // would replace the thread with a stale server copy that doesn't yet
-        // contain the just-typed message — making the text look "erased".
         if (pendingSends.current > 0) return;
         applyMessages(seq, d.messages || []);
         if (d.quickReplies?.length) setQuick(d.quickReplies);
@@ -290,13 +315,13 @@ export default function ChatWidget() {
       .finally(scrollToBottom);
   }, []);
 
-  // Start a fresh conversation (e.g. after an order is confirmed and the
-  // customer wants to place another one). A new visitorId spins up a brand new
-  // thread server-side; the old one stays in the admin inbox.
+  // Start a fresh conversation while KEEPING the same visitor identity (and
+  // name/phone). A new sessionId spins up a brand new thread server-side; the
+  // old one stays saved separately in the admin inbox.
   const newChat = () => {
-    const id = "v_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-    localStorage.setItem(VISITOR_KEY, id);
-    visitorId.current = id;
+    const id = "s_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    localStorage.setItem(SESSION_KEY, id);
+    sessionId.current = id;
     reqSeq.current = 0;
     appliedSeq.current = 0;
     pendingSends.current = 0;
@@ -307,8 +332,9 @@ export default function ChatWidget() {
     fetchThread();
   };
 
+  // Poll only while the chat view is open.
   useEffect(() => {
-    if (!open) {
+    if (!open || view !== "chat") {
       if (pollRef.current) clearInterval(pollRef.current);
       return;
     }
@@ -316,7 +342,7 @@ export default function ChatWidget() {
     fetchThread();
     pollRef.current = setInterval(fetchThread, POLL_MS);
     return () => pollRef.current && clearInterval(pollRef.current);
-  }, [open, fetchThread, phone]);
+  }, [open, view, fetchThread, phone]);
 
   // send a message (typed, or a quick-reply button's text)
   const send = (overrideText) => {
@@ -338,13 +364,11 @@ export default function ChatWidget() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         visitorId: visitorId.current,
+        sessionId: sessionId.current,
         body,
         deviceId: getDeviceId(),
-        // The gate guarantees a name + phone; send them so the inbox always
-        // identifies this visitor (and can match them to past orders).
         phone,
         name: name || user?.name || "",
-        // If the customer is logged in, add their account details too.
         ...(user
           ? {
               email: user.email || "",
@@ -358,7 +382,6 @@ export default function ChatWidget() {
         if (d.messages) {
           applyMessages(seq, d.messages);
         } else if (d.error) {
-          // server error — keep the sent message visible and show a friendly note
           setMessages((m) => [
             ...m,
             {
@@ -391,34 +414,118 @@ export default function ChatWidget() {
 
   const bubbleLabel = { visitor: null, bot: "Bot", admin: "Team" };
 
-  // Off-hours (outside Dhaka active hours) → hide the widget entirely.
-  if (!active) return null;
+  // ── Visibility ────────────────────────────────────────────────────────────
+  // Never render inside the admin dashboard or auth screens.
+  if (pathname.startsWith("/dashboard") || pathname.startsWith("/auth")) return null;
+  // Master switch off → no widget at all.
+  if (!cfg.enabled) return null;
+
+  // Which launcher options are available.
+  const fbUrl = cfg.facebookMessengerUrl?.trim() || "";
+  const waNumber = (cfg.whatsappNumber || "").replace(/[^\d]/g, "");
+  const showFb = !!fbUrl;
+  const showWa = !!waNumber;
+  const showChat = active; // in-site chat respects the availability schedule
+  // Nothing to offer at all → hide the launcher entirely.
+  if (!showFb && !showWa && !showChat) return null;
+
+  const waUrl = showWa
+    ? `https://wa.me/${waNumber}?text=${encodeURIComponent("Hello! I have a query.")}`
+    : "";
 
   return (
     <>
-      {/* Launcher */}
+      {/* Launcher button */}
       <button
-        onClick={() => setOpen((o) => !o)}
+        onClick={() =>
+          setOpen((o) => {
+            if (o) setView("menu"); // closing → next open starts at the menu
+            return !o;
+          })
+        }
         aria-label="Chat with us"
-        className="fixed bottom-14 right-4 z-[60] flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition hover:bg-blue-700"
+        className="fixed bottom-14 right-4 z-[60] flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition hover:bg-blue-700"
       >
         {open ? (
-          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
           </svg>
         ) : (
-          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         )}
       </button>
 
-      {/* Panel */}
-      {open && (
-        <div className="fixed bottom-24 right-4 z-[60] flex h-[70vh] max-h-[540px] w-[92vw] max-w-sm flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
+      {/* ── Popup: 3-option menu ─────────────────────────────────────────── */}
+      {open && view === "menu" && (
+        <div className="fixed bottom-28 right-4 z-[60] w-[92vw] max-w-xs overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
+          <div className="bg-blue-600 px-5 py-4 text-white">
+            <p className="text-base font-semibold leading-tight">Hi there! 👋</p>
+            <p className="mt-0.5 text-xs text-blue-100">Got questions? Chat with our team!</p>
+          </div>
+          <div className="flex flex-col gap-2 p-3">
+            {showFb && (
+              <a
+                href={fbUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 rounded-xl border border-gray-100 px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0866FF] text-white">
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.14 2 11.25c0 2.88 1.43 5.45 3.67 7.15V22l3.36-1.84c.9.25 1.85.38 2.97.38 5.52 0 10-4.14 10-9.25S17.52 2 12 2zm1 12.4l-2.55-2.72-4.98 2.72 5.48-5.82 2.61 2.72 4.92-2.72-5.48 5.82z" />
+                  </svg>
+                </span>
+                <span>Facebook Messenger</span>
+              </a>
+            )}
+            {showChat && (
+              <button
+                onClick={() => {
+                  setView("chat");
+                  setLoaded(false);
+                }}
+                className="flex items-center gap-3 rounded-xl border border-gray-100 px-3 py-2.5 text-left text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-white text-lg">💬</span>
+                <span>Chat with us</span>
+              </button>
+            )}
+            {showWa && (
+              <a
+                href={waUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 rounded-xl border border-gray-100 px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#25D366] text-white">
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.5 14.4c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.87 1.22 3.07.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.08 1.77-.72 2.02-1.42.25-.7.25-1.29.17-1.42-.07-.13-.27-.2-.57-.35zM12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.38 5.06L2 22l5.06-1.35A9.94 9.94 0 0012 22c5.52 0 10-4.48 10-10S17.52 2 12 2z" />
+                  </svg>
+                </span>
+                <span>WhatsApp</span>
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Panel: in-site chat ──────────────────────────────────────────── */}
+      {open && view === "chat" && (
+        <div className="fixed bottom-28 right-4 z-[60] flex h-[70vh] max-h-[540px] w-[92vw] max-w-sm flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
           {/* header */}
           <div className="flex items-center gap-3 bg-blue-600 px-4 py-3 text-white">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-lg">💬</div>
+            <button
+              onClick={() => setView("menu")}
+              title="Back"
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 transition hover:bg-white/30"
+              aria-label="Back to menu"
+            >
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
             <div>
               <p className="text-sm font-semibold leading-tight">Support</p>
               <p className="text-xs text-blue-100">Usually replies instantly</p>
@@ -429,8 +536,7 @@ export default function ChatWidget() {
               className="ml-auto flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-xs font-medium transition hover:bg-white/30"
             >
               <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 12a9 9 0 1 1-3-6.7L21 8" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M21 3v5h-5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M12 5v14M5 12h14" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               New chat
             </button>
@@ -472,75 +578,75 @@ export default function ChatWidget() {
               </button>
             </div>
           ) : (
-          <>
-          {/* messages */}
-          <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto bg-gray-50 p-3">
-            {loaded && messages.length === 0 && (
-              <p className="mt-6 text-center text-xs text-gray-400">
-                Kono kichu janar thakle likhun 👇
-              </p>
-            )}
-            {messages.map((m) => {
-              const mine = m.sender === "visitor";
-              return (
-                <div key={m._id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                  <div
-                    className={`max-w-[80%] whitespace-pre-line rounded-2xl px-3 py-2 text-sm ${
-                      mine
-                        ? "rounded-br-sm bg-blue-600 text-white"
-                        : m.sender === "bot"
-                          ? "rounded-bl-sm border border-gray-200 bg-white text-gray-700"
-                          : "rounded-bl-sm bg-indigo-600 text-white"
-                    }`}
+            <>
+              {/* messages */}
+              <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto bg-gray-50 p-3">
+                {loaded && messages.length === 0 && (
+                  <p className="mt-6 text-center text-xs text-gray-400">
+                    Kono kichu janar thakle likhun 👇
+                  </p>
+                )}
+                {messages.map((m) => {
+                  const mine = m.sender === "visitor";
+                  return (
+                    <div key={m._id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
+                      <div
+                        className={`max-w-[80%] whitespace-pre-line rounded-2xl px-3 py-2 text-sm ${
+                          mine
+                            ? "rounded-br-sm bg-blue-600 text-white"
+                            : m.sender === "bot"
+                              ? "rounded-bl-sm border border-gray-200 bg-white text-gray-700"
+                              : "rounded-bl-sm bg-indigo-600 text-white"
+                        }`}
+                      >
+                        {!mine && bubbleLabel[m.sender] && (
+                          <span className="mb-0.5 block text-[10px] font-semibold opacity-70">
+                            {bubbleLabel[m.sender]}
+                          </span>
+                        )}
+                        {m.body}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* quick-reply menu buttons */}
+              <div className="flex gap-2 overflow-x-auto border-t border-gray-100 px-3 py-2">
+                {quick.map((q) => (
+                  <button
+                    key={q.key}
+                    onClick={() => send(q.text)}
+                    disabled={sending}
+                    className="flex shrink-0 items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition hover:bg-blue-100 disabled:opacity-50"
                   >
-                    {!mine && bubbleLabel[m.sender] && (
-                      <span className="mb-0.5 block text-[10px] font-semibold opacity-70">
-                        {bubbleLabel[m.sender]}
-                      </span>
-                    )}
-                    {m.body}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                    <span>{q.emoji}</span>
+                    <span>{q.label}</span>
+                  </button>
+                ))}
+              </div>
 
-          {/* quick-reply menu buttons */}
-          <div className="flex gap-2 overflow-x-auto border-t border-gray-100 px-3 py-2">
-            {quick.map((q) => (
-              <button
-                key={q.key}
-                onClick={() => send(q.text)}
-                disabled={sending}
-                className="flex shrink-0 items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition hover:bg-blue-100 disabled:opacity-50"
-              >
-                <span>{q.emoji}</span>
-                <span>{q.label}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* input */}
-          <div className="flex items-center gap-2 border-t border-gray-100 p-2">
-            <input
-              value={input}
-              onChange={(e) => { setInput(e.target.value); touchPhone(); }}
-              onKeyDown={(e) => e.key === "Enter" && send()}
-              placeholder="Message likhun…"
-              className="flex-1 rounded-full border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none"
-            />
-            <button
-              onClick={() => send()}
-              disabled={sending || !input.trim()}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-white transition hover:bg-blue-700 disabled:opacity-50"
-              aria-label="Send"
-            >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M3 20l18-8L3 4v6l12 2-12 2z" />
-              </svg>
-            </button>
-          </div>
-          </>
+              {/* input */}
+              <div className="flex items-center gap-2 border-t border-gray-100 p-2">
+                <input
+                  value={input}
+                  onChange={(e) => { setInput(e.target.value); touchPhone(); }}
+                  onKeyDown={(e) => e.key === "Enter" && send()}
+                  placeholder="Message likhun…"
+                  className="flex-1 rounded-full border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                />
+                <button
+                  onClick={() => send()}
+                  disabled={sending || !input.trim()}
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-white transition hover:bg-blue-700 disabled:opacity-50"
+                  aria-label="Send"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 20l18-8L3 4v6l12 2-12 2z" />
+                  </svg>
+                </button>
+              </div>
+            </>
           )}
         </div>
       )}

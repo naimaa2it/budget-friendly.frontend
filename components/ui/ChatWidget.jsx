@@ -444,7 +444,7 @@ export default function ChatWidget() {
           })
         }
         aria-label="Chat with us"
-        className="fixed bottom-14 right-4 z-[60] flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition hover:bg-blue-700"
+        className="fixed bottom-14 right-4 z-[60] flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition hover:bg-blue-700"
       >
         {open ? (
           <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

@@ -114,8 +114,9 @@ function fmt(date) {
     day: "2-digit",
     month: "short",
     year: "numeric",
-    hour: "2-digit",
+    hour: "numeric",
     minute: "2-digit",
+    hour12: true,
   });
 }
 
@@ -3129,8 +3130,9 @@ function OrderTimelineSection() {
                             )}
                             <span className="text-xs text-gray-400 ml-auto">
                               {new Date(ev.at).toLocaleTimeString("en-GB", {
-                                hour: "2-digit",
+                                hour: "numeric",
                                 minute: "2-digit",
+                                hour12: true,
                               })}
                             </span>
                           </div>

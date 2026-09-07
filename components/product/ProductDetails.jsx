@@ -205,6 +205,15 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
     return () => window.removeEventListener("resize", updateViewport);
   }, []);
 
+  // When a color with a linked image is selected, jump the gallery to that image
+  useEffect(() => {
+    if (!selectedColor?.image) return;
+    const idx = images.indexOf(selectedColor.image);
+    if (idx >= 0) setCurrentIndex(idx);
+    // images is derived from product and stable in content
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedColor]);
+
   useEffect(() => {
     if (product) saveRecentlyViewed(product);
   }, [product]);

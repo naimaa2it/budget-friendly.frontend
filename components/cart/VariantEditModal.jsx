@@ -27,7 +27,11 @@ export function getVariantColors(product, filterBySize = null) {
 
     if (colorName && !seen.has(colorName.toLowerCase())) {
       seen.add(colorName.toLowerCase());
-      colors.push({ name: colorName, hex: v.color?.hex || "#ccc" });
+      colors.push({
+        name: colorName,
+        hex: v.color?.hex || "#ccc",
+        image: v.image || null,
+      });
     }
   }
   return colors;

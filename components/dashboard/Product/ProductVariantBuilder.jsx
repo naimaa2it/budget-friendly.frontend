@@ -144,6 +144,9 @@ export default function ProductVariantBuilder({
   const [editingName, setEditingName] = useState("");
   const [editingOption, setEditingOption] = useState(null); // { groupName, optionId }
   const [editingOptionValue, setEditingOptionValue] = useState("");
+  const [imagePickerRow, setImagePickerRow] = useState(null); // row index whose image picker is open
+
+  const productImages = product.images || [];
 
   useEffect(() => {
     let mounted = true;
@@ -720,6 +723,7 @@ export default function ProductVariantBuilder({
                     <th className="px-3 py-3">Discount</th>
                     <th className="px-3 py-3">Stock</th>
                     <th className="px-3 py-3">Color</th>
+                    <th className="px-3 py-3">Image</th>
                     <th className="px-3 py-3"></th>
                   </tr>
                 </thead>
@@ -848,6 +852,84 @@ export default function ProductVariantBuilder({
                             className="w-28 rounded-lg border border-gray-300 px-3 py-2"
                             placeholder="Color"
                           />
+                        </div>
+                      </td>
+                      <td className="px-3 py-3 align-top">
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setImagePickerRow(
+                                imagePickerRow === index ? null : index,
+                              )
+                            }
+                            className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-lg border border-gray-300 bg-gray-50 hover:border-indigo-400"
+                            title="Choose image for this variant"
+                          >
+                            {variant.image ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={variant.image}
+                                alt="variant"
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-[10px] font-medium text-gray-400">
+                                Pick
+                              </span>
+                            )}
+                          </button>
+                          {imagePickerRow === index && (
+                            <div className="absolute right-0 z-30 mt-1 w-56 rounded-lg border border-gray-200 bg-white p-2 shadow-xl">
+                              {productImages.length === 0 ? (
+                                <p className="p-2 text-xs text-gray-500">
+                                  Upload product images first.
+                                </p>
+                              ) : (
+                                <div className="grid grid-cols-3 gap-1.5">
+                                  {variant.image && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        updateVariant(index, { image: "" });
+                                        setImagePickerRow(null);
+                                      }}
+                                      className="col-span-3 rounded border border-gray-200 px-2 py-1 text-[11px] font-medium text-gray-500 hover:bg-gray-50"
+                                    >
+                                      Clear selection
+                                    </button>
+                                  )}
+                                  {productImages.map((img, imgIdx) => {
+                                    const selected = variant.image === img.url;
+                                    return (
+                                      <button
+                                        key={img.url || imgIdx}
+                                        type="button"
+                                        onClick={() => {
+                                          updateVariant(index, {
+                                            image: img.url,
+                                          });
+                                          setImagePickerRow(null);
+                                        }}
+                                        className={`aspect-square overflow-hidden rounded border-2 ${
+                                          selected
+                                            ? "border-indigo-500 ring-2 ring-indigo-200"
+                                            : "border-gray-200 hover:border-indigo-400"
+                                        }`}
+                                      >
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                          src={img.url}
+                                          alt={img.alt || `image ${imgIdx + 1}`}
+                                          className="h-full w-full object-cover"
+                                        />
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </td>
                       <td className="px-3 py-3 align-top">

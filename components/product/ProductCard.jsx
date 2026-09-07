@@ -41,6 +41,9 @@ export default function ProductCard({
   const { t } = useLanguage();
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
   const [hovered, setHovered] = React.useState(false);
+  // When a color swatch is selected, its image is "locked": hover won't change it.
+  // null = no color selected, hover behaves normally.
+  const [lockedImageIndex, setLockedImageIndex] = React.useState(null);
   const [showAuthModal, setShowAuthModal] = React.useState(false);
   const [pendingWishlist, setPendingWishlist] = React.useState(null);
   const [waitlistProduct, setWaitlistProduct] = React.useState(null);
@@ -128,8 +131,8 @@ export default function ProductCard({
       : ["/assets/placeholder.svg"];
 
   const currentImage = () => {
-    // On hover, show next image if available, otherwise stay on current
-    if (hovered && images[currentImageIndex + 1]) {
+    // A selected color locks the image — hover must not change it.
+    if (lockedImageIndex == null && hovered && images[currentImageIndex + 1]) {
       return images[currentImageIndex + 1];
     }
     return images[currentImageIndex];
@@ -338,11 +341,31 @@ export default function ProductCard({
                         ? c.hex
                         : `#${c.hex}`
                       : "#cccccc";
+                    const imgIdx = c.image ? images.indexOf(c.image) : -1;
+                    const isActive = imgIdx >= 0 && imgIdx === lockedImageIndex;
                     return (
-                      <span
+                      <button
                         key={i}
+                        type="button"
                         title={c.name}
-                        className="w-3 h-3 rounded-full inline-block border border-gray-200"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          if (imgIdx < 0) return;
+                          if (lockedImageIndex === imgIdx) {
+                            // clicking the selected color again unselects it —
+                            // hover changes images again
+                            setLockedImageIndex(null);
+                          } else {
+                            setCurrentImageIndex(imgIdx);
+                            setLockedImageIndex(imgIdx);
+                          }
+                        }}
+                        className={`relative z-[2] w-3 h-3 rounded-full inline-block border transition-transform ${
+                          isActive
+                            ? "border-red-600 ring-1 ring-red-500 scale-110"
+                            : "border-gray-200 hover:scale-110"
+                        } ${imgIdx >= 0 ? "cursor-pointer" : "cursor-default"}`}
                         style={{ backgroundColor: hex }}
                       />
                     );

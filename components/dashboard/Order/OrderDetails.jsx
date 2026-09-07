@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import OrderTrackingTimeline from "@/components/order/OrderTrackingTimeline";
@@ -93,6 +93,15 @@ export default function OrderDetails({ orderId }) {
   const [bookModalOpen, setBookModalOpen] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
 
+  // Add-product search — lets staff add a new product line to an existing order,
+  // the same way quantity/price are edited inline. Uses the storefront product
+  // search endpoint and appends to the line items (auto-saved via saveLineItems).
+  const [addingProduct, setAddingProduct] = useState(false);
+  const [prodQuery, setProdQuery] = useState("");
+  const [prodResults, setProdResults] = useState([]);
+  const [prodSearching, setProdSearching] = useState(false);
+  const prodDebounce = useRef(null);
+
   const loadOrder = useCallback(() => {
     setLoading(true);
     fetch(`${API}/api/admin/orders/${orderId}`, { credentials: "include" })
@@ -181,6 +190,66 @@ export default function OrderDetails({ orderId }) {
       return alert("Order must have at least one item.");
     const next = editItems.filter((_, i) => i !== index);
     setEditItems(next);
+    saveLineItems(next, editShipping, editDiscount);
+  };
+
+  // Debounced product search for the "Add product" box.
+  useEffect(() => {
+    clearTimeout(prodDebounce.current);
+    if (!prodQuery.trim()) {
+      setProdResults([]);
+      return;
+    }
+    prodDebounce.current = setTimeout(async () => {
+      setProdSearching(true);
+      try {
+        const r = await fetch(
+          `${API}/api/products?q=${encodeURIComponent(prodQuery)}&limit=8`,
+        );
+        const b = r.ok ? await r.json() : {};
+        setProdResults(b.items || []);
+      } catch {
+        setProdResults([]);
+      } finally {
+        setProdSearching(false);
+      }
+    }, 300);
+    return () => clearTimeout(prodDebounce.current);
+  }, [prodQuery]);
+
+  // Add a searched product as a new line item (or bump qty if the same product
+  // with no variant is already present), then persist.
+  const addProduct = (p) => {
+    const img = p.images?.[0]?.url || p.images?.[0] || null;
+    const price =
+      p.flashSale && p.flashSalePrice ? p.flashSalePrice : p.price || 0;
+    const idx = editItems.findIndex(
+      (i) => String(i.productId) === String(p._id) && !i.color && !i.size,
+    );
+    let next;
+    if (idx >= 0) {
+      next = editItems.map((it, i) =>
+        i === idx ? { ...it, quantity: (Number(it.quantity) || 1) + 1 } : it,
+      );
+    } else {
+      next = [
+        ...editItems,
+        {
+          productId: p._id,
+          title: p.title,
+          image: img,
+          price,
+          quantity: 1,
+          color: null,
+          size: null,
+          rewardPoints: 0,
+        },
+      ];
+    }
+    setEditItems(next);
+    setProdQuery("");
+    setProdResults([]);
+    setAddingProduct(false);
     saveLineItems(next, editShipping, editDiscount);
   };
 
@@ -489,6 +558,92 @@ export default function OrderDetails({ orderId }) {
                 ))}
               </tbody>
             </table>
+            {/* Add product */}
+            <div className="px-5 py-4 border-t">
+              {!addingProduct ? (
+                <button
+                  type="button"
+                  onClick={() => setAddingProduct(true)}
+                  disabled={saving}
+                  className="text-sm font-medium text-rose-600 hover:underline disabled:opacity-50"
+                >
+                  + Add product
+                </button>
+              ) : (
+                <div className="relative">
+                  <div className="flex items-center gap-2">
+                    <input
+                      autoFocus
+                      type="text"
+                      value={prodQuery}
+                      onChange={(e) => setProdQuery(e.target.value)}
+                      placeholder="Search product by name…"
+                      className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAddingProduct(false);
+                        setProdQuery("");
+                        setProdResults([]);
+                      }}
+                      className="text-xs text-gray-400 hover:underline px-2"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                  {(prodSearching || prodResults.length > 0) && (
+                    <div className="absolute z-30 left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg max-h-72 overflow-auto">
+                      {prodSearching && (
+                        <div className="px-3 py-2 text-xs text-gray-400">
+                          Searching…
+                        </div>
+                      )}
+                      {!prodSearching &&
+                        prodResults.map((p) => {
+                          const img = p.images?.[0]?.url || p.images?.[0] || null;
+                          const price =
+                            p.flashSale && p.flashSalePrice
+                              ? p.flashSalePrice
+                              : p.price || 0;
+                          return (
+                            <button
+                              key={p._id}
+                              type="button"
+                              onClick={() => addProduct(p)}
+                              className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 text-left"
+                            >
+                              {img ? (
+                                <img
+                                  src={img}
+                                  alt=""
+                                  className="w-9 h-9 rounded object-cover border"
+                                />
+                              ) : (
+                                <div className="w-9 h-9 rounded bg-gray-100 border" />
+                              )}
+                              <span className="flex-1 text-sm text-gray-800 truncate">
+                                {p.title}
+                              </span>
+                              <span className="text-xs text-gray-500 whitespace-nowrap">
+                                ৳ {Number(price).toLocaleString()}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      {!prodSearching &&
+                        prodQuery.trim() &&
+                        prodResults.length === 0 && (
+                          <div className="px-3 py-2 text-xs text-gray-400">
+                            No products match "{prodQuery}"
+                          </div>
+                        )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             <div className="px-5 py-4 border-t">
               <button
                 type="button"

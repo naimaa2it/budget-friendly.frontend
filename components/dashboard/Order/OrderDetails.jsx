@@ -471,6 +471,93 @@ export default function OrderDetails({ orderId }) {
       <div className="grid lg:grid-cols-3 gap-5">
         {/* Left column */}
         <div className="lg:col-span-2 space-y-5">
+          {/* Add product — standalone bar above the products card so its search
+              dropdown isn't clipped by the products card's overflow. */}
+          <div className="bg-white rounded-xl border shadow-sm p-4">
+            {!addingProduct ? (
+              <button
+                type="button"
+                onClick={() => setAddingProduct(true)}
+                disabled={saving}
+                className="text-sm font-medium text-rose-600 hover:underline disabled:opacity-50"
+              >
+                + Add product
+              </button>
+            ) : (
+              <div className="relative">
+                <div className="flex items-center gap-2">
+                  <input
+                    autoFocus
+                    type="text"
+                    value={prodQuery}
+                    onChange={(e) => setProdQuery(e.target.value)}
+                    placeholder="Search product by name…"
+                    className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAddingProduct(false);
+                      setProdQuery("");
+                      setProdResults([]);
+                    }}
+                    className="text-xs text-gray-400 hover:underline px-2"
+                  >
+                    Cancel
+                  </button>
+                </div>
+                {(prodSearching || prodResults.length > 0) && (
+                  <div className="absolute z-30 left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg max-h-72 overflow-auto">
+                    {prodSearching && (
+                      <div className="px-3 py-2 text-xs text-gray-400">
+                        Searching…
+                      </div>
+                    )}
+                    {!prodSearching &&
+                      prodResults.map((p) => {
+                        const img = p.images?.[0]?.url || p.images?.[0] || null;
+                        const price =
+                          p.flashSale && p.flashSalePrice
+                            ? p.flashSalePrice
+                            : p.price || 0;
+                        return (
+                          <button
+                            key={p._id}
+                            type="button"
+                            onClick={() => addProduct(p)}
+                            className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 text-left"
+                          >
+                            {img ? (
+                              <img
+                                src={img}
+                                alt=""
+                                className="w-9 h-9 rounded object-cover border"
+                              />
+                            ) : (
+                              <div className="w-9 h-9 rounded bg-gray-100 border" />
+                            )}
+                            <span className="flex-1 text-sm text-gray-800 truncate">
+                              {p.title}
+                            </span>
+                            <span className="text-xs text-gray-500 whitespace-nowrap">
+                              ৳ {Number(price).toLocaleString()}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    {!prodSearching &&
+                      prodQuery.trim() &&
+                      prodResults.length === 0 && (
+                        <div className="px-3 py-2 text-xs text-gray-400">
+                          No products match &quot;{prodQuery}&quot;
+                        </div>
+                      )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Products */}
           <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
             <div className="flex items-center justify-between px-5 py-3 border-b bg-gray-50/50">
@@ -558,92 +645,6 @@ export default function OrderDetails({ orderId }) {
                 ))}
               </tbody>
             </table>
-            {/* Add product */}
-            <div className="px-5 py-4 border-t">
-              {!addingProduct ? (
-                <button
-                  type="button"
-                  onClick={() => setAddingProduct(true)}
-                  disabled={saving}
-                  className="text-sm font-medium text-rose-600 hover:underline disabled:opacity-50"
-                >
-                  + Add product
-                </button>
-              ) : (
-                <div className="relative">
-                  <div className="flex items-center gap-2">
-                    <input
-                      autoFocus
-                      type="text"
-                      value={prodQuery}
-                      onChange={(e) => setProdQuery(e.target.value)}
-                      placeholder="Search product by name…"
-                      className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAddingProduct(false);
-                        setProdQuery("");
-                        setProdResults([]);
-                      }}
-                      className="text-xs text-gray-400 hover:underline px-2"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                  {(prodSearching || prodResults.length > 0) && (
-                    <div className="absolute z-30 left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg max-h-72 overflow-auto">
-                      {prodSearching && (
-                        <div className="px-3 py-2 text-xs text-gray-400">
-                          Searching…
-                        </div>
-                      )}
-                      {!prodSearching &&
-                        prodResults.map((p) => {
-                          const img = p.images?.[0]?.url || p.images?.[0] || null;
-                          const price =
-                            p.flashSale && p.flashSalePrice
-                              ? p.flashSalePrice
-                              : p.price || 0;
-                          return (
-                            <button
-                              key={p._id}
-                              type="button"
-                              onClick={() => addProduct(p)}
-                              className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 text-left"
-                            >
-                              {img ? (
-                                <img
-                                  src={img}
-                                  alt=""
-                                  className="w-9 h-9 rounded object-cover border"
-                                />
-                              ) : (
-                                <div className="w-9 h-9 rounded bg-gray-100 border" />
-                              )}
-                              <span className="flex-1 text-sm text-gray-800 truncate">
-                                {p.title}
-                              </span>
-                              <span className="text-xs text-gray-500 whitespace-nowrap">
-                                ৳ {Number(price).toLocaleString()}
-                              </span>
-                            </button>
-                          );
-                        })}
-                      {!prodSearching &&
-                        prodQuery.trim() &&
-                        prodResults.length === 0 && (
-                          <div className="px-3 py-2 text-xs text-gray-400">
-                            No products match "{prodQuery}"
-                          </div>
-                        )}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
             <div className="px-5 py-4 border-t">
               <button
                 type="button"

@@ -5,6 +5,29 @@ import Image from "next/image";
 import { FaTimes, FaPlus } from "react-icons/fa";
 import { useCart } from "@/components/context/CartContext";
 
+// A variation type may be named "Color", "Colors", "Colour", "Size", "Sizes",
+// etc. The denormalized v.color.name / v.size fields are the primary source,
+// but fall back to the matching attributes key (case/plural tolerant) so
+// variants still render even when the type was named in the plural.
+const COLOR_KEY_RE = /^colou?rs?$/i;
+const SIZE_KEY_RE = /^sizes?$/i;
+
+const attrValueByKey = (attributes, keyRe) => {
+  const entry = Object.entries(attributes || {}).find(([key]) =>
+    keyRe.test(String(key).trim()),
+  );
+  const value = entry?.[1];
+  return value == null ? "" : String(value).trim();
+};
+
+export function variantColorName(v) {
+  return v?.color?.name?.trim() || attrValueByKey(v?.attributes, COLOR_KEY_RE);
+}
+
+export function variantSizeValue(v) {
+  return v?.size?.trim() || attrValueByKey(v?.attributes, SIZE_KEY_RE);
+}
+
 // Extract unique colors from variants (optionally filtered by size)
 // filterBySize can be a string like "L" or "16 inch"
 export function getVariantColors(product, filterBySize = null) {
@@ -19,8 +42,8 @@ export function getVariantColors(product, filterBySize = null) {
       : null;
 
   for (const v of product.variants) {
-    const colorName = v.color?.name?.trim();
-    const variantSize = v.size?.trim()?.toLowerCase();
+    const colorName = variantColorName(v);
+    const variantSize = variantSizeValue(v)?.toLowerCase();
 
     // If filtering by size, only include colors that have this size
     if (filterSize && variantSize && variantSize !== filterSize) continue;
@@ -57,8 +80,8 @@ export function getVariantSizes(product, filterByColor = null) {
   }
 
   for (const v of product.variants) {
-    const size = v.size?.trim();
-    const variantColor = v.color?.name?.trim()?.toLowerCase();
+    const size = variantSizeValue(v);
+    const variantColor = variantColorName(v)?.toLowerCase();
 
     // If filtering by color, only include sizes that have this color
     if (filterColor && variantColor && variantColor !== filterColor) continue;
@@ -78,44 +101,22 @@ export function resolveVariant(product, color, size) {
   // If no color/size selected, don't match any variant - use base product price
   if (!color && !size) return null;
 
-  // Try to find matching variant using new structure (v.color.name, v.size)
-  const newStyleMatch = product.variants.find((v) => {
-    const variantColor = v.color?.name?.trim()?.toLowerCase();
-    const variantSize = v.size?.trim()?.toLowerCase();
-    const selectedColor = color?.trim()?.toLowerCase();
-    const selectedSize = size?.trim()?.toLowerCase();
-
-    // If variant has color, it must match (or selected color is empty)
-    const colorMatches =
-      !variantColor || !selectedColor || variantColor === selectedColor;
-    // If variant has size, it must match (or selected size is empty)
-    const sizeMatches =
-      !variantSize || !selectedSize || variantSize === selectedSize;
-
-    // At least one of them must be specified and match
-    const hasMatch =
-      (variantColor && selectedColor && variantColor === selectedColor) ||
-      (variantSize && selectedSize && variantSize === selectedSize);
-
-    return hasMatch && colorMatches && sizeMatches;
-  });
-
-  if (newStyleMatch) return newStyleMatch;
-
-  // Fallback: try old structure (v.attributes.color, v.attributes.size)
+  // Match using the tolerant readers (color.name/size with attributes fallback).
   return (
     product.variants.find((v) => {
-      const a = v.attributes || {};
-      const variantColor = a.color?.trim()?.toLowerCase();
-      const variantSize = a.size?.trim()?.toLowerCase();
+      const variantColor = variantColorName(v)?.toLowerCase();
+      const variantSize = variantSizeValue(v)?.toLowerCase();
       const selectedColor = color?.trim()?.toLowerCase();
       const selectedSize = size?.trim()?.toLowerCase();
 
+      // If variant has color, it must match (or selected color is empty)
       const colorMatches =
         !variantColor || !selectedColor || variantColor === selectedColor;
+      // If variant has size, it must match (or selected size is empty)
       const sizeMatches =
         !variantSize || !selectedSize || variantSize === selectedSize;
 
+      // At least one of them must be specified and match
       const hasMatch =
         (variantColor && selectedColor && variantColor === selectedColor) ||
         (variantSize && selectedSize && variantSize === selectedSize);

@@ -9,6 +9,24 @@ const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 const uid = () =>
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
+const isObjectId = (value) => /^[a-f0-9]{24}$/i.test(String(value || ""));
+
+// A variation type mapped to the product's color/size fields may be named in
+// the singular or plural ("Color"/"Colors", "Size"/"Sizes"). Match tolerantly
+// so the denormalized color.name / size the storefront reads always get set.
+const COLOR_KEY_RE = /^colou?rs?$/i;
+const SIZE_KEY_RE = /^sizes?$/i;
+
+const isColorKey = (key) => COLOR_KEY_RE.test(String(key || "").trim());
+const isSizeKey = (key) => SIZE_KEY_RE.test(String(key || "").trim());
+
+const attrValueByKey = (attributes, keyRe) => {
+  const entry = Object.entries(attributes || {}).find(([key]) =>
+    keyRe.test(String(key).trim()),
+  );
+  return entry ? entry[1] : undefined;
+};
+
 const DEFAULT_VARIATIONS = [];
 
 const normalizeKey = (value) =>
@@ -70,8 +88,22 @@ const inferVariationCatalog = (variants) => {
 
   (variants || []).forEach((variant) => {
     const attrs = { ...(variant.attributes || {}) };
-    if (variant.color?.name) attrs.Color = variant.color.name;
-    if (variant.size) attrs.Size = variant.size;
+    const hasAttrKey = (key) =>
+      Object.keys(attrs).some(
+        (existing) => existing.toLowerCase() === key.toLowerCase(),
+      );
+    // Only fall back to the denormalized color/size fields when the variant's
+    // attributes don't already describe them. Otherwise a variation type that
+    // was renamed (e.g. "Colors" -> "Color", or a custom name) spawns a
+    // duplicate group on reload because color/size re-inject "Color"/"Size".
+    if (
+      variant.color?.name &&
+      !hasAttrKey("color") &&
+      !hasAttrKey("colors")
+    )
+      attrs.Color = variant.color.name;
+    if (variant.size && !hasAttrKey("size") && !hasAttrKey("sizes"))
+      attrs.Size = variant.size;
 
     Object.entries(attrs).forEach(([name, value]) => {
       if (!name || !value || typeof value !== "string") return;
@@ -89,6 +121,13 @@ const inferVariationCatalog = (variants) => {
 
 const normalizeCatalogItem = (item) => ({
   id: item.id || item._id || uid(),
+  // Backend catalog id, kept so a rename here can be persisted globally and the
+  // old name isn't re-injected from the shared variation catalog next reload.
+  backendId: isObjectId(item._id)
+    ? String(item._id)
+    : isObjectId(item.id)
+      ? String(item.id)
+      : null,
   name: item.name,
   options: (item.options || [])
     .map((option) => ({
@@ -114,6 +153,9 @@ const mergeCatalogs = (base, incoming) => {
       merged.push(group);
       return;
     }
+    // Preserve the shared-catalog id when a remote type merges onto an
+    // inferred one, so renames can still be persisted globally.
+    if (!found.backendId && group.backendId) found.backendId = group.backendId;
     (group.options || []).forEach((option) => {
       if (
         !found.options.some(
@@ -237,8 +279,8 @@ export default function ProductVariantBuilder({
 
     const variants = combinations.map((attributes) => {
       const previous = existingByKey.get(comboKey(attributes)) || {};
-      const colorValue = attributes.Color || attributes.color;
-      const sizeValue = attributes.Size || attributes.size;
+      const colorValue = attrValueByKey(attributes, COLOR_KEY_RE);
+      const sizeValue = attrValueByKey(attributes, SIZE_KEY_RE);
 
       return {
         ...previous,
@@ -285,20 +327,36 @@ export default function ProductVariantBuilder({
   };
 
   const toggleOption = (groupName, optionId) => {
+    const group = catalog.find((g) => g.name === groupName);
+    const option = group?.options.find((o) => o.id === optionId);
+    const willSelect = !option?.selected;
+
     setCatalog((current) =>
-      current.map((group) =>
-        group.name !== groupName
-          ? group
+      current.map((g) =>
+        g.name !== groupName
+          ? g
           : {
-              ...group,
-              options: group.options.map((option) =>
-                option.id === optionId
-                  ? { ...option, selected: !option.selected }
-                  : option,
+              ...g,
+              options: g.options.map((o) =>
+                o.id === optionId ? { ...o, selected: !o.selected } : o,
               ),
             },
       ),
     );
+
+    // Unchecking an option immediately drops its generated rows so the change
+    // is reflected right away. Checking keeps existing rows — click "Create
+    // variant rows" to add the new combinations (avoids clobbering prices).
+    if (!willSelect && option) {
+      const value = String(option.value).toLowerCase();
+      setProduct((prev) => ({
+        ...prev,
+        variants: (prev.variants || []).filter((v) => {
+          const attrVal = (v.attributes || {})[groupName];
+          return String(attrVal ?? "").toLowerCase() !== value;
+        }),
+      }));
+    }
   };
 
   const addOption = (groupName) => {
@@ -336,40 +394,217 @@ export default function ProductVariantBuilder({
     setNewVariationName("");
   };
 
+  // Persist a variation-type rename to the shared catalog so the old name is
+  // not re-injected on the next reload (fire-and-forget; product data is the
+  // source of truth regardless of whether this succeeds).
+  const persistVariationRename = (backendId, name, options) => {
+    if (!isObjectId(backendId)) return;
+    fetch(`${API}/api/admin/variations/${backendId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        name,
+        options: (options || []).map((option) => option.value),
+      }),
+    }).catch((err) =>
+      console.error("Failed to persist variation rename:", err),
+    );
+  };
+
   const renameVariation = (oldName, newName) => {
     const trimmed = newName.trim();
     if (!trimmed || trimmed === oldName) {
       setEditingGroup(null);
       return;
     }
-    setCatalog((current) =>
-      current.map((group) =>
+
+    const oldGroup = catalog.find((group) => group.name === oldName);
+    // Another type already uses this name (case-insensitively) — merge into it
+    // instead of creating a confusing duplicate that breaks name-keyed edits.
+    const collision = catalog.find(
+      (group) =>
+        group.name !== oldName &&
+        group.name.toLowerCase() === trimmed.toLowerCase(),
+    );
+
+    setCatalog((current) => {
+      if (collision) {
+        return current
+          .map((group) => {
+            if (group.name !== collision.name) return group;
+            const options = [...(group.options || [])];
+            (oldGroup?.options || []).forEach((option) => {
+              if (
+                !options.some(
+                  (existing) =>
+                    existing.value.toLowerCase() ===
+                    option.value.toLowerCase(),
+                )
+              ) {
+                options.push(option);
+              }
+            });
+            return { ...group, name: trimmed, options };
+          })
+          .filter((group) => group.name !== oldName);
+      }
+      return current.map((group) =>
         group.name === oldName ? { ...group, name: trimmed } : group,
+      );
+    });
+
+    setSelectedNames((current) =>
+      Array.from(
+        new Set(current.map((name) => (name === oldName ? trimmed : name))),
       ),
     );
-    setSelectedNames((current) =>
-      current.map((name) => (name === oldName ? trimmed : name)),
-    );
+
     setOptionDrafts((current) => {
       const next = { ...current };
       if (oldName in next) {
-        next[trimmed] = next[oldName];
+        if (!(trimmed in next)) next[trimmed] = next[oldName];
         delete next[oldName];
       }
       return next;
     });
+
+    // Rename the attribute key on every variant. Also fold in any existing key
+    // that matches the target name (case-insensitively) when merging.
     setProduct((prev) => ({
       ...prev,
       variants: (prev.variants || []).map((v) => {
         const attrs = { ...(v.attributes || {}) };
-        if (oldName in attrs) {
-          attrs[trimmed] = attrs[oldName];
-          delete attrs[oldName];
-        }
+        Object.keys(attrs).forEach((key) => {
+          if (
+            key === oldName ||
+            key.toLowerCase() === trimmed.toLowerCase()
+          ) {
+            const value = attrs[key];
+            delete attrs[key];
+            if (value != null && attrs[trimmed] == null) attrs[trimmed] = value;
+          }
+        });
         return { ...v, attributes: attrs };
       }),
     }));
+
+    // Keep the shared catalog in sync so this rename sticks across reloads.
+    const backendId = collision?.backendId || oldGroup?.backendId;
+    if (backendId) {
+      const mergedOptions = collision
+        ? [...(collision.options || []), ...(oldGroup?.options || [])]
+        : oldGroup?.options;
+      persistVariationRename(backendId, trimmed, mergedOptions);
+    }
+
     setEditingGroup(null);
+  };
+
+  // Delete a whole variation type from the product's setup. Removes the type,
+  // drops that dimension from every generated row (collapsing now-duplicate
+  // combinations), and — for catalog-backed types — removes it from the shared
+  // catalog too so it doesn't get re-injected on reload.
+  const deleteVariationType = (group) => {
+    const groupName = group.name;
+    const isShared = isObjectId(group.backendId);
+    const message = isShared
+      ? `Delete "${groupName}"? Eta shared variation catalog theke o remove hobe (onno product-e ar suggest hobe na).`
+      : `Delete variation type "${groupName}"?`;
+    if (typeof window !== "undefined" && !window.confirm(message)) return;
+
+    setCatalog((current) => current.filter((g) => g.name !== groupName));
+    setSelectedNames((current) =>
+      current.filter((name) => name !== groupName),
+    );
+    setOptionDrafts((current) => {
+      const next = { ...current };
+      delete next[groupName];
+      return next;
+    });
+
+    setProduct((prev) => {
+      const seen = new Set();
+      const variants = [];
+      (prev.variants || []).forEach((v) => {
+        const attrs = { ...(v.attributes || {}) };
+        Object.keys(attrs).forEach((key) => {
+          if (key.toLowerCase() === groupName.toLowerCase()) delete attrs[key];
+        });
+        // After dropping the dimension, different rows can collapse to the same
+        // combination — keep the first and discard the rest.
+        const key = comboKey(attrs);
+        if (seen.has(key)) return;
+        seen.add(key);
+        const cleaned = { ...v, attributes: attrs };
+        if (isColorKey(groupName)) {
+          cleaned.color = { name: "", hex: "#000000" };
+        }
+        if (isSizeKey(groupName)) {
+          cleaned.size = "";
+        }
+        variants.push(cleaned);
+      });
+      return { ...prev, variants };
+    });
+
+    if (isShared) {
+      fetch(`${API}/api/admin/variations/${group.backendId}`, {
+        method: "DELETE",
+        credentials: "include",
+      }).catch((err) =>
+        console.error("Failed to delete variation from catalog:", err),
+      );
+    }
+
+    if (editingGroup === groupName) setEditingGroup(null);
+  };
+
+  // Delete a single option (e.g. "Red") from a variation type. Removes the
+  // option chip, drops every generated row that used it, and — for a
+  // catalog-backed type — removes it from the shared catalog so it isn't
+  // re-injected on reload.
+  const deleteOption = (groupName, optionId) => {
+    const group = catalog.find((g) => g.name === groupName);
+    const option = group?.options.find((o) => o.id === optionId);
+    if (!option) return;
+    if (
+      typeof window !== "undefined" &&
+      !window.confirm(`Delete option "${option.value}" from ${groupName}?`)
+    )
+      return;
+
+    const value = String(option.value).toLowerCase();
+
+    setCatalog((current) =>
+      current.map((g) =>
+        g.name !== groupName
+          ? g
+          : { ...g, options: g.options.filter((o) => o.id !== optionId) },
+      ),
+    );
+
+    setProduct((prev) => ({
+      ...prev,
+      variants: (prev.variants || []).filter((v) => {
+        const attrVal = (v.attributes || {})[groupName];
+        return String(attrVal ?? "").toLowerCase() !== value;
+      }),
+    }));
+
+    if (group?.backendId) {
+      const nextOptions = (group.options || []).filter(
+        (o) => o.id !== optionId,
+      );
+      persistVariationRename(group.backendId, group.name, nextOptions);
+    }
+
+    if (
+      editingOption?.groupName === groupName &&
+      editingOption?.optionId === optionId
+    ) {
+      setEditingOption(null);
+    }
   };
 
   const renameOption = (groupName, optionId, newValue) => {
@@ -403,12 +638,12 @@ export default function ProductVariantBuilder({
           updated.attributes = attrs;
         }
         if (
-          groupName.toLowerCase() === "color" &&
+          isColorKey(groupName) &&
           v.color?.name?.toLowerCase() === oldValue.toLowerCase()
         ) {
           updated.color = { ...(v.color || {}), name: trimmed };
         }
-        if (groupName.toLowerCase() === "size" && v.size === oldValue) {
+        if (isSizeKey(groupName) && v.size === oldValue) {
           updated.size = trimmed;
         }
         if (v.name === titleFromAttributes(v.attributes || {})) {
@@ -417,6 +652,14 @@ export default function ProductVariantBuilder({
         return updated;
       }),
     }));
+    // Keep the shared catalog in sync so the old option value isn't re-injected
+    // on the next reload.
+    if (group?.backendId) {
+      const nextOptions = (group.options || []).map((o) =>
+        o.id === optionId ? { ...o, value: trimmed } : o,
+      );
+      persistVariationRename(group.backendId, group.name, nextOptions);
+    }
     setEditingOption(null);
   };
 
@@ -554,6 +797,25 @@ export default function ProductVariantBuilder({
                             <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                           </svg>
                         </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteVariationType(group)}
+                          className="shrink-0 text-gray-400 hover:text-red-600 transition-colors"
+                          title="Delete this variation type"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-3.5 w-3.5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </button>
                       </span>
                     )}
                   </span>
@@ -659,6 +921,29 @@ export default function ProductVariantBuilder({
                                 fill="currentColor"
                               >
                                 <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                              </svg>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                deleteOption(group.name, option.id);
+                              }}
+                              className="opacity-0 group-hover/opt:opacity-100 text-gray-400 hover:text-red-600 transition-opacity"
+                              title="Delete option"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-3 w-3"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                  clipRule="evenodd"
+                                />
                               </svg>
                             </button>
                           </label>

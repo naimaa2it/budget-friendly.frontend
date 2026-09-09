@@ -513,7 +513,7 @@ export default function ChatWidget() {
 
       {/* ── Panel: in-site chat ──────────────────────────────────────────── */}
       {open && view === "chat" && (
-        <div className="fixed bottom-28 right-4 z-[60] flex h-[70vh] max-h-[540px] w-[92vw] max-w-sm flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
+        <div className="fixed bottom-24 right-4 z-[60] flex h-[60vh] max-h-[460px] w-[86vw] max-w-xs flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
           {/* header */}
           <div className="flex items-center gap-3 bg-blue-600 px-4 py-3 text-white">
             <button

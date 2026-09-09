@@ -558,7 +558,7 @@ export default function ChatWidget() {
                 onChange={(e) => setNameInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && submitPhone()}
                 placeholder="আপনার নাম"
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 text-center text-sm focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 text-center text-base sm:text-sm focus:border-blue-500 focus:outline-none"
               />
               <input
                 type="tel"
@@ -567,7 +567,7 @@ export default function ChatWidget() {
                 onChange={(e) => setPhoneInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && submitPhone()}
                 placeholder="01712345678"
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 text-center text-sm focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 text-center text-base sm:text-sm focus:border-blue-500 focus:outline-none"
               />
               {phoneError && <p className="text-xs text-red-500">{phoneError}</p>}
               <button
@@ -633,7 +633,7 @@ export default function ChatWidget() {
                   onChange={(e) => { setInput(e.target.value); touchPhone(); }}
                   onKeyDown={(e) => e.key === "Enter" && send()}
                   placeholder="Message likhun…"
-                  className="flex-1 rounded-full border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                  className="flex-1 rounded-full border border-gray-300 px-4 py-2 text-base sm:text-sm focus:border-blue-500 focus:outline-none"
                 />
                 <button
                   onClick={() => send()}

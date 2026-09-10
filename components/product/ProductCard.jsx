@@ -70,6 +70,28 @@ export default function ProductCard({
     trackAddToCart(product, 1, price);
     gtmAddToCart(product, 1, price);
   };
+
+  // Buy Now: same variant defaulting as quick-add, but silently and jump
+  // straight to checkout instead of opening the cart drawer.
+  const buyNow = () => {
+    const colors = getVariantColors(product);
+    const sizes = getVariantSizes(product);
+    const color = colors[0]?.name || null;
+    const size = sizes[0] || null;
+    if (!color && !size) {
+      addToCart(product, 1, { silent: true });
+    } else {
+      addToCart(product, 1, {
+        selectedColor: color,
+        selectedSize: size,
+        selectedVariant: resolveVariant(product, color, size),
+        silent: true,
+      });
+    }
+    trackAddToCart(product, 1, price);
+    gtmAddToCart(product, 1, price);
+    router.push("/checkout");
+  };
   const [pendingWishlist, setPendingWishlist] = React.useState(null);
   const [waitlistProduct, setWaitlistProduct] = React.useState(null);
 
@@ -423,19 +445,36 @@ export default function ProductCard({
               </button>
             </div>
           ) : (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                console.log(
-                  "[Button] Add to Cart clicked:",
-                  product.title || product.name,
-                );
-                quickAdd();
-              }}
-              className="relative z-[2] w-full bg-red-600 text-white py-2 rounded-md font-medium hover:bg-red-700 transition mt-auto"
-            >
-              {t("home.add_to_cart")}
-            </button>
+            <div className="relative z-[2] mt-auto flex gap-1.5">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log(
+                    "[Button] Buy Now clicked:",
+                    product.title || product.name,
+                  );
+                  buyNow();
+                }}
+                className="flex-1 bg-red-600 text-white py-1 rounded-md font-medium hover:bg-red-700 transition"
+              >
+                {t("product.buy_now")}
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log(
+                    "[Button] Add to Cart clicked:",
+                    product.title || product.name,
+                  );
+                  quickAdd();
+                }}
+                title={t("home.add_to_cart")}
+                aria-label={t("home.add_to_cart")}
+                className="bg-[#F1E4D8] text-red-600 px-3 py-1 rounded-md flex items-center justify-center hover:bg-[#ead8c8] transition"
+              >
+                <FaShoppingCart className="w-4 h-4" />
+              </button>
+            </div>
           )}
         </div>
       </div>

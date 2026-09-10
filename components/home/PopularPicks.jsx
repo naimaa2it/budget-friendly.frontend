@@ -195,6 +195,12 @@ export default function PopularPicks() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, pendingWishlist]);
 
+  // Buy Now: add silently and go straight to checkout.
+  const buyNow = (product) => {
+    addToCart(product, 1, { silent: true });
+    router.push("/checkout");
+  };
+
   const renderStars = (rating) => {
     return (
       <div className="flex">
@@ -638,15 +644,28 @@ export default function PopularPicks() {
                                 </button>
                               </div>
                             ) : (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  addToCart(product, 1);
-                                }}
-                                className="block mx-auto lg:w-full bg-red-600 text-white py-2 px-6 rounded-md font-medium text-sm hover:bg-red-700 transition-colors"
-                              >
-                                {t("home.add_to_cart")}
-                              </button>
+                              <div className="flex gap-1.5">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    buyNow(product);
+                                  }}
+                                  className="flex-1 bg-red-600 text-white py-1 rounded-md font-medium text-sm hover:bg-red-700 transition-colors"
+                                >
+                                  {t("product.buy_now")}
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    addToCart(product, 1);
+                                  }}
+                                  title={t("home.add_to_cart")}
+                                  aria-label={t("home.add_to_cart")}
+                                  className="bg-[#F1E4D8] text-red-600 px-3 py-1 rounded-md flex items-center justify-center hover:bg-[#ead8c8] transition-colors"
+                                >
+                                  <FaShoppingCart className="w-4 h-4" />
+                                </button>
+                              </div>
                             )}
                           </div>
                         </div>

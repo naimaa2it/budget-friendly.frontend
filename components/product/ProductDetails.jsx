@@ -36,6 +36,7 @@ import RecentlyViewed, {
   saveRecentlyViewed,
 } from "@/components/product/RecentlyViewed";
 import AdSlot from "@/components/ui/AdSlot";
+import { useStoreSettings } from "@/components/context/StoreSettingsContext";
 import { getDisplayPrice } from "@/lib/pricing";
 import DetailedDescriptionRenderer from "@/components/product/DetailedDescriptionRenderer";
 
@@ -169,6 +170,36 @@ const COLOR_MAP = {
 
 export default function ProductDetails({ product, relatedProducts = [] }) {
   const router = useRouter();
+
+  // Admin-controlled placement/visibility for the Related Products and
+  // Recently Viewed sections (Settings → Product Page Layout). Each section
+  // is rendered by renderExtraSections() at whichever anchor its *Position
+  // matches: "before_description" (after tabs), "after_description", or
+  // "bottom". Defaults preserve the original layout when unset.
+  const { productPageLayout } = useStoreSettings();
+  const showRelated = productPageLayout?.showRelatedProducts !== false;
+  const showRecentlyViewed = productPageLayout?.showRecentlyViewed !== false;
+  const relatedPos =
+    productPageLayout?.relatedProductsPosition || "before_description";
+  const recentlyViewedPos =
+    productPageLayout?.recentlyViewedPosition || "bottom";
+
+  const renderExtraSections = (anchor) => (
+    <>
+      {showRelated && relatedPos === anchor && (
+        <RelatedProducts products={relatedProducts} />
+      )}
+      {showRecentlyViewed && recentlyViewedPos === anchor && (
+        <RecentlyViewed
+          currentProductId={product?._id}
+          mobilePerRow={3}
+          desktopPerRow={6}
+          rows={1}
+        />
+      )}
+    </>
+  );
+
   const images = (product?.images || []).map((i) => i.url);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [copied, setCopied] = useState(false);
@@ -1005,13 +1036,16 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
       {/* ad above related products */}
       <AdSlot page="productPage" className="max-w-6xl mx-auto px-4 mt-10" />
 
-      {/* related products */}
-      <RelatedProducts products={relatedProducts} />
+      {/* sections placed "before description" (Settings → Product Page Layout) */}
+      {renderExtraSections("before_description")}
 
       {/* detailed description blocks */}
       {product?.detailedDescription && (
         <DetailedDescriptionRenderer value={product.detailedDescription} />
       )}
+
+      {/* sections placed "after description" (Settings → Product Page Layout) */}
+      {renderExtraSections("after_description")}
 
       {/* warranty, return policy, customization — accordion */}
       {(product?.warranty?.period?.trim() ||
@@ -1293,13 +1327,8 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
         </div>
       )}
 
-      {/* recently viewed — always at the very bottom */}
-      <RecentlyViewed
-        currentProductId={product?._id}
-        mobilePerRow={3}
-        desktopPerRow={6}
-        rows={1}
-      />
+      {/* sections placed at the very bottom (Settings → Product Page Layout) */}
+      {renderExtraSections("bottom")}
 
       {/* ── Image Zoom Modal ── */}
       {zoomOpen && (

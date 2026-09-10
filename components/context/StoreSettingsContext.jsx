@@ -15,6 +15,13 @@ const EMPTY_POLICY = {
 
 const EMPTY_FOOTER_LINKS = { quickLinks: [], customerService: [] };
 
+const DEFAULT_PRODUCT_PAGE_LAYOUT = {
+  showRelatedProducts: true,
+  relatedProductsPosition: "before_description",
+  showRecentlyViewed: true,
+  recentlyViewedPosition: "bottom",
+};
+
 const StoreSettingsContext = createContext({
   storeName: "",
   logoUrl: "",
@@ -24,6 +31,7 @@ const StoreSettingsContext = createContext({
   socialLinks: {},
   policyContent: EMPTY_POLICY,
   footerLinks: EMPTY_FOOTER_LINKS,
+  productPageLayout: DEFAULT_PRODUCT_PAGE_LAYOUT,
 });
 
 const EMPTY_SETTINGS = {
@@ -35,6 +43,7 @@ const EMPTY_SETTINGS = {
   socialLinks: {},
   policyContent: EMPTY_POLICY,
   footerLinks: EMPTY_FOOTER_LINKS,
+  productPageLayout: DEFAULT_PRODUCT_PAGE_LAYOUT,
 };
 
 // initialSettings comes from RootLayout's build-time getStoreSettings() call
@@ -58,6 +67,8 @@ export function StoreSettingsProvider({ children, initialSettings }) {
           socialLinks: d.socialLinks || {},
           policyContent: d.policyContent || EMPTY_POLICY,
           footerLinks: d.footerLinks || EMPTY_FOOTER_LINKS,
+          productPageLayout:
+            d.productPageLayout || DEFAULT_PRODUCT_PAGE_LAYOUT,
         }),
       )
       .catch(() => {});

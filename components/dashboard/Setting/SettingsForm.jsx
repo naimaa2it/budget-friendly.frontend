@@ -209,6 +209,14 @@ export default function SettingsForm() {
       supportInfo: { ...s.supportInfo, [key]: val },
     }));
 
+  const setLayout = (key, val) =>
+    setSettings((s) => ({
+      ...s,
+      productPageLayout: { ...(s.productPageLayout || {}), [key]: val },
+    }));
+
+  const layout = settings?.productPageLayout || {};
+
   if (loading || !settings)
     return (
       <div className="max-w-3xl mx-auto bg-white p-8 rounded-xl border border-gray-200 text-center text-sm text-gray-400">
@@ -429,7 +437,87 @@ export default function SettingsForm() {
         </div>
       </Section>
 
+      {/* ── Product Page Layout ─────────────────────────────────── */}
+      <Section
+        title="Product Page Layout"
+        badge="Product Page"
+        badgeColor="bg-indigo-50 text-indigo-600"
+        desc="Product description page-এ Related Products ও Recently Viewed section কোথায় দেখাবে (বা আদৌ দেখাবে কিনা) তা এখান থেকে নিয়ন্ত্রণ করুন।"
+      >
+        <div className="space-y-5">
+          {/* Related Products */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+            <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none pt-6">
+              <input
+                type="checkbox"
+                checked={layout.showRelatedProducts !== false}
+                onChange={(e) =>
+                  setLayout("showRelatedProducts", e.target.checked)
+                }
+                className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-400"
+              />
+              Related Products দেখাও
+            </label>
+            <Field label="Related Products কোথায় দেখাবে">
+              <select
+                value={layout.relatedProductsPosition || "before_description"}
+                onChange={(e) =>
+                  setLayout("relatedProductsPosition", e.target.value)
+                }
+                disabled={layout.showRelatedProducts === false}
+                className={`${INPUT} disabled:opacity-50 disabled:bg-gray-50`}
+              >
+                <option value="before_description">
+                  বর্ণনার আগে (info tabs-এর নিচে)
+                </option>
+                <option value="after_description">বর্ণনার শেষে</option>
+                <option value="bottom">পেজের একদম নিচে</option>
+              </select>
+            </Field>
+          </div>
+
+          {/* Recently Viewed */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start border-t border-gray-100 pt-5">
+            <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none pt-6">
+              <input
+                type="checkbox"
+                checked={layout.showRecentlyViewed !== false}
+                onChange={(e) =>
+                  setLayout("showRecentlyViewed", e.target.checked)
+                }
+                className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-400"
+              />
+              Recently Viewed দেখাও
+            </label>
+            <Field label="Recently Viewed কোথায় দেখাবে">
+              <select
+                value={layout.recentlyViewedPosition || "bottom"}
+                onChange={(e) =>
+                  setLayout("recentlyViewedPosition", e.target.value)
+                }
+                disabled={layout.showRecentlyViewed === false}
+                className={`${INPUT} disabled:opacity-50 disabled:bg-gray-50`}
+              >
+                <option value="before_description">
+                  বর্ণনার আগে (info tabs-এর নিচে)
+                </option>
+                <option value="after_description">বর্ণনার শেষে</option>
+                <option value="bottom">পেজের একদম নিচে</option>
+              </select>
+            </Field>
+          </div>
+
+          <p className="text-[11px] text-gray-400">
+            পরিবর্তন Save করার পর storefront-এ কার্যকর হবে (static site হলে
+            পরবর্তী rebuild-এ)।
+          </p>
+        </div>
+      </Section>
+
       {/* ── Cloudinary Migration ────────────────────────────────── */}
+      {/* Hidden from the dashboard on request. Uncomment this block to
+          restore the Cloudinary folder migration tool. */}
+      {false && (
       <div className="border border-amber-200 bg-amber-50 rounded-xl p-5">
         <h3 className="font-semibold text-amber-800 text-sm mb-1">
           Cloudinary Folder Migration
@@ -533,6 +621,7 @@ export default function SettingsForm() {
           </div>
         )}
       </div>
+      )}
 
       <MediaPicker
         open={showLogoPicker}

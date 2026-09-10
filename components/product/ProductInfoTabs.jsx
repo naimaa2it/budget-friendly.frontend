@@ -357,7 +357,7 @@ export default function ProductInfoTabs({ product }) {
         </div>
 
         {/* ── Content ── */}
-        <div className="pb-8">
+        <div className="">
           {activeTab === "description" && (
             <div className="animate-fadeIn">
               <p className="text-gray-700 leading-relaxed whitespace-pre-line">

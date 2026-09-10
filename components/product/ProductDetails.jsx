@@ -35,7 +35,6 @@ import { FaCartShopping } from "react-icons/fa6";
 import RecentlyViewed, {
   saveRecentlyViewed,
 } from "@/components/product/RecentlyViewed";
-import AdSlot from "@/components/ui/AdSlot";
 import { useStoreSettings } from "@/components/context/StoreSettingsContext";
 import { getDisplayPrice } from "@/lib/pricing";
 import DetailedDescriptionRenderer from "@/components/product/DetailedDescriptionRenderer";
@@ -518,34 +517,9 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* ── LEFT: image gallery ── */}
         <div className="w-full lg:w-[42%] flex flex-col gap-3">
-          <div className="flex gap-2">
-            {/* Vertical thumbnail strip */}
-            {images.length > 1 && (
-              <div className="flex flex-col gap-2 w-12 md:w-16 flex-shrink-0">
-                {images.map((img, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentIndex(idx)}
-                    onMouseEnter={() => setCurrentIndex(idx)}
-                    className={`rounded border-1 overflow-hidden transition aspect-square ${
-                      currentIndex === idx
-                        ? "border-gray-900"
-                        : "border-gray-200 hover:border-gray-400"
-                    }`}
-                  >
-                    <Image
-                      src={encodeURI(img)}
-                      alt={`${title} ${idx + 1}`}
-                      width={48}
-                      height={48}
-                      className="object-contain w-full h-full p-0 md:p-0.5"
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
+          <div className="flex flex-col gap-2">
             {/* Main image */}
-            <div className="relative bg-white border border-gray-200 flex-1 aspect-square flex items-center justify-center overflow-hidden rounded">
+            <div className="relative bg-white border border-gray-200 w-full aspect-square flex items-center justify-center overflow-hidden rounded">
               {images.length > 1 && (
                 <button
                   onClick={prevImage}
@@ -652,6 +626,31 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                 </div>
               )}
             </div>
+            {/* Horizontal thumbnail strip — below main image */}
+            {images.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {images.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentIndex(idx)}
+                    onMouseEnter={() => setCurrentIndex(idx)}
+                    className={`w-14 h-14 md:w-16 md:h-16 shrink-0 rounded border-1 overflow-hidden transition aspect-square ${
+                      currentIndex === idx
+                        ? "border-gray-900"
+                        : "border-gray-200 hover:border-gray-400"
+                    }`}
+                  >
+                    <Image
+                      src={encodeURI(img)}
+                      alt={`${title} ${idx + 1}`}
+                      width={64}
+                      height={64}
+                      className="object-contain w-full h-full p-0 md:p-0.5"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -694,16 +693,16 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
           <hr className="border-gray-200 mb-3 -mt-3" />
 
           {/* Description */}
-          {toPlainText(description) && (
+          {toPlainText(description).trim() && (
             <div className="mb-1">
               <p
                 className={`text-gray-500 text-sm leading-relaxed whitespace-pre-wrap ${
                   descOpen ? "" : "line-clamp-4"
                 }`}
               >
-                {toPlainText(description)}
+                {toPlainText(description).trim()}
               </p>
-              {toPlainText(description).length > 180 && (
+              {toPlainText(description).trim().length > 180 && (
                 <button
                   type="button"
                   onClick={() => setDescOpen((v) => !v)}
@@ -1035,7 +1034,6 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
               </div>
             </div>
           </div>
-          <AdSlot page="productPage" format="rectangle" className="w-full" />
         </div>
       </div>
 
@@ -1043,9 +1041,6 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
       <div id="reviews-tab">
         <ProductInfoTabs product={tabProduct} />
       </div>
-
-      {/* ad above related products */}
-      <AdSlot page="productPage" className="max-w-6xl mx-auto px-4 mt-10" />
 
       {/* sections placed "before description" (Settings → Product Page Layout) */}
       {renderExtraSections("before_description")}

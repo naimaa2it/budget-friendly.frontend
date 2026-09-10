@@ -9,7 +9,11 @@ import {
   getItemPrice,
   getItemCompareAtPrice,
 } from "@/components/context/CartContext";
-import { getVariantColors } from "@/components/cart/VariantEditModal";
+import VariantEditModal, {
+  getVariantColors,
+  getVariantSizes,
+} from "@/components/cart/VariantEditModal";
+import QuantitySelector from "@/components/ui/QuantitySelector";
 import { useUser } from "@/components/context/UserContext";
 import AuthModal from "@/components/auth/AuthModalLazy";
 import Image from "next/image";
@@ -21,6 +25,8 @@ import {
   FaTimes,
   FaTicketAlt,
   FaGift,
+  FaPencilAlt,
+  FaTrash,
 } from "react-icons/fa";
 import PaymentSelector from "@/components/checkout/PaymentSelector";
 import SearchableSelect from "@/components/ui/SearchableSelect";
@@ -33,9 +39,18 @@ import "animate.css";
 export default function CheckoutPage() {
   const router = useRouter();
   const { t } = useLanguage();
-  const { cartItems, clearCart, cartHydrated } = useCart();
+  const {
+    cartItems,
+    clearCart,
+    cartHydrated,
+    updateQty,
+    removeFromCart,
+    updateCartVariant,
+  } = useCart();
   const { user } = useUser();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  // Order-item editing (change color/size or quantity right on the checkout)
+  const [editItem, setEditItem] = useState(null);
   const [showRewardsModal, setShowRewardsModal] = useState(false);
   // All financial values come from the server quote — never calculated client-side
   const [quote, setQuote] = useState({
@@ -987,11 +1002,16 @@ export default function CheckoutPage() {
                   ref={itemsScrollRef}
                   onScroll={handleItemsScroll}
                   className="flex-1 overflow-y-auto no-scrollbar divide-y divide-gray-50"
-                  style={{ maxHeight: "152px" }}
+                  style={{ maxHeight: "210px" }}
                 >
                   {cartItems.map((item) => {
-                    const { product, quantity, selectedColor, selectedSize } =
-                      item;
+                    const {
+                      product,
+                      quantity,
+                      cartKey,
+                      selectedColor,
+                      selectedSize,
+                    } = item;
                     const id = product._id || product.id;
                     const image =
                       product.images?.[0]?.url || "/assets/placeholder.svg";
@@ -1009,56 +1029,83 @@ export default function CheckoutPage() {
                         )
                       : null;
                     const colorHex = colorObj?.hex || null;
+                    const hasVariants =
+                      allColors.length > 0 ||
+                      getVariantSizes(product).length > 0 ||
+                      product.variants?.length > 0;
                     return (
                       <div
-                        key={id}
-                        className="flex items-start gap-3 px-5 py-3"
+                        key={cartKey}
+                        className="flex items-center gap-3 px-5 py-2.5"
                       >
                         <Image
                           src={encodeURI(image)}
                           alt={title}
-                          width={52}
-                          height={52}
+                          width={44}
+                          height={44}
                           onError={(e) => {
                             e.currentTarget.onerror = null;
                             e.currentTarget.src = "/assets/placeholder.svg";
                           }}
-                          className="object-cover rounded-lg border border-gray-100 w-13 h-13 shrink-0"
+                          className="object-cover rounded-lg border border-gray-100 w-11 h-11 shrink-0"
                         />
+                        {/* Title + variant chips/edit */}
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-gray-800 line-clamp-2 leading-snug">
+                          <p className="text-sm font-semibold text-gray-800 line-clamp-1 leading-snug">
                             {title}
                           </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {quantity} ×{" "}
-                            <span className="font-semibold text-gray-700">
-                              ৳{price.toFixed(0)}
+                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                            {selectedColor && (
+                              <span className="inline-flex items-center gap-1 text-[11px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-md font-medium">
+                                {colorHex && (
+                                  <span
+                                    className="w-2.5 h-2.5 rounded-full border border-gray-300 shrink-0 inline-block"
+                                    style={{ backgroundColor: colorHex }}
+                                  />
+                                )}
+                                {selectedColor}
+                              </span>
+                            )}
+                            {selectedSize && (
+                              <span className="text-[11px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-md font-medium">
+                                {selectedSize}
+                              </span>
+                            )}
+                            {hasVariants && (
+                              <button
+                                type="button"
+                                onClick={() => setEditItem(item)}
+                                className="inline-flex items-center gap-1 text-[11px] text-blue-600 hover:underline"
+                              >
+                                <FaPencilAlt className="w-2.5 h-2.5" />
+                                {selectedColor || selectedSize
+                                  ? t("cart.edit")
+                                  : t("cart.select_option")}
+                              </button>
+                            )}
+                            <span className="text-[11px] text-gray-400">
+                              ৳{price.toFixed(0)} each
                             </span>
-                          </p>
-                          {(selectedColor || selectedSize) && (
-                            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                              {selectedColor && (
-                                <span className="inline-flex items-center gap-1 text-[11px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md font-medium">
-                                  {colorHex && (
-                                    <span
-                                      className="w-2.5 h-2.5 rounded-full border border-gray-300 shrink-0 inline-block"
-                                      style={{ backgroundColor: colorHex }}
-                                    />
-                                  )}
-                                  {selectedColor}
-                                </span>
-                              )}
-                              {selectedSize && (
-                                <span className="text-[11px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md font-medium">
-                                  {selectedSize}
-                                </span>
-                              )}
-                            </div>
-                          )}
+                          </div>
                         </div>
-                        <p className="text-sm font-bold text-gray-800 shrink-0 mt-0.5">
+                        {/* Quantity */}
+                        <QuantitySelector
+                          quantity={quantity}
+                          onChange={(q) => updateQty(cartKey, q)}
+                        />
+                        {/* Line total */}
+                        <p className="text-sm font-bold text-gray-800 shrink-0 w-16 text-right">
                           ৳{(price * quantity).toFixed(0)}
                         </p>
+                        {/* Remove */}
+                        <button
+                          type="button"
+                          onClick={() => removeFromCart(cartKey)}
+                          title="Remove item"
+                          className="text-gray-300 hover:text-red-500 shrink-0 p-0.5"
+                        >
+                          <FaTrash className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     );
                   })}
@@ -1709,6 +1756,21 @@ export default function CheckoutPage() {
         <AuthModal
           isOpen={showAuthModal}
           onClose={() => setShowAuthModal(false)}
+        />
+      )}
+
+      {/* Variant edit — change color/size/quantity right on the checkout.
+          The quote effect re-fetches on cartItems change, so prices stay
+          server-verified after any edit. */}
+      {editItem && (
+        <VariantEditModal
+          item={editItem}
+          mode="edit"
+          onClose={() => setEditItem(null)}
+          onSave={(c, s, v, q) => {
+            updateCartVariant(editItem.cartKey, c, s, v, q);
+            setEditItem(null);
+          }}
         />
       )}
 

@@ -79,20 +79,28 @@ export default function AddToCartSection({
   const hasVariants =
     allColors.length > 0 || allSizes.length > 0 || product.variants?.length > 0;
 
+  // Fall back to the first color/size when the shopper hasn't picked one, so an
+  // order never lands without a variant even if the parent's auto-select hasn't
+  // applied yet. Matches the quick-add behaviour on the product cards.
+  const effectiveColor =
+    selectedColor || (allColors.length > 0 ? allColors[0].name : null);
+  const effectiveSize =
+    selectedSize || (allSizes.length > 0 ? allSizes[0] : null);
+
   const effectivePrice = hasVariants
-    ? resolveVariantPrice(product, selectedColor, selectedSize)
+    ? resolveVariantPrice(product, effectiveColor, effectiveSize)
     : product.price || 0;
 
   // Use the shared resolveVariant function for consistent matching logic
   const selectedVariant = hasVariants
-    ? resolveVariant(product, selectedColor, selectedSize)
+    ? resolveVariant(product, effectiveColor, effectiveSize)
     : null;
 
   const handleAdd = () => {
     console.log("[Button] Add to Cart clicked:", product.title || product.name);
     addToCart(product, qty, {
-      selectedColor: selectedColor || null,
-      selectedSize: selectedSize || null,
+      selectedColor: effectiveColor,
+      selectedSize: effectiveSize,
       selectedVariant,
     });
     trackAddToCart(product, qty, effectivePrice);
@@ -102,8 +110,8 @@ export default function AddToCartSection({
   const handleBuyNow = () => {
     console.log("[Button] Buy Now clicked:", product.title || product.name);
     addToCart(product, qty, {
-      selectedColor: selectedColor || null,
-      selectedSize: selectedSize || null,
+      selectedColor: effectiveColor,
+      selectedSize: effectiveSize,
       selectedVariant,
       silent: true,
     });

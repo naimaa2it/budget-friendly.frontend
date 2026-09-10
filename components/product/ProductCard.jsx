@@ -48,15 +48,20 @@ export default function ProductCard({
   // When a color swatch is selected, its image is "locked": hover won't change it.
   // null = no color selected, hover behaves normally.
   const [lockedImageIndex, setLockedImageIndex] = React.useState(null);
+  // The color name the shopper picked on the card. null = none picked, so
+  // quick-add/buy-now fall back to the first color. When set, that exact color
+  // is what gets added to the cart and carried through to checkout.
+  const [selectedColorName, setSelectedColorName] = React.useState(null);
   const [showAuthModal, setShowAuthModal] = React.useState(false);
 
-  // Quick-add from the card has no variant picker, so default to the first
-  // color/size (if the product has any) — otherwise the order lands without a
-  // color and staff can't tell what was ordered. No variants → plain add.
+  // Quick-add from the card has no full variant picker, so use the color the
+  // shopper picked on the card — or default to the first color/size when they
+  // picked none — otherwise the order lands without a color and staff can't
+  // tell what was ordered. No variants → plain add.
   const quickAdd = () => {
     const colors = getVariantColors(product);
     const sizes = getVariantSizes(product);
-    const color = colors[0]?.name || null;
+    const color = selectedColorName || colors[0]?.name || null;
     const size = sizes[0] || null;
     if (!color && !size) {
       addToCart(product, 1);
@@ -76,7 +81,7 @@ export default function ProductCard({
   const buyNow = () => {
     const colors = getVariantColors(product);
     const sizes = getVariantSizes(product);
-    const color = colors[0]?.name || null;
+    const color = selectedColorName || colors[0]?.name || null;
     const size = sizes[0] || null;
     if (!color && !size) {
       addToCart(product, 1, { silent: true });
@@ -387,7 +392,7 @@ export default function ProductCard({
                         : `#${c.hex}`
                       : "#cccccc";
                     const imgIdx = c.image ? images.indexOf(c.image) : -1;
-                    const isActive = imgIdx >= 0 && imgIdx === lockedImageIndex;
+                    const isActive = selectedColorName === c.name;
                     return (
                       <button
                         key={i}
@@ -396,21 +401,27 @@ export default function ProductCard({
                         onClick={(e) => {
                           e.stopPropagation();
                           e.preventDefault();
-                          if (imgIdx < 0) return;
-                          if (lockedImageIndex === imgIdx) {
+                          if (isActive) {
                             // clicking the selected color again unselects it —
                             // hover changes images again
+                            setSelectedColorName(null);
                             setLockedImageIndex(null);
                           } else {
-                            setCurrentImageIndex(imgIdx);
-                            setLockedImageIndex(imgIdx);
+                            setSelectedColorName(c.name);
+                            // Only jump/lock the image if this color has one
+                            if (imgIdx >= 0) {
+                              setCurrentImageIndex(imgIdx);
+                              setLockedImageIndex(imgIdx);
+                            } else {
+                              setLockedImageIndex(null);
+                            }
                           }
                         }}
-                        className={`relative z-[2] w-3 h-3 rounded-full inline-block border transition-transform ${
+                        className={`relative z-[2] w-3 h-3 rounded-full inline-block border transition-transform cursor-pointer ${
                           isActive
                             ? "border-red-600 ring-1 ring-red-500 scale-110"
                             : "border-gray-200 hover:scale-110"
-                        } ${imgIdx >= 0 ? "cursor-pointer" : "cursor-default"}`}
+                        }`}
                         style={{ backgroundColor: hex }}
                       />
                     );

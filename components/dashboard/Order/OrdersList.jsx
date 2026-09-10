@@ -3740,10 +3740,13 @@ function CreateOrderModal({
                       </p>
                       <p className="text-xs text-gray-400">
                         ৳{Number(it.price || 0).toLocaleString("en-BD")}
-                        {it.color ? ` · ${it.color}` : ""}
-                        {it.size ? ` · ${it.size}` : ""}
+                        {/* Show stored variant as text only while the product
+                            (and its dropdowns) haven't loaded yet. */}
+                        {!product && it.color ? ` · ${it.color}` : ""}
+                        {!product && it.size ? ` · ${it.size}` : ""}
                       </p>
-                      {/* Variant pickers — staff can select/change color & size */}
+                      {/* Variant pickers — staff can select/change color & size.
+                          Products without variants show nothing here. */}
                       {(colors.length > 0 || sizes.length > 0) && (
                         <div className="flex flex-wrap gap-1.5 mt-1.5">
                           {colors.length > 0 && (

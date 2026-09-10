@@ -715,8 +715,10 @@ export default function OrderDetails({ orderId }) {
                                 </div>
                               );
                             }
-                            // No variant data (yet) → show whatever was stored.
-                            if (item.color || item.size) {
+                            // Product still loading → show stored variant as
+                            // text. Once loaded, a product with no variants
+                            // shows nothing color-related at all.
+                            if (!product && (item.color || item.size)) {
                               return (
                                 <p className="mt-0.5 text-xs text-gray-500">
                                   {[

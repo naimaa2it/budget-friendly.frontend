@@ -6,6 +6,11 @@ import { useRouter } from "next/navigation";
 import OrderTrackingTimeline from "@/components/order/OrderTrackingTimeline";
 import BookWithCourierModal from "@/components/dashboard/Order/BookWithCourierModal";
 import { formatOrderId } from "@/lib/orderId";
+import {
+  getVariantColors,
+  getVariantSizes,
+  resolveVariantPrice,
+} from "@/components/cart/VariantEditModal";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
@@ -78,6 +83,9 @@ export default function OrderDetails({ orderId }) {
     note: "",
   });
   const [editItems, setEditItems] = useState([]);
+  // Fresh product data (variants) for the order items, keyed by productId — powers
+  // the per-item Color/Size pickers so staff can change a variant after ordering.
+  const [productMap, setProductMap] = useState({});
   const [editShipping, setEditShipping] = useState(0);
   const [editDiscount, setEditDiscount] = useState(0);
   const [editSubtotal, setEditSubtotal] = useState(0);
@@ -161,10 +169,62 @@ export default function OrderDetails({ orderId }) {
     }
   };
 
+  // Fetch product variant data for every line item (once each) so we can show
+  // Color/Size pickers and re-price when the variant changes.
+  const itemIdsKey = editItems
+    .map((i) => i.productId)
+    .filter(Boolean)
+    .join(",");
+  useEffect(() => {
+    const ids = itemIdsKey.split(",").filter(Boolean);
+    const missing = [...new Set(ids)].filter((id) => !productMap[id]);
+    if (!missing.length) return;
+    let cancelled = false;
+    // Resolve each product one by one via the single-product endpoint (the
+    // /batch endpoint is unreliable) so we get variants for the Color/Size pickers.
+    Promise.all(
+      missing.map((id) =>
+        fetch(`${API}/api/products/${id}`)
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => d?.product || d || null)
+          .catch(() => null),
+      ),
+    ).then((results) => {
+      if (cancelled) return;
+      const fetched = results.filter((p) => p && (p._id || p.id));
+      if (!fetched.length) return;
+      setProductMap((prev) => {
+        const next = { ...prev };
+        for (const p of fetched) next[p._id || p.id] = p;
+        return next;
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemIdsKey]);
+
   const updateItemQty = (index, qty) => {
     const next = editItems.map((item, i) =>
       i === index ? { ...item, quantity: Math.max(1, Number(qty) || 1) } : item,
     );
+    setEditItems(next);
+    saveLineItems(next, editShipping, editDiscount);
+  };
+
+  // Change an item's color/size, re-price from the matched variant, and persist.
+  const changeItemVariant = (index, field, value) => {
+    const next = editItems.map((item, i) => {
+      if (i !== index) return item;
+      const product = productMap[item.productId];
+      const nextColor = field === "color" ? value || null : item.color;
+      const nextSize = field === "size" ? value || null : item.size;
+      const price = product
+        ? resolveVariantPrice(product, nextColor, nextSize)
+        : item.price;
+      return { ...item, color: nextColor, size: nextSize, price };
+    });
     setEditItems(next);
     saveLineItems(next, editShipping, editDiscount);
   };
@@ -600,16 +660,76 @@ export default function OrderDetails({ orderId }) {
                           <p className="font-medium text-gray-800">
                             {item.title}
                           </p>
-                          {(item.color || item.size) && (
-                            <p className="mt-0.5 text-xs text-gray-500">
-                              {[
-                                item.color && `Color: ${item.color}`,
-                                item.size && `Size: ${item.size}`,
-                              ]
-                                .filter(Boolean)
-                                .join(" · ")}
-                            </p>
-                          )}
+                          {(() => {
+                            const product = productMap[item.productId];
+                            const colors = product
+                              ? getVariantColors(product)
+                              : [];
+                            const sizes = product ? getVariantSizes(product) : [];
+                            // Product has variants → editable Color/Size pickers.
+                            if (colors.length > 0 || sizes.length > 0) {
+                              return (
+                                <div className="mt-1 flex flex-wrap gap-1.5">
+                                  {colors.length > 0 && (
+                                    <select
+                                      value={item.color || ""}
+                                      disabled={saving}
+                                      onChange={(e) =>
+                                        changeItemVariant(
+                                          i,
+                                          "color",
+                                          e.target.value,
+                                        )
+                                      }
+                                      className="border border-gray-200 rounded-md px-1.5 py-1 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                                    >
+                                      <option value="">Color…</option>
+                                      {colors.map((c) => (
+                                        <option key={c.name} value={c.name}>
+                                          {c.name}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  )}
+                                  {sizes.length > 0 && (
+                                    <select
+                                      value={item.size || ""}
+                                      disabled={saving}
+                                      onChange={(e) =>
+                                        changeItemVariant(
+                                          i,
+                                          "size",
+                                          e.target.value,
+                                        )
+                                      }
+                                      className="border border-gray-200 rounded-md px-1.5 py-1 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                                    >
+                                      <option value="">Size…</option>
+                                      {sizes.map((s) => (
+                                        <option key={s} value={s}>
+                                          {s}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  )}
+                                </div>
+                              );
+                            }
+                            // No variant data (yet) → show whatever was stored.
+                            if (item.color || item.size) {
+                              return (
+                                <p className="mt-0.5 text-xs text-gray-500">
+                                  {[
+                                    item.color && `Color: ${item.color}`,
+                                    item.size && `Size: ${item.size}`,
+                                  ]
+                                    .filter(Boolean)
+                                    .join(" · ")}
+                                </p>
+                              );
+                            }
+                            return null;
+                          })()}
                           <div className="mt-1 flex items-center gap-1 text-xs text-gray-500">
                             <span>৳</span>
                             <input

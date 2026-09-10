@@ -3242,17 +3242,29 @@ function CreateOrderModal({
     const ids = itemIdsKey.split(",").filter(Boolean);
     const missing = [...new Set(ids)].filter((id) => !productMap[id]);
     if (!missing.length) return;
-    fetch(`${API}/api/products/batch?ids=${missing.join(",")}`)
-      .then((r) => (r.ok ? r.json() : { products: [] }))
-      .then(({ products = [] }) => {
-        if (!products.length) return;
-        setProductMap((prev) => {
-          const next = { ...prev };
-          for (const p of products) next[p._id] = p;
-          return next;
-        });
-      })
-      .catch(() => {});
+    let cancelled = false;
+    // Fetch each product's full record (with variants) via the single-product
+    // endpoint — the /batch endpoint is unreliable, so we resolve them one by one.
+    Promise.all(
+      missing.map((id) =>
+        fetch(`${API}/api/products/${id}`)
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => d?.product || d || null)
+          .catch(() => null),
+      ),
+    ).then((results) => {
+      if (cancelled) return;
+      const fetched = results.filter((p) => p && (p._id || p.id));
+      if (!fetched.length) return;
+      setProductMap((prev) => {
+        const next = { ...prev };
+        for (const p of fetched) next[p._id || p.id] = p;
+        return next;
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemIdsKey]);
 

@@ -4758,6 +4758,10 @@ function CheckoutSessionModal({ session, onClose, onCreateOrder }) {
                     <p className="text-xs text-gray-400 mt-0.5">
                       ৳{Number(item.price || 0).toLocaleString("en-BD")} ×{" "}
                       {item.quantity}
+                      {item.color && (
+                        <span className="ml-1">· {item.color}</span>
+                      )}
+                      {item.size && <span className="ml-1">· {item.size}</span>}
                     </p>
                   </div>
                   <p className="text-sm font-semibold text-gray-700 shrink-0">

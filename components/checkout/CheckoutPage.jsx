@@ -153,6 +153,8 @@ export default function CheckoutPage() {
           price: getItemPrice(item),
           quantity: item.quantity,
           image: item.product?.images?.[0] || null,
+          color: item.selectedColor || null,
+          size: item.selectedSize || null,
         })),
         total: 0,
       }),

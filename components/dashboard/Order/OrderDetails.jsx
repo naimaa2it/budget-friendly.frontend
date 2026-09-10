@@ -600,6 +600,16 @@ export default function OrderDetails({ orderId }) {
                           <p className="font-medium text-gray-800">
                             {item.title}
                           </p>
+                          {(item.color || item.size) && (
+                            <p className="mt-0.5 text-xs text-gray-500">
+                              {[
+                                item.color && `Color: ${item.color}`,
+                                item.size && `Size: ${item.size}`,
+                              ]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            </p>
+                          )}
                           <div className="mt-1 flex items-center gap-1 text-xs text-gray-500">
                             <span>৳</span>
                             <input

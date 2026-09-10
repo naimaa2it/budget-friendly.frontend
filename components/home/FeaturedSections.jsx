@@ -80,7 +80,7 @@ function FeaturedSlider({ products }) {
           {products.map((product, i) => (
             <div
               key={product._id || i}
-              className="shrink-0 px-1 md:px-2 h-90"
+              className="shrink-0 px-1 md:px-2"
               style={{ width: `${pct}%` }}
             >
               <ProductCard

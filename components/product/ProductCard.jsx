@@ -348,7 +348,7 @@ export default function ProductCard({
         </div>
 
         <div className="p-2 flex flex-col grow">
-          <h3 className="text-sm font-semibold text-gray-900 mb-0 leading-tight line-clamp-2">
+          <h3 className="text-sm font-semibold text-gray-900 mb-0 leading-tight line-clamp-2 min-h-[2.5em]">
             {product.title}
           </h3>
 

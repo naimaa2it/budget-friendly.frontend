@@ -152,7 +152,10 @@ export default function CheckoutPage() {
           title: item.product?.title || "",
           price: getItemPrice(item),
           quantity: item.quantity,
-          image: item.product?.images?.[0] || null,
+          image:
+            item.product?.images?.[0]?.url ||
+            item.product?.images?.[0] ||
+            null,
           color: item.selectedColor || null,
           size: item.selectedSize || null,
         })),

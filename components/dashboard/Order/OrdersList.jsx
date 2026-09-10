@@ -13,6 +13,11 @@ import { useUser } from "@/components/context/UserContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatOrderId } from "@/lib/orderId";
 import CourierScorePanel from "@/components/dashboard/Customer/CourierScorePanel";
+import {
+  getVariantColors,
+  getVariantSizes,
+  resolveVariantPrice,
+} from "@/components/cart/VariantEditModal";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
@@ -3225,6 +3230,48 @@ function CreateOrderModal({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  // Fresh product data (variants + images) for the items, keyed by productId.
+  // Powers the per-item Color/Size pickers and gives a reliable image URL even
+  // when the abandoned cart/checkout stored a broken/objectified image.
+  const [productMap, setProductMap] = useState({});
+  const itemIdsKey = items
+    .map((i) => i.productId)
+    .filter(Boolean)
+    .join(",");
+  useEffect(() => {
+    const ids = itemIdsKey.split(",").filter(Boolean);
+    const missing = [...new Set(ids)].filter((id) => !productMap[id]);
+    if (!missing.length) return;
+    fetch(`${API}/api/products/batch?ids=${missing.join(",")}`)
+      .then((r) => (r.ok ? r.json() : { products: [] }))
+      .then(({ products = [] }) => {
+        if (!products.length) return;
+        setProductMap((prev) => {
+          const next = { ...prev };
+          for (const p of products) next[p._id] = p;
+          return next;
+        });
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemIdsKey]);
+
+  // Change an item's color/size; re-price it from the matched variant.
+  const setItemVariant = (idx, field, value) => {
+    setItems((prev) =>
+      prev.map((it, i) => {
+        if (i !== idx) return it;
+        const product = productMap[it.productId];
+        const nextColor = field === "color" ? value || null : it.color;
+        const nextSize = field === "size" ? value || null : it.size;
+        const price = product
+          ? resolveVariantPrice(product, nextColor, nextSize)
+          : it.price;
+        return { ...it, color: nextColor, size: nextSize, price };
+      }),
+    );
+  };
+
   // Product search — lets staff add products to a fully-new order (or add extra
   // items to an abandoned one).
   const [prodQuery, setProdQuery] = useState("");
@@ -3648,51 +3695,100 @@ function CreateOrderModal({
             </div>
 
             <div className="space-y-2">
-              {items.map((it, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-3 p-2.5 rounded-xl border"
-                >
-                  {it.image ? (
-                    <img
-                      src={it.image}
-                      alt=""
-                      className="w-10 h-10 rounded-lg object-cover border shrink-0"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-lg bg-gray-100 shrink-0 flex items-center justify-center text-gray-300">
-                      📦
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-800 truncate">
-                      {it.title || "—"}
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      ৳{Number(it.price || 0).toLocaleString("en-BD")}
-                      {it.color ? ` · ${it.color}` : ""}
-                      {it.size ? ` · ${it.size}` : ""}
-                    </p>
-                  </div>
-                  <input
-                    type="number"
-                    min={1}
-                    value={it.quantity}
-                    onChange={(e) =>
-                      updateQty(idx, parseInt(e.target.value) || 1)
-                    }
-                    className="w-16 border rounded-lg px-2 py-1 text-sm text-center"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeItem(idx)}
-                    className="text-gray-300 hover:text-red-500 text-lg leading-none px-1"
-                    title="Remove"
+              {items.map((it, idx) => {
+                const product = productMap[it.productId];
+                const colors = product ? getVariantColors(product) : [];
+                const sizes = product ? getVariantSizes(product) : [];
+                // Prefer the freshly-fetched product image (reliable URL);
+                // fall back to whatever the abandoned record stored.
+                const imgUrl =
+                  product?.images?.[0]?.url ||
+                  product?.images?.[0] ||
+                  (typeof it.image === "string" ? it.image : it.image?.url) ||
+                  null;
+                return (
+                  <div
+                    key={idx}
+                    className="flex items-start gap-3 p-2.5 rounded-xl border"
                   >
-                    ×
-                  </button>
-                </div>
-              ))}
+                    {imgUrl ? (
+                      <img
+                        src={imgUrl}
+                        alt=""
+                        className="w-10 h-10 rounded-lg object-cover border shrink-0"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-lg bg-gray-100 shrink-0 flex items-center justify-center text-gray-300">
+                        📦
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-800 truncate">
+                        {it.title || "—"}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        ৳{Number(it.price || 0).toLocaleString("en-BD")}
+                        {it.color ? ` · ${it.color}` : ""}
+                        {it.size ? ` · ${it.size}` : ""}
+                      </p>
+                      {/* Variant pickers — staff can select/change color & size */}
+                      {(colors.length > 0 || sizes.length > 0) && (
+                        <div className="flex flex-wrap gap-1.5 mt-1.5">
+                          {colors.length > 0 && (
+                            <select
+                              value={it.color || ""}
+                              onChange={(e) =>
+                                setItemVariant(idx, "color", e.target.value)
+                              }
+                              className="border rounded-md px-1.5 py-1 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                            >
+                              <option value="">রঙ (Color)…</option>
+                              {colors.map((c) => (
+                                <option key={c.name} value={c.name}>
+                                  {c.name}
+                                </option>
+                              ))}
+                            </select>
+                          )}
+                          {sizes.length > 0 && (
+                            <select
+                              value={it.size || ""}
+                              onChange={(e) =>
+                                setItemVariant(idx, "size", e.target.value)
+                              }
+                              className="border rounded-md px-1.5 py-1 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                            >
+                              <option value="">সাইজ (Size)…</option>
+                              {sizes.map((s) => (
+                                <option key={s} value={s}>
+                                  {s}
+                                </option>
+                              ))}
+                            </select>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      type="number"
+                      min={1}
+                      value={it.quantity}
+                      onChange={(e) =>
+                        updateQty(idx, parseInt(e.target.value) || 1)
+                      }
+                      className="w-16 border rounded-lg px-2 py-1 text-sm text-center shrink-0"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeItem(idx)}
+                      className="text-gray-300 hover:text-red-500 text-lg leading-none px-1 shrink-0"
+                      title="Remove"
+                    >
+                      ×
+                    </button>
+                  </div>
+                );
+              })}
               {!items.length && (
                 <p className="text-xs text-gray-400 italic py-2">
                   কোনো পণ্য নেই — অর্ডার তৈরি করা যাবে না।

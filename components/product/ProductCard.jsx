@@ -347,12 +347,12 @@ export default function ProductCard({
           </div>
         </div>
 
-        <div className="p-3 flex flex-col grow">
-          <h3 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-2">
+        <div className="p-2 flex flex-col grow">
+          <h3 className="text-sm font-semibold text-gray-900 mb-0 leading-tight line-clamp-2">
             {product.title}
           </h3>
 
-          <div className="mb-1">
+          <div className="mb-0.5">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-lg font-bold text-red-600">
                 ৳{price?.toLocaleString()}
@@ -379,7 +379,7 @@ export default function ProductCard({
               const variantColors = getVariantColors(product);
               if (variantColors.length === 0) return null;
               return (
-                <div className="flex flex-wrap gap-1 mt-1.5">
+                <div className="flex flex-wrap gap-1 mt-0.5">
                   {variantColors.slice(0, 5).map((c, i) => {
                     const hex = c.hex?.trim()
                       ? c.hex.startsWith("#")

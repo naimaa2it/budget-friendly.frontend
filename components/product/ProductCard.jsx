@@ -16,7 +16,11 @@ import { useCart } from "@/components/context/CartContext";
 import { useUser } from "@/components/context/UserContext";
 import AuthModal from "@/components/auth/AuthModalLazy";
 import WaitlistModal from "@/components/cart/WaitlistModal";
-import { getVariantColors } from "@/components/cart/VariantEditModal";
+import {
+  getVariantColors,
+  getVariantSizes,
+  resolveVariant,
+} from "@/components/cart/VariantEditModal";
 import { getDisplayPrice } from "@/lib/pricing";
 import { trackAddToCart } from "@/lib/metaPixel";
 import { gtmAddToCart } from "@/lib/gtmEvents";
@@ -45,6 +49,27 @@ export default function ProductCard({
   // null = no color selected, hover behaves normally.
   const [lockedImageIndex, setLockedImageIndex] = React.useState(null);
   const [showAuthModal, setShowAuthModal] = React.useState(false);
+
+  // Quick-add from the card has no variant picker, so default to the first
+  // color/size (if the product has any) — otherwise the order lands without a
+  // color and staff can't tell what was ordered. No variants → plain add.
+  const quickAdd = () => {
+    const colors = getVariantColors(product);
+    const sizes = getVariantSizes(product);
+    const color = colors[0]?.name || null;
+    const size = sizes[0] || null;
+    if (!color && !size) {
+      addToCart(product, 1);
+    } else {
+      addToCart(product, 1, {
+        selectedColor: color,
+        selectedSize: size,
+        selectedVariant: resolveVariant(product, color, size),
+      });
+    }
+    trackAddToCart(product, 1, price);
+    gtmAddToCart(product, 1, price);
+  };
   const [pendingWishlist, setPendingWishlist] = React.useState(null);
   const [waitlistProduct, setWaitlistProduct] = React.useState(null);
 
@@ -255,9 +280,7 @@ export default function ProductCard({
                     "[Button] Add to Cart (quick) clicked:",
                     product.title || product.name,
                   );
-                  addToCart(product, 1);
-                  trackAddToCart(product, 1, price);
-                  gtmAddToCart(product, 1, price);
+                  quickAdd();
                 }}
                 className="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 hover:text-white transition-colors"
                 title="Add to cart"
@@ -407,9 +430,7 @@ export default function ProductCard({
                   "[Button] Add to Cart clicked:",
                   product.title || product.name,
                 );
-                addToCart(product, 1);
-                trackAddToCart(product, 1, price);
-                gtmAddToCart(product, 1, price);
+                quickAdd();
               }}
               className="relative z-[2] w-full bg-red-600 text-white py-2 rounded-md font-medium hover:bg-red-700 transition mt-auto"
             >

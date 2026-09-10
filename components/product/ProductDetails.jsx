@@ -245,6 +245,17 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedColor]);
 
+  // Default-select the first color/size so an order never lands without a
+  // variant. Customers can still change it; if the product has no variants at
+  // all, nothing is selected and nothing changes.
+  useEffect(() => {
+    const colors = getVariantColors(product);
+    const sizes = getVariantSizes(product);
+    setSelectedColor((prev) => prev ?? (colors.length > 0 ? colors[0] : null));
+    setSelectedSize((prev) => prev ?? (sizes.length > 0 ? sizes[0] : null));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product?._id]);
+
   useEffect(() => {
     if (product) saveRecentlyViewed(product);
   }, [product]);

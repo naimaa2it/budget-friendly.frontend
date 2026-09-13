@@ -210,6 +210,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
   const [isDesktop, setIsDesktop] = useState(false);
   const [tagsOpen, setTagsOpen] = useState(false); // mobile: collapse tags to one line
   const [descOpen, setDescOpen] = useState(false); // expand truncated description
+  const [activeInfoTab, setActiveInfoTab] = useState("description"); // which tab is open in ProductInfoTabs
   // touch swipe state for zoom modal
   const touchStartX = React.useRef(null);
   const currentImage = images[currentIndex] || "/assets/placeholder.svg";
@@ -1039,14 +1040,14 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
 
       {/* product info tabs */}
       <div id="reviews-tab">
-        <ProductInfoTabs product={tabProduct} />
+        <ProductInfoTabs product={tabProduct} onTabChange={setActiveInfoTab} />
       </div>
 
       {/* sections placed "before description" (Settings → Product Page Layout) */}
       {renderExtraSections("before_description")}
 
-      {/* detailed description blocks */}
-      {product?.detailedDescription && (
+      {/* detailed description blocks — only under the Description tab */}
+      {activeInfoTab === "description" && product?.detailedDescription && (
         <DetailedDescriptionRenderer value={product.detailedDescription} />
       )}
 

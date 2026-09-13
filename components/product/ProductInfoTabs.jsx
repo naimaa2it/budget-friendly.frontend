@@ -39,10 +39,17 @@ function StarRating({ value, onChange }) {
 
 const REVIEW_EDIT_WINDOW_MS = 10 * 60 * 1000;
 
-export default function ProductInfoTabs({ product }) {
+export default function ProductInfoTabs({ product, onTabChange }) {
   const [activeTab, setActiveTab] = useState("description");
   const { user } = useUser();
   const [now, setNow] = useState(() => Date.now());
+
+  // notify parent whenever the active tab changes (covers button clicks and
+  // the external openReviews / openQuestions events) so it can show/hide the
+  // detailed description that lives outside this component
+  useEffect(() => {
+    onTabChange?.(activeTab);
+  }, [activeTab, onTabChange]);
 
   // tick every 15s so the review "Edit" button auto-hides once the 10-min window passes
   useEffect(() => {

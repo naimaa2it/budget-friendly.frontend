@@ -178,6 +178,34 @@ export default function BookWithCourierModal({
               </div>
             </div>
 
+            <div className="text-xs text-gray-500 rounded-lg p-3 space-y-1">
+              <label className="block text-xs text-gray-500 mb-1">
+                Product details (sent to courier · Order #
+                {order.orderNo != null && order.orderNo !== ""
+                  ? `pk${order.orderNo}`
+                  : order._id?.slice(-8)}
+                )
+              </label>
+              <textarea
+                readOnly
+                rows={Math.min(4, (order.items?.length || 1))}
+                value={(order.items || [])
+                  .map((i) => {
+                    const variant = [i.color, i.size]
+                      .filter(Boolean)
+                      .join("/");
+                    const name = variant ? `${i.title} (${variant})` : i.title;
+                    const qty = Number(i.quantity || 0);
+                    const price = Math.round(Number(i.price || 0));
+                    return `${name}${qty > 1 ? ` x${qty}` : ""}${
+                      price > 0 ? ` — ৳${price}` : ""
+                    }`;
+                  })
+                  .join("\n")}
+                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2"
+              />
+            </div>
+
             {form.courier === "redx" && (
               <div className="grid grid-cols-2 gap-3">
                 <div>

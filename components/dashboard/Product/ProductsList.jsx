@@ -17,18 +17,35 @@ const LIMIT = 20;
 // Must match TRASH_RETENTION_MS on the backend (30 days).
 const TRASH_RETENTION_DAYS = 30;
 
-// Short date label for the "created by / edited by" audit trail.
+// Short date + time label for the "created by / edited by" audit trail,
+// e.g. "Sep 15, 3:45 pm".
 const fmtAuditDate = (d) => {
   if (!d) return "";
   try {
-    return new Date(d).toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
+    return new Date(d)
+      .toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      })
+      .replace(/AM|PM/, (m) => m.toLowerCase());
   } catch {
     return "";
   }
+};
+
+// Pick the two audit rows worth showing: the original "created" entry and the
+// most recent edit. Falls back gracefully when there is only creation, or only
+// edits (no explicit "created" record).
+const auditSummary = (trail) => {
+  if (!Array.isArray(trail) || trail.length === 0) return [];
+  const created = trail.find((a) => a.action === "created") || trail[0];
+  const last = trail[trail.length - 1];
+  // Only one entry, or the last entry IS the creation → show just that one.
+  if (last === created) return [created];
+  return [created, last];
 };
 
 // Days left before a trashed product is permanently purged by the cron job.
@@ -497,7 +514,7 @@ export default function ProductsList() {
                         {Array.isArray(p.auditTrail) &&
                         p.auditTrail.length > 0 ? (
                           <div className="space-y-0.5">
-                            {p.auditTrail.slice(-5).map((a, i) => (
+                            {auditSummary(p.auditTrail).map((a, i) => (
                               <div
                                 key={i}
                                 className="text-[11px] leading-tight whitespace-nowrap"

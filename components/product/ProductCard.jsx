@@ -194,7 +194,12 @@ export default function ProductCard({
   const id = product._id || product.id;
   const isOutOfStock =
     product.availability === "out_of_stock" || product.inventory === 0;
-  const href = `/product/${id}/`;
+  // Carry the color picked on the card to the details page so it arrives with
+  // that color (and its image) selected. No pick → plain link → details shows
+  // the first thumbnail with no color selected.
+  const href = selectedColorName
+    ? `/product/${id}/?color=${encodeURIComponent(selectedColorName)}`
+    : `/product/${id}/`;
 
   return (
     <>

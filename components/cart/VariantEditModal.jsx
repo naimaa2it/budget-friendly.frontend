@@ -134,6 +134,51 @@ export function resolveVariantPrice(product, color, size) {
   return price != null && price > 0 ? price : (product.price ?? 0);
 }
 
+// Any variant attribute key besides Color/Size (e.g. "Type", "Material") is a
+// generic, independent variant group — its options are never combined with
+// Color/Size or with each other, each is its own standalone row.
+export function getVariantExtraGroups(product) {
+  if (!product?.variants?.length) return [];
+  const order = [];
+  const byName = new Map();
+
+  for (const v of product.variants) {
+    const attrs = v.attributes || {};
+    Object.entries(attrs).forEach(([key, value]) => {
+      if (!value || COLOR_KEY_RE.test(key) || SIZE_KEY_RE.test(key)) return;
+      if (!byName.has(key)) {
+        byName.set(key, { options: [], seen: new Set() });
+        order.push(key);
+      }
+      const group = byName.get(key);
+      const val = String(value).trim();
+      const lower = val.toLowerCase();
+      if (val && !group.seen.has(lower)) {
+        group.seen.add(lower);
+        group.options.push({ value: val, image: v.image || null });
+      }
+    });
+  }
+
+  return order.map((name) => ({ name, options: byName.get(name).options }));
+}
+
+// Resolve the single standalone row for a generic group (e.g. Type=Charging).
+export function resolveExtraVariant(product, groupName, value) {
+  if (!product?.variants?.length || !groupName || !value) return null;
+  const target = String(value).trim().toLowerCase();
+  return (
+    product.variants.find((v) => {
+      const attrs = v.attributes || {};
+      const key = Object.keys(attrs).find(
+        (k) => k.toLowerCase() === groupName.toLowerCase(),
+      );
+      if (!key) return false;
+      return String(attrs[key]).trim().toLowerCase() === target;
+    }) || null
+  );
+}
+
 // Get effective compare at price given selected color + size
 export function resolveVariantComparePrice(product, color, size) {
   const v = resolveVariant(product, color, size);

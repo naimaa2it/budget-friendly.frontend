@@ -21,6 +21,11 @@ export default function AddToCartSection({
   product,
   selectedColor = null,
   selectedSize = null,
+  // A standalone generic-group variant (e.g. Type=Charging) with its own
+  // price/stock/image — when present it overrides Color/Size resolution
+  // entirely (groups are never combined).
+  forcedVariant = null,
+  forcedLabel = null,
 }) {
   const [qty, setQty] = useState(1);
   const { addToCart } = useCart();
@@ -82,19 +87,23 @@ export default function AddToCartSection({
   // Fall back to the first color/size when the shopper hasn't picked one, so an
   // order never lands without a variant even if the parent's auto-select hasn't
   // applied yet. Matches the quick-add behaviour on the product cards.
-  const effectiveColor =
-    selectedColor || (allColors.length > 0 ? allColors[0].name : null);
-  const effectiveSize =
-    selectedSize || (allSizes.length > 0 ? allSizes[0] : null);
+  const effectiveColor = forcedVariant
+    ? forcedLabel
+    : selectedColor || (allColors.length > 0 ? allColors[0].name : null);
+  const effectiveSize = forcedVariant
+    ? null
+    : selectedSize || (allSizes.length > 0 ? allSizes[0] : null);
 
-  const effectivePrice = hasVariants
-    ? resolveVariantPrice(product, effectiveColor, effectiveSize)
-    : product.price || 0;
+  const effectivePrice = forcedVariant
+    ? (forcedVariant.price ?? product.price ?? 0)
+    : hasVariants
+      ? resolveVariantPrice(product, effectiveColor, effectiveSize)
+      : product.price || 0;
 
   // Use the shared resolveVariant function for consistent matching logic
-  const selectedVariant = hasVariants
-    ? resolveVariant(product, effectiveColor, effectiveSize)
-    : null;
+  const selectedVariant =
+    forcedVariant ||
+    (hasVariants ? resolveVariant(product, effectiveColor, effectiveSize) : null);
 
   const handleAdd = () => {
     console.log("[Button] Add to Cart clicked:", product.title || product.name);

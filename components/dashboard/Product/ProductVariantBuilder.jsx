@@ -42,16 +42,12 @@ const comboKey = (attributes) =>
     .map(([key, value]) => `${key}:${value}`)
     .join("|");
 
-const cartesian = (groups) =>
-  groups.reduce(
-    (acc, group) =>
-      acc.flatMap((item) =>
-        group.options.map((option) => ({
-          ...item,
-          [group.name]: option.value,
-        })),
-      ),
-    [{}],
+// Each selected type contributes one row per ticked option — types are never
+// crossed with each other. Color=[Black,White] + Type=[Charging,All] makes 4
+// independent rows (Black, White, Charging, All), not a 4-way cross product.
+const flatRows = (groups) =>
+  groups.flatMap((group) =>
+    group.options.map((option) => ({ [group.name]: option.value })),
   );
 
 const titleFromAttributes = (attributes) =>
@@ -269,7 +265,7 @@ export default function ProductVariantBuilder({
       return;
     }
 
-    const combinations = cartesian(selectedGroups);
+    const rows = flatRows(selectedGroups);
     const existingByKey = new Map(
       (product.variants || []).map((variant) => [
         comboKey(variant.attributes || {}),
@@ -277,7 +273,7 @@ export default function ProductVariantBuilder({
       ]),
     );
 
-    const variants = combinations.map((attributes) => {
+    const variants = rows.map((attributes) => {
       const previous = existingByKey.get(comboKey(attributes)) || {};
       const colorValue = attrValueByKey(attributes, COLOR_KEY_RE);
       const sizeValue = attrValueByKey(attributes, SIZE_KEY_RE);
@@ -1110,34 +1106,40 @@ export default function ProductVariantBuilder({
                         />
                       </td>
                       <td className="px-3 py-3 align-top">
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="color"
-                            value={variant.color?.hex || "#000000"}
-                            onChange={(e) =>
-                              updateVariant(index, {
-                                color: {
-                                  ...(variant.color || {}),
-                                  hex: e.target.value,
-                                },
-                              })
-                            }
-                            className="h-9 w-10 rounded border border-gray-300"
-                          />
-                          <input
-                            value={variant.color?.name || ""}
-                            onChange={(e) =>
-                              updateVariant(index, {
-                                color: {
-                                  ...(variant.color || {}),
-                                  name: e.target.value,
-                                },
-                              })
-                            }
-                            className="w-28 rounded-lg border border-gray-300 px-3 py-2"
-                            placeholder="Color"
-                          />
-                        </div>
+                        {isColorKey(
+                          Object.keys(variant.attributes || {})[0] || "",
+                        ) ? (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="color"
+                              value={variant.color?.hex || "#000000"}
+                              onChange={(e) =>
+                                updateVariant(index, {
+                                  color: {
+                                    ...(variant.color || {}),
+                                    hex: e.target.value,
+                                  },
+                                })
+                              }
+                              className="h-9 w-10 rounded border border-gray-300"
+                            />
+                            <input
+                              value={variant.color?.name || ""}
+                              onChange={(e) =>
+                                updateVariant(index, {
+                                  color: {
+                                    ...(variant.color || {}),
+                                    name: e.target.value,
+                                  },
+                                })
+                              }
+                              className="w-28 rounded-lg border border-gray-300 px-3 py-2"
+                              placeholder="Color"
+                            />
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-300">—</span>
+                        )}
                       </td>
                       <td className="px-3 py-3 align-top">
                         <div className="relative">

@@ -35,9 +35,13 @@ const setStorageItem = (key, value) => {
   } catch {}
 };
 
-// Unique cart key: productId + selected color + selected size
-export const makeCartKey = (productId, color, size) =>
-  `${productId}__${color || ""}__${size || ""}`;
+// Unique cart key: productId + selected color + selected size + a standalone
+// generic-group selection (e.g. Type=Charging), which is never combined with
+// color/size — it identifies the line item on its own.
+export const makeCartKey = (productId, color, size, attr) =>
+  `${productId}__${color || ""}__${size || ""}__${
+    attr ? `${attr.groupName}:${attr.value}` : ""
+  }`;
 
 // Item shape stored in localStorage — includes the product object so cart
 // survives page reload without needing a batch API call.
@@ -47,6 +51,7 @@ const toSlimItem = (item) => ({
   quantity: item.quantity,
   selectedColor: item.selectedColor || null,
   selectedSize: item.selectedSize || null,
+  selectedAttr: item.selectedAttr || null,
   selectedVariant: item.selectedVariant || null,
   variantId:
     item.selectedVariant?._id ||
@@ -58,14 +63,22 @@ const toSlimItem = (item) => ({
 
 // Effective unit price: variant price overrides product base price
 export const getItemPrice = (item) => {
-  const hasSelectedOption = !!(item.selectedColor || item.selectedSize);
+  const hasSelectedOption = !!(
+    item.selectedColor ||
+    item.selectedSize ||
+    item.selectedAttr
+  );
   const variantPrice = hasSelectedOption ? item.selectedVariant?.price : null;
   const basePrice = item.product?.price ?? 0;
   return variantPrice != null && variantPrice > 0 ? variantPrice : basePrice;
 };
 
 export const getItemCompareAtPrice = (item) => {
-  const hasSelectedOption = !!(item.selectedColor || item.selectedSize);
+  const hasSelectedOption = !!(
+    item.selectedColor ||
+    item.selectedSize ||
+    item.selectedAttr
+  );
   const variantCompareAt = hasSelectedOption
     ? item.selectedVariant?.compareAtPrice
     : null;
@@ -120,11 +133,13 @@ export const CartProvider = ({ children }) => {
           ...item,
           selectedColor: item.selectedColor || null,
           selectedSize: item.selectedSize || null,
+          selectedAttr: item.selectedAttr || null,
           selectedVariant: item.selectedVariant || null,
           cartKey: makeCartKey(
             id,
             item.selectedColor || null,
             item.selectedSize || null,
+            item.selectedAttr || null,
           ),
         };
       });
@@ -178,6 +193,7 @@ export const CartProvider = ({ children }) => {
               quantity: slim.quantity,
               selectedColor: slim.selectedColor,
               selectedSize: slim.selectedSize,
+              selectedAttr: slim.selectedAttr || null,
               selectedVariant,
               cartKey:
                 slim.cartKey ||
@@ -185,6 +201,7 @@ export const CartProvider = ({ children }) => {
                   slim.productId,
                   slim.selectedColor,
                   slim.selectedSize,
+                  slim.selectedAttr || null,
                 ),
             };
           })
@@ -262,11 +279,12 @@ export const CartProvider = ({ children }) => {
       const {
         selectedColor = null,
         selectedSize = null,
+        selectedAttr = null,
         selectedVariant = null,
         silent = false,
       } = opts;
       const id = getId(product);
-      const cartKey = makeCartKey(id, selectedColor, selectedSize);
+      const cartKey = makeCartKey(id, selectedColor, selectedSize, selectedAttr);
       setCartItems((prev) => {
         const existing = prev.find((i) => i.cartKey === cartKey);
         if (existing) {
@@ -281,6 +299,7 @@ export const CartProvider = ({ children }) => {
             quantity: qty,
             selectedColor,
             selectedSize,
+            selectedAttr,
             selectedVariant,
             cartKey,
           },

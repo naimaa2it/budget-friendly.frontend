@@ -28,6 +28,8 @@ import AddToCartSection from "@/components/product/AddToCartSection";
 import {
   getVariantColors,
   getVariantSizes,
+  getVariantExtraGroups,
+  resolveExtraVariant,
 } from "@/components/cart/VariantEditModal";
 import RelatedProducts from "@/components/product/RelatedProducts";
 import ProductCard from "@/components/product/ProductCard";
@@ -205,6 +207,10 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
   const [offersOpen, setOffersOpen] = useState(false);
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
+  // A generic variant group (e.g. "Type", "Material") that isn't Color/Size.
+  // Its options are standalone rows — picking one clears Color/Size (and vice
+  // versa) so nothing ever combines/sums across groups.
+  const [selectedExtra, setSelectedExtra] = useState(null); // { groupName, value }
   const [zoomOpen, setZoomOpen] = useState(false);
   const [openPolicy, setOpenPolicy] = useState(null);
   const [isDesktop, setIsDesktop] = useState(false);
@@ -244,6 +250,21 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
     // images is derived from product and stable in content
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedColor]);
+
+  // Same jump behavior for a generic group option (e.g. "Charging") that has
+  // its own picked image.
+  useEffect(() => {
+    if (!selectedExtra) return;
+    const variant = resolveExtraVariant(
+      product,
+      selectedExtra.groupName,
+      selectedExtra.value,
+    );
+    if (!variant?.image) return;
+    const idx = images.indexOf(variant.image);
+    if (idx >= 0) setCurrentIndex(idx);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedExtra]);
 
   // On product load, only pre-select a color when the shopper picked one on the
   // product card (carried over as ?color=<name>). Otherwise leave color
@@ -441,7 +462,13 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
   const productSizes = selectedColor
     ? getVariantSizes(product, selectedColor)
     : allSizes;
-  const selectedVariant =
+  const extraGroups = getVariantExtraGroups(product);
+  // A generic group option is a fully standalone row — when picked, it alone
+  // drives price/stock/image, overriding any Color/Size selection.
+  const extraVariant = selectedExtra
+    ? resolveExtraVariant(product, selectedExtra.groupName, selectedExtra.value)
+    : null;
+  const colorSizeVariant =
     Array.isArray(product.variants) && product.variants.length
       ? product.variants.find((variant) => {
           const variantColor = String(
@@ -475,6 +502,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
           );
         }) || null
       : null;
+  const selectedVariant = extraVariant || colorSizeVariant;
   const { price, compareAtPrice, discountPct } = selectedVariant
     ? getDisplayPrice(product, selectedVariant)
     : {
@@ -762,7 +790,10 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                   return (
                     <button
                       key={idx}
-                      onClick={() => setSelectedColor(isSelected ? null : col)}
+                      onClick={() => {
+                        setSelectedColor(isSelected ? null : col);
+                        setSelectedExtra(null);
+                      }}
                       title={col.name}
                       className="flex flex-col items-center gap-1.5 transition-all group"
                     >
@@ -829,9 +860,10 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                 {productSizes.map((size, idx) => (
                   <button
                     key={idx}
-                    onClick={() =>
-                      setSelectedSize(selectedSize === size ? null : size)
-                    }
+                    onClick={() => {
+                      setSelectedSize(selectedSize === size ? null : size);
+                      setSelectedExtra(null);
+                    }}
                     className={`min-w-[48px] h-11 px-4 text-sm font-semibold rounded-lg border-2 transition-all ${
                       selectedSize === size
                         ? "bg-gray-900 text-white border-gray-900 shadow-md scale-105"
@@ -845,6 +877,52 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
             </div>
           )}
 
+          {/* Generic variant groups (e.g. Type, Material) — each option is a
+              standalone selection: picking one clears Color/Size and drives
+              price/stock/image on its own. */}
+          {extraGroups.map((group) => (
+            <div className="mb-4" key={group.name}>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-sm font-semibold text-gray-800">
+                  {group.name}:
+                </span>
+                {selectedExtra?.groupName === group.name && (
+                  <span className="text-sm text-gray-600 font-medium px-2 py-0.5 bg-gray-100 rounded">
+                    {selectedExtra.value}
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {group.options.map((option, idx) => {
+                  const isSelected =
+                    selectedExtra?.groupName === group.name &&
+                    selectedExtra?.value === option.value;
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setSelectedExtra(
+                          isSelected
+                            ? null
+                            : { groupName: group.name, value: option.value },
+                        );
+                        setSelectedColor(null);
+                        setSelectedSize(null);
+                      }}
+                      className={`min-w-[48px] h-11 px-4 text-sm font-semibold rounded-lg border-2 transition-all ${
+                        isSelected
+                          ? "bg-gray-900 text-white border-gray-900 shadow-md scale-105"
+                          : "bg-white text-gray-700 border-gray-200 hover:border-gray-900 hover:bg-gray-50"
+                      }`}
+                    >
+                      {option.value}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+
           <hr className="border-gray-200 mb-3 mt-1 hidden md:block" />
 
           {/* Add to cart */}
@@ -853,6 +931,8 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
               product={product}
               selectedColor={selectedColor?.name ?? null}
               selectedSize={selectedSize ?? null}
+              forcedVariant={extraVariant}
+              forcedLabel={selectedExtra?.value ?? null}
             />
           </div>
 

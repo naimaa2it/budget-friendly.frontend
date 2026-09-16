@@ -16,7 +16,9 @@ import CourierScorePanel from "@/components/dashboard/Customer/CourierScorePanel
 import {
   getVariantColors,
   getVariantSizes,
+  getVariantExtraGroups,
   resolveVariantPrice,
+  resolveExtraVariant,
 } from "@/components/cart/VariantEditModal";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
@@ -3223,6 +3225,8 @@ function CreateOrderModal({
       quantity: i.quantity || 1,
       color: i.color || null,
       size: i.size || null,
+      attrGroup: i.attrGroup || null,
+      attrValue: i.attrValue || null,
     })),
   );
 
@@ -3268,7 +3272,8 @@ function CreateOrderModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemIdsKey]);
 
-  // Change an item's color/size; re-price it from the matched variant.
+  // Change an item's color/size; re-price it from the matched variant. Clears
+  // any standalone group selection — groups are independent, never combined.
   const setItemVariant = (idx, field, value) => {
     setItems((prev) =>
       prev.map((it, i) => {
@@ -3279,7 +3284,40 @@ function CreateOrderModal({
         const price = product
           ? resolveVariantPrice(product, nextColor, nextSize)
           : it.price;
-        return { ...it, color: nextColor, size: nextSize, price };
+        return {
+          ...it,
+          color: nextColor,
+          size: nextSize,
+          attrGroup: null,
+          attrValue: null,
+          price,
+        };
+      }),
+    );
+  };
+
+  // Change an item's standalone generic-group selection (e.g. Type=Charging);
+  // re-price it from that row. Clears Color/Size — independent.
+  const setItemAttr = (idx, groupName, value) => {
+    setItems((prev) =>
+      prev.map((it, i) => {
+        if (i !== idx) return it;
+        const product = productMap[it.productId];
+        const nextGroup = value ? groupName : null;
+        const nextValue = value || null;
+        const variant =
+          product && nextValue
+            ? resolveExtraVariant(product, nextGroup, nextValue)
+            : null;
+        const price = nextValue ? (variant?.price ?? it.price) : it.price;
+        return {
+          ...it,
+          color: null,
+          size: null,
+          attrGroup: nextGroup,
+          attrValue: nextValue,
+          price,
+        };
       }),
     );
   };
@@ -3355,6 +3393,8 @@ function CreateOrderModal({
           quantity: 1,
           color: null,
           size: null,
+          attrGroup: null,
+          attrValue: null,
         },
       ];
     });
@@ -3411,6 +3451,8 @@ function CreateOrderModal({
               quantity: i.quantity,
               color: i.color || undefined,
               size: i.size || undefined,
+              attrGroup: i.attrGroup || undefined,
+              attrValue: i.attrValue || undefined,
             })),
             city: resolvedCity,
             zone: zone || undefined,
@@ -3465,6 +3507,8 @@ function CreateOrderModal({
             quantity: i.quantity,
             color: i.color || undefined,
             size: i.size || undefined,
+            attrGroup: i.attrGroup || undefined,
+            attrValue: i.attrValue || undefined,
           })),
           customer: {
             name: name.trim(),
@@ -3711,6 +3755,9 @@ function CreateOrderModal({
                 const product = productMap[it.productId];
                 const colors = product ? getVariantColors(product) : [];
                 const sizes = product ? getVariantSizes(product) : [];
+                const extraGroups = product
+                  ? getVariantExtraGroups(product)
+                  : [];
                 // Prefer the freshly-fetched product image (reliable URL);
                 // fall back to whatever the abandoned record stored.
                 const imgUrl =
@@ -3744,10 +3791,16 @@ function CreateOrderModal({
                             (and its dropdowns) haven't loaded yet. */}
                         {!product && it.color ? ` · ${it.color}` : ""}
                         {!product && it.size ? ` · ${it.size}` : ""}
+                        {!product && it.attrGroup && it.attrValue
+                          ? ` · ${it.attrGroup}: ${it.attrValue}`
+                          : ""}
                       </p>
-                      {/* Variant pickers — staff can select/change color & size.
-                          Products without variants show nothing here. */}
-                      {(colors.length > 0 || sizes.length > 0) && (
+                      {/* Variant pickers — staff can select/change color, size,
+                          or any custom group. Products without variants show
+                          nothing here. */}
+                      {(colors.length > 0 ||
+                        sizes.length > 0 ||
+                        extraGroups.length > 0) && (
                         <div className="flex flex-wrap gap-1.5 mt-1.5">
                           {colors.length > 0 && (
                             <select
@@ -3781,6 +3834,27 @@ function CreateOrderModal({
                               ))}
                             </select>
                           )}
+                          {extraGroups.map((group) => (
+                            <select
+                              key={group.name}
+                              value={
+                                it.attrGroup === group.name
+                                  ? it.attrValue || ""
+                                  : ""
+                              }
+                              onChange={(e) =>
+                                setItemAttr(idx, group.name, e.target.value)
+                              }
+                              className="border rounded-md px-1.5 py-1 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                            >
+                              <option value="">{group.name}…</option>
+                              {group.options.map((o) => (
+                                <option key={o.value} value={o.value}>
+                                  {o.value}
+                                </option>
+                              ))}
+                            </select>
+                          ))}
                         </div>
                       )}
                     </div>

@@ -206,8 +206,14 @@ export default function CartPage() {
         {/* Cart Items */}
         <div className="bg-white rounded-lg shadow mb-8">
           {cartItems.map((item) => {
-            const { product, quantity, cartKey, selectedColor, selectedSize } =
-              item;
+            const {
+              product,
+              quantity,
+              cartKey,
+              selectedColor,
+              selectedSize,
+              selectedAttr,
+            } = item;
             const price = getItemPrice(item);
             const compareAt = getItemCompareAtPrice(item) || price;
             const itemSaved = Math.max(0, (compareAt - price) * quantity);
@@ -256,7 +262,7 @@ export default function CartPage() {
                     </a>
 
                     {/* Variant display with color swatch */}
-                    {selectedColor || selectedSize ? (
+                    {selectedColor || selectedSize || selectedAttr ? (
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
                         {selectedColor && (
                           <span className="inline-flex items-center gap-1.5 text-xs bg-gray-100 px-2 py-1 rounded">
@@ -275,6 +281,13 @@ export default function CartPage() {
                           <span className="inline-flex items-center text-xs bg-gray-100 px-2 py-1 rounded">
                             <span className="text-gray-700 font-medium">
                               {selectedSize}
+                            </span>
+                          </span>
+                        )}
+                        {selectedAttr && (
+                          <span className="inline-flex items-center text-xs bg-gray-100 px-2 py-1 rounded">
+                            <span className="text-gray-700 font-medium">
+                              {selectedAttr.groupName}: {selectedAttr.value}
                             </span>
                           </span>
                         )}
@@ -523,8 +536,8 @@ export default function CartPage() {
             setEditItem(null);
             setEditMode("edit");
           }}
-          onSave={(c, s, v, q) => {
-            updateCartVariant(editItem.cartKey, c, s, v, q);
+          onSave={(c, s, v, q, attr) => {
+            updateCartVariant(editItem.cartKey, c, s, v, q, attr);
             setEditItem(null);
             setEditMode("edit");
           }}

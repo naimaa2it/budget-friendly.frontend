@@ -122,8 +122,14 @@ export default function CartSidebar() {
           {cartItems.length === 0 && <EmptyAnimation />}
 
           {cartItems.map((item) => {
-            const { product, quantity, cartKey, selectedColor, selectedSize } =
-              item;
+            const {
+              product,
+              quantity,
+              cartKey,
+              selectedColor,
+              selectedSize,
+              selectedAttr,
+            } = item;
             const price = getItemPrice(item);
             const mrp = getItemCompareAtPrice(item);
             const itemSaved = mrp > price ? (mrp - price) * quantity : 0;
@@ -170,7 +176,7 @@ export default function CartSidebar() {
                       >
                         {product.title || product.name}
                       </a>
-                      {selectedColor || selectedSize ? (
+                      {selectedColor || selectedSize || selectedAttr ? (
                         <div className="flex items-center gap-1 mt-0.5 flex-wrap">
                           {selectedColor && (
                             <span className="inline-flex items-center gap-1 text-xs bg-gray-100 px-1.5 py-0.5 rounded">
@@ -188,6 +194,11 @@ export default function CartSidebar() {
                           {selectedSize && (
                             <span className="text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">
                               {selectedSize}
+                            </span>
+                          )}
+                          {selectedAttr && (
+                            <span className="text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">
+                              {selectedAttr.groupName}: {selectedAttr.value}
                             </span>
                           )}
                           {hasVariants && (
@@ -327,8 +338,8 @@ export default function CartSidebar() {
             setEditItem(null);
             setEditMode("edit");
           }}
-          onSave={(c, s, v, q) => {
-            updateCartVariant(editItem.cartKey, c, s, v, q);
+          onSave={(c, s, v, q, attr) => {
+            updateCartVariant(editItem.cartKey, c, s, v, q, attr);
             setEditItem(null);
             setEditMode("edit");
           }}

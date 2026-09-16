@@ -4074,6 +4074,11 @@ function AbandonedCartModal({ user, onClose, onCreateOrder }) {
                         <span className="ml-1">· {item.color}</span>
                       )}
                       {item.size && <span className="ml-1">· {item.size}</span>}
+                      {item.attrGroup && item.attrValue && (
+                        <span className="ml-1">
+                          · {item.attrGroup}: {item.attrValue}
+                        </span>
+                      )}
                       {" × "}
                       {item.quantity}
                     </p>

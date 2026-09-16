@@ -328,7 +328,7 @@ export const CartProvider = ({ children }) => {
   }, []);
 
   const updateCartVariant = useCallback(
-    (oldCartKey, newColor, newSize, newVariant, newQty = null) => {
+    (oldCartKey, newColor, newSize, newVariant, newQty = null, newAttr = null) => {
       setCartItems((prev) => {
         const existing = prev.find((i) => i.cartKey === oldCartKey);
         if (!existing) return prev;
@@ -337,6 +337,7 @@ export const CartProvider = ({ children }) => {
           getId(existing.product),
           newColor,
           newSize,
+          newAttr,
         );
         if (newCartKey === oldCartKey) {
           return prev.map((i) =>
@@ -345,6 +346,7 @@ export const CartProvider = ({ children }) => {
                   ...i,
                   selectedColor: newColor,
                   selectedSize: newSize,
+                  selectedAttr: newAttr,
                   selectedVariant: newVariant,
                   quantity: updatedQty,
                 }
@@ -363,6 +365,7 @@ export const CartProvider = ({ children }) => {
                 ...i,
                 selectedColor: newColor,
                 selectedSize: newSize,
+                selectedAttr: newAttr,
                 selectedVariant: newVariant,
                 cartKey: newCartKey,
                 quantity: updatedQty,
@@ -418,6 +421,8 @@ export const CartProvider = ({ children }) => {
       quantity: i.quantity,
       color: i.selectedColor || null,
       size: i.selectedSize || null,
+      attrGroup: i.selectedAttr?.groupName || null,
+      attrValue: i.selectedAttr?.value || null,
     }));
     const res = await fetch(`${API}/api/cart/share`, {
       method: "POST",

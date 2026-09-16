@@ -158,6 +158,8 @@ export default function CheckoutPage() {
             null,
           color: item.selectedColor || null,
           size: item.selectedSize || null,
+          attrGroup: item.selectedAttr?.groupName || null,
+          attrValue: item.selectedAttr?.value || null,
         })),
         total: 0,
       }),
@@ -255,6 +257,8 @@ export default function CheckoutPage() {
             quantity: item.quantity,
             color: item.selectedColor || null,
             size: item.selectedSize || null,
+            attrGroup: item.selectedAttr?.groupName || null,
+            attrValue: item.selectedAttr?.value || null,
           })),
           couponCodes: couponCodes?.length ? couponCodes : null,
           city,
@@ -566,6 +570,8 @@ export default function CheckoutPage() {
             quantity: item.quantity,
             color: item.selectedColor || null,
             size: item.selectedSize || null,
+            attrGroup: item.selectedAttr?.groupName || null,
+            attrValue: item.selectedAttr?.value || null,
           })),
           couponCodes: newCoupons,
           city: currentCityRef.current || null,
@@ -630,6 +636,8 @@ export default function CheckoutPage() {
             quantity: item.quantity,
             color: item.selectedColor || null,
             size: item.selectedSize || null,
+            attrGroup: item.selectedAttr?.groupName || null,
+            attrValue: item.selectedAttr?.value || null,
           })),
           couponCodes: newCoupons.length ? newCoupons : null,
           city: currentCityRef.current || null,
@@ -669,6 +677,8 @@ export default function CheckoutPage() {
             quantity: item.quantity,
             color: item.selectedColor || null,
             size: item.selectedSize || null,
+            attrGroup: item.selectedAttr?.groupName || null,
+            attrValue: item.selectedAttr?.value || null,
           })),
           couponCodes: null,
           city: currentCityRef.current || null,
@@ -741,6 +751,8 @@ export default function CheckoutPage() {
         quantity: item.quantity,
         color: item.selectedColor || null,
         size: item.selectedSize || null,
+        attrGroup: item.selectedAttr?.groupName || null,
+        attrValue: item.selectedAttr?.value || null,
       })),
       billingDetails: {
         name: formData.name,
@@ -821,11 +833,19 @@ export default function CheckoutPage() {
   // Exception: SSL popup is pending (online payment in progress) — keep the page alive.
   if (orderPlaced.current) return null;
 
-  // Build a Map of server-verified unit prices keyed by productId+color+size
+  // Build a Map of server-verified unit prices keyed by productId+color+size(+attr)
   const quoteItemMap = {};
   (quote.items || []).forEach((qi) => {
-    quoteItemMap[makeCartKey(qi.productId?.toString(), qi.color, qi.size)] =
-      qi.price;
+    quoteItemMap[
+      makeCartKey(
+        qi.productId?.toString(),
+        qi.color,
+        qi.size,
+        qi.attrGroup && qi.attrValue
+          ? { groupName: qi.attrGroup, value: qi.attrValue }
+          : null,
+      )
+    ] = qi.price;
   });
   const displayShipping = hasResolvedCity ? (quote.shipping ?? 0) : 0;
   const displayBaseShipping = hasResolvedCity ? (quote.baseShipping ?? 0) : 0;
@@ -1016,6 +1036,7 @@ export default function CheckoutPage() {
                       cartKey,
                       selectedColor,
                       selectedSize,
+                      selectedAttr,
                     } = item;
                     const id = product._id || product.id;
                     const image =
@@ -1023,7 +1044,7 @@ export default function CheckoutPage() {
                     const title = product.title || product.name;
                     const price =
                       quoteItemMap[
-                        makeCartKey(id, selectedColor, selectedSize)
+                        makeCartKey(id, selectedColor, selectedSize, selectedAttr)
                       ] ?? 0;
                     const allColors = getVariantColors(product);
                     const colorObj = selectedColor
@@ -1076,6 +1097,11 @@ export default function CheckoutPage() {
                                 {selectedSize}
                               </span>
                             )}
+                            {selectedAttr && (
+                              <span className="text-[11px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-md font-medium">
+                                {selectedAttr.groupName}: {selectedAttr.value}
+                              </span>
+                            )}
                             {hasVariants && (
                               <button
                                 type="button"
@@ -1083,7 +1109,7 @@ export default function CheckoutPage() {
                                 className="inline-flex items-center gap-1 text-[11px] text-blue-600 hover:underline"
                               >
                                 <FaPencilAlt className="w-2.5 h-2.5" />
-                                {selectedColor || selectedSize
+                                {selectedColor || selectedSize || selectedAttr
                                   ? t("cart.edit")
                                   : t("cart.select_option")}
                               </button>
@@ -1480,12 +1506,17 @@ export default function CheckoutPage() {
                 {(() => {
                   // Use shared cart utilities — same logic as CartSidebar
                   const mrpSavings = cartItems.reduce((sum, item) => {
-                    const { quantity, selectedColor, selectedSize, product } =
-                      item;
+                    const {
+                      quantity,
+                      selectedColor,
+                      selectedSize,
+                      selectedAttr,
+                      product,
+                    } = item;
                     const id = product._id || product.id;
                     const selling =
                       quoteItemMap[
-                        makeCartKey(id, selectedColor, selectedSize)
+                        makeCartKey(id, selectedColor, selectedSize, selectedAttr)
                       ] ?? getItemPrice(item);
                     const mrp = getItemCompareAtPrice(item);
                     return (
@@ -1772,8 +1803,8 @@ export default function CheckoutPage() {
           item={editItem}
           mode="edit"
           onClose={() => setEditItem(null)}
-          onSave={(c, s, v, q) => {
-            updateCartVariant(editItem.cartKey, c, s, v, q);
+          onSave={(c, s, v, q, attr) => {
+            updateCartVariant(editItem.cartKey, c, s, v, q, attr);
             setEditItem(null);
           }}
         />

@@ -203,6 +203,11 @@ export default function VariantEditModal({
   const [selSize, setSelSize] = useState(
     mode === "add" ? null : item.selectedSize || null,
   );
+  // A standalone generic-group selection (e.g. Type=Charging) — independent
+  // of Color/Size, never combined with them.
+  const [selAttr, setSelAttr] = useState(
+    mode === "add" ? null : item.selectedAttr || null,
+  );
   const [qty, setQty] = useState(mode === "add" ? 1 : quantity);
 
   useEffect(() => {
@@ -239,22 +244,48 @@ export default function VariantEditModal({
     [product, selColor, allSizes],
   );
 
-  const price = resolveVariantPrice(product, selColor, selSize);
+  const extraGroups = useMemo(() => getVariantExtraGroups(product), [product]);
+  const attrVariant = selAttr
+    ? resolveExtraVariant(product, selAttr.groupName, selAttr.value)
+    : null;
+  const price = selAttr
+    ? (attrVariant?.price ?? product.price ?? 0)
+    : resolveVariantPrice(product, selColor, selSize);
   const hasColors = allColors.length > 0; // Use allColors to check if product has any colors
   const hasSizes = allSizes.length > 0; // Use allSizes to check if product has any sizes
+  const hasExtra = extraGroups.length > 0;
   const image = product.images?.[0]?.url;
-  const variantStr = [selColor, selSize].filter(Boolean).join(" / ");
+  const variantStr = selAttr
+    ? `${selAttr.groupName}: ${selAttr.value}`
+    : [selColor, selSize].filter(Boolean).join(" / ");
+
+  // Picking a Color/Size clears any standalone group selection, and vice
+  // versa — groups are independent, never combined.
+  const pickColor = (c) => {
+    setSelColor(c);
+    setSelAttr(null);
+  };
+  const pickSize = (s) => {
+    setSelSize(s);
+    setSelAttr(null);
+  };
+  const pickAttr = (groupName, value) => {
+    setSelAttr(value == null ? null : { groupName, value });
+    setSelColor(null);
+    setSelSize(null);
+  };
 
   const handleSave = () => {
-    const variant = resolveVariant(product, selColor, selSize);
-    onSave(selColor, selSize, variant, qty);
+    const variant = attrVariant || resolveVariant(product, selColor, selSize);
+    onSave(selColor, selSize, variant, qty, selAttr);
   };
 
   const handleAddMore = () => {
-    const variant = resolveVariant(product, selColor, selSize);
+    const variant = attrVariant || resolveVariant(product, selColor, selSize);
     addToCart(product, qty, {
       selectedColor: selColor,
       selectedSize: selSize,
+      selectedAttr: selAttr,
       selectedVariant: variant,
       silent: true, // Don't show FBT modal when adding more variants
     });
@@ -349,9 +380,7 @@ export default function VariantEditModal({
                 {availableColors.map((c, i) => (
                   <button
                     key={i}
-                    onClick={() =>
-                      setSelColor(selColor === c.name ? null : c.name)
-                    }
+                    onClick={() => pickColor(selColor === c.name ? null : c.name)}
                     title={c.name}
                     className="flex flex-col items-center gap-1 group"
                   >
@@ -411,7 +440,7 @@ export default function VariantEditModal({
                 {availableSizes.map((s, i) => (
                   <button
                     key={i}
-                    onClick={() => setSelSize(selSize === s ? null : s)}
+                    onClick={() => pickSize(selSize === s ? null : s)}
                     className={`min-w-[44px] h-10 px-3 text-sm font-semibold rounded-lg border-2 transition-all ${
                       selSize === s
                         ? "bg-gray-900 text-white border-gray-900 shadow-md scale-105"
@@ -424,6 +453,45 @@ export default function VariantEditModal({
               </div>
             </div>
           )}
+
+          {/* Generic variant groups (e.g. Type, Material) — standalone,
+              independent of Color/Size */}
+          {extraGroups.map((group) => (
+            <div key={group.name}>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-sm font-semibold text-gray-800">
+                  {group.name}:
+                </span>
+                {selAttr?.groupName === group.name && (
+                  <span className="text-sm text-gray-600 font-medium px-2 py-0.5 bg-gray-100 rounded">
+                    {selAttr.value}
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {group.options.map((option, i) => {
+                  const isSelected =
+                    selAttr?.groupName === group.name &&
+                    selAttr?.value === option.value;
+                  return (
+                    <button
+                      key={i}
+                      onClick={() =>
+                        pickAttr(group.name, isSelected ? null : option.value)
+                      }
+                      className={`min-w-[44px] h-10 px-3 text-sm font-semibold rounded-lg border-2 transition-all ${
+                        isSelected
+                          ? "bg-gray-900 text-white border-gray-900 shadow-md scale-105"
+                          : "bg-white text-gray-700 border-gray-200 hover:border-gray-900 hover:bg-gray-50"
+                      }`}
+                    >
+                      {option.value}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Footer */}
@@ -444,7 +512,7 @@ export default function VariantEditModal({
               >
                 Update Cart
               </button>
-              {(hasColors || hasSizes) && (
+              {(hasColors || hasSizes || hasExtra) && (
                 <button
                   onClick={handleAddMore}
                   className="w-full py-2.5 bg-white text-green-600 font-semibold rounded-lg border-2 border-green-600 hover:bg-green-50 transition flex items-center justify-center gap-2"

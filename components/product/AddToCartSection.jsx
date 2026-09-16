@@ -25,6 +25,7 @@ export default function AddToCartSection({
   // price/stock/image — when present it overrides Color/Size resolution
   // entirely (groups are never combined).
   forcedVariant = null,
+  forcedGroupName = null,
   forcedLabel = null,
 }) {
   const [qty, setQty] = useState(1);
@@ -88,11 +89,14 @@ export default function AddToCartSection({
   // order never lands without a variant even if the parent's auto-select hasn't
   // applied yet. Matches the quick-add behaviour on the product cards.
   const effectiveColor = forcedVariant
-    ? forcedLabel
+    ? null
     : selectedColor || (allColors.length > 0 ? allColors[0].name : null);
   const effectiveSize = forcedVariant
     ? null
     : selectedSize || (allSizes.length > 0 ? allSizes[0] : null);
+  const effectiveAttr = forcedVariant
+    ? { groupName: forcedGroupName, value: forcedLabel }
+    : null;
 
   const effectivePrice = forcedVariant
     ? (forcedVariant.price ?? product.price ?? 0)
@@ -110,6 +114,7 @@ export default function AddToCartSection({
     addToCart(product, qty, {
       selectedColor: effectiveColor,
       selectedSize: effectiveSize,
+      selectedAttr: effectiveAttr,
       selectedVariant,
     });
     trackAddToCart(product, qty, effectivePrice);
@@ -121,6 +126,7 @@ export default function AddToCartSection({
     addToCart(product, qty, {
       selectedColor: effectiveColor,
       selectedSize: effectiveSize,
+      selectedAttr: effectiveAttr,
       selectedVariant,
       silent: true,
     });

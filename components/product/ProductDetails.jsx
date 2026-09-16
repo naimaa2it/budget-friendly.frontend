@@ -932,6 +932,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
               selectedColor={selectedColor?.name ?? null}
               selectedSize={selectedSize ?? null}
               forcedVariant={extraVariant}
+              forcedGroupName={selectedExtra?.groupName ?? null}
               forcedLabel={selectedExtra?.value ?? null}
             />
           </div>

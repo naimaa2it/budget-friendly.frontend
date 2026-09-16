@@ -8,7 +8,18 @@ import { useCart } from "@/components/context/CartContext";
 import {
   resolveVariant,
   resolveVariantPrice,
+  resolveExtraVariant,
 } from "@/components/cart/VariantEditModal";
+
+// A shared-cart item may carry either a Color/Size selection or a standalone
+// generic-group selection (e.g. Type=Charging) — never both.
+const priceOf = (i) => {
+  if (i.attrGroup && i.attrValue) {
+    const v = resolveExtraVariant(i.product, i.attrGroup, i.attrValue);
+    return v?.price ?? i.product.price ?? 0;
+  }
+  return resolveVariantPrice(i.product, i.color, i.size) || i.product.price || 0;
+};
 import { FaShoppingCart, FaUsers } from "react-icons/fa";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
@@ -40,15 +51,20 @@ export default function SharedCartView({ token }) {
       .finally(() => setLoading(false));
   }, [token]);
 
-  const total = items.reduce((sum, i) => {
-    const price =
-      resolveVariantPrice(i.product, i.color, i.size) || i.product.price || 0;
-    return sum + price * i.quantity;
-  }, 0);
+  const total = items.reduce((sum, i) => sum + priceOf(i) * i.quantity, 0);
 
   const handleAddAll = () => {
     setAdding(true);
     items.forEach((i) => {
+      if (i.attrGroup && i.attrValue) {
+        const variant = resolveExtraVariant(i.product, i.attrGroup, i.attrValue);
+        addToCart(i.product, i.quantity, {
+          selectedAttr: { groupName: i.attrGroup, value: i.attrValue },
+          selectedVariant: variant,
+          silent: true,
+        });
+        return;
+      }
       const variant = resolveVariant(i.product, i.color, i.size);
       addToCart(i.product, i.quantity, {
         selectedColor: i.color || null,
@@ -98,10 +114,7 @@ export default function SharedCartView({ token }) {
 
         <div className="bg-white rounded-lg shadow mb-6">
           {items.map((item, idx) => {
-            const price =
-              resolveVariantPrice(item.product, item.color, item.size) ||
-              item.product.price ||
-              0;
+            const price = priceOf(item);
             const image =
               item.product.images?.[0]?.url || "/assets/placeholder.svg";
             return (
@@ -124,6 +137,9 @@ export default function SharedCartView({ token }) {
                     Qty: {item.quantity}
                     {item.color ? ` · ${item.color}` : ""}
                     {item.size ? ` · ${item.size}` : ""}
+                    {item.attrGroup && item.attrValue
+                      ? ` · ${item.attrGroup}: ${item.attrValue}`
+                      : ""}
                   </div>
                 </div>
                 <div className="text-right font-semibold text-gray-800">

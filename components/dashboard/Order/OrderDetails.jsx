@@ -9,7 +9,9 @@ import { formatOrderId } from "@/lib/orderId";
 import {
   getVariantColors,
   getVariantSizes,
+  getVariantExtraGroups,
   resolveVariantPrice,
+  resolveExtraVariant,
 } from "@/components/cart/VariantEditModal";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
@@ -213,7 +215,9 @@ export default function OrderDetails({ orderId }) {
     saveLineItems(next, editShipping, editDiscount);
   };
 
-  // Change an item's color/size, re-price from the matched variant, and persist.
+  // Change an item's color/size, re-price from the matched variant, and
+  // persist. Clears any standalone group selection — groups are independent,
+  // never combined.
   const changeItemVariant = (index, field, value) => {
     const next = editItems.map((item, i) => {
       if (i !== index) return item;
@@ -223,7 +227,40 @@ export default function OrderDetails({ orderId }) {
       const price = product
         ? resolveVariantPrice(product, nextColor, nextSize)
         : item.price;
-      return { ...item, color: nextColor, size: nextSize, price };
+      return {
+        ...item,
+        color: nextColor,
+        size: nextSize,
+        attrGroup: null,
+        attrValue: null,
+        price,
+      };
+    });
+    setEditItems(next);
+    saveLineItems(next, editShipping, editDiscount);
+  };
+
+  // Change an item's standalone generic-group selection (e.g. Type=Charging),
+  // re-price from that row, and persist. Clears Color/Size — independent.
+  const changeItemAttr = (index, groupName, value) => {
+    const next = editItems.map((item, i) => {
+      if (i !== index) return item;
+      const product = productMap[item.productId];
+      const nextGroup = value ? groupName : null;
+      const nextValue = value || null;
+      const variant =
+        product && nextValue
+          ? resolveExtraVariant(product, nextGroup, nextValue)
+          : null;
+      const price = nextValue ? (variant?.price ?? item.price) : item.price;
+      return {
+        ...item,
+        color: null,
+        size: null,
+        attrGroup: nextGroup,
+        attrValue: nextValue,
+        price,
+      };
     });
     setEditItems(next);
     saveLineItems(next, editShipping, editDiscount);
@@ -666,8 +703,15 @@ export default function OrderDetails({ orderId }) {
                               ? getVariantColors(product)
                               : [];
                             const sizes = product ? getVariantSizes(product) : [];
-                            // Product has variants → editable Color/Size pickers.
-                            if (colors.length > 0 || sizes.length > 0) {
+                            const extraGroups = product
+                              ? getVariantExtraGroups(product)
+                              : [];
+                            // Product has variants → editable Color/Size/group pickers.
+                            if (
+                              colors.length > 0 ||
+                              sizes.length > 0 ||
+                              extraGroups.length > 0
+                            ) {
                               return (
                                 <div className="mt-1 flex flex-wrap gap-1.5">
                                   {colors.length > 0 && (
@@ -712,18 +756,51 @@ export default function OrderDetails({ orderId }) {
                                       ))}
                                     </select>
                                   )}
+                                  {extraGroups.map((group) => (
+                                    <select
+                                      key={group.name}
+                                      value={
+                                        item.attrGroup === group.name
+                                          ? item.attrValue || ""
+                                          : ""
+                                      }
+                                      disabled={saving}
+                                      onChange={(e) =>
+                                        changeItemAttr(
+                                          i,
+                                          group.name,
+                                          e.target.value,
+                                        )
+                                      }
+                                      className="border border-gray-200 rounded-md px-1.5 py-1 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+                                    >
+                                      <option value="">{group.name}…</option>
+                                      {group.options.map((o) => (
+                                        <option key={o.value} value={o.value}>
+                                          {o.value}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  ))}
                                 </div>
                               );
                             }
-                            // Product still loading → show stored variant as
-                            // text. Once loaded, a product with no variants
-                            // shows nothing color-related at all.
-                            if (!product && (item.color || item.size)) {
+                            // Product still loading (or has no variants at all)
+                            // → show the stored selection as plain text so it's
+                            // never silently lost from view.
+                            if (
+                              item.color ||
+                              item.size ||
+                              (item.attrGroup && item.attrValue)
+                            ) {
                               return (
                                 <p className="mt-0.5 text-xs text-gray-500">
                                   {[
                                     item.color && `Color: ${item.color}`,
                                     item.size && `Size: ${item.size}`,
+                                    item.attrGroup &&
+                                      item.attrValue &&
+                                      `${item.attrGroup}: ${item.attrValue}`,
                                   ]
                                     .filter(Boolean)
                                     .join(" · ")}

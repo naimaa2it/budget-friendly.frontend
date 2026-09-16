@@ -869,7 +869,9 @@ export default function OrderPrintView({
                           >
                             {item.title}
                           </p>
-                          {(item.color || item.size) && (
+                          {(item.color ||
+                            item.size ||
+                            (item.attrGroup && item.attrValue)) && (
                             <p
                               style={{
                                 margin: "2px 0 0",
@@ -880,6 +882,9 @@ export default function OrderPrintView({
                               {[
                                 item.color && `Color: ${item.color}`,
                                 item.size && `Size: ${item.size}`,
+                                item.attrGroup &&
+                                  item.attrValue &&
+                                  `${item.attrGroup}: ${item.attrValue}`,
                               ]
                                 .filter(Boolean)
                                 .join("  ·  ")}

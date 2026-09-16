@@ -191,7 +191,13 @@ export default function BookWithCourierModal({
                 rows={Math.min(4, (order.items?.length || 1))}
                 value={(order.items || [])
                   .map((i) => {
-                    const variant = [i.color, i.size]
+                    const variant = [
+                      i.color,
+                      i.size,
+                      i.attrGroup && i.attrValue
+                        ? `${i.attrGroup}: ${i.attrValue}`
+                        : null,
+                    ]
                       .filter(Boolean)
                       .join("/");
                     const name = variant ? `${i.title} (${variant})` : i.title;

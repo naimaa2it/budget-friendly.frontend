@@ -717,9 +717,9 @@ function OrdersTable({
                     type="button"
                     title="Update status"
                     onClick={() => setStatusOrder(order)}
-                    className={`inline-block text-xs font-medium px-2 py-1 rounded-full capitalize hover:underline hover:opacity-80 ${STATUS_STYLE[order.status] || ""}`}
+                    className={`inline-block text-xs font-medium px-2 py-1 rounded-full capitalize hover:underline hover:opacity-80 whitespace-nowrap ${STATUS_STYLE[order.status] || ""}`}
                   >
-                    {order.status} ✎
+                    {order.shipment?.courierStatus || order.status} ✎
                   </button>
                 )}
               </td>

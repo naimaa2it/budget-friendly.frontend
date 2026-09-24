@@ -197,8 +197,7 @@ function SuccessContent() {
   const { supportInfo, socialLinks } = useStoreSettings();
   const PHONE =
     supportInfo?.phone ||
-    process.env.NEXT_PUBLIC_STORE_PHONE ||
-    "+8801643007383";
+    process.env.NEXT_PUBLIC_STORE_PHONE 
   const { clearCart } = useCart();
 
   // Clear the cart on successful payment (covers the online payment same-window flow).

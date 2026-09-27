@@ -5,6 +5,11 @@ import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import Image from "next/image";
 import { useCart } from "@/components/context/CartContext";
+import {
+  getVariantExtraGroups,
+  resolveVariantByAttrs,
+  getAvailableValues,
+} from "@/components/cart/VariantEditModal";
 import { useLanguage } from "@/components/context/LanguageContext";
 import { useStoreSettings } from "@/components/context/StoreSettingsContext";
 import { trackPurchase } from "@/lib/metaPixel";
@@ -324,12 +329,14 @@ function SuccessContent() {
             quantity: it.quantity,
             color: it.color ?? null,
             size: it.size ?? null,
+            attributes: it.attributes || null,
           })),
           addItems: pendingNewItems.map((ni) => ({
             productId: ni.product._id,
             quantity: ni.qty,
             color: ni.color || null,
             size: ni.size || null,
+            attributes: ni.attributes || null,
           })),
         }),
       });
@@ -385,13 +392,32 @@ function SuccessContent() {
     ];
   };
 
-  const getVariantPrice = (productId, color, size) => {
+  // Generic variant groups (Type, Material …) for the edit UI.
+  const getItemExtraGroups = (productId) => {
+    const prod = productVariantsMap[String(productId)];
+    return prod ? getVariantExtraGroups(prod) : [];
+  };
+
+  // Effective unit price for a color + size + combined generic attributes.
+  const getVariantPrice = (productId, color, size, attributes = null) => {
     const prod = productVariantsMap[String(productId)];
     if (!prod) return null;
-    if (!prod.variants?.length || (!color && !size)) return prod.price ?? null;
-    const v = prod.variants.find((v) => {
-      const vc = (v.color?.name || v.attributes?.color || "").toLowerCase();
-      const vs = (v.size || v.attributes?.size || "").toLowerCase();
+    const hasAttrs =
+      attributes && Object.values(attributes).some((v) => v != null && v !== "");
+    if (!prod.variants?.length || (!color && !size && !hasAttrs)) {
+      return prod.price ?? null;
+    }
+    // Prefer a full-combo match across Color + Size + generic groups.
+    const combo = resolveVariantByAttrs(prod, {
+      ...(color ? { Color: color } : {}),
+      ...(size ? { Size: size } : {}),
+      ...(attributes || {}),
+    });
+    if (combo) return combo.price ?? prod.price ?? null;
+    // Legacy fallback: color/size-only match.
+    const v = prod.variants.find((vv) => {
+      const vc = (vv.color?.name || vv.attributes?.color || "").toLowerCase();
+      const vs = (vv.size || vv.attributes?.size || "").toLowerCase();
       return (
         (!color || vc === color.toLowerCase()) &&
         (!size || vs === size.toLowerCase())
@@ -593,11 +619,21 @@ function SuccessContent() {
                       <p className="text-sm font-medium text-gray-900 truncate">
                         {item.title}
                       </p>
-                      {(item.color || item.size) && (
-                        <p className="text-xs text-gray-400">
-                          {[item.color, item.size].filter(Boolean).join(" / ")}
-                        </p>
-                      )}
+                      {(() => {
+                        const parts = [item.color, item.size].filter(Boolean);
+                        const attrs =
+                          item.attributes && typeof item.attributes === "object"
+                            ? Object.entries(item.attributes).filter(
+                                ([, v]) => v != null && String(v).trim(),
+                              )
+                            : [];
+                        attrs.forEach(([g, v]) => parts.push(`${g}: ${v}`));
+                        return parts.length ? (
+                          <p className="text-xs text-gray-400">
+                            {parts.join(" / ")}
+                          </p>
+                        ) : null;
+                      })()}
                       <p className="text-xs text-gray-500">
                         {t("success.qty")} {item.quantity}
                       </p>
@@ -826,6 +862,7 @@ function SuccessContent() {
                                               it.productId,
                                               nc,
                                               it.size,
+                                              it.attributes,
                                             );
                                             return {
                                               ...it,
@@ -862,6 +899,7 @@ function SuccessContent() {
                                               it.productId,
                                               it.color,
                                               ns,
+                                              it.attributes,
                                             );
                                             return {
                                               ...it,
@@ -880,6 +918,85 @@ function SuccessContent() {
                                   ))}
                                 </div>
                               )}
+                              {/* Generic variant groups (Type, Material …) */}
+                              {getItemExtraGroups(item.productId).map((group) => {
+                                const selectedMap = {
+                                  ...(item.color ? { Color: item.color } : {}),
+                                  ...(item.size ? { Size: item.size } : {}),
+                                  ...(item.attributes || {}),
+                                };
+                                const availfor = getAvailableValues(
+                                  productVariantsMap[String(item.productId)],
+                                  group.name,
+                                  selectedMap,
+                                );
+                                return (
+                                  <div
+                                    key={group.name}
+                                    className="flex flex-wrap items-center gap-1"
+                                  >
+                                    <span className="text-xs text-gray-400">
+                                      {group.name}:
+                                    </span>
+                                    {group.options.map((option) => {
+                                      const isSel =
+                                        (item.attributes || {})[group.name] ===
+                                        option.value;
+                                      const disabled =
+                                        availfor.size > 0 &&
+                                        !availfor.has(
+                                          option.value.toLowerCase(),
+                                        ) &&
+                                        !isSel;
+                                      return (
+                                        <button
+                                          key={option.value}
+                                          type="button"
+                                          disabled={disabled}
+                                          onClick={() =>
+                                            setEditItems((prev) =>
+                                              prev.map((it, idx) => {
+                                                if (idx !== i) return it;
+                                                const nextAttrs = {
+                                                  ...(it.attributes || {}),
+                                                };
+                                                if (isSel) {
+                                                  delete nextAttrs[group.name];
+                                                } else {
+                                                  nextAttrs[group.name] =
+                                                    option.value;
+                                                }
+                                                const np = getVariantPrice(
+                                                  it.productId,
+                                                  it.color,
+                                                  it.size,
+                                                  nextAttrs,
+                                                );
+                                                return {
+                                                  ...it,
+                                                  attributes: nextAttrs,
+                                                  ...(np != null
+                                                    ? { price: np }
+                                                    : {}),
+                                                };
+                                              }),
+                                            )
+                                          }
+                                          className={`px-1.5 py-0.5 rounded-full text-xs border transition ${
+                                            isSel
+                                              ? "bg-orange-500 text-white border-orange-500"
+                                              : disabled
+                                                ? "border-gray-200 text-gray-300 line-through cursor-not-allowed"
+                                                : "border-gray-300 text-gray-600 hover:border-orange-400"
+                                          }`}
+                                        >
+                                          {option.value}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                );
+                              })}
                             </div>
                           );
                         })}

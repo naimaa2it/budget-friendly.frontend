@@ -86,6 +86,10 @@ export default function CheckoutPage() {
   const initiateCheckoutFired = useRef(false);
   const [previousAddresses, setPreviousAddresses] = useState([]);
 
+  // New-user welcome coupon banner (data-driven; only shown if such a coupon
+  // actually exists, is active, and the user is eligible for it)
+  const [newUserCoupon, setNewUserCoupon] = useState(null);
+
   // Progress indicators state
   const [progressItems, setProgressItems] = useState([]);
   const [savingsOpen, setSavingsOpen] = useState(false);
@@ -290,6 +294,34 @@ export default function CheckoutPage() {
       console.error("Progress fetch failed:", err);
     }
   }, []);
+
+  // Fetch active coupons and find an eligible new-user / first-order coupon so
+  // the welcome banner reflects a real, available coupon (not a hardcoded code).
+  useEffect(() => {
+    if (!user) {
+      setNewUserCoupon(null);
+      return;
+    }
+    const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
+    let cancelled = false;
+    (async () => {
+      try {
+        const resp = await fetch(`${API}/api/coupons`, {
+          credentials: "include",
+        });
+        const data = await resp.json();
+        const match = (data.eligible || []).find(
+          (c) => c.couponCode && (c.isNewUserOnly || c.isFirstOrderOnly),
+        );
+        if (!cancelled) setNewUserCoupon(match || null);
+      } catch (err) {
+        if (!cancelled) setNewUserCoupon(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   useEffect(() => {
     if (!user) {
@@ -971,27 +1003,30 @@ export default function CheckoutPage() {
           </div>
         )}
 
-        {/* New-user eligibility banner */}
-        {user &&
-          user.createdAt &&
-          Date.now() - new Date(user.createdAt).getTime() <
-            30 * 24 * 60 * 60 * 1000 && (
-            <div className="mb-6 flex items-start gap-3 p-4 bg-blue-50 border border-blue-300 rounded-lg">
-              <FaTag className="text-blue-600 mt-0.5 shrink-0" />
-              <div>
-                <p className="font-semibold text-blue-800">
-                  {t("checkout.new_user_welcome")}
-                </p>
-                <p className="text-sm text-blue-700 mt-0.5">
-                  {t("checkout.new_user_desc_prefix")}{" "}
-                  <strong>newUser26</strong>{" "}
-                  {t("checkout.new_user_desc_middle")}{" "}
-                  <strong>{t("checkout.new_user_desc_perk")}</strong>{" "}
-                  {t("checkout.new_user_desc_suffix")}
-                </p>
-              </div>
+        {/* New-user eligibility banner — only shown when a real, active
+            new-user/first-order coupon exists and the user is eligible */}
+        {newUserCoupon && (
+          <div className="mb-6 flex items-start gap-3 p-4 bg-blue-50 border border-blue-300 rounded-lg">
+            <FaTag className="text-blue-600 mt-0.5 shrink-0" />
+            <div>
+              <p className="font-semibold text-blue-800">
+                {t("checkout.new_user_welcome")}
+              </p>
+              <p className="text-sm text-blue-700 mt-0.5">
+                {t("checkout.new_user_desc_prefix")}{" "}
+                <strong>{newUserCoupon.couponCode}</strong>{" "}
+                {t("checkout.new_user_desc_middle")}{" "}
+                <strong>
+                  {newUserCoupon.savings?.text ||
+                    t("checkout.new_user_desc_perk")}
+                </strong>
+                {newUserCoupon.minOrderAmount > 0
+                  ? ` (${t("checkout.new_user_min_order")} ৳${newUserCoupon.minOrderAmount}).`
+                  : "."}
+              </p>
             </div>
-          )}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Left Column - Order Items + Billing Details */}

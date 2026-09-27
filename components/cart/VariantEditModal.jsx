@@ -578,44 +578,56 @@ export default function VariantEditModal({
             </div>
           )}
 
-          {/* Generic variant groups (e.g. Type, Material) — standalone,
-              independent of Color/Size */}
-          {extraGroups.map((group) => (
-            <div key={group.name}>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-sm font-semibold text-gray-800">
-                  {group.name}:
-                </span>
-                {selAttr?.groupName === group.name && (
-                  <span className="text-sm text-gray-600 font-medium px-2 py-0.5 bg-gray-100 rounded">
-                    {selAttr.value}
+          {/* Generic variant groups (e.g. Type, Material) — combinable with
+              Color/Size and with each other. */}
+          {extraGroups.map((group) => {
+            const availfor = getAvailableValues(
+              product,
+              group.name,
+              selectedAttrMap,
+            );
+            return (
+              <div key={group.name}>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-sm font-semibold text-gray-800">
+                    {group.name}:
                   </span>
-                )}
+                  {selExtras[group.name] && (
+                    <span className="text-sm text-gray-600 font-medium px-2 py-0.5 bg-gray-100 rounded">
+                      {selExtras[group.name]}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {group.options.map((option, i) => {
+                    const isSelected = selExtras[group.name] === option.value;
+                    const disabled =
+                      availfor.size > 0 &&
+                      !availfor.has(option.value.toLowerCase()) &&
+                      !isSelected;
+                    return (
+                      <button
+                        key={i}
+                        disabled={disabled}
+                        onClick={() =>
+                          pickAttr(group.name, isSelected ? null : option.value)
+                        }
+                        className={`min-w-[44px] h-10 px-3 text-sm font-semibold rounded-lg border-2 transition-all ${
+                          isSelected
+                            ? "bg-gray-900 text-white border-gray-900 shadow-md scale-105"
+                            : disabled
+                              ? "bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed line-through"
+                              : "bg-white text-gray-700 border-gray-200 hover:border-gray-900 hover:bg-gray-50"
+                        }`}
+                      >
+                        {option.value}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {group.options.map((option, i) => {
-                  const isSelected =
-                    selAttr?.groupName === group.name &&
-                    selAttr?.value === option.value;
-                  return (
-                    <button
-                      key={i}
-                      onClick={() =>
-                        pickAttr(group.name, isSelected ? null : option.value)
-                      }
-                      className={`min-w-[44px] h-10 px-3 text-sm font-semibold rounded-lg border-2 transition-all ${
-                        isSelected
-                          ? "bg-gray-900 text-white border-gray-900 shadow-md scale-105"
-                          : "bg-white text-gray-700 border-gray-200 hover:border-gray-900 hover:bg-gray-50"
-                      }`}
-                    >
-                      {option.value}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Footer */}

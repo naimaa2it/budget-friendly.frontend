@@ -511,7 +511,7 @@ export default function CheckoutPage() {
     }
   }, [formData.city, formData.zone, locationData]);
 
-  // BD mobile numbers are 11 digits starting with 0 (e.g. 01712345678).
+  // BD mobile numbers are 11 digits starting with 0 (e.g. 01*******).
   // Accepts legacy "+880..." values (from older saved addresses) and
   // normalizes them back to the local "01XXXXXXXXX" form.
   const formatBdPhone = (raw) => {

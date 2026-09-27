@@ -185,7 +185,7 @@ export default function ChatWidgetSettings() {
                 inputMode="numeric"
               />
               <p className="mt-1 text-[11px] text-gray-400">
-                শুধু ডিজিট, কান্ট্রি কোডসহ (যেমন 8801712345678)। খালি রাখলে WhatsApp
+                শুধু ডিজিট, কান্ট্রি কোডসহ (যেমন 8801*******)। খালি রাখলে WhatsApp
                 বাটন দেখাবে না।
               </p>
             </div>

@@ -258,7 +258,7 @@ export default function ChatWidget() {
     }
     const n = normalizeBdPhone(phoneInput);
     if (!n) {
-      setPhoneError("সঠিক মোবাইল নম্বর দিন (যেমন 01712345678)।");
+      setPhoneError("সঠিক মোবাইল নম্বর দিন (যেমন 01*******)।");
       return;
     }
     setPhoneError("");
@@ -566,7 +566,7 @@ export default function ChatWidget() {
                 value={phoneInput}
                 onChange={(e) => setPhoneInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && submitPhone()}
-                placeholder="01712345678"
+                placeholder="01*******"
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 text-center text-base sm:text-sm focus:border-blue-500 focus:outline-none"
               />
               {phoneError && <p className="text-xs text-red-500">{phoneError}</p>}

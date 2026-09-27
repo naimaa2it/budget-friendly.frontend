@@ -180,7 +180,7 @@ export default function TrackOrderPage() {
                 className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
               />
               <p className="text-xs text-gray-400 mt-1.5">
-                Order ID (e.g. 518640AC) অথবা phone number (e.g. 01712345678)
+                Order ID (e.g. 518640AC) অথবা phone number (e.g. 01*******)
                 দিন
               </p>
             </div>

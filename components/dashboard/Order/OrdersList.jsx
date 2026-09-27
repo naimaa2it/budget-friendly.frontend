@@ -3513,7 +3513,7 @@ function CreateOrderModal({
     setError("");
     if (!name.trim()) return setError("কাস্টমারের নাম দিন।");
     if (!/^01[3-9]\d{8}$/.test(phone.replace(/\D/g, "").replace(/^88/, "")))
-      return setError("সঠিক বাংলাদেশি মোবাইল নাম্বার দিন (যেমন 01712345678)।");
+      return setError("সঠিক বাংলাদেশি মোবাইল নাম্বার দিন (যেমন 01*******)।");
     if (!resolvedCity) return setError("শহর/জেলা সিলেক্ট করুন।");
     if (!items.length) return setError("অন্তত একটি পণ্য থাকতে হবে।");
 
@@ -3603,7 +3603,7 @@ function CreateOrderModal({
               <input
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="01712345678"
+                placeholder="01*******"
                 className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
               />
             </div>

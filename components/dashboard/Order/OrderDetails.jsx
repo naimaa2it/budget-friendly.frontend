@@ -473,11 +473,11 @@ export default function OrderDetails({ orderId }) {
     );
   }
 
+  // COD is "cash on delivery" — the money is NOT collected until the order is
+  // delivered/marked paid, so a pending COD order has Paid = 0, Due = total.
+  // Only an explicit paidAmount or a "paid" payment status counts as collected.
   const paidAmount =
-    order.paidAmount ??
-    (order.paymentStatus === "paid" || order.paymentStatus === "cod"
-      ? order.total
-      : 0);
+    order.paidAmount ?? (order.paymentStatus === "paid" ? order.total : 0);
   const dueAmount = Math.max(0, (order.total || 0) - (paidAmount || 0));
   const billing = order.billingDetails || {};
   const address = [billing.address, billing.area, billing.zone, billing.city]

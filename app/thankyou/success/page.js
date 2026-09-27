@@ -193,6 +193,7 @@ function SuccessContent() {
   });
   const [editItems, setEditItems] = useState([]);
   const [productVariantsMap, setProductVariantsMap] = useState({});
+  const [locationData, setLocationData] = useState({});
   const [pendingNewItems, setPendingNewItems] = useState([]);
   const [productSearch, setProductSearch] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -209,6 +210,15 @@ function SuccessContent() {
   useEffect(() => {
     clearCart();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Location tree (city → zones → areas) for the edit-address dropdowns, so the
+  // delivery charge recalculates from the chosen location on save.
+  useEffect(() => {
+    fetch("/api/locations")
+      .then((r) => (r.ok ? r.json() : { locationData: {} }))
+      .then((json) => setLocationData(json.locationData || {}))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!orderId) {
@@ -742,10 +752,6 @@ function SuccessContent() {
                           {[
                             { key: "name", ph: t("orders.name_ph") },
                             { key: "phone", ph: t("orders.phone_ph") },
-                            { key: "city", ph: t("orders.city_ph") },
-                            { key: "zone", ph: t("orders.zone_ph") },
-                            { key: "area", ph: t("orders.area_ph") },
-                            { key: "email", ph: t("orders.email_ph") },
                           ].map(({ key, ph }) => (
                             <input
                               key={key}
@@ -760,6 +766,84 @@ function SuccessContent() {
                               className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none"
                             />
                           ))}
+                          {/* City → Zone → Area cascading dropdowns. Changing them
+                              recomputes the delivery charge on the server at save. */}
+                          <select
+                            value={editBilling.city}
+                            onChange={(e) =>
+                              setEditBilling((prev) => ({
+                                ...prev,
+                                city: e.target.value,
+                                zone: "",
+                                area: "",
+                              }))
+                            }
+                            className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none bg-white"
+                          >
+                            <option value="">{t("orders.city_ph")}</option>
+                            {Object.keys(locationData).map((c) => (
+                              <option key={c} value={c}>
+                                {c}
+                              </option>
+                            ))}
+                          </select>
+                          <select
+                            value={editBilling.zone}
+                            disabled={
+                              !editBilling.city ||
+                              !locationData[editBilling.city]
+                            }
+                            onChange={(e) =>
+                              setEditBilling((prev) => ({
+                                ...prev,
+                                zone: e.target.value,
+                                area: "",
+                              }))
+                            }
+                            className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none bg-white disabled:bg-gray-50"
+                          >
+                            <option value="">{t("orders.zone_ph")}</option>
+                            {Object.keys(
+                              locationData[editBilling.city]?.zones || {},
+                            ).map((z) => (
+                              <option key={z} value={z}>
+                                {z}
+                              </option>
+                            ))}
+                          </select>
+                          <select
+                            value={editBilling.area}
+                            disabled={!editBilling.zone}
+                            onChange={(e) =>
+                              setEditBilling((prev) => ({
+                                ...prev,
+                                area: e.target.value,
+                              }))
+                            }
+                            className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none bg-white disabled:bg-gray-50"
+                          >
+                            <option value="">{t("orders.area_ph")}</option>
+                            {(
+                              locationData[editBilling.city]?.zones?.[
+                                editBilling.zone
+                              ] || []
+                            ).map((a) => (
+                              <option key={a} value={a}>
+                                {a}
+                              </option>
+                            ))}
+                          </select>
+                          <input
+                            value={editBilling.email}
+                            onChange={(e) =>
+                              setEditBilling((prev) => ({
+                                ...prev,
+                                email: e.target.value,
+                              }))
+                            }
+                            placeholder={t("orders.email_ph")}
+                            className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none"
+                          />
                         </div>
                         <input
                           value={editBilling.address}

@@ -213,6 +213,7 @@ function OrdersSection({ API }) {
     note: "",
   });
   const [editItems, setEditItems] = React.useState([]);
+  const [locationData, setLocationData] = React.useState({});
   const [saving, setSaving] = React.useState(false);
   const [retrying, setRetrying] = React.useState(null);
   const [cancelModalOrderId, setCancelModalOrderId] = React.useState(null);
@@ -240,6 +241,15 @@ function OrdersSection({ API }) {
 
   useEffect(() => {
     fetchOrders();
+  }, []);
+
+  // Location tree for the edit-address dropdowns so the delivery charge
+  // recomputes from the chosen city/zone/area on save.
+  useEffect(() => {
+    fetch("/api/locations")
+      .then((r) => (r.ok ? r.json() : { locationData: {} }))
+      .then((json) => setLocationData(json.locationData || {}))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -906,9 +916,6 @@ function OrdersSection({ API }) {
                             { key: "name", placeholder: t("orders.name_ph") },
                             { key: "phone", placeholder: t("orders.phone_ph") },
                             { key: "email", placeholder: t("orders.email_ph") },
-                            { key: "city", placeholder: t("orders.city_ph") },
-                            { key: "zone", placeholder: t("orders.zone_ph") },
-                            { key: "area", placeholder: t("orders.area_ph") },
                           ].map(({ key, placeholder }) => (
                             <input
                               key={key}
@@ -923,6 +930,73 @@ function OrdersSection({ API }) {
                               }
                             />
                           ))}
+                          {/* City → Zone → Area cascading dropdowns; changing the
+                              location recomputes the delivery charge on save. */}
+                          <select
+                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none bg-white"
+                            value={editBilling.city}
+                            onChange={(e) =>
+                              setEditBilling((prev) => ({
+                                ...prev,
+                                city: e.target.value,
+                                zone: "",
+                                area: "",
+                              }))
+                            }
+                          >
+                            <option value="">{t("orders.city_ph")}</option>
+                            {Object.keys(locationData).map((c) => (
+                              <option key={c} value={c}>
+                                {c}
+                              </option>
+                            ))}
+                          </select>
+                          <select
+                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none bg-white disabled:bg-gray-50"
+                            value={editBilling.zone}
+                            disabled={
+                              !editBilling.city ||
+                              !locationData[editBilling.city]
+                            }
+                            onChange={(e) =>
+                              setEditBilling((prev) => ({
+                                ...prev,
+                                zone: e.target.value,
+                                area: "",
+                              }))
+                            }
+                          >
+                            <option value="">{t("orders.zone_ph")}</option>
+                            {Object.keys(
+                              locationData[editBilling.city]?.zones || {},
+                            ).map((z) => (
+                              <option key={z} value={z}>
+                                {z}
+                              </option>
+                            ))}
+                          </select>
+                          <select
+                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none bg-white disabled:bg-gray-50 sm:col-span-2"
+                            value={editBilling.area}
+                            disabled={!editBilling.zone}
+                            onChange={(e) =>
+                              setEditBilling((prev) => ({
+                                ...prev,
+                                area: e.target.value,
+                              }))
+                            }
+                          >
+                            <option value="">{t("orders.area_ph")}</option>
+                            {(
+                              locationData[editBilling.city]?.zones?.[
+                                editBilling.zone
+                              ] || []
+                            ).map((a) => (
+                              <option key={a} value={a}>
+                                {a}
+                              </option>
+                            ))}
+                          </select>
                         </div>
                         <textarea
                           className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none resize-none"

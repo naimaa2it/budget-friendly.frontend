@@ -414,6 +414,12 @@ function SuccessContent() {
       ...(attributes || {}),
     });
     if (combo) return combo.price ?? prod.price ?? null;
+    // Legacy standalone products: match the generic-group variant on its own
+    // (e.g. Type=4-in-1 → its own price), which is what drives the item price.
+    if (hasAttrs) {
+      const extraOnly = resolveVariantByAttrs(prod, attributes);
+      if (extraOnly) return extraOnly.price ?? prod.price ?? null;
+    }
     // Legacy fallback: color/size-only match.
     const v = prod.variants.find((vv) => {
       const vc = (vv.color?.name || vv.attributes?.color || "").toLowerCase();

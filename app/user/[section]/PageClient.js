@@ -748,13 +748,21 @@ function OrdersSection({ API }) {
                         >
                           {item.title}
                         </Link>
-                        {(item.color || item.size) && (
-                          <p className="text-xs text-gray-400">
-                            {[item.color, item.size]
-                              .filter(Boolean)
-                              .join(" / ")}
-                          </p>
-                        )}
+                        {(() => {
+                          const parts = [item.color, item.size].filter(Boolean);
+                          if (item.attributes) {
+                            Object.entries(item.attributes)
+                              .filter(([, v]) => v)
+                              .forEach(([g, v]) => parts.push(`${g}: ${v}`));
+                          } else if (item.attrGroup && item.attrValue) {
+                            parts.push(`${item.attrGroup}: ${item.attrValue}`);
+                          }
+                          return parts.length ? (
+                            <p className="text-xs text-gray-400">
+                              {parts.join(" / ")}
+                            </p>
+                          ) : null;
+                        })()}
                         <p className="text-xs text-gray-500">
                           ৳{item.price} × {item.quantity}
                         </p>
@@ -1052,6 +1060,7 @@ function OrdersSection({ API }) {
                                               it.productId,
                                               newColor,
                                               it.size,
+                                              it.attributes,
                                             );
                                             return {
                                               ...it,
@@ -1089,6 +1098,7 @@ function OrdersSection({ API }) {
                                               it.productId,
                                               it.color,
                                               newSize,
+                                              it.attributes,
                                             );
                                             return {
                                               ...it,
@@ -1106,6 +1116,90 @@ function OrdersSection({ API }) {
                                     </button>
                                   ))}
                                 </div>
+                              )}
+                              {getItemExtraGroups(item.productId).map(
+                                (group) => {
+                                  const selectedMap = {
+                                    ...(item.color ? { Color: item.color } : {}),
+                                    ...(item.size ? { Size: item.size } : {}),
+                                    ...(item.attributes || {}),
+                                  };
+                                  const availfor = getAvailableValues(
+                                    productVariantsMap[String(item.productId)],
+                                    group.name,
+                                    selectedMap,
+                                  );
+                                  return (
+                                    <div
+                                      key={group.name}
+                                      className="flex flex-wrap items-center gap-1"
+                                    >
+                                      <span className="text-xs text-gray-400">
+                                        {group.name}:
+                                      </span>
+                                      {group.options.map((option) => {
+                                        const isSel =
+                                          (item.attributes || {})[group.name] ===
+                                          option.value;
+                                        const disabled =
+                                          availfor.size > 0 &&
+                                          !availfor.has(
+                                            option.value.toLowerCase(),
+                                          ) &&
+                                          !isSel;
+                                        return (
+                                          <button
+                                            key={option.value}
+                                            type="button"
+                                            disabled={disabled}
+                                            onClick={() =>
+                                              setEditItems((prev) =>
+                                                prev.map((it, i) => {
+                                                  if (i !== itemIndex) return it;
+                                                  const nextAttrs = {
+                                                    ...(it.attributes || {}),
+                                                  };
+                                                  if (isSel)
+                                                    delete nextAttrs[group.name];
+                                                  else
+                                                    nextAttrs[group.name] =
+                                                      option.value;
+                                                  const newPrice =
+                                                    getVariantPrice(
+                                                      it.productId,
+                                                      it.color,
+                                                      it.size,
+                                                      nextAttrs,
+                                                    );
+                                                  return {
+                                                    ...it,
+                                                    attributes:
+                                                      Object.keys(nextAttrs)
+                                                        .length
+                                                        ? nextAttrs
+                                                        : null,
+                                                    ...(newPrice != null
+                                                      ? { price: newPrice }
+                                                      : {}),
+                                                  };
+                                                }),
+                                              )
+                                            }
+                                            className={`px-2 py-0.5 rounded-full text-xs border transition ${
+                                              isSel
+                                                ? "bg-orange-500 text-white border-orange-500"
+                                                : disabled
+                                                  ? "border-gray-200 text-gray-300 line-through cursor-not-allowed"
+                                                  : "border-gray-300 text-gray-600 hover:border-orange-400"
+                                            }`}
+                                          >
+                                            {option.value}
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  );
+                                },
                               )}
                               {colors.length === 0 &&
                                 sizes.length === 0 &&

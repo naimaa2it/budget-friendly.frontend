@@ -23,11 +23,10 @@ export default function AddToCartSection({
   selectedSize = null,
   // Generic variant groups the shopper picked (e.g. { Type: "8 Pin" }),
   // combinable with Color/Size. `selectedVariant` is the single variant matching
-  // the whole combo (resolved by the parent). `selectionComplete` is false while
-  // any group is still unpicked, which blocks add-to-cart.
+  // the whole combo (resolved by the parent). Selecting options is optional — the
+  // shopper can add to cart with any (or no) options picked.
   selectedAttributes = {},
   selectedVariant: selectedVariantProp = null,
-  selectionComplete = true,
 }) {
   const [qty, setQty] = useState(1);
   const { addToCart } = useCart();
@@ -112,7 +111,6 @@ export default function AddToCartSection({
         : product.price || 0;
 
   const handleAdd = () => {
-    if (!selectionComplete) return;
     addToCart(product, qty, {
       selectedColor: effectiveColor,
       selectedSize: effectiveSize,
@@ -124,7 +122,6 @@ export default function AddToCartSection({
   };
 
   const handleBuyNow = () => {
-    if (!selectionComplete) return;
     addToCart(product, qty, {
       selectedColor: effectiveColor,
       selectedSize: effectiveSize,
@@ -150,8 +147,7 @@ export default function AddToCartSection({
             <QuantitySelector quantity={qty} onChange={setQty} />
             <button
               onClick={handleAdd}
-              disabled={!selectionComplete}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition"
             >
               Pre-order now
             </button>
@@ -256,18 +252,12 @@ export default function AddToCartSection({
         </>
       ) : (
         <div className="flex flex-col gap-2">
-          {!selectionComplete && (
-            <p className="text-sm text-amber-600 font-medium">
-              Please select all options before adding to cart.
-            </p>
-          )}
           <div className="flex items-center gap-4 flex-wrap">
             <WishlistButton product={product} />
             <QuantitySelector quantity={qty} onChange={setQty} />
             <button
               onClick={handleAdd}
-              disabled={!selectionComplete}
-              className="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-600"
+              className="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition"
             >
               Add to cart
             </button>
@@ -279,8 +269,7 @@ export default function AddToCartSection({
           </div>
           <button
             onClick={handleBuyNow}
-            disabled={!selectionComplete}
-            className="w-full mr-8 bg-gray-900 text-white py-2.5 rounded-md font-medium hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-900"
+            className="w-full mr-8 bg-gray-900 text-white py-2.5 rounded-md font-medium hover:bg-gray-700 transition"
           >
             Buy Now
           </button>

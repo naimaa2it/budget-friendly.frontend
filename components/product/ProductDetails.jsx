@@ -924,11 +924,6 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
               selectedSize={selectedSize ?? null}
               selectedAttributes={selectedExtras}
               selectedVariant={selectedVariant}
-              selectionComplete={
-                (allColors.length === 0 || !!selectedColor) &&
-                (allSizes.length === 0 || !!selectedSize) &&
-                extraGroups.every((g) => !!selectedExtras[g.name])
-              }
             />
           </div>
 

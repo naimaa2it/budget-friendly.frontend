@@ -21,12 +21,13 @@ export default function AddToCartSection({
   product,
   selectedColor = null,
   selectedSize = null,
-  // A standalone generic-group variant (e.g. Type=Charging) with its own
-  // price/stock/image — when present it overrides Color/Size resolution
-  // entirely (groups are never combined).
-  forcedVariant = null,
-  forcedGroupName = null,
-  forcedLabel = null,
+  // Generic variant groups the shopper picked (e.g. { Type: "8 Pin" }),
+  // combinable with Color/Size. `selectedVariant` is the single variant matching
+  // the whole combo (resolved by the parent). `selectionComplete` is false while
+  // any group is still unpicked, which blocks add-to-cart.
+  selectedAttributes = {},
+  selectedVariant: selectedVariantProp = null,
+  selectionComplete = true,
 }) {
   const [qty, setQty] = useState(1);
   const { addToCart } = useCart();
@@ -88,33 +89,34 @@ export default function AddToCartSection({
   // Fall back to the first color/size when the shopper hasn't picked one, so an
   // order never lands without a variant even if the parent's auto-select hasn't
   // applied yet. Matches the quick-add behaviour on the product cards.
-  const effectiveColor = forcedVariant
-    ? null
-    : selectedColor || (allColors.length > 0 ? allColors[0].name : null);
-  const effectiveSize = forcedVariant
-    ? null
-    : selectedSize || (allSizes.length > 0 ? allSizes[0] : null);
-  const effectiveAttr = forcedVariant
-    ? { groupName: forcedGroupName, value: forcedLabel }
-    : null;
+  const effectiveColor =
+    selectedColor || (allColors.length > 0 ? allColors[0].name : null);
+  const effectiveSize =
+    selectedSize || (allSizes.length > 0 ? allSizes[0] : null);
+  // Only the picked generic-group options (drop blanks).
+  const cleanAttrs = Object.fromEntries(
+    Object.entries(selectedAttributes || {}).filter(([, v]) => v),
+  );
 
-  const effectivePrice = forcedVariant
-    ? (forcedVariant.price ?? product.price ?? 0)
-    : hasVariants
-      ? resolveVariantPrice(product, effectiveColor, effectiveSize)
-      : product.price || 0;
-
-  // Use the shared resolveVariant function for consistent matching logic
+  // Prefer the full-combo variant resolved by the parent; fall back to a
+  // color/size match for products without generic groups.
   const selectedVariant =
-    forcedVariant ||
+    selectedVariantProp ||
     (hasVariants ? resolveVariant(product, effectiveColor, effectiveSize) : null);
 
+  const effectivePrice =
+    selectedVariant?.price != null && selectedVariant.price > 0
+      ? selectedVariant.price
+      : hasVariants
+        ? resolveVariantPrice(product, effectiveColor, effectiveSize)
+        : product.price || 0;
+
   const handleAdd = () => {
-    console.log("[Button] Add to Cart clicked:", product.title || product.name);
+    if (!selectionComplete) return;
     addToCart(product, qty, {
       selectedColor: effectiveColor,
       selectedSize: effectiveSize,
-      selectedAttr: effectiveAttr,
+      selectedAttributes: cleanAttrs,
       selectedVariant,
     });
     trackAddToCart(product, qty, effectivePrice);
@@ -122,11 +124,11 @@ export default function AddToCartSection({
   };
 
   const handleBuyNow = () => {
-    console.log("[Button] Buy Now clicked:", product.title || product.name);
+    if (!selectionComplete) return;
     addToCart(product, qty, {
       selectedColor: effectiveColor,
       selectedSize: effectiveSize,
-      selectedAttr: effectiveAttr,
+      selectedAttributes: cleanAttrs,
       selectedVariant,
       silent: true,
     });
@@ -148,7 +150,8 @@ export default function AddToCartSection({
             <QuantitySelector quantity={qty} onChange={setQty} />
             <button
               onClick={handleAdd}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition"
+              disabled={!selectionComplete}
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
             >
               Pre-order now
             </button>
@@ -253,12 +256,18 @@ export default function AddToCartSection({
         </>
       ) : (
         <div className="flex flex-col gap-2">
+          {!selectionComplete && (
+            <p className="text-sm text-amber-600 font-medium">
+              Please select all options before adding to cart.
+            </p>
+          )}
           <div className="flex items-center gap-4 flex-wrap">
             <WishlistButton product={product} />
             <QuantitySelector quantity={qty} onChange={setQty} />
             <button
               onClick={handleAdd}
-              className="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition"
+              disabled={!selectionComplete}
+              className="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-600"
             >
               Add to cart
             </button>
@@ -270,7 +279,8 @@ export default function AddToCartSection({
           </div>
           <button
             onClick={handleBuyNow}
-            className="w-full mr-8 bg-gray-900 text-white py-2.5 rounded-md font-medium hover:bg-gray-700 transition"
+            disabled={!selectionComplete}
+            className="w-full mr-8 bg-gray-900 text-white py-2.5 rounded-md font-medium hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-900"
           >
             Buy Now
           </button>

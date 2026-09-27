@@ -179,6 +179,117 @@ export function resolveExtraVariant(product, groupName, value) {
   );
 }
 
+// ── Multi-dimensional (combined) variant helpers ──────────────────────────────
+// A product's variants each carry a full attributes map (e.g.
+// { Color: "White", Type: "8 Pin" }). These helpers let a shopper pick one
+// option per group and resolve the single variant matching the WHOLE combo,
+// instead of the older "one generic group only, never combined" behaviour.
+
+// Normalised attribute map for a variant: explicit attributes plus Color/Size
+// synthesised from the denormalised color.name / size fields when the attributes
+// map omits them.
+export function variantAttrMap(v) {
+  const map = {};
+  Object.entries(v?.attributes || {}).forEach(([k, val]) => {
+    const s = val == null ? "" : String(val).trim();
+    if (s) map[k] = s;
+  });
+  const colorName = variantColorName(v);
+  if (colorName && !Object.keys(map).some((k) => COLOR_KEY_RE.test(k))) {
+    map.Color = colorName;
+  }
+  const sizeVal = variantSizeValue(v);
+  if (sizeVal && !Object.keys(map).some((k) => SIZE_KEY_RE.test(k))) {
+    map.Size = sizeVal;
+  }
+  return map;
+}
+
+// All selectable groups across a product's variants, in first-seen order.
+// Color groups carry hex; every option carries its linked image when set.
+export function getVariantGroups(product) {
+  if (!product?.variants?.length) return [];
+  const order = [];
+  const byName = new Map();
+  for (const v of product.variants) {
+    const map = variantAttrMap(v);
+    for (const [key, val] of Object.entries(map)) {
+      if (!byName.has(key)) {
+        byName.set(key, new Map());
+        order.push(key);
+      }
+      const opts = byName.get(key);
+      const lower = val.toLowerCase();
+      if (!opts.has(lower)) {
+        opts.set(lower, {
+          value: val,
+          image: v.image || null,
+          hex: COLOR_KEY_RE.test(key) ? v.color?.hex || null : null,
+        });
+      }
+    }
+  }
+  return order.map((name) => ({
+    name,
+    isColor: COLOR_KEY_RE.test(name),
+    isSize: SIZE_KEY_RE.test(name),
+    options: [...byName.get(name).values()],
+  }));
+}
+
+// True when at least one variant combines 2+ groups (e.g. Color + Type). Such
+// products use the combined N-dimensional selection; single-key products keep
+// the legacy standalone behaviour.
+export function isComboVariantProduct(product) {
+  return (product?.variants || []).some(
+    (v) => Object.keys(variantAttrMap(v)).length >= 2,
+  );
+}
+
+// Find the single variant matching ALL selected attributes (case-insensitive).
+// `selected` is a plain map { groupName: value }; blank values are ignored.
+export function resolveVariantByAttrs(product, selected) {
+  if (!product?.variants?.length) return null;
+  const entries = Object.entries(selected || {}).filter(
+    ([, val]) => val != null && String(val).trim(),
+  );
+  if (!entries.length) return null;
+  return (
+    product.variants.find((v) => {
+      const map = variantAttrMap(v);
+      const keys = Object.keys(map);
+      return entries.every(([g, val]) => {
+        const k = keys.find((x) => x.toLowerCase() === g.toLowerCase());
+        return k && map[k].toLowerCase() === String(val).trim().toLowerCase();
+      });
+    }) || null
+  );
+}
+
+// Lower-cased set of values still available for `groupName` given the current
+// picks in the OTHER groups — used to disable impossible combinations.
+export function getAvailableValues(product, groupName, selected) {
+  const others = Object.entries(selected || {}).filter(
+    ([g, val]) =>
+      g.toLowerCase() !== groupName.toLowerCase() &&
+      val != null &&
+      String(val).trim(),
+  );
+  const available = new Set();
+  for (const v of product?.variants || []) {
+    const map = variantAttrMap(v);
+    const keys = Object.keys(map);
+    const okOthers = others.every(([g, val]) => {
+      const k = keys.find((x) => x.toLowerCase() === g.toLowerCase());
+      return k && map[k].toLowerCase() === String(val).trim().toLowerCase();
+    });
+    if (!okOthers) continue;
+    const k = keys.find((x) => x.toLowerCase() === groupName.toLowerCase());
+    if (k) available.add(map[k].toLowerCase());
+  }
+  return available;
+}
+
 // Get effective compare at price given selected color + size
 export function resolveVariantComparePrice(product, color, size) {
   const v = resolveVariant(product, color, size);
@@ -203,11 +314,16 @@ export default function VariantEditModal({
   const [selSize, setSelSize] = useState(
     mode === "add" ? null : item.selectedSize || null,
   );
-  // A standalone generic-group selection (e.g. Type=Charging) — independent
-  // of Color/Size, never combined with them.
-  const [selAttr, setSelAttr] = useState(
-    mode === "add" ? null : item.selectedAttr || null,
-  );
+  // Generic-group selections (e.g. { Type: "8 Pin" }) — combinable with
+  // Color/Size and with each other.
+  const [selExtras, setSelExtras] = useState(() => {
+    if (mode === "add") return {};
+    if (item.selectedAttributes) return { ...item.selectedAttributes };
+    if (item.selectedAttr?.groupName) {
+      return { [item.selectedAttr.groupName]: item.selectedAttr.value };
+    }
+    return {};
+  });
   const [qty, setQty] = useState(mode === "add" ? 1 : quantity);
 
   useEffect(() => {
@@ -245,48 +361,56 @@ export default function VariantEditModal({
   );
 
   const extraGroups = useMemo(() => getVariantExtraGroups(product), [product]);
-  const attrVariant = selAttr
-    ? resolveExtraVariant(product, selAttr.groupName, selAttr.value)
-    : null;
-  const price = selAttr
-    ? (attrVariant?.price ?? product.price ?? 0)
-    : resolveVariantPrice(product, selColor, selSize);
+
+  // Combined selection across Color, Size and each generic group.
+  const selectedAttrMap = {};
+  if (selColor) selectedAttrMap.Color = selColor;
+  if (selSize) selectedAttrMap.Size = selSize;
+  Object.entries(selExtras).forEach(([g, v]) => {
+    if (v) selectedAttrMap[g] = v;
+  });
+
+  const comboVariant = resolveVariantByAttrs(product, selectedAttrMap);
+  const colorSizeVariant =
+    selColor || selSize ? resolveVariant(product, selColor, selSize) : null;
+  const selectedVariant = comboVariant || colorSizeVariant;
+  const price =
+    selectedVariant?.price != null && selectedVariant.price > 0
+      ? selectedVariant.price
+      : resolveVariantPrice(product, selColor, selSize);
   const hasColors = allColors.length > 0; // Use allColors to check if product has any colors
   const hasSizes = allSizes.length > 0; // Use allSizes to check if product has any sizes
   const hasExtra = extraGroups.length > 0;
   const image = product.images?.[0]?.url;
-  const variantStr = selAttr
-    ? `${selAttr.groupName}: ${selAttr.value}`
-    : [selColor, selSize].filter(Boolean).join(" / ");
+  const variantStr = [
+    selColor,
+    selSize,
+    ...Object.entries(selExtras)
+      .filter(([, v]) => v)
+      .map(([g, v]) => `${g}: ${v}`),
+  ]
+    .filter(Boolean)
+    .join(" / ");
 
-  // Picking a Color/Size clears any standalone group selection, and vice
-  // versa — groups are independent, never combined.
-  const pickColor = (c) => {
-    setSelColor(c);
-    setSelAttr(null);
-  };
-  const pickSize = (s) => {
-    setSelSize(s);
-    setSelAttr(null);
-  };
-  const pickAttr = (groupName, value) => {
-    setSelAttr(value == null ? null : { groupName, value });
-    setSelColor(null);
-    setSelSize(null);
-  };
+  // Groups are combinable — picking one no longer clears the others.
+  const pickColor = (c) => setSelColor(c);
+  const pickSize = (s) => setSelSize(s);
+  const pickAttr = (groupName, value) =>
+    setSelExtras((prev) => ({ ...prev, [groupName]: value }));
+
+  const cleanExtras = () =>
+    Object.fromEntries(Object.entries(selExtras).filter(([, v]) => v));
 
   const handleSave = () => {
-    const variant = attrVariant || resolveVariant(product, selColor, selSize);
-    onSave(selColor, selSize, variant, qty, selAttr);
+    onSave(selColor, selSize, selectedVariant, qty, cleanExtras());
   };
 
   const handleAddMore = () => {
-    const variant = attrVariant || resolveVariant(product, selColor, selSize);
     addToCart(product, qty, {
       selectedColor: selColor,
       selectedSize: selSize,
-      selectedAttr: selAttr,
-      selectedVariant: variant,
+      selectedAttributes: cleanExtras(),
+      selectedVariant,
       silent: true, // Don't show FBT modal when adding more variants
     });
     onClose();
@@ -366,7 +490,7 @@ export default function VariantEditModal({
           {/* Color selector */}
           {hasColors && (
             <div>
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-1">
                 <span className="text-sm font-semibold text-gray-800">
                   Color:
                 </span>
@@ -426,7 +550,7 @@ export default function VariantEditModal({
           {/* Size selector */}
           {hasSizes && (
             <div>
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-1">
                 <span className="text-sm font-semibold text-gray-800">
                   Size:
                 </span>
@@ -458,7 +582,7 @@ export default function VariantEditModal({
               independent of Color/Size */}
           {extraGroups.map((group) => (
             <div key={group.name}>
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-1">
                 <span className="text-sm font-semibold text-gray-800">
                   {group.name}:
                 </span>

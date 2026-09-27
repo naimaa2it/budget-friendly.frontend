@@ -1193,7 +1193,7 @@ export default function ProfitMarginManager() {
 
       {/* ── Formula legend ── */}
       <div className="bg-white rounded-2xl border border-gray-100 px-5 py-4 shadow-sm">
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-1">
           <FiInfo className="w-3.5 h-3.5 text-gray-400" />
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
             Calculation Reference

@@ -35,13 +35,43 @@ const setStorageItem = (key, value) => {
   } catch {}
 };
 
-// Unique cart key: productId + selected color + selected size + a standalone
-// generic-group selection (e.g. Type=Charging), which is never combined with
-// color/size — it identifies the line item on its own.
+// Normalises a variant selection into a plain map { groupName: value }. Accepts
+// either the new combinable map, or the legacy single { groupName, value }.
+export const toAttrMap = (attributes, legacyAttr) => {
+  if (attributes && typeof attributes === "object" && !attributes.groupName) {
+    return Object.fromEntries(
+      Object.entries(attributes).filter(([, v]) => v != null && v !== ""),
+    );
+  }
+  const single = attributes?.groupName ? attributes : legacyAttr;
+  if (single?.groupName && single?.value) {
+    return { [single.groupName]: single.value };
+  }
+  return {};
+};
+
+// Stable serialisation of a generic-group selection map for the cart key.
+const serializeAttrs = (attributes, legacyAttr) => {
+  const map = toAttrMap(attributes, legacyAttr);
+  return Object.entries(map)
+    .filter(([, v]) => v)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `${k}:${v}`)
+    .join(",");
+};
+
+// First entry of the map as a legacy { groupName, value } — kept so older cart
+// UI that reads item.selectedAttr still renders something sensible.
+const mapToLegacyAttr = (map) => {
+  const entries = Object.entries(map || {}).filter(([, v]) => v);
+  return entries.length ? { groupName: entries[0][0], value: entries[0][1] } : null;
+};
+
+// Unique cart key: productId + selected color + size + all generic-group picks
+// (e.g. Type=8 Pin, Material=Steel). Combinable, so white+8pin and white+4pin
+// are distinct line items. `attr` may be the new map or the legacy single.
 export const makeCartKey = (productId, color, size, attr) =>
-  `${productId}__${color || ""}__${size || ""}__${
-    attr ? `${attr.groupName}:${attr.value}` : ""
-  }`;
+  `${productId}__${color || ""}__${size || ""}__${serializeAttrs(attr)}`;
 
 // Item shape stored in localStorage — includes the product object so cart
 // survives page reload without needing a batch API call.
@@ -52,6 +82,7 @@ const toSlimItem = (item) => ({
   selectedColor: item.selectedColor || null,
   selectedSize: item.selectedSize || null,
   selectedAttr: item.selectedAttr || null,
+  selectedAttributes: item.selectedAttributes || null,
   selectedVariant: item.selectedVariant || null,
   variantId:
     item.selectedVariant?._id ||
@@ -66,7 +97,9 @@ export const getItemPrice = (item) => {
   const hasSelectedOption = !!(
     item.selectedColor ||
     item.selectedSize ||
-    item.selectedAttr
+    item.selectedAttr ||
+    (item.selectedAttributes &&
+      Object.keys(item.selectedAttributes).length > 0)
   );
   const variantPrice = hasSelectedOption ? item.selectedVariant?.price : null;
   const basePrice = item.product?.price ?? 0;
@@ -77,7 +110,9 @@ export const getItemCompareAtPrice = (item) => {
   const hasSelectedOption = !!(
     item.selectedColor ||
     item.selectedSize ||
-    item.selectedAttr
+    item.selectedAttr ||
+    (item.selectedAttributes &&
+      Object.keys(item.selectedAttributes).length > 0)
   );
   const variantCompareAt = hasSelectedOption
     ? item.selectedVariant?.compareAtPrice
@@ -129,17 +164,19 @@ export const CartProvider = ({ children }) => {
       const normalized = slimItems.map((item) => {
         if (item.cartKey) return item;
         const id = item.product?._id || item.product?.id || "unknown";
+        const attrMap = toAttrMap(item.selectedAttributes, item.selectedAttr);
         return {
           ...item,
           selectedColor: item.selectedColor || null,
           selectedSize: item.selectedSize || null,
-          selectedAttr: item.selectedAttr || null,
+          selectedAttr: mapToLegacyAttr(attrMap),
+          selectedAttributes: attrMap,
           selectedVariant: item.selectedVariant || null,
           cartKey: makeCartKey(
             id,
             item.selectedColor || null,
             item.selectedSize || null,
-            item.selectedAttr || null,
+            attrMap,
           ),
         };
       });
@@ -188,12 +225,14 @@ export const CartProvider = ({ children }) => {
                   (v) => v._id === slim.variantId,
                 ) || null
               : null;
+            const attrMap = toAttrMap(slim.selectedAttributes, slim.selectedAttr);
             return {
               product,
               quantity: slim.quantity,
               selectedColor: slim.selectedColor,
               selectedSize: slim.selectedSize,
-              selectedAttr: slim.selectedAttr || null,
+              selectedAttr: mapToLegacyAttr(attrMap),
+              selectedAttributes: attrMap,
               selectedVariant,
               cartKey:
                 slim.cartKey ||
@@ -201,7 +240,7 @@ export const CartProvider = ({ children }) => {
                   slim.productId,
                   slim.selectedColor,
                   slim.selectedSize,
-                  slim.selectedAttr || null,
+                  attrMap,
                 ),
             };
           })
@@ -280,11 +319,16 @@ export const CartProvider = ({ children }) => {
         selectedColor = null,
         selectedSize = null,
         selectedAttr = null,
+        selectedAttributes = null,
         selectedVariant = null,
         silent = false,
       } = opts;
       const id = getId(product);
-      const cartKey = makeCartKey(id, selectedColor, selectedSize, selectedAttr);
+      // Combinable generic-group picks, normalised to a map. Legacy callers that
+      // still pass a single selectedAttr are folded in for compatibility.
+      const attrMap = toAttrMap(selectedAttributes, selectedAttr);
+      const legacyAttr = mapToLegacyAttr(attrMap);
+      const cartKey = makeCartKey(id, selectedColor, selectedSize, attrMap);
       setCartItems((prev) => {
         const existing = prev.find((i) => i.cartKey === cartKey);
         if (existing) {
@@ -299,7 +343,8 @@ export const CartProvider = ({ children }) => {
             quantity: qty,
             selectedColor,
             selectedSize,
-            selectedAttr,
+            selectedAttr: legacyAttr,
+            selectedAttributes: attrMap,
             selectedVariant,
             cartKey,
           },
@@ -329,6 +374,9 @@ export const CartProvider = ({ children }) => {
 
   const updateCartVariant = useCallback(
     (oldCartKey, newColor, newSize, newVariant, newQty = null, newAttr = null) => {
+      // newAttr may be the new combinable map or the legacy single selection.
+      const attrMap = toAttrMap(newAttr, null);
+      const legacyAttr = mapToLegacyAttr(attrMap);
       setCartItems((prev) => {
         const existing = prev.find((i) => i.cartKey === oldCartKey);
         if (!existing) return prev;
@@ -337,7 +385,7 @@ export const CartProvider = ({ children }) => {
           getId(existing.product),
           newColor,
           newSize,
-          newAttr,
+          attrMap,
         );
         if (newCartKey === oldCartKey) {
           return prev.map((i) =>
@@ -346,7 +394,8 @@ export const CartProvider = ({ children }) => {
                   ...i,
                   selectedColor: newColor,
                   selectedSize: newSize,
-                  selectedAttr: newAttr,
+                  selectedAttr: legacyAttr,
+                  selectedAttributes: attrMap,
                   selectedVariant: newVariant,
                   quantity: updatedQty,
                 }
@@ -365,7 +414,8 @@ export const CartProvider = ({ children }) => {
                 ...i,
                 selectedColor: newColor,
                 selectedSize: newSize,
-                selectedAttr: newAttr,
+                selectedAttr: legacyAttr,
+                selectedAttributes: attrMap,
                 selectedVariant: newVariant,
                 cartKey: newCartKey,
                 quantity: updatedQty,
@@ -423,6 +473,7 @@ export const CartProvider = ({ children }) => {
       size: i.selectedSize || null,
       attrGroup: i.selectedAttr?.groupName || null,
       attrValue: i.selectedAttr?.value || null,
+      attributes: toAttrMap(i.selectedAttributes, i.selectedAttr),
     }));
     const res = await fetch(`${API}/api/cart/share`, {
       method: "POST",

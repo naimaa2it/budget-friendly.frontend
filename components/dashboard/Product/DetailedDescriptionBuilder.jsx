@@ -232,7 +232,7 @@ function ImageRowBlock({
   return (
     <div>
       {/* Toolbar: column selector + bulk actions */}
-      <div className="flex items-center gap-2 mb-3 flex-wrap">
+      <div className="flex items-center gap-2 mb-1 flex-wrap">
         <span className="text-xs text-gray-500 font-medium">Columns:</span>
         {[2, 3, 4].map((n) => (
           <button

@@ -180,7 +180,7 @@ export default function PaymentSelector({
 
       {/* ── Mobile Banking ──────────────────────────────────────────────────── */}
       <div className="mb-1 hidden">
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-1">
           <div className="h-px flex-1 bg-gray-200" />
           <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-2">
             Mobile Banking

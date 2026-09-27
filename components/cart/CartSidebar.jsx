@@ -130,6 +130,12 @@ export default function CartSidebar() {
               selectedSize,
               selectedAttr,
             } = item;
+            const extraAttrs = Object.entries(
+              item.selectedAttributes ||
+                (selectedAttr
+                  ? { [selectedAttr.groupName]: selectedAttr.value }
+                  : {}),
+            ).filter(([, v]) => v);
             const price = getItemPrice(item);
             const mrp = getItemCompareAtPrice(item);
             const itemSaved = mrp > price ? (mrp - price) * quantity : 0;
@@ -176,7 +182,7 @@ export default function CartSidebar() {
                       >
                         {product.title || product.name}
                       </a>
-                      {selectedColor || selectedSize || selectedAttr ? (
+                      {selectedColor || selectedSize || extraAttrs.length ? (
                         <div className="flex items-center gap-1 mt-0.5 flex-wrap">
                           {selectedColor && (
                             <span className="inline-flex items-center gap-1 text-xs bg-gray-100 px-1.5 py-0.5 rounded">
@@ -196,11 +202,14 @@ export default function CartSidebar() {
                               {selectedSize}
                             </span>
                           )}
-                          {selectedAttr && (
-                            <span className="text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">
-                              {selectedAttr.groupName}: {selectedAttr.value}
+                          {extraAttrs.map(([g, v]) => (
+                            <span
+                              key={g}
+                              className="text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-600"
+                            >
+                              {g}: {v}
                             </span>
-                          )}
+                          ))}
                           {hasVariants && (
                             <button
                               onClick={() => {

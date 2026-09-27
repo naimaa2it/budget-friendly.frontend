@@ -214,6 +214,12 @@ export default function CartPage() {
               selectedSize,
               selectedAttr,
             } = item;
+            const extraAttrs = Object.entries(
+              item.selectedAttributes ||
+                (selectedAttr
+                  ? { [selectedAttr.groupName]: selectedAttr.value }
+                  : {}),
+            ).filter(([, v]) => v);
             const price = getItemPrice(item);
             const compareAt = getItemCompareAtPrice(item) || price;
             const itemSaved = Math.max(0, (compareAt - price) * quantity);
@@ -262,7 +268,7 @@ export default function CartPage() {
                     </a>
 
                     {/* Variant display with color swatch */}
-                    {selectedColor || selectedSize || selectedAttr ? (
+                    {selectedColor || selectedSize || extraAttrs.length ? (
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
                         {selectedColor && (
                           <span className="inline-flex items-center gap-1.5 text-xs bg-gray-100 px-2 py-1 rounded">
@@ -284,13 +290,16 @@ export default function CartPage() {
                             </span>
                           </span>
                         )}
-                        {selectedAttr && (
-                          <span className="inline-flex items-center text-xs bg-gray-100 px-2 py-1 rounded">
+                        {extraAttrs.map(([g, v]) => (
+                          <span
+                            key={g}
+                            className="inline-flex items-center text-xs bg-gray-100 px-2 py-1 rounded"
+                          >
                             <span className="text-gray-700 font-medium">
-                              {selectedAttr.groupName}: {selectedAttr.value}
+                              {g}: {v}
                             </span>
                           </span>
-                        )}
+                        ))}
                         {hasVariants && (
                           <button
                             onClick={() => {

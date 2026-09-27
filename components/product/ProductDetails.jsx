@@ -30,6 +30,8 @@ import {
   getVariantSizes,
   getVariantExtraGroups,
   resolveExtraVariant,
+  resolveVariantByAttrs,
+  getAvailableValues,
 } from "@/components/cart/VariantEditModal";
 import RelatedProducts from "@/components/product/RelatedProducts";
 import ProductCard from "@/components/product/ProductCard";
@@ -207,10 +209,11 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
   const [offersOpen, setOffersOpen] = useState(false);
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
-  // A generic variant group (e.g. "Type", "Material") that isn't Color/Size.
-  // Its options are standalone rows — picking one clears Color/Size (and vice
-  // versa) so nothing ever combines/sums across groups.
-  const [selectedExtra, setSelectedExtra] = useState(null); // { groupName, value }
+  // Selected options for generic variant groups (e.g. "Type", "Material") that
+  // aren't Color/Size. Combinable with Color/Size and with each other so a
+  // shopper can pick e.g. Color=White AND Type=8 Pin together. Shape:
+  // { [groupName]: value }.
+  const [selectedExtras, setSelectedExtras] = useState({});
   const [zoomOpen, setZoomOpen] = useState(false);
   const [openPolicy, setOpenPolicy] = useState(null);
   const [isDesktop, setIsDesktop] = useState(false);
@@ -252,19 +255,17 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
   }, [selectedColor]);
 
   // Same jump behavior for a generic group option (e.g. "Charging") that has
-  // its own picked image.
+  // its own picked image — uses the most recently resolved combo variant image.
   useEffect(() => {
-    if (!selectedExtra) return;
-    const variant = resolveExtraVariant(
-      product,
-      selectedExtra.groupName,
-      selectedExtra.value,
-    );
+    const entries = Object.entries(selectedExtras).filter(([, v]) => v);
+    if (!entries.length) return;
+    const [groupName, value] = entries[entries.length - 1];
+    const variant = resolveExtraVariant(product, groupName, value);
     if (!variant?.image) return;
     const idx = images.indexOf(variant.image);
     if (idx >= 0) setCurrentIndex(idx);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedExtra]);
+  }, [selectedExtras]);
 
   // On product load, only pre-select a color when the shopper picked one on the
   // product card (carried over as ?color=<name>). Otherwise leave color
@@ -463,46 +464,28 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
     ? getVariantSizes(product, selectedColor)
     : allSizes;
   const extraGroups = getVariantExtraGroups(product);
-  // A generic group option is a fully standalone row — when picked, it alone
-  // drives price/stock/image, overriding any Color/Size selection.
-  const extraVariant = selectedExtra
-    ? resolveExtraVariant(product, selectedExtra.groupName, selectedExtra.value)
-    : null;
+
+  // Combined selection across every group (Color, Size, and each generic group)
+  // so a shopper can pick e.g. Color=White AND Type=8 Pin together. Blank
+  // values are ignored by the resolver.
+  const selectedAttrMap = {};
+  if (selectedColor?.name) selectedAttrMap.Color = selectedColor.name;
+  if (selectedSize) selectedAttrMap.Size = selectedSize;
+  Object.entries(selectedExtras).forEach(([g, v]) => {
+    if (v) selectedAttrMap[g] = v;
+  });
+
+  // The single variant matching the whole combo. Falls back to a color/size-only
+  // match for legacy products whose generic groups aren't stored as true combos.
+  const comboVariant = resolveVariantByAttrs(product, selectedAttrMap);
   const colorSizeVariant =
-    Array.isArray(product.variants) && product.variants.length
-      ? product.variants.find((variant) => {
-          const variantColor = String(
-            variant?.color?.name ||
-              variant?.attributes?.Color ||
-              variant?.attributes?.color ||
-              "",
-          )
-            .trim()
-            .toLowerCase();
-          const variantSize = String(
-            variant?.size ||
-              variant?.attributes?.Size ||
-              variant?.attributes?.size ||
-              "",
-          )
-            .trim()
-            .toLowerCase();
-          const color = String(selectedColor?.name || "")
-            .trim()
-            .toLowerCase();
-          const size = String(selectedSize || "")
-            .trim()
-            .toLowerCase();
-          if (!color && !size) return false;
-          return (
-            (!variantColor || !color || variantColor === color) &&
-            (!variantSize || !size || variantSize === size) &&
-            ((variantColor && color && variantColor === color) ||
-              (variantSize && size && variantSize === size))
-          );
-        }) || null
+    selectedColor?.name || selectedSize
+      ? resolveVariantByAttrs(product, {
+          ...(selectedColor?.name ? { Color: selectedColor.name } : {}),
+          ...(selectedSize ? { Size: selectedSize } : {}),
+        })
       : null;
-  const selectedVariant = extraVariant || colorSizeVariant;
+  const selectedVariant = comboVariant || colorSizeVariant;
   const { price, compareAtPrice, discountPct } = selectedVariant
     ? getDisplayPrice(product, selectedVariant)
     : {
@@ -792,13 +775,12 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                       key={idx}
                       onClick={() => {
                         setSelectedColor(isSelected ? null : col);
-                        setSelectedExtra(null);
                       }}
                       title={col.name}
                       className="flex flex-col items-center gap-1.5 transition-all group"
                     >
                       <span
-                        className={`w-12 h-12 rounded-full block transition-all relative ${
+                        className={`w-10 h-10 rounded-full block transition-all relative ${
                           isSelected
                             ? "scale-110 ring-2 ring-offset-2 ring-gray-900"
                             : "hover:scale-105"
@@ -846,7 +828,7 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
           {/* Size selector — box style */}
           {productSizes.length > 0 && (
             <div className="mb-4">
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-1">
                 <span className="text-sm font-semibold text-gray-800">
                   Size:
                 </span>
@@ -862,7 +844,6 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
                     key={idx}
                     onClick={() => {
                       setSelectedSize(selectedSize === size ? null : size);
-                      setSelectedExtra(null);
                     }}
                     className={`min-w-[48px] h-11 px-4 text-sm font-semibold rounded-lg border-2 transition-all ${
                       selectedSize === size
@@ -877,51 +858,61 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
             </div>
           )}
 
-          {/* Generic variant groups (e.g. Type, Material) — each option is a
-              standalone selection: picking one clears Color/Size and drives
-              price/stock/image on its own. */}
-          {extraGroups.map((group) => (
-            <div className="mb-4" key={group.name}>
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-sm font-semibold text-gray-800">
-                  {group.name}:
-                </span>
-                {selectedExtra?.groupName === group.name && (
-                  <span className="text-sm text-gray-600 font-medium px-2 py-0.5 bg-gray-100 rounded">
-                    {selectedExtra.value}
+          {/* Generic variant groups (e.g. Type, Material) — combinable with
+              Color/Size and with each other. Options impossible for the current
+              combo are disabled. */}
+          {extraGroups.map((group) => {
+            const availfor = getAvailableValues(
+              product,
+              group.name,
+              selectedAttrMap,
+            );
+            return (
+              <div className="mb-4" key={group.name}>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-sm font-semibold text-gray-800">
+                    {group.name}:
                   </span>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {group.options.map((option, idx) => {
-                  const isSelected =
-                    selectedExtra?.groupName === group.name &&
-                    selectedExtra?.value === option.value;
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        setSelectedExtra(
+                  {selectedExtras[group.name] && (
+                    <span className="text-sm text-gray-600 font-medium px-2 py-0.5 bg-gray-100 rounded">
+                      {selectedExtras[group.name]}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {group.options.map((option, idx) => {
+                    const isSelected =
+                      selectedExtras[group.name] === option.value;
+                    const disabled =
+                      availfor.size > 0 &&
+                      !availfor.has(option.value.toLowerCase()) &&
+                      !isSelected;
+                    return (
+                      <button
+                        key={idx}
+                        disabled={disabled}
+                        onClick={() =>
+                          setSelectedExtras((prev) => ({
+                            ...prev,
+                            [group.name]: isSelected ? null : option.value,
+                          }))
+                        }
+                        className={`min-w-[48px] h-11 px-4 text-sm font-semibold rounded-lg border-2 transition-all ${
                           isSelected
-                            ? null
-                            : { groupName: group.name, value: option.value },
-                        );
-                        setSelectedColor(null);
-                        setSelectedSize(null);
-                      }}
-                      className={`min-w-[48px] h-11 px-4 text-sm font-semibold rounded-lg border-2 transition-all ${
-                        isSelected
-                          ? "bg-gray-900 text-white border-gray-900 shadow-md scale-105"
-                          : "bg-white text-gray-700 border-gray-200 hover:border-gray-900 hover:bg-gray-50"
-                      }`}
-                    >
-                      {option.value}
-                    </button>
-                  );
-                })}
+                            ? "bg-gray-900 text-white border-gray-900 shadow-md scale-105"
+                            : disabled
+                              ? "bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed line-through"
+                              : "bg-white text-gray-700 border-gray-200 hover:border-gray-900 hover:bg-gray-50"
+                        }`}
+                      >
+                        {option.value}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           <hr className="border-gray-200 mb-3 mt-1 hidden md:block" />
 
@@ -931,9 +922,13 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
               product={product}
               selectedColor={selectedColor?.name ?? null}
               selectedSize={selectedSize ?? null}
-              forcedVariant={extraVariant}
-              forcedGroupName={selectedExtra?.groupName ?? null}
-              forcedLabel={selectedExtra?.value ?? null}
+              selectedAttributes={selectedExtras}
+              selectedVariant={selectedVariant}
+              selectionComplete={
+                (allColors.length === 0 || !!selectedColor) &&
+                (allSizes.length === 0 || !!selectedSize) &&
+                extraGroups.every((g) => !!selectedExtras[g.name])
+              }
             />
           </div>
 

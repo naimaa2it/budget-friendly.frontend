@@ -475,17 +475,28 @@ export default function ProductDetails({ product, relatedProducts = [] }) {
     if (v) selectedAttrMap[g] = v;
   });
 
-  // The single variant matching the whole combo. Falls back to a color/size-only
-  // match for legacy products whose generic groups aren't stored as true combos.
+  // Exact full-combo match first. If none exists (legacy "standalone" products
+  // where a generic group has its own separate variant), fall back to the
+  // matching generic-group variant, then to a color/size-only match.
   const comboVariant = resolveVariantByAttrs(product, selectedAttrMap);
-  const colorSizeVariant =
-    selectedColor?.name || selectedSize
-      ? resolveVariantByAttrs(product, {
-          ...(selectedColor?.name ? { Color: selectedColor.name } : {}),
-          ...(selectedSize ? { Size: selectedSize } : {}),
-        })
-      : null;
-  const selectedVariant = comboVariant || colorSizeVariant;
+  let fallbackVariant = null;
+  if (!comboVariant) {
+    for (const [g, v] of Object.entries(selectedExtras)) {
+      if (!v) continue;
+      const ev = resolveExtraVariant(product, g, v);
+      if (ev) {
+        fallbackVariant = ev;
+        break;
+      }
+    }
+    if (!fallbackVariant && (selectedColor?.name || selectedSize)) {
+      fallbackVariant = resolveVariantByAttrs(product, {
+        ...(selectedColor?.name ? { Color: selectedColor.name } : {}),
+        ...(selectedSize ? { Size: selectedSize } : {}),
+      });
+    }
+  }
+  const selectedVariant = comboVariant || fallbackVariant;
   const { price, compareAtPrice, discountPct } = selectedVariant
     ? getDisplayPrice(product, selectedVariant)
     : {

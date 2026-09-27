@@ -370,10 +370,25 @@ export default function VariantEditModal({
     if (v) selectedAttrMap[g] = v;
   });
 
+  // Exact full-combo match first. If none exists (legacy "standalone" products
+  // where a generic group has its own separate variant), fall back to the
+  // matching generic-group variant, then to a color/size-only match.
   const comboVariant = resolveVariantByAttrs(product, selectedAttrMap);
-  const colorSizeVariant =
-    selColor || selSize ? resolveVariant(product, selColor, selSize) : null;
-  const selectedVariant = comboVariant || colorSizeVariant;
+  let fallbackVariant = null;
+  if (!comboVariant) {
+    for (const [g, v] of Object.entries(selExtras)) {
+      if (!v) continue;
+      const ev = resolveExtraVariant(product, g, v);
+      if (ev) {
+        fallbackVariant = ev;
+        break;
+      }
+    }
+    if (!fallbackVariant && (selColor || selSize)) {
+      fallbackVariant = resolveVariant(product, selColor, selSize);
+    }
+  }
+  const selectedVariant = comboVariant || fallbackVariant;
   const price =
     selectedVariant?.price != null && selectedVariant.price > 0
       ? selectedVariant.price

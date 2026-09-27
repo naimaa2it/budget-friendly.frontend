@@ -12,6 +12,12 @@ import AddressManager from "@/components/user/AddressManager";
 import UserRewardsSection from "@/components/user/UserRewardsSection";
 import UserLoyaltySection from "@/components/user/UserLoyaltySection";
 import OrderTrackingTimeline from "@/components/order/OrderTrackingTimeline";
+import {
+  getVariantExtraGroups,
+  resolveVariantByAttrs,
+  resolveExtraVariant,
+  getAvailableValues,
+} from "@/components/cart/VariantEditModal";
 import { COUPONS, isNewUser } from "@/lib/coupons";
 import { uploadUserImage } from "@/lib/uploadImage";
 
@@ -364,12 +370,14 @@ function OrdersSection({ API }) {
             quantity: item.quantity,
             color: item.color ?? null,
             size: item.size ?? null,
+            attributes: item.attributes || null,
           })),
           addItems: pendingNewItems.map((ni) => ({
             productId: ni.product._id,
             quantity: ni.qty,
             color: ni.color || null,
             size: ni.size || null,
+            attributes: ni.attributes || null,
           })),
         }),
       });
@@ -443,13 +451,34 @@ function OrdersSection({ API }) {
     ];
   };
 
-  const getVariantPrice = (productId, color, size) => {
+  const getItemExtraGroups = (productId) => {
+    const prod = productVariantsMap[String(productId)];
+    return prod ? getVariantExtraGroups(prod) : [];
+  };
+
+  const getVariantPrice = (productId, color, size, attributes = null) => {
     const prod = productVariantsMap[String(productId)];
     if (!prod) return null;
-    if (!prod.variants?.length || (!color && !size)) return prod.price ?? null;
-    const v = prod.variants.find((v) => {
-      const vc = (v.color?.name || v.attributes?.color || "").toLowerCase();
-      const vs = (v.size || v.attributes?.size || "").toLowerCase();
+    const hasAttrs =
+      attributes && Object.values(attributes).some((v) => v != null && v !== "");
+    if (!prod.variants?.length || (!color && !size && !hasAttrs)) {
+      return prod.price ?? null;
+    }
+    // Full-combo match first.
+    const combo = resolveVariantByAttrs(prod, {
+      ...(color ? { Color: color } : {}),
+      ...(size ? { Size: size } : {}),
+      ...(attributes || {}),
+    });
+    if (combo) return combo.price ?? prod.price ?? null;
+    // Legacy standalone: the generic-group variant on its own.
+    if (hasAttrs) {
+      const extraOnly = resolveVariantByAttrs(prod, attributes);
+      if (extraOnly) return extraOnly.price ?? prod.price ?? null;
+    }
+    const v = prod.variants.find((vv) => {
+      const vc = (vv.color?.name || vv.attributes?.color || "").toLowerCase();
+      const vs = (vv.size || vv.attributes?.size || "").toLowerCase();
       const sc = (color || "").toLowerCase();
       const ss = (size || "").toLowerCase();
       return (!sc || vc === sc) && (!ss || vs === ss);

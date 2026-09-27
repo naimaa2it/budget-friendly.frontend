@@ -12,7 +12,33 @@ import {
   getVariantExtraGroups,
   resolveVariantPrice,
   resolveExtraVariant,
+  resolveVariantByAttrs,
 } from "@/components/cart/VariantEditModal";
+
+// Effective unit price for a color + size + combined generic attributes
+// (full combo → generic group → color/size fallbacks).
+const priceForItemSelection = (product, color, size, attributes) => {
+  if (!product) return null;
+  const extra =
+    attributes && typeof attributes === "object"
+      ? Object.fromEntries(
+          Object.entries(attributes).filter(
+            ([, v]) => v != null && String(v).trim(),
+          ),
+        )
+      : {};
+  const combo = resolveVariantByAttrs(product, {
+    ...(color ? { Color: color } : {}),
+    ...(size ? { Size: size } : {}),
+    ...extra,
+  });
+  if (combo?.price != null && combo.price > 0) return combo.price;
+  for (const [g, v] of Object.entries(extra)) {
+    const ev = resolveExtraVariant(product, g, v);
+    if (ev?.price != null && ev.price > 0) return ev.price;
+  }
+  return resolveVariantPrice(product, color, size);
+};
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
@@ -225,40 +251,32 @@ export default function OrderDetails({ orderId }) {
       const nextColor = field === "color" ? value || null : item.color;
       const nextSize = field === "size" ? value || null : item.size;
       const price = product
-        ? resolveVariantPrice(product, nextColor, nextSize)
+        ? priceForItemSelection(product, nextColor, nextSize, item.attributes)
         : item.price;
-      return {
-        ...item,
-        color: nextColor,
-        size: nextSize,
-        attrGroup: null,
-        attrValue: null,
-        price,
-      };
+      return { ...item, color: nextColor, size: nextSize, price };
     });
     setEditItems(next);
     saveLineItems(next, editShipping, editDiscount);
   };
 
-  // Change an item's standalone generic-group selection (e.g. Type=Charging),
-  // re-price from that row, and persist. Clears Color/Size — independent.
+  // Toggle an item's generic-group selection (e.g. Type=8 Pin) — combinable with
+  // Color/Size and other groups; re-price from the full combo, then persist.
   const changeItemAttr = (index, groupName, value) => {
     const next = editItems.map((item, i) => {
       if (i !== index) return item;
       const product = productMap[item.productId];
-      const nextGroup = value ? groupName : null;
-      const nextValue = value || null;
-      const variant =
-        product && nextValue
-          ? resolveExtraVariant(product, nextGroup, nextValue)
-          : null;
-      const price = nextValue ? (variant?.price ?? item.price) : item.price;
+      const nextAttrs = { ...(item.attributes || {}) };
+      if (value) nextAttrs[groupName] = value;
+      else delete nextAttrs[groupName];
+      const price = product
+        ? priceForItemSelection(product, item.color, item.size, nextAttrs)
+        : item.price;
+      const first = Object.entries(nextAttrs).find(([, v]) => v);
       return {
         ...item,
-        color: null,
-        size: null,
-        attrGroup: nextGroup,
-        attrValue: nextValue,
+        attributes: Object.keys(nextAttrs).length ? nextAttrs : null,
+        attrGroup: first ? first[0] : null,
+        attrValue: first ? first[1] : null,
         price,
       };
     });
@@ -760,9 +778,7 @@ export default function OrderDetails({ orderId }) {
                                     <select
                                       key={group.name}
                                       value={
-                                        item.attrGroup === group.name
-                                          ? item.attrValue || ""
-                                          : ""
+                                        (item.attributes || {})[group.name] || ""
                                       }
                                       disabled={saving}
                                       onChange={(e) =>
@@ -788,19 +804,22 @@ export default function OrderDetails({ orderId }) {
                             // Product still loading (or has no variants at all)
                             // → show the stored selection as plain text so it's
                             // never silently lost from view.
-                            if (
-                              item.color ||
-                              item.size ||
-                              (item.attrGroup && item.attrValue)
-                            ) {
+                            const attrPairs =
+                              item.attributes &&
+                              typeof item.attributes === "object"
+                                ? Object.entries(item.attributes).filter(
+                                    ([, v]) => v,
+                                  )
+                                : item.attrGroup && item.attrValue
+                                  ? [[item.attrGroup, item.attrValue]]
+                                  : [];
+                            if (item.color || item.size || attrPairs.length) {
                               return (
                                 <p className="mt-0.5 text-xs text-gray-500">
                                   {[
                                     item.color && `Color: ${item.color}`,
                                     item.size && `Size: ${item.size}`,
-                                    item.attrGroup &&
-                                      item.attrValue &&
-                                      `${item.attrGroup}: ${item.attrValue}`,
+                                    ...attrPairs.map(([g, v]) => `${g}: ${v}`),
                                   ]
                                     .filter(Boolean)
                                     .join(" · ")}

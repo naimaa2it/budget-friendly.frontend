@@ -19,7 +19,34 @@ import {
   getVariantExtraGroups,
   resolveVariantPrice,
   resolveExtraVariant,
+  resolveVariantByAttrs,
+  getAvailableValues,
 } from "@/components/cart/VariantEditModal";
+
+// Effective unit price for a color + size + combined generic attributes, with the
+// same fallbacks as the storefront (full combo → generic group → color/size).
+const priceForItemSelection = (product, color, size, attributes) => {
+  if (!product) return null;
+  const extra =
+    attributes && typeof attributes === "object"
+      ? Object.fromEntries(
+          Object.entries(attributes).filter(
+            ([, v]) => v != null && String(v).trim(),
+          ),
+        )
+      : {};
+  const combo = resolveVariantByAttrs(product, {
+    ...(color ? { Color: color } : {}),
+    ...(size ? { Size: size } : {}),
+    ...extra,
+  });
+  if (combo?.price != null && combo.price > 0) return combo.price;
+  for (const [g, v] of Object.entries(extra)) {
+    const ev = resolveExtraVariant(product, g, v);
+    if (ev?.price != null && ev.price > 0) return ev.price;
+  }
+  return resolveVariantPrice(product, color, size);
+};
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
@@ -3227,6 +3254,7 @@ function CreateOrderModal({
       size: i.size || null,
       attrGroup: i.attrGroup || null,
       attrValue: i.attrValue || null,
+      attributes: i.attributes || null,
     })),
   );
 
@@ -3272,8 +3300,8 @@ function CreateOrderModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemIdsKey]);
 
-  // Change an item's color/size; re-price it from the matched variant. Clears
-  // any standalone group selection — groups are independent, never combined.
+  // Change an item's color/size; re-price it from the matched combo. Generic
+  // group selections are kept — combinable with color/size.
   const setItemVariant = (idx, field, value) => {
     setItems((prev) =>
       prev.map((it, i) => {
@@ -3282,40 +3310,33 @@ function CreateOrderModal({
         const nextColor = field === "color" ? value || null : it.color;
         const nextSize = field === "size" ? value || null : it.size;
         const price = product
-          ? resolveVariantPrice(product, nextColor, nextSize)
+          ? priceForItemSelection(product, nextColor, nextSize, it.attributes)
           : it.price;
-        return {
-          ...it,
-          color: nextColor,
-          size: nextSize,
-          attrGroup: null,
-          attrValue: null,
-          price,
-        };
+        return { ...it, color: nextColor, size: nextSize, price };
       }),
     );
   };
 
-  // Change an item's standalone generic-group selection (e.g. Type=Charging);
-  // re-price it from that row. Clears Color/Size — independent.
+  // Toggle an item's generic-group selection (e.g. Type=8 Pin) — combinable with
+  // Color/Size and other groups; re-price from the full combo.
   const setItemAttr = (idx, groupName, value) => {
     setItems((prev) =>
       prev.map((it, i) => {
         if (i !== idx) return it;
         const product = productMap[it.productId];
-        const nextGroup = value ? groupName : null;
-        const nextValue = value || null;
-        const variant =
-          product && nextValue
-            ? resolveExtraVariant(product, nextGroup, nextValue)
-            : null;
-        const price = nextValue ? (variant?.price ?? it.price) : it.price;
+        const nextAttrs = { ...(it.attributes || {}) };
+        if (value) nextAttrs[groupName] = value;
+        else delete nextAttrs[groupName];
+        const price = product
+          ? priceForItemSelection(product, it.color, it.size, nextAttrs)
+          : it.price;
+        // Keep legacy first-entry fields in sync for backward compatibility.
+        const first = Object.entries(nextAttrs).find(([, v]) => v);
         return {
           ...it,
-          color: null,
-          size: null,
-          attrGroup: nextGroup,
-          attrValue: nextValue,
+          attributes: Object.keys(nextAttrs).length ? nextAttrs : null,
+          attrGroup: first ? first[0] : null,
+          attrValue: first ? first[1] : null,
           price,
         };
       }),
@@ -3453,6 +3474,7 @@ function CreateOrderModal({
               size: i.size || undefined,
               attrGroup: i.attrGroup || undefined,
               attrValue: i.attrValue || undefined,
+              attributes: i.attributes || undefined,
             })),
             city: resolvedCity,
             zone: zone || undefined,
@@ -3509,6 +3531,7 @@ function CreateOrderModal({
             size: i.size || undefined,
             attrGroup: i.attrGroup || undefined,
             attrValue: i.attrValue || undefined,
+            attributes: i.attributes || undefined,
           })),
           customer: {
             name: name.trim(),
@@ -3791,9 +3814,14 @@ function CreateOrderModal({
                             (and its dropdowns) haven't loaded yet. */}
                         {!product && it.color ? ` · ${it.color}` : ""}
                         {!product && it.size ? ` · ${it.size}` : ""}
-                        {!product && it.attrGroup && it.attrValue
-                          ? ` · ${it.attrGroup}: ${it.attrValue}`
-                          : ""}
+                        {!product && it.attributes
+                          ? Object.entries(it.attributes)
+                              .filter(([, v]) => v)
+                              .map(([g, v]) => ` · ${g}: ${v}`)
+                              .join("")
+                          : !product && it.attrGroup && it.attrValue
+                            ? ` · ${it.attrGroup}: ${it.attrValue}`
+                            : ""}
                       </p>
                       {/* Variant pickers — staff can select/change color, size,
                           or any custom group. Products without variants show
@@ -3837,11 +3865,7 @@ function CreateOrderModal({
                           {extraGroups.map((group) => (
                             <select
                               key={group.name}
-                              value={
-                                it.attrGroup === group.name
-                                  ? it.attrValue || ""
-                                  : ""
-                              }
+                              value={(it.attributes || {})[group.name] || ""}
                               onChange={(e) =>
                                 setItemAttr(idx, group.name, e.target.value)
                               }
@@ -4148,11 +4172,20 @@ function AbandonedCartModal({ user, onClose, onCreateOrder }) {
                         <span className="ml-1">· {item.color}</span>
                       )}
                       {item.size && <span className="ml-1">· {item.size}</span>}
-                      {item.attrGroup && item.attrValue && (
-                        <span className="ml-1">
-                          · {item.attrGroup}: {item.attrValue}
-                        </span>
-                      )}
+                      {item.attributes
+                        ? Object.entries(item.attributes)
+                            .filter(([, v]) => v)
+                            .map(([g, v]) => (
+                              <span key={g} className="ml-1">
+                                · {g}: {v}
+                              </span>
+                            ))
+                        : item.attrGroup &&
+                          item.attrValue && (
+                            <span className="ml-1">
+                              · {item.attrGroup}: {item.attrValue}
+                            </span>
+                          )}
                       {" × "}
                       {item.quantity}
                     </p>
@@ -4952,6 +4985,20 @@ function CheckoutSessionModal({ session, onClose, onCreateOrder }) {
                         <span className="ml-1">· {item.color}</span>
                       )}
                       {item.size && <span className="ml-1">· {item.size}</span>}
+                      {item.attributes
+                        ? Object.entries(item.attributes)
+                            .filter(([, v]) => v)
+                            .map(([g, v]) => (
+                              <span key={g} className="ml-1">
+                                · {g}: {v}
+                              </span>
+                            ))
+                        : item.attrGroup &&
+                          item.attrValue && (
+                            <span className="ml-1">
+                              · {item.attrGroup}: {item.attrValue}
+                            </span>
+                          )}
                     </p>
                   </div>
                   <p className="text-sm font-semibold text-gray-700 shrink-0">

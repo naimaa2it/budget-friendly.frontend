@@ -399,19 +399,27 @@ export default function OrderPrintView({
                         >
                           {item.title}
                         </p>
-                        {(item.color || item.size) && (
-                          <p
-                            style={{
-                              fontSize: "9px",
-                              color: "#6b7280",
-                              margin: "0 0 4px",
-                            }}
-                          >
-                            {[item.color, item.size]
-                              .filter(Boolean)
-                              .join(" · ")}
-                          </p>
-                        )}
+                        {(() => {
+                          const parts = [item.color, item.size].filter(Boolean);
+                          if (item.attributes) {
+                            Object.entries(item.attributes)
+                              .filter(([, v]) => v)
+                              .forEach(([g, v]) => parts.push(`${g}: ${v}`));
+                          } else if (item.attrGroup && item.attrValue) {
+                            parts.push(`${item.attrGroup}: ${item.attrValue}`);
+                          }
+                          return parts.length ? (
+                            <p
+                              style={{
+                                fontSize: "9px",
+                                color: "#6b7280",
+                                margin: "0 0 4px",
+                              }}
+                            >
+                              {parts.join(" · ")}
+                            </p>
+                          ) : null;
+                        })()}
                         <p
                           style={{
                             fontSize: "9px",
@@ -869,27 +877,34 @@ export default function OrderPrintView({
                           >
                             {item.title}
                           </p>
-                          {(item.color ||
-                            item.size ||
-                            (item.attrGroup && item.attrValue)) && (
-                            <p
-                              style={{
-                                margin: "2px 0 0",
-                                fontSize: "9px",
-                                color: "#9ca3af",
-                              }}
-                            >
-                              {[
-                                item.color && `Color: ${item.color}`,
-                                item.size && `Size: ${item.size}`,
-                                item.attrGroup &&
-                                  item.attrValue &&
-                                  `${item.attrGroup}: ${item.attrValue}`,
-                              ]
-                                .filter(Boolean)
-                                .join("  ·  ")}
-                            </p>
-                          )}
+                          {(() => {
+                            const attrPairs = item.attributes
+                              ? Object.entries(item.attributes)
+                                  .filter(([, v]) => v)
+                                  .map(([g, v]) => `${g}: ${v}`)
+                              : item.attrGroup && item.attrValue
+                                ? [`${item.attrGroup}: ${item.attrValue}`]
+                                : [];
+                            if (!item.color && !item.size && !attrPairs.length)
+                              return null;
+                            return (
+                              <p
+                                style={{
+                                  margin: "2px 0 0",
+                                  fontSize: "9px",
+                                  color: "#9ca3af",
+                                }}
+                              >
+                                {[
+                                  item.color && `Color: ${item.color}`,
+                                  item.size && `Size: ${item.size}`,
+                                  ...attrPairs,
+                                ]
+                                  .filter(Boolean)
+                                  .join("  ·  ")}
+                              </p>
+                            );
+                          })()}
                           {item.barcode && (
                             <div style={{ marginTop: "4px" }}>
                               <BarcodeSvg code={item.barcode} />

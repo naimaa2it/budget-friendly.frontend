@@ -9,16 +9,40 @@ import {
   resolveVariant,
   resolveVariantPrice,
   resolveExtraVariant,
+  resolveVariantByAttrs,
 } from "@/components/cart/VariantEditModal";
 
-// A shared-cart item may carry either a Color/Size selection or a standalone
-// generic-group selection (e.g. Type=Charging) — never both.
-const priceOf = (i) => {
-  if (i.attrGroup && i.attrValue) {
-    const v = resolveExtraVariant(i.product, i.attrGroup, i.attrValue);
-    return v?.price ?? i.product.price ?? 0;
+// Normalise a shared-cart item's variant selection into a combinable map.
+const itemAttrs = (i) => {
+  if (i.attributes && typeof i.attributes === "object") {
+    return Object.fromEntries(
+      Object.entries(i.attributes).filter(([, v]) => v != null && v !== ""),
+    );
   }
-  return resolveVariantPrice(i.product, i.color, i.size) || i.product.price || 0;
+  if (i.attrGroup && i.attrValue) return { [i.attrGroup]: i.attrValue };
+  return {};
+};
+
+// Resolve the variant matching the whole combo, with legacy fallbacks.
+const variantOf = (i) => {
+  const attrs = itemAttrs(i);
+  const combo = resolveVariantByAttrs(i.product, {
+    ...(i.color ? { Color: i.color } : {}),
+    ...(i.size ? { Size: i.size } : {}),
+    ...attrs,
+  });
+  if (combo) return combo;
+  for (const [g, v] of Object.entries(attrs)) {
+    const ev = resolveExtraVariant(i.product, g, v);
+    if (ev) return ev;
+  }
+  return resolveVariant(i.product, i.color, i.size);
+};
+
+const priceOf = (i) => {
+  const v = variantOf(i);
+  return v?.price ?? resolveVariantPrice(i.product, i.color, i.size) ??
+    i.product.price ?? 0;
 };
 import { FaShoppingCart, FaUsers } from "react-icons/fa";
 
@@ -56,20 +80,11 @@ export default function SharedCartView({ token }) {
   const handleAddAll = () => {
     setAdding(true);
     items.forEach((i) => {
-      if (i.attrGroup && i.attrValue) {
-        const variant = resolveExtraVariant(i.product, i.attrGroup, i.attrValue);
-        addToCart(i.product, i.quantity, {
-          selectedAttr: { groupName: i.attrGroup, value: i.attrValue },
-          selectedVariant: variant,
-          silent: true,
-        });
-        return;
-      }
-      const variant = resolveVariant(i.product, i.color, i.size);
       addToCart(i.product, i.quantity, {
         selectedColor: i.color || null,
         selectedSize: i.size || null,
-        selectedVariant: variant,
+        selectedAttributes: itemAttrs(i),
+        selectedVariant: variantOf(i),
         silent: true,
       });
     });
@@ -137,9 +152,9 @@ export default function SharedCartView({ token }) {
                     Qty: {item.quantity}
                     {item.color ? ` · ${item.color}` : ""}
                     {item.size ? ` · ${item.size}` : ""}
-                    {item.attrGroup && item.attrValue
-                      ? ` · ${item.attrGroup}: ${item.attrValue}`
-                      : ""}
+                    {Object.entries(itemAttrs(item))
+                      .map(([g, v]) => ` · ${g}: ${v}`)
+                      .join("")}
                   </div>
                 </div>
                 <div className="text-right font-semibold text-gray-800">

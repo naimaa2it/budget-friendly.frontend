@@ -295,10 +295,19 @@ export default function ChatWidget() {
     });
   };
 
+  // Is the view already pinned to (or near) the bottom? Used so background polls
+  // don't yank the user back down while they're scrolled up reading history.
+  const isNearBottom = () => {
+    const el = scrollRef.current;
+    if (!el) return true;
+    return el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+  };
+
   const fetchThread = useCallback(() => {
     if (!visitorId.current) return;
     if (pendingSends.current > 0) return;
     const seq = ++reqSeq.current;
+    const firstLoad = !loaded; // very first fill of this thread → always land at bottom
     fetch(
       `${API}/api/chat/thread?visitorId=${encodeURIComponent(
         visitorId.current
@@ -312,8 +321,12 @@ export default function ChatWidget() {
         setLoaded(true);
       })
       .catch(() => {})
-      .finally(scrollToBottom);
-  }, []);
+      // Only stick to the bottom on the first load, or when the user is already
+      // there. If they've scrolled up to read older messages, leave them be.
+      .finally(() => {
+        if (firstLoad || isNearBottom()) scrollToBottom();
+      });
+  }, [loaded]);
 
   // Start a fresh conversation while KEEPING the same visitor identity (and
   // name/phone). A new sessionId spins up a brand new thread server-side; the

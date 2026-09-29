@@ -3,7 +3,6 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import OrderTrackingTimeline from "@/components/order/OrderTrackingTimeline";
 import BookWithCourierModal from "@/components/dashboard/Order/BookWithCourierModal";
 import { formatOrderId } from "@/lib/orderId";
 import {
@@ -1061,35 +1060,6 @@ export default function OrderDetails({ orderId }) {
               </div>
             )}
           </div>
-
-          {/* Tracking */}
-          {(order.shipment?.trackingUrl ||
-            order.shipment?.trackingEvents?.length > 0) && (
-            <div className="bg-white rounded-xl border shadow-sm p-5">
-              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
-                Tracking
-              </h2>
-              {order.shipment?.trackingUrl && (
-                <a
-                  href={order.shipment.trackingUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-rose-600 hover:underline font-medium"
-                >
-                  Open live tracking link ↗
-                </a>
-              )}
-              <div className="mt-4">
-                <OrderTrackingTimeline order={order} />
-              </div>
-              <Link
-                href={`/dashboard/shipment-tracking?order=${order._id}`}
-                className="inline-block mt-3 text-sm text-purple-700 hover:underline"
-              >
-                Manage tracking →
-              </Link>
-            </div>
-          )}
 
           {/* Status history — every status change with its reason, including
               cancellations made by the customer */}

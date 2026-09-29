@@ -10,17 +10,23 @@ const SESSION_KEY = "Pickob-chat-session"; // current conversation (New chat min
 const PHONE_KEY = "Pickob-chat-phone";
 const NAME_KEY = "Pickob-chat-name";
 const PHONE_TS_KEY = "Pickob-chat-phone-ts"; // last-activity time for the phone gate
-const PHONE_TTL_MS = 60 * 60 * 1000; // 1 hour idle → must re-confirm name + number
+// Idle window before the gate re-asks for name + number. Dashboard-controlled
+// (Settings → Chat Widget → session timeout); this is only the fallback used
+// until /top-banner loads. Kept in a mutable module var so the module-level
+// helpers below (loadPhone) can honour the live value without prop drilling.
+const DEFAULT_TTL_MIN = 60;
+let phoneTtlMs = DEFAULT_TTL_MIN * 60 * 1000; // overwritten once admin config loads
 const POLL_MS = 5000;
 
 // Env fallbacks used only until the live admin config (chatWidget) loads.
 const ENV_FB = process.env.NEXT_PUBLIC_FB_MESSENGER_URL || "";
 const ENV_WA = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "";
 
-// Phone-gate persistence with a 1-hour *idle* window. Any activity (opening the
-// widget, sending a message) refreshes the timer, so a continuous chat never
-// locks; but leaving and coming back after 1 idle hour asks the visitor to
-// confirm name + number again (pre-filled with what we know — one click). If
+// Phone-gate persistence with an admin-configurable *idle* window (phoneTtlMs).
+// Any activity (opening the widget, sending a message) refreshes the timer, so a
+// continuous chat never locks; but leaving and coming back after the idle window
+// asks the visitor to confirm name + number again (pre-filled with what we know
+// — one click). If
 // they confirm the SAME number, the sessionId is unchanged so the same chat
 // history reappears; a DIFFERENT number starts a brand-new thread (see
 // submitPhone), so a new customer never sees the previous person's history.
@@ -28,7 +34,7 @@ function loadPhone() {
   try {
     const p = localStorage.getItem(PHONE_KEY) || "";
     const ts = parseInt(localStorage.getItem(PHONE_TS_KEY) || "0", 10);
-    if (p && ts && Date.now() - ts <= PHONE_TTL_MS) return p;
+    if (p && ts && Date.now() - ts <= phoneTtlMs) return p;
   } catch {}
   return "";
 }
@@ -236,7 +242,7 @@ export default function ChatWidget() {
     if (phone) saveGate(name, phone);
   }, [phone, name]);
 
-  // Enforce the 1-hour idle window: once activity stops for that long, drop the
+  // Enforce the idle window: once activity stops for that long, drop the
   // phone so the re-confirm form reappears — pre-filled with the name/number we
   // already know, so resuming the previous chat is one click.
   useEffect(() => {
@@ -303,6 +309,9 @@ export default function ChatWidget() {
             facebookMessengerUrl: d.chatWidget.facebookMessengerUrl || "",
             whatsappNumber: d.chatWidget.whatsappNumber || "",
           });
+          // Apply the admin-set idle timeout for the phone gate.
+          const mins = Number(d.chatWidget.sessionTtlMinutes);
+          if (Number.isFinite(mins) && mins >= 1) phoneTtlMs = mins * 60 * 1000;
         }
       })
       .catch(() => {})

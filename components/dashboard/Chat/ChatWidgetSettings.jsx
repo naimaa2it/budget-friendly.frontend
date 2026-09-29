@@ -30,6 +30,7 @@ export default function ChatWidgetSettings() {
     enabled: true,
     facebookMessengerUrl: "",
     whatsappNumber: "",
+    sessionTtlMinutes: 60,
   });
   const [schedule, setSchedule] = useState({
     enabled: true,
@@ -50,6 +51,7 @@ export default function ChatWidgetSettings() {
           enabled: cw.enabled !== false,
           facebookMessengerUrl: cw.facebookMessengerUrl || "",
           whatsappNumber: cw.whatsappNumber || "",
+          sessionTtlMinutes: Number(cw.sessionTtlMinutes) > 0 ? Number(cw.sessionTtlMinutes) : 60,
         });
         const sched = b.settings?.chatbotSchedule || {};
         setSchedule({
@@ -189,6 +191,32 @@ export default function ChatWidgetSettings() {
                 বাটন দেখাবে না।
               </p>
             </div>
+          </div>
+
+          {/* In-site chat session timeout — decoupled from the master toggle
+              since it governs the "Chat with us" thread, not the FB/WA links. */}
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              চ্যাট সেশন টাইমআউট (মিনিট)
+            </label>
+            <input
+              type="number"
+              min={1}
+              max={1440}
+              value={widget.sessionTtlMinutes}
+              onChange={(e) => setW("sessionTtlMinutes", e.target.value)}
+              onBlur={(e) => {
+                const n = Math.round(Number(e.target.value));
+                setW("sessionTtlMinutes", Number.isFinite(n) && n >= 1 ? Math.min(n, 1440) : 60);
+              }}
+              className={`${INPUT} max-w-40`}
+              placeholder="60"
+            />
+            <p className="mt-1 text-[11px] text-gray-400">
+              ইন-সাইট চ্যাটে এতক্ষণ নিষ্ক্রিয় থাকলে আবার নাম ও নম্বর চাইবে। একই নম্বর
+              দিলে আগের চ্যাট খুলবে, নতুন নম্বর দিলে নতুন চ্যাট শুরু হবে (আগের কথা দেখাবে
+              না)। ডিফল্ট ৬০ মিনিট।
+            </p>
           </div>
         </div>
       </div>

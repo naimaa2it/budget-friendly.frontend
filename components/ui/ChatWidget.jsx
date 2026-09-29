@@ -7,6 +7,7 @@ import { useUser } from "@/components/context/UserContext";
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 const VISITOR_KEY = "Pickob-chat-visitor";
 const SESSION_KEY = "Pickob-chat-session"; // current conversation (New chat mints a fresh one)
+const SESSIONS_KEY = "Pickob-chat-sessions"; // { [phone]: sessionId } — the thread each number owns
 const PHONE_KEY = "Pickob-chat-phone";
 const NAME_KEY = "Pickob-chat-name";
 const PHONE_TS_KEY = "Pickob-chat-phone-ts"; // last-activity time for the phone gate
@@ -161,6 +162,33 @@ function getSessionId() {
   return id;
 }
 
+function mintSessionId() {
+  return "s_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+// The chat thread is owned by the NUMBER, not the device. We keep a
+// { phone → sessionId } map so re-entering a number always reopens *its* chat,
+// and a different number always opens a different one — regardless of name.
+function sessionMap() {
+  try { return JSON.parse(localStorage.getItem(SESSIONS_KEY) || "{}") || {}; }
+  catch { return {}; }
+}
+function saveSessionMap(m) {
+  try { localStorage.setItem(SESSIONS_KEY, JSON.stringify(m)); } catch {}
+}
+// Resolve the session a number owns, creating (and recording) one the first time
+// we see that number. The current session is adopted for the first number only
+// if no other number has already claimed it, so numbers never share a thread.
+function sessionForPhone(phone, currentSid) {
+  const m = sessionMap();
+  if (m[phone]) return m[phone];
+  const claimed = Object.values(m);
+  const sid = currentSid && !claimed.includes(currentSid) ? currentSid : mintSessionId();
+  m[phone] = sid;
+  saveSessionMap(m);
+  return sid;
+}
+
 // Same device fingerprint the checkout uses (`_yh_did`), so a chat can be
 // linked to orders placed from this browser — surfacing the real customer.
 function getDeviceId() {
@@ -230,12 +258,22 @@ export default function ChatWidget() {
   }, []);
 
   // A logged-in customer's own name + mobile satisfy the gate automatically (and
-  // re-fill it even after the idle window expires — they stay identified).
+  // re-fill it even after the idle window expires — they stay identified). Claim
+  // their number's thread in the map too, so it owns a session like any other
+  // number (and a different number entered later can't adopt it).
   const userPhone = normalizeBdPhone(user?.mobile || "");
-  if (!phone && userPhone) {
+  useEffect(() => {
+    if (phone || !userPhone) return;
+    const sid = sessionForPhone(userPhone, sessionId.current);
+    if (sid !== sessionId.current) {
+      localStorage.setItem(SESSION_KEY, sid);
+      sessionId.current = sid;
+      setMessages([]);
+      setLoaded(false);
+    }
     setPhone(userPhone);
     setName(user?.name || "");
-  }
+  }, [phone, userPhone]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Persist the confirmed gate (localStorage only — no setState).
   useEffect(() => {
@@ -271,17 +309,14 @@ export default function ChatWidget() {
     }
     setPhoneError("");
 
-    // Resume vs. new chat is decided by the *number*, not the device. If the
-    // confirmed number matches the one tied to the current thread, keep the
-    // sessionId so the previous history reappears. A different number means a
-    // different customer on this browser → mint a fresh sessionId so they start
-    // clean and never see the earlier person's messages (name can differ freely
-    // for the same number — only the number switches the thread).
-    const prev = knownPhone();
-    if (prev && prev !== n) {
-      const id = "s_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-      localStorage.setItem(SESSION_KEY, id);
-      sessionId.current = id;
+    // Resume vs. new chat is decided purely by the NUMBER (name is irrelevant).
+    // Look up the thread this number owns — same number reopens its own history,
+    // a different number opens (or creates) a separate thread. Switching threads
+    // resets the view so one customer never sees another's messages.
+    const sid = sessionForPhone(n, sessionId.current);
+    if (sid !== sessionId.current) {
+      localStorage.setItem(SESSION_KEY, sid);
+      sessionId.current = sid;
       reqSeq.current = 0;
       appliedSeq.current = 0;
       pendingSends.current = 0;
@@ -363,8 +398,15 @@ export default function ChatWidget() {
   // name/phone). A new sessionId spins up a brand new thread server-side; the
   // old one stays saved separately in the admin inbox.
   const newChat = () => {
-    const id = "s_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    const id = mintSessionId();
     localStorage.setItem(SESSION_KEY, id);
+    // Rebind the current number to this fresh thread, so re-entering the number
+    // later resumes THIS new chat rather than the one we just left behind.
+    if (phone) {
+      const m = sessionMap();
+      m[phone] = id;
+      saveSessionMap(m);
+    }
     sessionId.current = id;
     reqSeq.current = 0;
     appliedSeq.current = 0;

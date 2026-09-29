@@ -10,18 +10,20 @@ const SESSION_KEY = "Pickob-chat-session"; // current conversation (New chat min
 const PHONE_KEY = "Pickob-chat-phone";
 const NAME_KEY = "Pickob-chat-name";
 const PHONE_TS_KEY = "Pickob-chat-phone-ts"; // last-activity time for the phone gate
-const PHONE_TTL_MS = 5 * 60 * 1000; // 5 min idle → must re-confirm name + number
+const PHONE_TTL_MS = 60 * 60 * 1000; // 1 hour idle → must re-confirm name + number
 const POLL_MS = 5000;
 
 // Env fallbacks used only until the live admin config (chatWidget) loads.
 const ENV_FB = process.env.NEXT_PUBLIC_FB_MESSENGER_URL || "";
 const ENV_WA = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "";
 
-// Phone-gate persistence with a 5-min *idle* window. Any activity (opening the
+// Phone-gate persistence with a 1-hour *idle* window. Any activity (opening the
 // widget, sending a message) refreshes the timer, so a continuous chat never
-// locks; but leaving and coming back after 5 idle minutes asks the visitor to
-// confirm name + number again (pre-filled with what we know — one click). The
-// sessionId is unchanged, so the same chat history reappears once confirmed.
+// locks; but leaving and coming back after 1 idle hour asks the visitor to
+// confirm name + number again (pre-filled with what we know — one click). If
+// they confirm the SAME number, the sessionId is unchanged so the same chat
+// history reappears; a DIFFERENT number starts a brand-new thread (see
+// submitPhone), so a new customer never sees the previous person's history.
 function loadPhone() {
   try {
     const p = localStorage.getItem(PHONE_KEY) || "";
@@ -234,7 +236,7 @@ export default function ChatWidget() {
     if (phone) saveGate(name, phone);
   }, [phone, name]);
 
-  // Enforce the 5-min idle window: once activity stops for that long, drop the
+  // Enforce the 1-hour idle window: once activity stops for that long, drop the
   // phone so the re-confirm form reappears — pre-filled with the name/number we
   // already know, so resuming the previous chat is one click.
   useEffect(() => {
@@ -262,6 +264,26 @@ export default function ChatWidget() {
       return;
     }
     setPhoneError("");
+
+    // Resume vs. new chat is decided by the *number*, not the device. If the
+    // confirmed number matches the one tied to the current thread, keep the
+    // sessionId so the previous history reappears. A different number means a
+    // different customer on this browser → mint a fresh sessionId so they start
+    // clean and never see the earlier person's messages (name can differ freely
+    // for the same number — only the number switches the thread).
+    const prev = knownPhone();
+    if (prev && prev !== n) {
+      const id = "s_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+      localStorage.setItem(SESSION_KEY, id);
+      sessionId.current = id;
+      reqSeq.current = 0;
+      appliedSeq.current = 0;
+      pendingSends.current = 0;
+      setMessages([]);
+      setQuick(DEFAULT_QUICK);
+      setLoaded(false);
+    }
+
     setName(nm);
     setPhone(n);
     saveGate(nm, n);

@@ -6,8 +6,6 @@ import { formatOrderId } from "@/lib/orderId";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.pickob.com";
 
-const PICKED_STATUSES = ["accepted", "picked", "approved"];
-
 const STATUS_STYLE = {
   pending: "bg-yellow-100 text-yellow-800",
   accepted: "bg-emerald-100 text-emerald-800",
@@ -149,9 +147,10 @@ export default function OrderPickManager() {
               </thead>
               <tbody className="divide-y">
                 {orders.map((order) => {
-                  const isPicked =
-                    PICKED_STATUSES.includes(order.status) ||
-                    Boolean(order.pickedBy?.name);
+                  // Pick state is decoupled from order.status — picking/accepting
+                  // is purely about who claimed the order (pickedBy). Order status
+                  // is changed only by an authorized person via "Update status".
+                  const isPicked = Boolean(order.pickedBy?.name);
                   return (
                     <tr
                       key={order._id}

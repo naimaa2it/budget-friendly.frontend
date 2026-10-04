@@ -136,6 +136,10 @@ function PaymentPageInner() {
   const method = params.get("method") || "bkash";
   const amount = Number(params.get("amount") || 0);
   const merchant = params.get("merchant") || "";
+  // Guest access token — threaded through to the order fetch and the thank-you
+  // redirect so unauthenticated customers still see full order details.
+  const accessToken = params.get("t") || "";
+  const tokenQS = accessToken ? `&t=${encodeURIComponent(accessToken)}` : "";
 
   const cfg = CONFIG[method] || CONFIG.bkash;
   const Logo = LOGOS[method] || LOGOS.bkash;
@@ -153,24 +157,33 @@ function PaymentPageInner() {
   // Fetch the human-facing order number (e.g. "pk100000").
   useEffect(() => {
     if (!orderId) return;
-    fetch(`${API}/api/orders/${orderId}`, { credentials: "include" })
+    fetch(
+      `${API}/api/orders/${orderId}${
+        accessToken ? `?token=${encodeURIComponent(accessToken)}` : ""
+      }`,
+      { credentials: "include" },
+    )
       .then((r) => r.json())
       .then((d) => {
         const o = d.order || d;
         if (o?._id) setOrderNumber(formatOrderId(o));
       })
       .catch(() => {});
-  }, [orderId]);
+  }, [orderId, accessToken]);
 
   const handleSwitchToCOD = async () => {
     setSwitching(true);
     try {
       await fetch(`${API}/api/orders/${orderId}/switch-to-cod`, {
         method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
+        body: JSON.stringify({ token: accessToken || undefined }),
       });
     } catch {}
-    router.push(`/thankyou/success?orderId=${orderId}&method=cash-on-delivery`);
+    router.push(
+      `/thankyou/success?orderId=${orderId}&method=cash-on-delivery${tokenQS}`,
+    );
   };
 
   // countdown + auto-submit on step 3
@@ -189,13 +202,16 @@ function PaymentPageInner() {
       body: JSON.stringify({
         senderNumber: senderNumber.trim(),
         transactionId: txId.trim(),
+        token: accessToken || undefined,
       }),
     })
       .catch(() => {})
       .finally(() => {
-        router.push(`/thankyou/success?orderId=${orderId}&method=${method}`);
+        router.push(
+          `/thankyou/success?orderId=${orderId}&method=${method}${tokenQS}`,
+        );
       });
-  }, [step, countdown, orderId, method, senderNumber, txId, router]);
+  }, [step, countdown, orderId, method, senderNumber, txId, router, tokenQS]);
 
   return (
     <div className="min-h-screen bg-gray-200 flex items-center justify-center p-4">

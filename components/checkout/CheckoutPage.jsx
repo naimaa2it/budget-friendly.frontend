@@ -832,7 +832,11 @@ export default function CheckoutPage() {
         // Cash on Delivery — set flag BEFORE clearing cart to suppress redirect
         orderPlaced.current = true;
         clearCart();
-        router.push(`/thankyou/success?orderId=${result.orderId}&method=cod`);
+        router.push(
+          `/thankyou/success?orderId=${result.orderId}&method=cod${
+            result.token ? `&t=${result.token}` : ""
+          }`,
+        );
       } else if (["bkash", "nagad", "rocket"].includes(result.method)) {
         // Mobile banking — redirect to payment page with merchant info
         orderPlaced.current = true;
@@ -843,6 +847,7 @@ export default function CheckoutPage() {
           amount: result.amount,
           merchant: result.merchantNumber || "",
         });
+        if (result.token) params.set("t", result.token);
         router.push(`/checkout/payment?${params.toString()}`);
       } else if (result.method === "online" && result.url) {
         // Navigate the current tab to SSLCommerz (same window, no popup/iframe).

@@ -171,7 +171,13 @@ function SuccessContent() {
   const params = useSearchParams();
   const orderId = params.get("orderId");
   const method = params.get("method");
+  // Guest access token — proves the viewer just placed this order so the API
+  // returns full details (order number, address, items) without a login cookie.
+  const accessToken = params.get("t");
   const [order, setOrder] = useState(null);
+  // True only for a logged-in owner/admin; guests (token-only) can view but not
+  // edit/cancel, so the controls stay hidden for them.
+  const [canModify, setCanModify] = useState(false);
   const [loading, setLoading] = useState(true);
   const [cancelLoading, setCancelLoading] = useState(false);
   const [cancelled, setCancelled] = useState(false);
@@ -225,11 +231,17 @@ function SuccessContent() {
       setLoading(false);
       return;
     }
-    fetch(`${API}/api/orders/${orderId}`, { credentials: "include" })
+    fetch(
+      `${API}/api/orders/${orderId}${
+        accessToken ? `?token=${encodeURIComponent(accessToken)}` : ""
+      }`,
+      { credentials: "include" },
+    )
       .then((r) => r.json())
       .then((data) => {
         const o = data.order || null;
         setOrder(o);
+        setCanModify(!!data.canModify);
         if (o) {
           console.log("[ThankYou] purchase:", o._id || o.orderId);
           trackPurchase(o);
@@ -249,7 +261,7 @@ function SuccessContent() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [orderId, API]);
+  }, [orderId, accessToken, API]);
 
   // Countdown timer for 3-hour cancel window (COD only)
   useEffect(() => {
@@ -282,7 +294,7 @@ function SuccessContent() {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reason: trimmed }),
+        body: JSON.stringify({ reason: trimmed, token: accessToken || undefined }),
       });
       const data = await r.json();
       if (data.ok) {
@@ -332,6 +344,7 @@ function SuccessContent() {
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          token: accessToken || undefined,
           billingDetails: editBilling,
           items: editItems.map((it, index) => ({
             index,
@@ -481,6 +494,7 @@ function SuccessContent() {
     .filter(Boolean)
     .join(", ");
   const canCancel =
+    canModify &&
     order?.status === "pending" &&
     order?.paymentMethod === "cash-on-delivery" &&
     timeLeft > 0;

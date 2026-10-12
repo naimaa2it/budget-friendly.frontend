@@ -434,9 +434,9 @@ export default function CategoryPageClient({
           params.set("ratingSort", String(activeFilters.minRating));
         }
 
-        const response = await fetch(
-          `${API}/api/products?${params.toString()}`,
-        );
+        const response = await fetch(`${API}/api/products?${params.toString()}`, {
+          cache: "no-store",
+        });
         const json = await response.json();
 
         if (!response.ok)

@@ -575,7 +575,10 @@ export default function ProductCreate() {
 
   // Auto-save draft to backend
   const saveDraftToBackend = useCallback(async () => {
-    if (!product.title) return; // Need at least a title to save
+    // Auto-save must never downgrade a product after the user selects
+    // Published and presses Save. The public catalog only exposes published
+    // products, so a late draft request would make the product disappear.
+    if (!product.title || product.status !== "draft") return;
 
     try {
       const finalTags = tagStr
@@ -600,7 +603,10 @@ export default function ProductCreate() {
         // Update existing draft
         resp = await fetch(`${API}/api/admin/products/${draftId}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "X-Auto-Save": "true",
+          },
           credentials: "include",
           body: JSON.stringify(payload),
         });
@@ -633,19 +639,19 @@ export default function ProductCreate() {
 
   // Auto-save every 5 seconds
   useEffect(() => {
-    if (!product.title) return; // Don't save empty product
+    if (!product.title || product.status !== "draft") return;
 
     const timer = setInterval(() => {
       saveDraftToBackend();
     }, 5000); // 5 seconds
 
     return () => clearInterval(timer);
-  }, [product.title, saveDraftToBackend]);
+  }, [product.title, product.status, saveDraftToBackend]);
 
   // Save before page unload (back, close tab, power off)
   useEffect(() => {
     const handleBeforeUnload = (e) => {
-      if (product.title) {
+      if (product.title && product.status === "draft") {
         // Use sendBeacon for reliable saving
         const finalTags = tagStr
           .split(",")

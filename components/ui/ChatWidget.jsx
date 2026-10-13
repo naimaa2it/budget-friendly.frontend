@@ -639,7 +639,7 @@ export default function ChatWidget() {
             right: "max(0.75rem, env(safe-area-inset-right))",
             bottom: "calc(5rem + env(safe-area-inset-bottom))",
             width: "min(22rem, calc(100vw - 1.5rem))",
-            height: "min(33rem, calc(100dvh - 6rem))",
+            height: "min(32rem, calc(100dvh - 6rem))",
             maxHeight: "calc(100dvh - 6rem)",
           }}
         >

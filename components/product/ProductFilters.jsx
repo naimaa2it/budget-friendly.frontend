@@ -91,6 +91,7 @@ export default function ProductFilters({
   const [absMin, setAbsMin] = useState(0);
   const [absMax, setAbsMax] = useState(10000);
   const [priceRange, setPriceRange] = useState([0, 10000]);
+  const [priceTouched, setPriceTouched] = useState(false);
   const [subIds, setSubIds] = useState(new Set());
   const [brands, setBrands] = useState(new Set());
   const [minRating, setMinRating] = useState(defaultMinRating);
@@ -130,6 +131,7 @@ export default function ProductFilters({
   // Handler for min slider change
   const handleMinSliderChange = useCallback((e) => {
     const newVal = Number(e.target.value);
+    setPriceTouched(true);
     setPriceRange(prev => {
       const newMin = Math.min(newVal, prev[1]);
       setMinInputValue(String(newMin));
@@ -140,6 +142,7 @@ export default function ProductFilters({
   // Handler for max slider change
   const handleMaxSliderChange = useCallback((e) => {
     const newVal = Number(e.target.value);
+    setPriceTouched(true);
     setPriceRange(prev => {
       const newMax = Math.max(newVal, prev[0]);
       setMaxInputValue(String(newMax));
@@ -150,6 +153,7 @@ export default function ProductFilters({
   // Handler for min input blur (commit the value)
   const handleMinInputBlur = useCallback(() => {
     const num = parseInt(minInputValue, 10);
+    setPriceTouched(true);
     if (isNaN(num) || num < absMin) {
       setPriceRange(prev => [absMin, prev[1]]);
       setMinInputValue(String(absMin));
@@ -165,6 +169,7 @@ export default function ProductFilters({
   // Handler for max input blur (commit the value)
   const handleMaxInputBlur = useCallback(() => {
     const num = parseInt(maxInputValue, 10);
+    setPriceTouched(true);
     if (isNaN(num) || num > absMax) {
       setPriceRange(prev => [prev[0], absMax]);
       setMaxInputValue(String(absMax));
@@ -191,9 +196,22 @@ export default function ProductFilters({
 
   // ── notify parent ───────────────────────────────────────────────────
   useEffect(() => {
-    onChange?.({ priceRange, expandedSubIds, brands, minRating, selectedSkinTypes, selectedFormulations, freeFrom, skincareFlags });
+    // The bounds are initialized from the current catalog for the slider UI,
+    // but they are not an active filter until the user changes the price.
+    // Otherwise products outside the automatically calculated range disappear
+    // from the default listing.
+    onChange?.({
+      priceRange: priceTouched ? priceRange : [0, 0],
+      expandedSubIds,
+      brands,
+      minRating,
+      selectedSkinTypes,
+      selectedFormulations,
+      freeFrom,
+      skincareFlags,
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [priceRange, expandedSubIds, brands, minRating, selectedSkinTypes, selectedFormulations, freeFrom, skincareFlags]);
+  }, [priceRange, priceTouched, expandedSubIds, brands, minRating, selectedSkinTypes, selectedFormulations, freeFrom, skincareFlags]);
 
   // ── helpers ─────────────────────────────────────────────────────────
   const toggleSet = useCallback((setter, key) => setter(prev => {
@@ -211,6 +229,7 @@ export default function ProductFilters({
 
   const reset = useCallback(() => {
     const { min, max } = initialBoundsRef.current;
+    setPriceTouched(false);
     setPriceRange([min, max]);
     setMinInputValue(String(min));
     setMaxInputValue(String(max));

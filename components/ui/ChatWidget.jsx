@@ -541,7 +541,13 @@ export default function ChatWidget() {
           })
         }
         aria-label="Chat with us"
-        className="fixed bottom-14 right-4 z-[60] flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition hover:bg-blue-700"
+        className={`${open && view === "chat" ? "pointer-events-none opacity-0" : "opacity-100"} fixed z-60 flex h-11 w-11 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition hover:bg-blue-700`}
+        style={{
+          right: "max(0.75rem, env(safe-area-inset-right))",
+          bottom: open
+            ? "calc(5rem + env(safe-area-inset-bottom))"
+            : "calc(3.5rem + env(safe-area-inset-bottom))",
+        }}
       >
         {open ? (
           <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -556,12 +562,29 @@ export default function ChatWidget() {
 
       {/* ── Popup: 3-option menu ─────────────────────────────────────────── */}
       {open && view === "menu" && (
-        <div className="fixed bottom-28 right-4 z-[60] w-[92vw] max-w-xs overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
-          <div className="bg-blue-600 px-5 py-4 text-white">
-            <p className="text-base font-semibold leading-tight">Hi there! 👋</p>
-            <p className="mt-0.5 text-xs text-blue-100">Got questions? Chat with our team!</p>
+        <div
+          className="fixed z-60 flex max-h-[calc(100dvh-5rem)] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl"
+          style={{
+            right: "max(0.75rem, env(safe-area-inset-right))",
+            bottom: "calc(5rem + env(safe-area-inset-bottom))",
+            width: "min(21rem, calc(100vw - 1.5rem))",
+          }}
+        >
+          <div className="flex items-start justify-between bg-blue-600 px-5 py-4 text-white">
+            <div>
+              <p className="text-base font-semibold leading-tight">Hi there! 👋</p>
+              <p className="mt-0.5 text-xs text-blue-100">Got questions? Chat with our team!</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              aria-label="Close chat options"
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20 text-lg leading-none hover:bg-white/30"
+            >
+              ×
+            </button>
           </div>
-          <div className="flex flex-col gap-2 p-3">
+          <div className="flex min-h-0 flex-col gap-2 overflow-y-auto p-3">
             {showFb && (
               <a
                 href={fbUrl}
@@ -610,9 +633,18 @@ export default function ChatWidget() {
 
       {/* ── Panel: in-site chat ──────────────────────────────────────────── */}
       {open && view === "chat" && (
-        <div className="fixed bottom-24 right-4 z-[60] flex h-[60vh] max-h-[460px] w-[86vw] max-w-xs flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
+        <div
+          className="fixed z-60 flex min-h-0 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl"
+          style={{
+            right: "max(0.75rem, env(safe-area-inset-right))",
+            bottom: "calc(5rem + env(safe-area-inset-bottom))",
+            width: "min(22rem, calc(100vw - 1.5rem))",
+            height: "min(33rem, calc(100dvh - 6rem))",
+            maxHeight: "calc(100dvh - 6rem)",
+          }}
+        >
           {/* header */}
-          <div className="flex items-center gap-3 bg-blue-600 px-4 py-3 text-white">
+          <div className="flex min-h-0 shrink-0 items-center gap-2 bg-blue-600 px-3 py-3 text-white sm:gap-3 sm:px-4">
             <button
               onClick={() => setView("menu")}
               title="Back"
@@ -629,36 +661,49 @@ export default function ChatWidget() {
                 {phone ? `📱 ${phone}` : "Usually replies instantly"}
               </p>
             </div>
-            <div className="ml-auto flex items-center gap-1.5">
+            <div className="ml-auto flex min-w-0 items-center gap-1">
               {phone && (
                 <button
                   onClick={changeNumber}
                   title="Onno number diye notun chat / নম্বর পরিবর্তন"
-                  className="flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-xs font-medium transition hover:bg-white/30"
+                  className="flex shrink-0 items-center gap-1 rounded-full bg-white/20 px-2 py-1 text-[11px] font-medium transition hover:bg-white/30 sm:px-2.5 sm:text-xs"
                 >
                   <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 12a9 9 0 0 1-15 6.7L3 16" strokeLinecap="round" strokeLinejoin="round" />
                     <path d="M21 3v5h-5M3 21v-5h5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  নম্বর
+                  <span className="hidden sm:inline">নম্বর</span>
                 </button>
               )}
               <button
                 onClick={newChat}
                 title="Notun chat / notun order shuru korun"
-                className="flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-xs font-medium transition hover:bg-white/30"
+                className="flex shrink-0 items-center gap-1 rounded-full bg-white/20 px-2 py-1 text-[11px] font-medium transition hover:bg-white/30 sm:px-2.5 sm:text-xs"
               >
                 <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M12 5v14M5 12h14" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                New chat
+                <span className="hidden sm:inline">New chat</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  setView("menu");
+                }}
+                title="Close chat"
+                aria-label="Close chat"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-500/40 text-lg text-white leading-none transition hover:bg-red-400"
+              >
+                ×
               </button>
             </div>
           </div>
 
           {!phone ? (
             /* phone gate — must give a number before chatting */
-            <div className="flex flex-1 flex-col items-center justify-center gap-3 bg-gray-50 px-6 text-center">
+            <div className="min-h-0 flex-1 overflow-y-auto bg-gray-50 px-4 py-5 text-center sm:px-6">
+              <div className="flex min-h-full flex-col items-center justify-center gap-3">
               <div className="text-3xl">📱</div>
               <p className="text-sm font-semibold text-gray-700">
                 চ্যাট শুরু করতে আপনার নাম ও মোবাইল নম্বর দিন
@@ -690,11 +735,16 @@ export default function ChatWidget() {
               >
                 চ্যাট শুরু করুন
               </button>
+              </div>
             </div>
           ) : (
             <>
               {/* messages */}
-              <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto bg-gray-50 p-3">
+              <div
+                ref={scrollRef}
+                className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain bg-gray-50 p-3"
+                style={{ WebkitOverflowScrolling: "touch" }}
+              >
                 {loaded && messages.length === 0 && (
                   <p className="mt-6 text-center text-xs text-gray-400">
                     Kono kichu janar thakle likhun 👇
@@ -726,7 +776,7 @@ export default function ChatWidget() {
               </div>
 
               {/* quick-reply menu buttons */}
-              <div className="flex gap-2 overflow-x-auto border-t border-gray-100 px-3 py-2">
+              <div className="shrink-0 flex gap-2 overflow-x-auto border-t border-gray-100 px-3 py-2 overscroll-contain">
                 {quick.map((q) => (
                   <button
                     key={q.key}
@@ -741,7 +791,7 @@ export default function ChatWidget() {
               </div>
 
               {/* input */}
-              <div className="flex items-center gap-2 border-t border-gray-100 p-2">
+              <div className="shrink-0 flex items-center gap-2 border-t border-gray-100 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
                 <input
                   value={input}
                   onChange={(e) => { setInput(e.target.value); touchPhone(); }}

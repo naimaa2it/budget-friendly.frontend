@@ -94,12 +94,18 @@ export default function ChatInbox() {
     return () => clearTimeout(t);
   }, [search, loadConversations]);
 
-  const loadMessages = useCallback((id) => {
+  const loadMessages = useCallback((id, { forceScroll = false } = {}) => {
     if (!id) return;
+    const container = scrollRef.current;
+    const distanceFromBottom = container
+      ? container.scrollHeight - container.scrollTop - container.clientHeight
+      : 0;
+    const shouldScroll = forceScroll || distanceFromBottom <= 40;
+
     api(`/conversations/${id}/messages`)
       .then((d) => {
         setMessages(d.messages || []);
-        scrollToBottom();
+        if (shouldScroll) scrollToBottom();
       })
       .catch((e) => toast.error(e.message));
   }, []);
@@ -115,7 +121,7 @@ export default function ChatInbox() {
   useEffect(() => {
     activeIdRef.current = activeId;
     if (!activeId) return;
-    loadMessages(activeId);
+    loadMessages(activeId, { forceScroll: true });
     const t = setInterval(() => loadMessages(activeIdRef.current), POLL_MS);
     return () => clearInterval(t);
   }, [activeId, loadMessages]);

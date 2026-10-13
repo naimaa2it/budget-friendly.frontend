@@ -4367,11 +4367,13 @@ function AbandonedCartSection() {
     }
   }, []);
 
+  const isFirstMount = useRef(true);
   useEffect(() => {
-    load(1, "");
-  }, [load]);
-
-  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      load(1, "");
+      return;
+    }
     clearTimeout(searchRef.current);
     searchRef.current = setTimeout(() => {
       setPage(1);
@@ -5198,11 +5200,13 @@ function AbandonCheckoutSection() {
     }
   }, []);
 
+  const isFirstMount = useRef(true);
   useEffect(() => {
-    load(1, "");
-  }, [load]);
-
-  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      load(1, "");
+      return;
+    }
     clearTimeout(searchRef.current);
     searchRef.current = setTimeout(() => {
       setPage(1);

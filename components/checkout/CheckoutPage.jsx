@@ -511,21 +511,28 @@ export default function CheckoutPage() {
     }
   }, [formData.city, formData.zone, locationData]);
 
-  // BD mobile numbers are 11 digits starting with 0 (e.g. 01*******).
-  // Accepts legacy "+880..." values (from older saved addresses) and
-  // normalizes them back to the local "01XXXXXXXXX" form.
+  const BN_TO_EN = {
+    "০": "0", "১": "1", "২": "2", "৩": "3", "৪": "4",
+    "৫": "5", "৬": "6", "৭": "7", "৮": "8", "৯": "9",
+  };
+  const toEnDigits = (str) =>
+    String(str || "").replace(/[০-৯]/g, (d) => BN_TO_EN[d] || d);
+
+  // Keeps the phone number in whatever script the user entered (Bangla stays Bangla, English stays English).
+  // Only strips out characters that are not digits/plus.
   const formatBdPhone = (raw) => {
-    let digits = String(raw || "").replace(/\D/g, "");
-    if (digits.startsWith("880")) digits = digits.slice(3);
-    if (digits && !digits.startsWith("0")) digits = `0${digits}`;
-    return digits.slice(0, 11);
+    return String(raw || "").replace(/[^0-9০-৯+]/g, "").slice(0, 14);
   };
 
-  const BD_PHONE_REGEX = /^01\d{9}$/;
+  const BD_PHONE_REGEX = /^01[3-9]\d{8}$/;
 
   const validatePhone = (phone) => {
     if (!phone) return t("checkout.field_required");
-    if (!BD_PHONE_REGEX.test(phone)) return t("checkout.invalid_phone");
+    let digits = toEnDigits(phone).replace(/\D/g, "");
+    if (digits.startsWith("880")) digits = digits.slice(3);
+    else if (digits.startsWith("88")) digits = digits.slice(2);
+    if (digits.length === 10 && /^1[3-9]\d{8}$/.test(digits)) digits = "0" + digits;
+    if (!BD_PHONE_REGEX.test(digits)) return t("checkout.invalid_phone");
     return null;
   };
 
@@ -1281,7 +1288,7 @@ export default function CheckoutPage() {
                     onChange={handleInputChange}
                     onBlur={handlePhoneBlur}
                     placeholder={t("checkout.phone_ph")}
-                    maxLength={11}
+                    maxLength={15}
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none ${
                       fieldErrors.phone ? "border-red-500" : "border-gray-300"
                     }`}

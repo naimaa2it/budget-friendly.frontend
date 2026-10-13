@@ -83,8 +83,18 @@ export default function CourierScorePanel({
 
   if (lifetime?.error) {
     return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">
-        {lifetime.error}
+      <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 flex flex-wrap items-center justify-between gap-3">
+        <p className="flex-1 min-w-[200px]">{lifetime.error}</p>
+        {onRefresh && (
+          <button
+            type="button"
+            onClick={onRefresh}
+            disabled={loading}
+            className="px-3 py-1.5 text-xs font-semibold bg-white border border-red-300 rounded-lg hover:bg-red-50 disabled:opacity-50 text-red-800 shadow-sm"
+          >
+            {loading ? "Checking…" : "🔄 Refresh / Retry"}
+          </button>
+        )}
       </div>
     );
   }

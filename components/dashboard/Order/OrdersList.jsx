@@ -77,6 +77,20 @@ const formatDateTime = (date) => {
   return `${day} ${month} ${year}, ${time}`;
 };
 
+const BN_TO_EN_DIGITS = {
+  "০": "0", "১": "1", "২": "2", "৩": "3", "৪": "4",
+  "৫": "5", "৬": "6", "৭": "7", "৮": "8", "৯": "9",
+};
+function normalizeQueryPhone(raw) {
+  if (!raw) return "";
+  const converted = String(raw).replace(/[০-৯]/g, (d) => BN_TO_EN_DIGITS[d] || d);
+  let digits = converted.replace(/\D/g, "");
+  if (digits.startsWith("880")) digits = digits.slice(3);
+  else if (digits.startsWith("88")) digits = digits.slice(2);
+  if (digits.length === 10 && digits.startsWith("1")) digits = `0${digits}`;
+  return digits || converted.trim();
+}
+
 function useCourierLifetime(phone) {
   const [lifetime, setLifetime] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -86,10 +100,11 @@ function useCourierLifetime(phone) {
       if (!phone) return;
       setLoading(true);
       try {
+        const queryPhone = normalizeQueryPhone(phone) || phone;
         const params = refresh ? "?refresh=1" : "";
         const r = await fetch(
-          `${API}/api/admin/phones/${encodeURIComponent(phone)}/lifetime-stats${params}`,
-          { credentials: "include" },
+          `${API}/api/admin/phones/${encodeURIComponent(queryPhone)}/lifetime-stats${params}`,
+          { credentials: "include", cache: "no-store" },
         );
         const body = await r.json();
         setLifetime(r.ok ? body : { error: body.error || "Failed to load" });
@@ -3512,7 +3527,20 @@ function CreateOrderModal({
   const submit = async () => {
     setError("");
     if (!name.trim()) return setError("কাস্টমারের নাম দিন।");
-    if (!/^01[3-9]\d{8}$/.test(phone.replace(/\D/g, "").replace(/^88/, "")))
+    const BN_TO_EN = {
+      "০": "0", "১": "1", "২": "2", "৩": "3", "৪": "4",
+      "৫": "5", "৬": "6", "৭": "7", "৮": "8", "৯": "9",
+    };
+    const cleanDigits = String(phone || "")
+      .replace(/[০-৯]/g, (d) => BN_TO_EN[d] || d)
+      .replace(/\D/g, "");
+    let normalizedPhone = cleanDigits;
+    if (normalizedPhone.startsWith("880")) normalizedPhone = normalizedPhone.slice(3);
+    else if (normalizedPhone.startsWith("88")) normalizedPhone = normalizedPhone.slice(2);
+    if (normalizedPhone.length === 10 && /^1[3-9]\d{8}$/.test(normalizedPhone)) {
+      normalizedPhone = "0" + normalizedPhone;
+    }
+    if (!/^01[3-9]\d{8}$/.test(normalizedPhone))
       return setError("সঠিক বাংলাদেশি মোবাইল নাম্বার দিন (যেমন 01*******)।");
     if (!resolvedCity) return setError("শহর/জেলা সিলেক্ট করুন।");
     if (!items.length) return setError("অন্তত একটি পণ্য থাকতে হবে।");
@@ -3602,7 +3630,12 @@ function CreateOrderModal({
               </label>
               <input
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => {
+                  const val = String(e.target.value || "")
+                    .replace(/[^0-9০-৯+]/g, "")
+                    .slice(0, 14);
+                  setPhone(val);
+                }}
                 placeholder="01*******"
                 className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
               />

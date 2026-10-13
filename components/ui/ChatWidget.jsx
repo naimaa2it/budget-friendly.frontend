@@ -59,10 +59,16 @@ function touchPhone() {
   try { localStorage.setItem(PHONE_TS_KEY, String(Date.now())); } catch {}
 }
 
+const BN_TO_EN_PHONE = {
+  "০": "0", "১": "1", "২": "2", "৩": "3", "৪": "4",
+  "৫": "5", "৬": "6", "৭": "7", "৮": "8", "৯": "9",
+};
+
 // Validate + normalise a Bangladeshi mobile number (accepts 01XXXXXXXXX,
-// +8801XXXXXXXXX, 8801XXXXXXXXX). Returns "" when it isn't a valid BD number.
+// +8801XXXXXXXXX, 8801XXXXXXXXX, and Bangla digits ০-৯). Returns "" when it isn't a valid BD number.
 function normalizeBdPhone(raw) {
-  let d = String(raw || "").replace(/[^\d]/g, "");
+  const converted = String(raw || "").replace(/[০-৯]/g, (x) => BN_TO_EN_PHONE[x] || x);
+  let d = converted.replace(/[^\d]/g, "");
   if (d.startsWith("880")) d = d.slice(3);
   else if (d.startsWith("88")) d = d.slice(2);
   if (d.length === 11 && /^01[3-9]\d{8}$/.test(d)) return d;
@@ -326,8 +332,9 @@ export default function ChatWidget() {
     }
 
     setName(nm);
-    setPhone(n);
-    saveGate(nm, n);
+    const preservedPhone = phoneInput.trim();
+    setPhone(preservedPhone);
+    saveGate(nm, preservedPhone);
   };
 
   // Bring the gate back on demand — so a DIFFERENT number can start its own

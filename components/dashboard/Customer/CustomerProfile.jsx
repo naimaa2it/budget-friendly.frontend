@@ -97,6 +97,20 @@ function RiskCard({ risk, percentages, title, subtitle }) {
   );
 }
 
+const BN_TO_EN_DIGITS = {
+  "০": "0", "১": "1", "২": "2", "৩": "3", "৪": "4",
+  "৫": "5", "৬": "6", "৭": "7", "৮": "8", "৯": "9",
+};
+function normalizeQueryPhone(raw) {
+  if (!raw) return "";
+  const converted = String(raw).replace(/[০-৯]/g, (d) => BN_TO_EN_DIGITS[d] || d);
+  let digits = converted.replace(/\D/g, "");
+  if (digits.startsWith("880")) digits = digits.slice(3);
+  else if (digits.startsWith("88")) digits = digits.slice(2);
+  if (digits.length === 10 && digits.startsWith("1")) digits = `0${digits}`;
+  return digits || converted.trim();
+}
+
 export default function CustomerProfile({ userId }) {
   const [data, setData] = useState(null);
   const [lifetime, setLifetime] = useState(null);
@@ -108,10 +122,11 @@ export default function CustomerProfile({ userId }) {
     if (!phone) return;
     setLifetimeLoading(true);
     try {
+      const queryPhone = normalizeQueryPhone(phone) || phone;
       const params = refresh ? "?refresh=1" : "";
       const r = await fetch(
-        `${API}/api/admin/phones/${encodeURIComponent(phone)}/lifetime-stats${params}`,
-        { credentials: "include" },
+        `${API}/api/admin/phones/${encodeURIComponent(queryPhone)}/lifetime-stats${params}`,
+        { credentials: "include", cache: "no-store" },
       );
       const body = await r.json();
       if (r.ok) setLifetime(body);

@@ -95,13 +95,22 @@ function OrderCard({ order, courierLabels, onSelect, selected }) {
   );
 }
 
+const BN_TO_EN = {
+  "০": "0", "১": "1", "২": "2", "৩": "3", "৪": "4",
+  "৫": "5", "৬": "6", "৭": "7", "৮": "8", "৯": "9",
+};
+function toEnDigits(str) {
+  return String(str || "").replace(/[০-৯]/g, (d) => BN_TO_EN[d] || d);
+}
+
 // Decide whether the entered value is a phone number or an order ID.
 // Phone: only digits/space/+/- and at least 10 digits. Everything else
 // (e.g. "518640AC") is treated as an order ID.
 function looksLikePhone(value) {
-  if (/[a-zA-Z]/.test(value)) return false;
-  const digits = value.replace(/\D/g, "");
-  return /^[0-9+\-\s]+$/.test(value) && digits.length >= 10;
+  const converted = toEnDigits(value);
+  if (/[a-zA-Z]/.test(converted)) return false;
+  const digits = converted.replace(/\D/g, "");
+  return /^[0-9+\-\s]+$/.test(converted) && digits.length >= 10;
 }
 
 export default function TrackOrderPage() {
@@ -131,11 +140,12 @@ export default function TrackOrderPage() {
     }
 
     const byPhone = looksLikePhone(val);
+    const phoneVal = byPhone ? toEnDigits(val).replace(/\D/g, "") : val;
 
     setLoading(true);
     try {
       const params = new URLSearchParams(
-        byPhone ? { phone: val } : { orderId: val },
+        byPhone ? { phone: phoneVal } : { orderId: val },
       );
       const r = await fetch(`${API}/api/orders/track?${params}`);
       const data = await r.json();

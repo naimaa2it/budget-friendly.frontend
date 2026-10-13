@@ -112,9 +112,12 @@ export default function CustomerEditor({ userId }) {
           <label className="block text-sm font-medium">Mobile number</label>
           <input
             value={customer.mobile || ""}
-            onChange={(e) =>
-              setCustomer((c) => ({ ...c, mobile: e.target.value }))
-            }
+            onChange={(e) => {
+              const val = String(e.target.value || "")
+                .replace(/[^0-9০-৯+]/g, "")
+                .slice(0, 14);
+              setCustomer((c) => ({ ...c, mobile: val }));
+            }}
             className="w-full border px-3 py-2 rounded font-mono"
             placeholder="e.g. 01700000000"
             inputMode="tel"

@@ -266,7 +266,10 @@ export default function AddressManager() {
                   type="tel"
                   value={formData.phone}
                   placeholder="017XXXXXXXX"
-                  onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={e => {
+                    const val = String(e.target.value || "").replace(/[^0-9০-৯+]/g, "").slice(0, 14);
+                    setFormData({ ...formData, phone: val });
+                  }}
                   className="w-full border px-3 py-2 rounded focus:ring focus:ring-indigo-200"
                   required
                 />
